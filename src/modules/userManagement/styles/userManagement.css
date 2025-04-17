@@ -1,0 +1,66 @@
+.userManagementTopActionGroup {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.userManagementTopActionLeftGroup {
+  display: flex;
+  flex-direction: row;
+  width: 65%;
+  justify-content: space-between;
+}
+
+.userManagementDatePicker,
+.userManagementSearchBox {
+  width: 48% !important;
+}
+
+.userManagementExportBtn {
+  width: 20% !important;
+}
+
+.adduserManagementBtn {
+  width: 100% !important;
+}
+
+.userManagementModalContainer {
+  display: flex;
+  flex: 1;
+  flex-direction: row;
+  box-sizing: border-box;
+  margin-top: 10px;
+}
+
+.userManagementModalColumn {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 0 10px;
+}
+
+.saveButton {
+  align-self: flex-end;
+  margin-top: 40px;
+}
+
+.userManagementBottomActionContainer {
+  margin-top: 40px;
+}
+
+.userManagementFormModal {
+  width: 80% !important;
+}
+
+.buttonSuccess{
+color: green;
+border-color: green;
+}
+
+.buttonDisableSuccess{
+  color: #BCBEC0;
+  border-color: #BCBEC0;
+  }
+

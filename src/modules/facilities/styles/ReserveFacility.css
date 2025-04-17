@@ -1,0 +1,215 @@
+.subTextColor {
+  color: var(--subMenuText-color);
+}
+
+.noSlot {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+}
+
+.formBlockReserveSlot {
+  padding-right: 10px;
+}
+
+.calendarHeader {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  align-items: end;
+  padding: 10px;
+}
+
+.calendarMonthSelect {
+  width: 100px;
+}
+
+.loadingContainer {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  padding: 20px 0;
+  justify-content: center;
+  align-items: center;
+}
+
+.peopleCountingContainer {
+  padding-top: 30px;
+}
+
+.peopleCountingCardContainer {
+  /* width: 450px;
+    height: 230px; */
+  height: 350px;
+  width: 250px;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  border-radius: 15px;
+  background-color: lightgray;
+}
+
+.peopleCountingGradients {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  height: 100%;
+  background-image: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.4),
+    rgba(255, 255, 255, 0.4)
+  );
+  border-radius: 15px;
+  padding: 15px 25px;
+  justify-content: flex-end;
+}
+
+.reservedCardContainer {
+  /* filter: drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.25)); */
+}
+
+.reservedCardImage {
+  object-fit: cover;
+  width: 100%;
+  height: 260px;
+  border-radius: 20px 20px 0 0;
+}
+
+.reserveCardDetail {
+  width: 100%;
+  background-color: var(--cardBG-color);
+  padding: 15px;
+  border-radius: 0 0 20px 20px;
+}
+
+.reserveCardDetailTop {
+  padding-bottom: 10px;
+  border-bottom: solid 1px #909090;
+}
+
+.reserveCardDetailBottom {
+  padding-top: 10px;
+}
+
+.reserveCardDetailTitle {
+  font-weight: var(--font-normal) !important;
+}
+
+.reserveCardDetailSubName {
+  font-size: var(--font-size-xl);
+  color: var(--subMenuText-color);
+}
+
+.reserveModalColumn {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 0 10px;
+}
+
+.reserveModalContainer {
+  display: flex;
+  flex: 1;
+  flex-direction: row;
+  box-sizing: border-box;
+  margin-top: 10px;
+}
+
+.reservedQRCardContainer {
+  height: 100%;
+  background-color: #f9f9f9;
+  /* filter: drop-shadow(0px 10px 20px rgba(0, 0, 0, 0.1)); */
+  /* box-shadow: 0px 10px 20px 0px #0000001a; */
+  padding-bottom: 25px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  margin: 20px;
+  box-sizing: border-box;
+}
+
+.reservedCardHeader {
+  background-color: var(--secondary-color);
+  text-align: center;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+}
+
+.reservedQRContainer {
+  text-align: center;
+  background-color: #f9f9f9;
+  padding: 25px;
+}
+
+.reservedTxtSemiBold {
+  font-weight: var(--font-normal) !important;
+}
+
+.reservedTopActionGroup {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.reservedTopActionLeftGroup {
+  display: flex;
+  flex-direction: row;
+  width: 65%;
+  justify-content: space-between;
+}
+
+
+.reservedBottomActionContainer {
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.reservedDatePicker,
+.reservedSearchBox {
+   width: 48% !important;
+}
+
+.createReserved {
+  width: 20% !important;
+}
+
+.reservedModalContainer {
+  display: flex;
+  flex: 1;
+  flex-direction: row;
+  box-sizing: border-box;
+  margin-top: 10px;
+}
+
+.reservedModalColumn {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 0 10px;
+}
+
+.reservedFormModal {
+  width: 80% !important;
+}
+
+.reservedLeftTxtSpace {
+  margin-left: 5px;
+}
+
+.reservedDetailTxt {
+  line-height: 14px;
+}
+
+.reservedIcon {
+  width: 20px;
+  height: 14px;
+}
+
+.facilitiesSearchBox {
+  width: 32% !important;
+}

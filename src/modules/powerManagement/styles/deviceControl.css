@@ -1,0 +1,219 @@
+.subTextColor {
+  color: var(--subMenuText-color);
+}
+
+.noSlot {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+}
+
+.formBlockReserveSlot {
+  padding-right: 10px;
+}
+
+.calendarHeader {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  align-items: end;
+  padding: 10px;
+}
+
+.calendarMonthSelect {
+  width: 100px;
+}
+
+.loadingContainer {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  padding: 20px 0;
+  justify-content: center;
+  align-items: center;
+}
+
+.areaControlCardContainer {
+  /* filter: drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.25)); */
+}
+
+.areaControlCardImage {
+  object-fit: cover;
+  width: 100%;
+  height: 260px;
+  border-radius: 20px 20px 0 0;
+}
+
+.areaControlCardDetail {
+  width: 100%;
+  background-color: var(--cardBG-color);
+  padding: 15px;
+  border-radius: 0 0 20px 20px;
+}
+
+.areaControlCardDetailBottom {
+  padding-top: 10px;
+}
+
+.areaControlCardDetailTitle {
+  font-weight: var(--font-normal) !important;
+}
+
+.areaControlCardDetailInfo {
+  font-size: var(--font-size-sm);
+  color: var(--mainText-color);
+}
+
+.areaControlModalColumn {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 0 10px;
+}
+
+.areaControlModalContainer {
+  display: flex;
+  flex: 1;
+  flex-direction: row;
+  box-sizing: border-box;
+  margin-top: 10px;
+}
+
+.areaControlQRCardContainer {
+  height: 100%;
+  background-color: #f9f9f9;
+  /* filter: drop-shadow(0px 10px 20px rgba(0, 0, 0, 0.1)); */
+  /* box-shadow: 0px 10px 20px 0px #0000001a; */
+  padding-bottom: 25px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  margin: 20px;
+}
+
+.areaControlCardHeader {
+  background-color: var(--secondary-color);
+  text-align: center;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+}
+
+.areaControlQRContainer {
+  text-align: center;
+  background-color: #f9f9f9;
+  padding: 25px;
+}
+
+.areaControlTxtSemiBold {
+  font-weight: var(--font-normal) !important;
+}
+
+.areaControlTopActionGroup {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.areaControlBottomActionContainer {
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.areaControlCardDetailBottomTitle {
+  font-weight: var(--font-normal) !important;
+}
+
+.createReservedBtn,
+.areaControlDatePicker,
+.areaControlSearchBox {
+  width: 32% !important;
+}
+
+.areaControlModalContainer {
+  display: flex;
+  flex: 1;
+  flex-direction: row;
+  box-sizing: border-box;
+  margin-top: 10px;
+}
+
+.areaControlModalColumn {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 0 10px;
+}
+
+.areaControlFormModal {
+  width: 80% !important;
+}
+
+.areaControlLeftTxtSpace {
+  margin-left: 5px;
+}
+
+.areaControlDetailTxt {
+  line-height: 14px;
+}
+
+.areaControlIcon {
+  width: 20px;
+  height: 14px;
+}
+
+.areaControlTitleContainer {
+  border-bottom: solid 1px #909090;
+  padding-bottom: 5px;
+  margin-bottom: 15px;
+}
+
+.deviceControlTitleContainer {
+  border-bottom: solid 1px #909090;
+  padding-bottom: 5px;
+}
+
+.turnOnBtn {
+  background-color: var(--success-color);
+}
+
+.turnOnBtn:hover {
+  background-color: var(--success-color) !important;
+  opacity: 0.9;
+}
+
+.turnOffBtn {
+  background-color: var(--danger-color);
+}
+
+.turnOffBtn:hover {
+  background-color: var(--danger-color) !important;
+  opacity: 0.9;
+}
+
+.bulbIconControl {
+  width: 20px;
+  height: 20px;
+}
+
+.areaSaveBtn {
+  min-width: 80px;
+}
+
+.deviceControlCardDetailDeviceName {
+  margin-left: 15px;
+  font-size: var(--font-size-sm);
+  color: var(--mainText-color);
+}
+
+.deviceDetailContainer {
+  padding: 15px 0;
+}
+
+.deviceControlSpace .ant-space-item + .ant-space-item {
+  border-top: solid 1px #909090;
+}

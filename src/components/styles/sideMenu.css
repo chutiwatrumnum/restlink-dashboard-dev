@@ -1,0 +1,80 @@
+.sideMenuContainer .ant-menu {
+  border-inline-end: none !important;
+}
+
+.sideMenuContainer {
+  height: 100%;
+  box-sizing: border-box;
+  padding: 20px 0;
+}
+
+.sideMenuLogo {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 10px;
+  box-sizing: border-box;
+}
+
+.sideMenuIcon {
+  width: 24px;
+  margin-right: 15px;
+}
+
+.menuContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+}
+
+/* set menu */
+.sideMenuContainer .ant-menu-item {
+  color: var(--menuText-color);
+}
+
+/* set menu selected */
+.sideMenuContainer .ant-menu-item-selected {
+  color: var(--menuTextActive-color);
+  background-color: var(--menuBgActive-color);
+  font-weight: normal;
+}
+
+/* set sub menu parent */
+.sideMenuContainer .ant-menu-submenu-title {
+  background-color: var(--menuBg-color);
+  color: var(--menuText-color);
+}
+
+/* set sub menu parent selected */
+.sideMenuContainer .ant-menu-submenu-selected .ant-menu-submenu-title {
+  color: var(--menuTextActive-color);
+  background-color: var(--tertiary-color);
+}
+
+.sideMenuContainer .ant-menu {
+  background: var(--menuBg-color) !important;
+}
+
+/* set sub menu bg */
+.sideMenuContainer .ant-menu-sub {
+  background: var(--subMenuBg-color) !important;
+}
+
+/* set sub menu child */
+.sideMenuContainer .ant-menu-submenu .ant-menu-item {
+  color: var(--subMenuText-color);
+}
+
+/* set sub menu child selected */
+.sideMenuContainer .ant-menu-submenu-selected .ant-menu-item-selected {
+  color: var(--subMenuTextActive-color);
+  background-color: var(--subMenuBgActive-color);
+}
+
+.textVersion {
+  padding: 15px;
+  margin-top: 10px;
+  text-align: right;
+}

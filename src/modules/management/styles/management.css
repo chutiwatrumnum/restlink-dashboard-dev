@@ -1,0 +1,55 @@
+.managementTopActionGroup {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.managementTopActionLeftGroup {
+  display: flex;
+  flex-direction: row;
+  width: 65%;
+  justify-content: space-between;
+}
+
+.managementDatePicker,
+.managementSearchBox {
+  width: 48% !important;
+}
+
+.managementExportBtn {
+  width: 20% !important;
+}
+
+.addmanagementBtn {
+  width: 100% !important;
+}
+
+.managementModalContainer {
+  display: flex;
+  flex: 1;
+  flex-direction: row;
+  box-sizing: border-box;
+  margin-top: 10px;
+}
+
+.managementModalColumn {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 0 10px;
+}
+
+.saveButton {
+  align-self: flex-end;
+  margin-top: 40px;
+}
+
+.managementBottomActionContainer {
+  margin-top: 40px;
+}
+
+.managementFormModal {
+  width: 80% !important;
+}

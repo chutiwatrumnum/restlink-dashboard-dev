@@ -1,0 +1,151 @@
+.mainTextColor {
+  color: var(--mainText-color);
+}
+
+.cancelBtnColor {
+  background-color: var(--cancelBtn-color);
+}
+
+.smokeBorderColor {
+  border-color: 2px solid var(--black-color);
+}
+
+.primaryColor {
+  background-color: var(--primary-color);
+}
+
+.lineSpacer {
+  margin: 0 5px;
+}
+
+.boldText {
+  font-weight: var(--font-bold);
+}
+
+.semiBoldText {
+  font-weight: var(--font-normal);
+}
+
+/* ANTD Component css controller */
+
+/* Table css control */
+.ant-table-thead > tr > th,
+.ant-table-thead > tr > td {
+  background-color: var(--tableHeadBg-color) !important;
+}
+
+.ant-table-thead > tr > th {
+  color: var(--tableHeadText-color) !important;
+}
+
+/* Table expanded css control */
+.ant-table-column-title {
+  font-weight: var(--font-normal);
+}
+.ant-table-thead > tr > th {
+  font-weight: var(--font-normal) !important;
+}
+.ant-table-expanded-row .ant-table-thead > tr > th {
+  background-color: var(--subTableHeadBg-color) !important;
+}
+
+.ant-table-expanded-row .ant-table {
+  margin-inline: 0 !important;
+  background: var(--gray-color);
+}
+
+.ant-table-expanded-row .ant-table-cell-row-hover {
+  background: var(--gray-color) !important;
+}
+
+.ant-table-expanded-row table > thead > tr:first-child > *:first-child,
+.ant-table-expanded-row table > thead > tr:first-child > *:last-child {
+  border-radius: 0 !important;
+}
+
+.ant-table-expanded-row td {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+.ant-table-tbody > tr > td {
+  background-color: var(--BG-Table-color) !important;
+}
+
+.ant-btn-primary:hover {
+  background-color: var(--header-color) !important;
+  opacity: 0.9;
+  transition: 0.3s;
+}
+
+/* ant modal custom */
+.ant-modal-title {
+  padding-bottom: 15px;
+  border-bottom: solid rgba(211, 211, 211, 0.6);
+  border-width: 2px;
+}
+
+:where(.css-dev-only-do-not-override-4tfrqs).ant-modal .ant-modal-title {
+  margin: 0;
+  color: var(--black-color);
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 1.5;
+  word-wrap: break-word;
+}
+
+:where(.css-dev-only-do-not-override-17a39f8).ant-modal-confirm
+  .ant-modal-confirm-body
+  .ant-modal-confirm-title {
+  flex: 0 0 100%;
+  display: block;
+  overflow: hidden;
+  color: rgba(0, 0, 0, 0.88);
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+/* ant button custom */
+.ant-btn-primary:disabled {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.ant-btn-primary:disabled:hover {
+  background-color: rgba(56, 3, 3, 0.1) !important;
+}
+
+/* .ant-btn-primary:disabled {
+  background-color: #9f9c9b;
+  color: #fff;
+}
+
+.ant-btn-primary:disabled:hover {
+  background-color: #9f9c9b !important;
+  color: #fff;
+} */
+
+/* ant font custom */
+
+.ant-modal {
+  font-family: "Kanit";
+}
+.ant-btn {
+  font-family: "Kanit";
+}
+
+/* ant upload custom */
+.uploadStyleControl .ant-upload {
+  padding: 0 !important;
+}
+
+.textStyleTitleInfo {
+  font-weight: var(--font-normal);
+  font-size: var(--font-size-base);
+}
+
+.textStyleSubTitleInfo {
+  font-weight: var(--font-normal);
+  font-size: var(--font-size-sm);
+  color: var(--gray-color);
+}

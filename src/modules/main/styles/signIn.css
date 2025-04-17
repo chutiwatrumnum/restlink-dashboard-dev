@@ -1,0 +1,49 @@
+.containerSignIn {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  width: 50%;
+  padding: 0 10%;
+}
+
+.formSignIn {
+  display: flex;
+  flex-direction: column;
+}
+
+.forgotPassword {
+  color: var(--mainText-color);
+}
+
+.loginBtn {
+  margin-top: 40px;
+  box-shadow: none;
+  line-height: normal;
+  background-color: var(--login-color);
+}
+
+.loginBtn:hover {
+  background-color: var(--login-color) !important;
+  opacity: 0.9;
+}
+
+.textColor {
+  color: var(--mainText-color);
+}
+
+.forgotRememberContainer {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  justify-content: space-between;
+}
+
+.logo {
+  width: 100%;
+  max-width: 200px;
+}
+
+.txtCenter {
+  align-items: center;
+  text-align: center;
+}

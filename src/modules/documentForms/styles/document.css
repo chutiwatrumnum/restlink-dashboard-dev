@@ -1,0 +1,40 @@
+.fileName {
+    display: flex;
+    flex-direction: row;
+    align-items: left;
+    padding-left: 20px;
+}
+
+.fileName:hover {
+    cursor: pointer;
+}
+
+.fileNameIcon {
+    margin-right: 10px;
+}
+
+.breadcrumbContainer {
+    padding: 10px 0;
+}
+
+.breadcrumbContainer li:last-child {
+    pointer-events: none;
+}
+
+.breadcrumbTxt {
+    font-size: 24px;
+}
+
+.breadcrumbLink {
+    font-size: 20px;
+}
+
+.listContainer {
+    margin-top: 10px;
+    padding-left: 30px;
+}
+
+.document .ant-breadcrumb-separator{
+    font-size:25px;
+    color: #000;
+    }

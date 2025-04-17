@@ -1,0 +1,79 @@
+@import url(https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap);
+:root {
+  font-family: "Kanit";
+  line-height: 1.5;
+  font-weight: 400;
+  font-size: 14px;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
+
+  /* fonts weight */
+  --font-bold: 700;
+  --font-semibold: 600;
+  --font-normal: 400;
+
+  /* font sizes */
+  --font-size-sm: 14px;
+  --font-size-xl: 16px;
+  --font-size-2xl: 20px;
+  --font-size-3xl: 24px;
+  --font-size-4xl: 28px;
+  --font-size-5xl: 32px;
+  --font-size-6xl: 36px;
+  --font-size-7xl: 40px;
+  --font-size-base: 16px;
+
+  /* Colors */
+  --primary-color: #36CCCC;
+  --secondary-color: #E7F5F5;
+  --tertiary-color: #36CCCC;
+  --header-color: #ACEADE;
+  --BG-color: rgba(172, 234, 222, 0.2);
+  --login-color: #36CCCC;
+  --BG-Table-color: rgba(172, 234, 222, 0.3);
+  --white-color: #ffffff;
+  --whiteTrans-color: rgba(255, 255, 255, 0.8);
+  --black-color: #403d38;
+  --gray-color: #9f9c9b;
+  --cardBG-color: rgba(231, 245, 245, 1);
+
+  /* Semantic Colors */
+  --danger-color: #ad1b20;
+  --warning-color: #fac63b;
+  --success-color: #63a164;
+
+  /* Typography and iconography Colors */
+  --mainText-color: var(--black-color);
+  --menuText-color: var(--black-color);
+  --menuTextActive-color: var(--white-color);
+  --subMenuTextActive-color: var(--tertiary-color);
+  --subMenuText-color: #7b7b7b;
+  --successText-color: var(var(--success-color));
+  --dangerText-color: var(var(--danger-color));
+
+  /* Bg colors */
+  --mainBg-color: var(--primary-color);
+  --menuBg-color: var(--secondary-color);
+  --menuBgActive-color: var(--primary-color);
+  --subMenuBg-color: var(--white-color);
+  --subMenuBgActive-color: var(--secondary-color);
+
+  /* Button colors */
+  --mainBtn-color: var(--primary-color);
+  --cancelBtn-color: var(--white-color);
+  --mainBtnText-color: var(--white-color);
+  --cancelBtnText--color: var(--primary-color);
+
+  /* Table color */
+  --tableHeadBg-color: var(--header-color);
+  --tableHeadText-color: var(--black-color);
+  --subTableHeadBg-color: var(--gray-color);
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+  }
+}
