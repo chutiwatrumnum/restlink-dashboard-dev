@@ -1,5 +1,5 @@
 export const clientId =
-  "166950243777-k3u5l14jdtu3tg72a0jlih3imq8amcrr.apps.googleusercontent.com";
+  "462317026303-el6qv1ebdbd7905ldei7e6vrhhggafqh.apps.googleusercontent.com";
 export const redirectUri = window.location.origin + window.location.pathname;
 export const scope = "openid email profile";
 export const responseType = "code";
