@@ -15,6 +15,8 @@ import type { CheckboxChangeEvent } from "antd/es/checkbox";
 
 import "./styles/signIn.css";
 import { encryptStorage } from "../../utils/encryptStorage";
+import { getAuthCode, startGoogleLogin } from "../../utils/googleAuth";
+import { firebaseSignInWithGoogle } from "../../../firebase";
 
 const { Text } = Typography;
 
@@ -22,6 +24,8 @@ const SignInScreen = () => {
   const dispatch = useDispatch<Dispatch>();
   const [form] = Form.useForm();
   const [rememberChecked, setRememberChecked] = useState<boolean>(false);
+  const [authCode, setAuthCode] = useState<string | null>(null);
+  const [firebaseUser, setFirebaseUser] = useState<any>(null);
 
   useEffect(() => {
     (async function () {
@@ -61,61 +65,112 @@ const SignInScreen = () => {
     await setRememberChecked(e.target.checked);
   };
 
+  const handleLogin = () => {
+    startGoogleLogin();
+  };
+
+  useEffect(() => {
+    // ดึง Auth Code เมื่อมีการ Redirect
+    const code = getAuthCode();
+    if (code) {
+      setAuthCode(code);
+
+      // ใช้ Firebase Authentication ด้วย Auth Code
+      firebaseSignInWithGoogle(code).then((user) => {
+        setFirebaseUser(user);
+      });
+    }
+  }, []);
+
   return (
-    <Col className="containerSignIn">
-      <Space
-        direction="vertical"
-        size={0}
-        style={{ alignItems: "center", paddingBottom: 60 }}>
-        <img src={LOGO} alt="logo" className="logo" />
-        {/* <Text className="text-title">Powered By ARTANI</Text> */}
-      </Space>
-      <Form
-        name="basic"
-        form={form}
-        className="formSignIn"
-        layout="vertical"
-        initialValues={{ remember: true }}
-        onFinish={onFinish}
-        onFinishFailed={onFinishFailed}
-        autoComplete="off">
-        <Form.Item
-          label={<Text className="textColor">Email</Text>}
-          name="username"
-          rules={requiredRule}>
-          <Input
-            prefix={<UserSignInIcon color={whiteLabel.grayColor} />}
-            size="large"
-          />
-        </Form.Item>
+    // <Col className="containerSignIn">
+    //   <Space
+    //     direction="vertical"
+    //     size={0}
+    //     style={{ alignItems: "center", paddingBottom: 60 }}>
+    //     <img src={LOGO} alt="logo" className="logo" />
+    //     {/* <Text className="text-title">Powered By ARTANI</Text> */}
+    //   </Space>
+    //   <Form
+    //     name="basic"
+    //     form={form}
+    //     className="formSignIn"
+    //     layout="vertical"
+    //     initialValues={{ remember: true }}
+    //     onFinish={onFinish}
+    //     onFinishFailed={onFinishFailed}
+    //     autoComplete="off">
+    //     <Form.Item
+    //       label={<Text className="textColor">Email</Text>}
+    //       name="username"
+    //       rules={requiredRule}>
+    //       <Input
+    //         prefix={<UserSignInIcon color={whiteLabel.grayColor} />}
+    //         size="large"
+    //       />
+    //     </Form.Item>
 
-        <Form.Item
-          label={<Text className="textColor">Password</Text>}
-          name="password"
-          rules={requiredRule}>
-          <Input.Password
-            prefix={<LockIcon color={whiteLabel.grayColor} />}
-            size="large"
-          />
-        </Form.Item>
+    //     <Form.Item
+    //       label={<Text className="textColor">Password</Text>}
+    //       name="password"
+    //       rules={requiredRule}>
+    //       <Input.Password
+    //         prefix={<LockIcon color={whiteLabel.grayColor} />}
+    //         size="large"
+    //       />
+    //     </Form.Item>
 
-        <div className="forgotRememberContainer">
-          <Checkbox
-            checked={rememberChecked ? rememberChecked : false}
-            onChange={onRememberChange}>
-            Remember me
-          </Checkbox>
+    //     <div className="forgotRememberContainer">
+    //       <Checkbox
+    //         checked={rememberChecked ? rememberChecked : false}
+    //         onChange={onRememberChange}>
+    //         Remember me
+    //       </Checkbox>
 
-          <Link to={"/recovery"} className="forgotPassword">
-            Forgot Password?
-          </Link>
+    //       <Link to={"/recovery"} className="forgotPassword">
+    //         Forgot Password?
+    //       </Link>
+    //     </div>
+
+    //     <Form.Item className="txtCenter">
+    //       <MediumButton className="loginBtn" message="Login" form={form} />
+    //     </Form.Item>
+    //   </Form>
+    // </Col>
+    <div style={{ textAlign: "center", marginTop: "100px" }}>
+      <h2>Google Login</h2>
+      <button
+        onClick={handleLogin}
+        style={{
+          padding: "12px 20px",
+          backgroundColor: "#4285F4",
+          color: "white",
+          border: "none",
+          borderRadius: "4px",
+          fontSize: "16px",
+          cursor: "pointer",
+        }}
+      >
+        Login with Google
+      </button>
+
+      {authCode && (
+        <div
+          style={{ marginTop: "30px", fontFamily: "monospace", color: "#333" }}
+        >
+          <strong>Auth Code:</strong> {authCode}
         </div>
+      )}
 
-        <Form.Item className="txtCenter">
-          <MediumButton className="loginBtn" message="Login" form={form} />
-        </Form.Item>
-      </Form>
-    </Col>
+      {firebaseUser && (
+        <div
+          style={{ marginTop: "30px", fontFamily: "monospace", color: "#333" }}
+        >
+          <strong>Firebase User:</strong>{" "}
+          {JSON.stringify(firebaseUser, null, 2)}
+        </div>
+      )}
+    </div>
   );
 };
 
