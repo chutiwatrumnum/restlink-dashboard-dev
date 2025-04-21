@@ -10,6 +10,7 @@ import { powerManagement } from "./PowerManagement";
 import { chat } from "./ChatModel";
 import { document } from "./DocumentFormsModel";
 import { deliveryLogs } from "./DeliveryLogsModel";
+import { emergency } from "./EmergencyModel";
 export interface RootModel extends Models<RootModel> {
   userAuth: typeof userAuth;
   common: typeof common;
@@ -22,6 +23,7 @@ export interface RootModel extends Models<RootModel> {
   chat: typeof chat;
   document: typeof document;
   deliveryLogs: typeof deliveryLogs;
+  emergency: typeof emergency;
 }
 export const models: RootModel = {
   userAuth,
@@ -35,4 +37,5 @@ export const models: RootModel = {
   chat,
   document,
   deliveryLogs,
+  emergency
 };
