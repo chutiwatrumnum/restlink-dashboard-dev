@@ -36,6 +36,8 @@ import PersonalFolder from "./modules/documentForms/screen/PersonalFolder";
 
 import DeliveryLogs from "./modules/deliveryLogs/screen/deliveryLogs";
 
+import Emergency from "./modules/emergency/screens/Emergency";
+
 // unauthorize routes
 import SignInScreen from "./modules/main/SignInScreen";
 import RecoveryScreen from "./modules/main/RecoveryScreen";
@@ -135,6 +137,7 @@ function App() {
           <Route path="liveChat" element={<LiveChat />} />
           <Route path="smartMailbox" element={<SummaryDashboard />} />
           <Route path="securityCenter" element={<SummaryDashboard />} />
+          <Route path="emergencyCall" element={<Emergency/>} />
           {/* User management */}
           <Route path="residentManagement" element={<SummaryDashboard />} />
           <Route path="registration" element={<SummaryDashboard />} />

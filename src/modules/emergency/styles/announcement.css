@@ -1,0 +1,76 @@
+.announceTopActionGroup {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.announceTopActionLeftGroup {
+  display: flex;
+  flex-direction: row;
+  width: 65%;
+  justify-content: space-between;
+}
+
+.announceDatePicker,
+.announceSearchBox {
+  width: 48% !important;
+}
+
+.createAnnouncementBtn {
+  width: 20% !important;
+}
+
+
+.announceModalContainer {
+  display: flex;
+  flex: 1;
+  flex-direction: row;
+  box-sizing: border-box;
+  margin-top: 10px;
+}
+
+.announceModalColumn {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 0 10px;
+}
+
+.saveButton {
+  align-self: flex-end;
+  margin-top: 40px;
+}
+
+.announceBottomActionContainer {
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.emergencyFormModal {
+  width: 30% !important;
+}
+
+.announcementInfoRow {
+  /* background-color: red; */
+}
+
+.announcementInfoColumn {
+  display: flex;
+  flex-direction: column;
+  padding: 10px 0;
+  width: 48%;
+}
+
+.announcementInfoColumn b {
+  font-weight: 500;
+}
+
+.announcementInfoColumn p {
+  font-weight: 300;
+}
+
+.announcementInfoDetailsColumn {
+  width: 49%;
+}
