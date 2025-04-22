@@ -2,6 +2,7 @@ import { Models } from "@rematch/core";
 import { userAuth } from "./UserAuthModel";
 import { common } from "./CommonModel";
 import { announcement } from "./Announcement";
+import { projectNew } from "./ProjectNew";
 import { facilities } from "./FacilitieModel";
 import { MCST } from "./MCSTModel";
 import { resident } from "./residentModel";
@@ -24,6 +25,7 @@ export interface RootModel extends Models<RootModel> {
   document: typeof document;
   deliveryLogs: typeof deliveryLogs;
   emergency: typeof emergency;
+  projectNew: typeof projectNew;
 }
 export const models: RootModel = {
   userAuth,
@@ -37,5 +39,6 @@ export const models: RootModel = {
   chat,
   document,
   deliveryLogs,
-  emergency
+  emergency,
+  projectNew
 };

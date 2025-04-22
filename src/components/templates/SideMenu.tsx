@@ -233,6 +233,17 @@ const SideMenu = () => {
                 }>
                 <Link to={`${main_link}/announcement`}>Announcement</Link>
               </Menu.Item>
+              
+              <Menu.Item
+                key={`${main_link}/projectNew`}
+                icon={
+                  <AnnouncementIcon
+                    color={iconMenuColorSelector("projectNew")}
+                    className="sideMenuIcon"
+                  />
+                }>
+                <Link to={`${main_link}/projectNew`}>projectNew</Link>
+              </Menu.Item>
 
               <Menu.Item
                 key={`${main_link}/liveChat`}

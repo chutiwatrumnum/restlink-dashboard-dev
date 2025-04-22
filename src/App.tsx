@@ -14,6 +14,7 @@ import AuthorizedLayout from "./navigation/AuthorizedLayout";
 // authorize routes
 import SummaryDashboard from "./modules/summary/screens/Summary";
 import Announcement from "./modules/announcement/screens/Announcement";
+import ProjectNew from "./modules/projectNew/screens/projectNew";
 import PeopleCountingMain from "./modules/peopleCounting/screens/PeopleCountingMain";
 import ManagementMain from "./modules/management/screens/ManagementMain";
 import ResidentInformationMain from "./modules/userManagement/screens/ResidentInformationMain";
@@ -132,12 +133,13 @@ function App() {
           />
           <Route path="residentSignUp" element={<ResidentSignUp />} />
           <Route path="parcelAlert" element={<SummaryDashboard />} />
-          <Route path="announcement" element={<Announcement />} />
+          <Route path="announcement" element={<Announcement/>} />
+          <Route path="projectNew" element={<ProjectNew/>} />
           <Route path="payment" element={<SummaryDashboard />} />
           <Route path="liveChat" element={<LiveChat />} />
           <Route path="smartMailbox" element={<SummaryDashboard />} />
           <Route path="securityCenter" element={<SummaryDashboard />} />
-          <Route path="emergencyCall" element={<Emergency/>} />
+          <Route path="emergencyCall" element={<Emergency />} />
           {/* User management */}
           <Route path="residentManagement" element={<SummaryDashboard />} />
           <Route path="registration" element={<SummaryDashboard />} />
