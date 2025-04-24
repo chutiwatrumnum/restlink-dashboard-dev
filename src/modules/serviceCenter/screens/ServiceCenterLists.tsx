@@ -233,6 +233,7 @@ const ServiceCenterLists = () => {
         <div className="serviceCenterListsTopActionGroup">
           <div className="serviceCenterListsTopActionLeftGroup">
             <Select
+              className="serviceCenterSelect"
               defaultValue={ServiceCenterIssueList[0]?.value}
               style={{ width: "48%", height: "100%" }}
               onChange={(value: string) => {
