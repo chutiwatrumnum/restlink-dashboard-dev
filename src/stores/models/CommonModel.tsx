@@ -33,7 +33,7 @@ export const common = createModel<RootModel>()({
         console.error(error);
       }
     },
-    async getRoleAccessToken() {
+    async getRoleaccess_token() {
       try {
         const data = await axios.get("/permission/menu-access");
         if (data.status >= 400) {

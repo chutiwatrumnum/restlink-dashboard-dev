@@ -15,7 +15,7 @@ const getDataManagement = async (params: conditionPage) => {
     url = url + resultparams.paramsstr;
     console.log("url:", url);
   }
-  const token = await encryptStorage.getItem("accessToken");
+  const token = await encryptStorage.getItem("access_token");
   if (token) {
     try {
       const result = await axios.get(url);
@@ -58,7 +58,7 @@ const getDataManagement = async (params: conditionPage) => {
   }
 };
 const getdataRole = async () => {
-  const token = await encryptStorage.getItem("accessToken");
+  const token = await encryptStorage.getItem("access_token");
   if (token) {
     try {
       const data = await axios.get("/team-management/add-juristic/master-data");

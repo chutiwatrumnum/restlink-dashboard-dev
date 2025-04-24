@@ -17,7 +17,7 @@ const getdataDeliveryLogslist = async (params: conditionPage) => {
     url = url + resultparams.paramsstr;
     //console.log("url:",url);
   }
-  const token = await encryptStorage.getItem("accessToken");
+  const token = await encryptStorage.getItem("access_token");
   if (token) {
     try {
       const result = await axios.get(url);

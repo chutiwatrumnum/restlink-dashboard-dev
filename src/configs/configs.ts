@@ -28,5 +28,5 @@ export const API_URL =
   MODE === "uat"
     ? "https://reslink-dev-gcf3p.ondigitalocean.app/api/v1.0"
     : MODE === "prod"
-    ? "https://reslink-dev-gcf3p.ondigitalocean.app/api/v1.0"
+    ? "https://the-stage-mindscape-app-jmsaf.ondigitalocean.app/api/v1.0"
     : "https://reslink-dev-gcf3p.ondigitalocean.app/api/v1.0";

@@ -3,6 +3,7 @@ import { Navigate, Route, Routes, BrowserRouter } from "react-router-dom";
 import { encryptStorage } from "./utils/encryptStorage";
 import { useDispatch, useSelector } from "react-redux";
 import { Dispatch, RootState } from "./stores";
+import { getProjectIDQuery } from "./utils/queriesGroup/authQueries";
 
 import "antd/dist/reset.css";
 import "./App.css";
@@ -51,15 +52,20 @@ function App() {
   const dispatch = useDispatch<Dispatch>();
   const { isAuth } = useSelector((state: RootState) => state.userAuth);
 
+  // API
+  const { data: projectID, refetch: refetchChatList } = getProjectIDQuery({
+    shouldFetch: isAuth,
+  });
+
   /*
   const tokenCheck = async () => {
-    const accessToken = await encryptStorage.getItem("accessToken");
-    if (accessToken) {
+    const access_token = await encryptStorage.getItem("access_token");
+    if (access_token) {
       dispatch.userAuth.updateAuthState(true);
     }
   };
-  const roleAccessTokenCheck = async () => {
-    await dispatch.common.getRoleAccessToken();
+  const roleaccess_tokenCheck = async () => {
+    await dispatch.common.getRoleaccess_token();
   };
   useEffect(() => {
     tokenCheck();
@@ -68,29 +74,30 @@ function App() {
   }, []);
 
   useEffect(() => {
-    roleAccessTokenCheck();
+    roleaccess_tokenCheck();
   }, [isAuth]);
 */
   useLayoutEffect(() => {
     (async () => {
       try {
         // Check Access token
-        const accessToken = await encryptStorage.getItem("accessToken");
+        const access_token = await encryptStorage.getItem("access_token");
         if (
-          accessToken === null ||
-          accessToken === undefined ||
-          accessToken === ""
+          access_token === null ||
+          access_token === undefined ||
+          access_token === ""
         )
-          throw "accessToken not found";
+          throw "access_token not found";
         // Check Refresh token
         const resReToken = await dispatch.userAuth.refreshTokenNew();
-        if (!resReToken) throw "accessToken expired";
+        if (!resReToken) throw "access_token expired";
         // Token pass
         // await dispatch.common.getUnitOptions();
         // await dispatch.common.getMasterData();
         // await dispatch.userAuth.refreshUserDataEffects();
-        await dispatch.common.getRoleAccessToken();
+        // await dispatch.common.getRoleaccess_token();
         dispatch.userAuth.updateAuthState(true);
+        await refetchChatList();
         return true;
       } catch (e) {
         dispatch.userAuth.updateAuthState(false);

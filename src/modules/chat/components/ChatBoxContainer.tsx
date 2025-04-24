@@ -369,7 +369,11 @@ const ChatBoxContainer = forwardRef<
           <ChatContainer className="rightSideContainer">
             <ConversationHeader className="chatBoxHeader">
               <ConversationHeader.Content
-                userName={`${chatData.firstName} ${chatData.lastName} (${chatData.roomAddress})`}
+                userName={
+                  chatData.user && chatData?.myHome
+                    ? `${chatData?.user?.givenName} ${chatData?.user?.familyName} (${chatData?.myHome?.unit?.roomAddress})`
+                    : `${chatData?.firstName} ${chatData?.lastName} (${chatData?.roomAddress})`
+                }
                 className="titleChatName"
               />
             </ConversationHeader>

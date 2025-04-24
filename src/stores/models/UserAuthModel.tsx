@@ -46,7 +46,7 @@ export const userAuth = createModel<RootModel>()({
           return;
         }
 
-        encryptStorage.setItem("accessToken", userToken.data.accessToken);
+        encryptStorage.setItem("access_token", userToken.data.access_token);
         encryptStorage.setItem("refreshToken", userToken.data.refreshToken);
         const userData = await axios.get("/mcst/profile");
         encryptStorage.setItem("userData", userData.data.result);
@@ -84,27 +84,30 @@ export const userAuth = createModel<RootModel>()({
     async refreshTokenNew() {
       try {
         const refreshToken = await encryptStorage.getItem("refreshToken");
-        const res = await axios.post("/users/refresh-token", {
-          token: refreshToken,
+        // console.log("REFRESH : ", refreshToken);
+        const res = await axios.post("/auth/dashboard/refresh-token", {
+          refreshToken: refreshToken,
         });
-        // console.log(refreshToken);
 
         if (res.status >= 400) {
           console.error(">400 : ", res.data.message);
           throw "refresh token expired";
         }
-        if (!res.data.hasOwnProperty("accessToken")) {
+        if (!res.data.hasOwnProperty("access_token")) {
           console.error("No props : ", res.data.message);
-          throw "accessToken not found";
+          throw "access_token not found";
         }
-        encryptStorage.setItem("accessToken", res.data.accessToken);
+
+        const projectId = await encryptStorage.getItem("projectId");
+        console.log({ token: res.data.access_token, projId: projectId });
+        encryptStorage.setItem("access_token", res.data.access_token);
         dispatch.userAuth.updateAuthState(true);
         return true;
       } catch (error) {
         console.warn("FAILED");
         dispatch.userAuth.updateAuthState(false);
         await axios.post("/users/logout");
-        encryptStorage.removeItem("accessToken");
+        encryptStorage.removeItem("access_token");
         encryptStorage.removeItem("refreshToken");
         return false;
       }
@@ -113,13 +116,13 @@ export const userAuth = createModel<RootModel>()({
     async onLogout() {
       try {
         await axios.post("/users/logout");
-        encryptStorage.removeItem("accessToken");
+        encryptStorage.removeItem("access_token");
         encryptStorage.removeItem("refreshToken");
         dispatch.userAuth.updateAuthState(false);
         return true;
       } catch (error) {
         dispatch.userAuth.updateAuthState(false);
-        encryptStorage.removeItem("accessToken");
+        encryptStorage.removeItem("access_token");
         encryptStorage.removeItem("refreshToken");
         return false;
       }
@@ -132,7 +135,7 @@ export const userAuth = createModel<RootModel>()({
           return;
         }
         dispatch.userAuth.updateAuthState(false);
-        encryptStorage.removeItem("accessToken");
+        encryptStorage.removeItem("access_token");
         encryptStorage.removeItem("refreshToken");
       } catch (error) {
         console.error("ERROR", error);

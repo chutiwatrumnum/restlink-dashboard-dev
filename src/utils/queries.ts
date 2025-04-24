@@ -8,7 +8,7 @@ import {
   ChatDataParams,
   ChatListDataType,
   ChatDataType,
-} from "./queriesInterface";
+} from "../stores/interfaces/Chat";
 
 // API
 // Chat
@@ -25,6 +25,8 @@ const getChatList = async ({
     url += `?sortBy=${sortBy}&sort=ASC`;
   }
   const res = await axios.get(url);
+  // console.log("CHAT LIST : ", res.data.result);
+
   return res.data.result;
 };
 

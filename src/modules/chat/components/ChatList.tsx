@@ -56,7 +56,7 @@ const ChatList = ({
         >
           <Row>
             <Col className="avatarContainer" span={5}>
-              {item.imageProfile ? (
+              {item.user.imageProfile ? (
                 <Avatar
                   size={{
                     xs: 32,
@@ -66,7 +66,7 @@ const ChatList = ({
                     xl: 40,
                     xxl: 56,
                   }}
-                  src={<Image preview={false} src={item.imageProfile} />}
+                  src={<Image preview={false} src={item.user.imageProfile} />}
                 />
               ) : (
                 <Avatar
@@ -79,13 +79,17 @@ const ChatList = ({
                     xxl: 56,
                   }}
                 >
-                  {item?.firstName?.charAt(0).toUpperCase() ?? "N"}
+                  {item?.user.givenName?.charAt(0).toUpperCase() ?? "N"}
                 </Avatar>
               )}
             </Col>
             <Col className="textInUserContainer" span={16}>
               <p className="ellipsisText">
-                <b>{`${item.firstName} ${item.lastName} (${item.roomAddress})`}</b>
+                {item.user && item.myHome ? (
+                  <b>{`${item?.user?.givenName} ${item?.user?.familyName} (${item?.myHome?.unit?.roomAddress})`}</b>
+                ) : (
+                  <b>{`${item?.firstName} ${item?.lastName} (${item?.roomAddress})`}</b>
+                )}
               </p>
               <span className="ellipsisText">
                 {lastTextSelector(item.type, item)}

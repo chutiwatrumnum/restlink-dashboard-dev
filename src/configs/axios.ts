@@ -16,11 +16,15 @@ axios.defaults.headers.common['x-api-key'] = `9c89fc0d-5153-448b-a98a-9434f4ec11
 
 axios.interceptors.request.use(
   async (request) => {
-    const accessToken = await encryptStorage.getItem("accessToken");
-    if (accessToken !== undefined) {
-      request.headers.Authorization = `Bearer ${accessToken}`;
+    const access_token = await encryptStorage.getItem("access_token");
+    const projectID = await encryptStorage.getItem("projectId");
+    if (access_token !== undefined) {
+      request.headers.Authorization = `Bearer ${access_token}`;
     }
-    
+    if (projectID) {
+      request.headers["x-api-key"] = projectID;
+    }
+
     return request;
   },
   (error) => {

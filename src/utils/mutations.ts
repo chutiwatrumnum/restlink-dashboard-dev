@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { SendChatDataType } from "./queriesInterface";
+import { SendChatDataType } from "../stores/interfaces/Chat";
 import { useSelector } from "react-redux";
 import { RootState } from "../stores";
 import axios from "axios";

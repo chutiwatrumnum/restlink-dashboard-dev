@@ -1,8 +1,8 @@
 import { io } from "socket.io-client";
 import { encryptStorage } from "../utils/encryptStorage";
 
-const URL = "https://the-marq-7dl59.ondigitalocean.app/chat";
-const accessToken = encryptStorage.getItem("accessToken");
+const URL = "https://reslink-dev-gcf3p.ondigitalocean.app/chat";
+const access_token = encryptStorage.getItem("access_token");
 
 export const socket = io(URL, {
   reconnection: true,
@@ -11,6 +11,7 @@ export const socket = io(URL, {
   reconnectionDelayMax: 2000,
   timeout: 5000,
   extraHeaders: {
-    authorization: `bearer ${accessToken}`,
+    Authorization: `bearer ${access_token}`,
+    ["x-api-key"]: `juristic`,
   },
 });

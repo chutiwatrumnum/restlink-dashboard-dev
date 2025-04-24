@@ -1,25 +1,45 @@
+// Chat Interface
+export interface ChatDataParams {
+  sortBy?: string;
+}
 export interface ChatModelDataType {
   chatListSortBy: "time" | "unread";
   curPageChatData: number;
 }
 
 export interface ChatListDataType {
-  messageId: number;
   message: string;
   type: "text" | "file" | "image";
   uploadUrl: string | null;
+  fileName: string | null;
   seen: boolean;
+  juristicSeen: boolean;
   createdAt: string;
-  lastName: string;
-  firstName: string;
-  middleName: string;
-  unit: number;
+  myHome: MyHome;
+  user: User;
+  messageId: number;
+  userId: string;
+  firstName?: string;
+  floor?: number;
+  fullName?: string;
+  lastName?: string;
+  roomAddress?: string;
+}
+
+export interface MyHome {
+  unitId: number;
+  unit: Unit;
+}
+
+export interface Unit {
   unitNo: string;
   roomAddress: string;
+}
+
+export interface User {
+  familyName: string;
+  givenName: string;
   imageProfile: string;
-  userId: string;
-  juristicSeen: boolean;
-  // serviceId: number;
 }
 
 export interface ChatDataType {

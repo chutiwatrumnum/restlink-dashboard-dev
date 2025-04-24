@@ -79,17 +79,20 @@ const ChatRoom = () => {
     }
   };
 
-  const onUserSelectByUnit = (value: string, option: any) => {
+  const onUserSelectByUnit = (userId: string, option: any) => {
+    console.log(userId);
     console.log(option);
+
     let payload = {
-      userId: option.id,
+      userId: userId,
       firstName: option.firstName,
       lastName: option.lastName,
       roomAddress: roomAddressSelect,
     };
-    setUserSelectValue(value);
+    setCurrentChatUserID(userId);
+    setUserSelectValue(userId);
     onUserSelected(payload);
-    setActiveUserID(option.id);
+    setActiveUserID(userId);
   };
 
   const handleMenuClick = (e: any) => {
@@ -103,7 +106,7 @@ const ChatRoom = () => {
 
   const onUserListSelected = async (item: ChatListDataType, index: number) => {
     let seenData = chatListData;
-
+    cleanSelectedMenu();
     setCurrentChatUserID(item.userId);
     onUserSelected(item);
     setActiveUserID(item.userId);
@@ -112,6 +115,11 @@ const ChatRoom = () => {
 
   const onChatIncoming = async () => {
     await updateChatData();
+  };
+
+  const cleanSelectedMenu = () => {
+    setRoomAddressSelect(undefined);
+    setUserSelectValue("");
   };
 
   const menu = (
@@ -193,7 +201,7 @@ const ChatRoom = () => {
                   style={{ width: "49%" }}
                   onChange={onUserSelectByUnit}
                   options={nameByUnitData}
-                  fieldNames={{ value: "id", label: "fullName" }}
+                  fieldNames={{ value: "userId", label: "fullName" }}
                   disabled={!unitID}
                 />
               </Row>

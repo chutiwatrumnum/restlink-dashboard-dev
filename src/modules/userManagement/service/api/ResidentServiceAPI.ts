@@ -18,7 +18,7 @@ const getdataresidentlist = async (params: conditionPage) => {
     url = url + resultparams.paramsstr;
     console.log("url:", url);
   }
-  const token = await encryptStorage.getItem("accessToken");
+  const token = await encryptStorage.getItem("access_token");
   if (token) {
     try {
       const result = await axios.get(url);
@@ -103,7 +103,7 @@ const ApprovedId = async (id: string) => {
     const resultApproved = await axios.post(`/users/approve`, {
       userId: id,
     });
-    console.log('resultApproved', resultApproved);
+    console.log("resultApproved", resultApproved);
     if (resultApproved.status === 201) {
       return true;
     } else {
@@ -121,9 +121,9 @@ const ResendById = async (id: string) => {
   try {
     const resultApproved = await axios.post(`/users/approve`, {
       userId: id,
-      resend: true
+      resend: true,
     });
-    console.log('resultResend', resultApproved);
+    console.log("resultResend", resultApproved);
     if (resultApproved.status === 201) {
       return true;
     } else {
@@ -260,7 +260,7 @@ const editdataresident = async (id: string | any, data: ResidentAddNew) => {
   try {
     const result = await axios.put(`/users?userId=${id}`, data);
     console.log("edit request:", data);
-  
+
     console.log("result edit:", result);
 
     if (result.status < 400) {
@@ -313,5 +313,5 @@ export {
   getdatarole,
   getDataMasterResidentDetail,
   addResident,
-  ResendById
+  ResendById,
 };
