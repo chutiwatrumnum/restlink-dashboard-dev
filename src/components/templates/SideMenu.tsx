@@ -233,7 +233,7 @@ const SideMenu = () => {
                 }>
                 <Link to={`${main_link}/announcement`}>Announcement</Link>
               </Menu.Item>
-              
+
               <Menu.Item
                 key={`${main_link}/projectNew`}
                 icon={

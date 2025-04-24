@@ -7,7 +7,7 @@ import axios from "axios";
 import {
   ServiceChatDataType,
   ServiceChatListDataType,
-} from "../../stores/interfaces/Service";
+} from "../interfaces/serviceInterface";
 
 // Services Chat
 const getServiceChatList = async ({

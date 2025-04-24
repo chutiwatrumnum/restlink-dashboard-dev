@@ -12,6 +12,7 @@ import { chat } from "./ChatModel";
 import { document } from "./DocumentFormsModel";
 import { deliveryLogs } from "./DeliveryLogsModel";
 import { emergency } from "./EmergencyModel";
+import { serviceCenter } from "./ServiceCenterModel";
 export interface RootModel extends Models<RootModel> {
   userAuth: typeof userAuth;
   common: typeof common;
@@ -26,6 +27,7 @@ export interface RootModel extends Models<RootModel> {
   deliveryLogs: typeof deliveryLogs;
   emergency: typeof emergency;
   projectNew: typeof projectNew;
+  serviceCenter: typeof serviceCenter;
 }
 export const models: RootModel = {
   userAuth,
@@ -40,5 +42,6 @@ export const models: RootModel = {
   document,
   deliveryLogs,
   emergency,
-  projectNew
+  projectNew,
+  serviceCenter
 };

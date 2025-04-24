@@ -1,0 +1,31 @@
+.serviceCenterListsTopActionLeftGroup {
+  display: flex;
+  flex-direction: row;
+  width: 80%;
+  justify-content: space-between;
+}
+
+.serviceCenterListsTopActionGroup {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.serviceCenterDatePicker,
+.serviceCenterSearchBox {
+  width: 48% !important;
+  margin-left: 20px;
+}
+
+.createServiceCenterBtn{
+  width: 10% !important;
+  margin-left: 20px;
+}
+
+.stat-card-shadow{
+  box-shadow: rgba(149, 157, 165, 0.3) 0px 8px 12px;
+  border-radius: 12px;
+  background-color: white;
+}

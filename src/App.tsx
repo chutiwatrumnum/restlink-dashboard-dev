@@ -21,6 +21,10 @@ import ManagementMain from "./modules/management/screens/ManagementMain";
 import ResidentInformationMain from "./modules/userManagement/screens/ResidentInformationMain";
 import ResidentSignUp from "./modules/userManagement/screens/ResidentSignUp";
 
+import ServiceDashboard from "./modules/serviceCenter/screens/ServiceDashboard";
+import ServiceCenterLists from "./modules/serviceCenter/screens/ServiceCenterLists";
+import ServiceChat from "./modules/serviceCenter/screens/ServiceChat";
+
 import ReservedFacilities from "./modules/facilities/screen/ReservedFacilities";
 import ReservationList from "./modules/facilities/screen/ReservationList";
 
@@ -124,9 +128,6 @@ function App() {
           <Route path="reservationList" element={<ReservationList />} />
           <Route path="peopleCounting" element={<PeopleCountingMain />} />
           {/* Fixing report */}
-          <Route path="serviceCenterDashboard" element={<SummaryDashboard />} />
-          <Route path="serviceCenterLists" element={<SummaryDashboard />} />
-          <Route path="serviceCenterMessages" element={<SummaryDashboard />} />
           <Route path="emergencyContact" element={<SummaryDashboard />} />
           {/* Building progress */}
           <Route
@@ -134,14 +135,17 @@ function App() {
             element={<SummaryDashboard />}
           />
           <Route path="managementMain" element={<ManagementMain />} />
+          <Route path="serviceDashboard" element={<ServiceDashboard />} />
+          <Route path="serviceCenterLists" element={<ServiceCenterLists />} />
+          <Route path="serviceChat" element={<ServiceChat />} />
           <Route
             path="residentInformation"
             element={<ResidentInformationMain />}
           />
           <Route path="residentSignUp" element={<ResidentSignUp />} />
           <Route path="parcelAlert" element={<SummaryDashboard />} />
-          <Route path="announcement" element={<Announcement/>} />
-          <Route path="projectNew" element={<ProjectNew/>} />
+          <Route path="announcement" element={<Announcement />} />
+          <Route path="projectNew" element={<ProjectNew />} />
           <Route path="payment" element={<SummaryDashboard />} />
           <Route path="liveChat" element={<LiveChat />} />
           <Route path="smartMailbox" element={<SummaryDashboard />} />
