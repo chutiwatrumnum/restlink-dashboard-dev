@@ -1,5 +1,5 @@
 import { createModel } from "@rematch/core";
-import { deliveryLogsType, conditionPage } from "../interface/DeliveryLogs";
+import { deliveryLogsType, conditionPage } from "../interfaces/DeliveryLogs";
 import { RootModel } from "./index";
 import { getdataDeliveryLogslist } from '../../modules/deliveryLogs/service/api/DeliveryLogsServiceAPI'
 const filterDataInit:conditionPage={

@@ -9,6 +9,8 @@ import { getUserByunit, addDeliveryLogs, getDataBlock } from "../service/api/Del
 dayjs.extend(customParseFormat);
 import "../styles/deliveryLogs.css";
 import { AddNewDeliveryLogsType, blockDetail, unitDetail } from "../../../stores/interfaces/DeliveryLogs";
+import SuccessModal from "../../../components/common/SuccessModal";
+import FailedModal from "../../../components/common/FailedModal";
 const { RangePicker } = DatePicker;
 interface ComponentCreateProps {
     isOpen: boolean;
@@ -78,7 +80,7 @@ const CreateAddDeliveryLog = (props: ComponentCreateProps) => {
         }
         const reultCreated = await addDeliveryLogs(data);
         if (reultCreated) {
-            alert("create successfully");
+              SuccessModal("Successfully create");
             // dispatch.common.updateSuccessModalState({
             //   open: true,
             //   text: "Successfully create",
@@ -91,7 +93,7 @@ const CreateAddDeliveryLog = (props: ComponentCreateProps) => {
             //   status: "error",
             //   text: "Failed create",
             // });
-            alert("create failed");
+             FailedModal("Failed create");
         }
     };
 
