@@ -255,20 +255,22 @@ const DeliveryLogs = () => {
       cancelText: "No",
       centered: true,
       async onOk() {
-        // const statusDeleted = await deleteDeliveryLogsById(currentTarget.value);
-        // if (statusDeleted) {
-        //   dispatch.common.updateSuccessModalState({
-        //     open: true,
-        //     text: "Successfully deleted",
-        //   });
-        //   await setRerender(!rerender);
-        // } else {
-        //   dispatch.common.updateSuccessModalState({
-        //     open: true,
-        //     status: "error",
-        //     text: "Failed deleted",
-        //   });
-        // }
+        const statusDeleted = await deleteDeliveryLogsById(currentTarget.value);
+        if (statusDeleted) {
+          // dispatch.common.updateSuccessModalState({
+          //   open: true,
+          //   text: "Successfully deleted",
+          // });
+          alert("delete successfully");
+          await setRerender(!rerender);
+        } else {
+          // dispatch.common.updateSuccessModalState({
+          //   open: true,
+          //   status: "error",
+          //   text: "Failed deleted",
+          // });
+          alert("Failed deleted");
+        }
       },
       onCancel() {
         console.log("Cancel");
@@ -283,19 +285,21 @@ const DeliveryLogs = () => {
       cancelText: "No",
       centered: true,
       async onOk() {
-        // const statusDeleted = await changeCollectedById(e.target.value);
-        // if (statusDeleted) {
-        //   dispatch.common.updateSuccessModalState({
-        //     open: true,
-        //     text: "Successfully changed",
-        //   });
-        // } else {
-        //   dispatch.common.updateSuccessModalState({
-        //     open: true,
-        //     status: "error",
-        //     text: "Failed changed",
-        //   });
-        // }
+        const statusDeleted = await changeCollectedById(e.target.value);
+        if (statusDeleted) {
+          // dispatch.common.updateSuccessModalState({
+          //   open: true,
+          //   text: "Successfully changed",
+          // });
+          alert("changed successfully");
+        } else {
+          // dispatch.common.updateSuccessModalState({
+          //   open: true,
+          //   status: "error",
+          //   text: "Failed changed",
+          // });
+          alert("Failed changed");
+        }
         setRerender(!rerender);
       },
       onCancel() {

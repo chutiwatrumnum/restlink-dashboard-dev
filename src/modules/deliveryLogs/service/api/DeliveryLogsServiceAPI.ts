@@ -11,7 +11,7 @@ import {
 import dayjs from "dayjs";
 
 const getdataDeliveryLogslist = async (params: conditionPage) => {
-  let url: string = `/parcel/list?`;
+  let url: string = `/parcels/list?`;
   const resultparams = await paramsdata(params);
   if (resultparams.status) {
     url = url + resultparams.paramsstr;
@@ -80,7 +80,7 @@ const getdataDeliveryLogslist = async (params: conditionPage) => {
 
 const deleteDeliveryLogsById = async (id: string) => {
   try {
-    const resultDelete = await axios.delete(`/parcel/delete/${id}`);
+    const resultDelete = await axios.delete(`/parcels/delete/${id}`);
     if (resultDelete.status < 400) {
       return true;
     } else {
@@ -106,13 +106,16 @@ const editDeliveryLogs = async (req: EditDeliveryLogsType) => {
 };
 const addDeliveryLogs = async (req: AddNewDeliveryLogsType) => {
   try {
-    const result = await axios.post("/parcel/create", req);
+    console.log("addDeliveryLogs:",req);
+    const result = await axios.post("/parcels/create", req);
+    
     if (result.status < 400) {
       return true;
     } else {
       return false;
     }
   } catch (error) {
+    console.error(error);
     return false;
   }
 };
@@ -123,7 +126,7 @@ const changeCollectedById = async (id: number) => {
     collected: true,
   };
   try {
-    const result = await axios.put("/parcel/collected", req);
+    const result = await axios.put("/parcels/collected", req);
     if (result.status < 400) {
       return true;
     } else {
@@ -136,7 +139,7 @@ const changeCollectedById = async (id: number) => {
 
 const getUserByunit = async (value: string) => {
   try {
-    const { status, data } = await axios.get(`/users?unitId=${value}`);
+    const { status, data } = await axios.get(`/parcels/dashboard/user-by-unit?unitId=${value}`);
     if (status >= 400) {
       console.error(data.message);
       return {
@@ -144,7 +147,7 @@ const getUserByunit = async (value: string) => {
         data: null,
       };
     }
-    if (data.result.dataListLength === 0) {
+    if (data.data.length === 0) {
       return {
         status: false,
         data: null,
@@ -152,7 +155,7 @@ const getUserByunit = async (value: string) => {
     }
     return {
       status: true,
-      data: data.result.dataList,
+      data: data.data,
     };
   } catch (error) {
     return {
@@ -163,18 +166,20 @@ const getUserByunit = async (value: string) => {
 };
 const getDataBlock = async () => {
   try {
-    const data = await axios.get("/unit/block-unit-list");
+    const data = await axios.get("/parcels/dashboard/unit");
     if (data.status === 200) {
-      const blocklst = data.data.result.blockList;
+      console.log("data", data.data);
+      
+      const blocklst = data.data.data;
       let arrayBlock: blockDetail[] = [];
       blocklst.map((e: any) => {
-        if (e?.active) {
+
           const block: blockDetail = {
-            label: e.blockNo,
+            label: e.roomAddress,
             value: e.id,
           };
           arrayBlock.push(block);
-        }
+
       });
       if (arrayBlock.length > 0) {
         return {

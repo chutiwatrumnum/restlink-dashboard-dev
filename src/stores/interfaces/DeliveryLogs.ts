@@ -18,6 +18,7 @@ export interface AddNewDeliveryLogsType {
   startTime: string | Dayjs;
   endDate: string | Dayjs;
   endTime: string | Dayjs;
+  arrivalDate: string | Dayjs;
   comment?: string;
 }
 export interface EditDeliveryLogsType {
@@ -32,6 +33,7 @@ export interface EditDeliveryLogsType {
   startTime: string | Dayjs;
   endDate: string | Dayjs;
   endTime: string | Dayjs;
+  arrivalDate: string | Dayjs;
   comment?: string | null;
 }
 export interface dataDeliveryLogsType{
