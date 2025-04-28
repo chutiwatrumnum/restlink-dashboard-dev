@@ -40,6 +40,10 @@ import LiveChat from "./modules/chat/screens/ChatRoomScreen";
 import PublicFolder from "./modules/documentForms/screen/PublicFolder";
 import PersonalFolder from "./modules/documentForms/screen/PersonalFolder";
 
+import EventLogs from "./modules/eventLogs/screen/EventLogs";
+import EventJoinLogs from "./modules/eventLogs/screen/EventJoinLogs";
+// import EventView from "./modules/monitoring/screen/EventView";
+
 import DeliveryLogs from "./modules/deliveryLogs/screen/deliveryLogs";
 
 import Emergency from "./modules/emergency/screens/Emergency";
@@ -167,6 +171,10 @@ function App() {
           <Route path="personal-folder" element={<PersonalFolder />} />
           {/* Delivery logs */}
           <Route path="delivery-logs" element={<DeliveryLogs />} />
+
+          <Route path="event-logs" element={<EventLogs />} />
+          <Route path="event-joining-logs" element={<EventJoinLogs />} />
+          {/* <Route path="event-view" element={<EventView />} /> */}
         </Route>
         <Route path="*" element={<Navigate to="/auth" />} />
       </Routes>
