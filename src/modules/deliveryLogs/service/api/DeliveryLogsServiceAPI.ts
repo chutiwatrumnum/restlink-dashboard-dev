@@ -47,6 +47,7 @@ const getdataDeliveryLogslist = async (params: conditionPage) => {
             endDate: e.endDate,
             endTime: e.endTime,
             pickUpLocation: e.pickUpLocation,
+            arrivalDate: e.arrivalDate,
           };
           if (e.pickUpType) {
             dataDeliveryLogs.pickUpType = e.pickUpType;
@@ -94,7 +95,7 @@ const deleteDeliveryLogsById = async (id: string) => {
 
 const editDeliveryLogs = async (req: EditDeliveryLogsType) => {
   try {
-    const result = await axios.put("/parcel/update", req);
+    const result = await axios.put("/parcels/update", req);
     if (result.status < 400) {
       return true;
     } else {

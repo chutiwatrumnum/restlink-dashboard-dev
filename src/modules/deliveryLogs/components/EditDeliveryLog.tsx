@@ -28,6 +28,8 @@ import {
   editDeliveryLogs,
   getDataBlock,
 } from "../service/api/DeliveryLogsServiceAPI";
+import SuccessModal from "../../../components/common/SuccessModal";
+import FailedModal from "../../../components/common/FailedModal";
 const { RangePicker } = DatePicker;
 interface EditEventLogProps {
   deliveryLogs: any;
@@ -87,33 +89,20 @@ const EditDeliverylog = (props: EditEventLogProps) => {
     const editdata: any = props?.deliveryLogs;
     const dataeblock = await getDataBlock();
     blocklst = dataeblock?.datablock;
-    await setblock(dataeblock?.dataselectblock);
-    await setselectedblock(false);
-    const unitdata = blocklst[editdata?.blockId - 1].unit;
-    const arrayUnit: unitDetail[] = [];
-    unitdata.map((e: any) => {
-      if (e?.active) {
-        const unitdata: unitDetail = {
-          label: e.unitNo,
-          value: e.id,
-        };
-        arrayUnit.push(unitdata);
-      }
-    });
-    if (arrayUnit.length > 0) {
-      await setunitDetail(arrayUnit);
-    }
+    setunitDetail(dataeblock?.dataselectblock as unitDetail[]);
+
     const arrayUserList: unitDetail[] = [];
 
     const result = await getUserByunit(editdata?.unitId);
     if (result?.status) {
       result?.data.map((e: any) => {
-        if (e.fullName === editdata?.name) {
-          editdata.nameId = e.id;
+        
+        if (`${e?.firstName} ${e?.lastName}` === editdata?.name) {
+          editdata.nameId = e.userId;
         }
         const userList: unitDetail = {
-          label: e?.fullName,
-          value: e?.id,
+          label: `${e?.firstName} ${e?.lastName}`,
+          value: e?.userId,
         };
         arrayUserList.push(userList);
       });
@@ -138,6 +127,7 @@ const EditDeliverylog = (props: EditEventLogProps) => {
       ],
       startTime: dayjs(editdata?.startTime, "HH:mm A"),
       endTime: dayjs(editdata?.endTime, "HH:mm A"),
+      arrivalDate:dayjs(editdata?.arrivalDate, "YYYY-MM-DD"),
       description: editdata?.comment ? editdata?.comment : null,
     });
     if (editdata?.reminderNotification === 0) {
@@ -167,6 +157,7 @@ const EditDeliverylog = (props: EditEventLogProps) => {
       startTime: dayjs(values.startTime).format("HH:mm A"),
       endDate: dayjs(values.Date[1]).format("YYYY-MM-DD"),
       endTime: dayjs(values.endTime).format("HH:mm A"),
+      arrivalDate: dayjs(values.arrivalDate).format("YYYY-MM-DD"),
     };
     if (values.description) {
       data.comment = values.description;
@@ -176,21 +167,14 @@ const EditDeliverylog = (props: EditEventLogProps) => {
     if (values.reminderNotification === "Select day") {
       data.reminderNotification = 0;
     }
-    // const reultEdit = await editDeliveryLogs(data)
-    // if (reultEdit) {
-    //   dispatch.common.updateSuccessModalState({
-    //     open: true,
-    //     text: "Successfully saved",
-    //   });
-    //   await resetValue()
-    //   await props.callBack(!props?.isOpen, true);
-    // } else {
-    //   dispatch.common.updateSuccessModalState({
-    //     open: true,
-    //     status: "error",
-    //     text: "Failed edited",
-    //   });
-    // }
+    const reultEdit = await editDeliveryLogs(data)
+    if (reultEdit) {
+      SuccessModal("Successfully save");
+      await resetValue()
+      await props.callBack(!props?.isOpen, true);
+    } else {
+      FailedModal("Failed save");
+    }
   };
 
   const disabledDate = (current: dayjs.Dayjs) => {
@@ -294,7 +278,7 @@ const EditDeliverylog = (props: EditEventLogProps) => {
         >
           <Row>
             <Col span={12}>
-              <Form.Item
+              {/* <Form.Item
                 name="blockNo"
                 label="Block no."
                 rules={[
@@ -306,7 +290,7 @@ const EditDeliverylog = (props: EditEventLogProps) => {
                   onChange={handleChangeBlock}
                   placeholder="Input block no."
                 />
-              </Form.Item>
+              </Form.Item> */}
               <Form.Item
                 name="unitId"
                 label="Unit no."
@@ -322,7 +306,6 @@ const EditDeliverylog = (props: EditEventLogProps) => {
                       .toLowerCase()
                       .includes(input.toLowerCase())
                   }
-                  disabled={selectedblock}
                   options={unit}
                   onChange={handleChangeUnit}
                   placeholder="Input unit no."
@@ -494,6 +477,9 @@ const EditDeliverylog = (props: EditEventLogProps) => {
                   placeholder="Select day"
                 />
               </Form.Item>
+              <Form.Item label="Arrival Date" name="arrivalDate">
+                            <DatePicker  />
+                            </Form.Item>
               <Form.Item label="Comment(Optional)" name="description">
                 <Input.TextArea
                   style={{ height: 200 }}

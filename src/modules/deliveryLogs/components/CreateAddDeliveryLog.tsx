@@ -149,12 +149,10 @@ const CreateAddDeliveryLog = (props: ComponentCreateProps) => {
             const arrayUserList: unitDetail[] = [];
 
             const result = await getUserByunit(e);
-            console.log("handleChangeUnit:", result);
-
             if (result?.status) {
                 result?.data.map((e: any) => {
                     const userList: unitDetail = {
-                        label: e?.firstName,
+                        label:`${e?.firstName} ${e?.lastName}`,
                         value: e?.userId,
                     };
                     arrayUserList.push(userList);
@@ -163,8 +161,6 @@ const CreateAddDeliveryLog = (props: ComponentCreateProps) => {
                 await setselectedunit(true);
             }
             if (arrayUserList.length > 0) {
-              console.log("arrayUserList:",arrayUserList);
-              
                 await setoccupantsName(arrayUserList);
                 await setselectedunit(false);
             }

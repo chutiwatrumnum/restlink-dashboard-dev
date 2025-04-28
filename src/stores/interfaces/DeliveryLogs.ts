@@ -57,6 +57,7 @@ export interface dataDeliveryLogsType{
   startTime:string
   endDate:string
   endTime:string
+  arrivalDate:string
   pickUpLocation:string
 }
 export interface IChangeLockedById{
