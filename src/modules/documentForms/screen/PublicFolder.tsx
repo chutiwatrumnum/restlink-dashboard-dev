@@ -59,45 +59,6 @@ const PublicFolder = () => {
   const [FolderCurrent, setFolderCurrent] = useState<number>(0);
   const [folderDetail, setFolderDetail] = useState<DocumentDataType>();
   const [breadcrumb, setBreadcrumb] = useState<BreadcrumbType[]>([]);
-  const showDeleteConfirm = ({ currentTarget }: any) => {
-    confirm({
-      title: "Are you sure you want to delete this?",
-      icon: null,
-      // content: "Some descriptions",
-      okText: "Yes",
-      okType: "danger",
-      cancelText: "No",
-      centered: true,
-      async onOk() {
-        // const statusDeleted = await deleteDocumentById(currentTarget.value);
-        // if (statusDeleted) {
-        //   dispatch.common.updateSuccessModalState({
-        //     open: true,
-        //     text: "Successfully deleted",
-        //   });
-        // } else {
-        //   dispatch.common.updateSuccessModalState({
-        //     open: true,
-        //     status: "error",
-        //     text: "Failed deleted",
-        //   });
-        // }
-        // let conditions: GetPublicDataPayloadType = {
-        //   curPage: curPage,
-        //   perPage: perPage,
-        //   folderId: FolderCurrent,
-        // };
-        // if (FolderCurrent === 0) {
-        //   await fetchData();
-        // } else {
-        //   await dispatch.document.getFolderData(conditions);
-        // }
-      },
-      onCancel() {
-        console.log("Cancel");
-      },
-    });
-  };
 
   const columns: ColumnsType<DocumentDataType> = [
     {
@@ -226,7 +187,7 @@ const PublicFolder = () => {
   };
 
   const onPageChange = async (page: number) => {
-    await setCurPage(page);
+    setCurPage(page);
   };
 
   const subFolderClick = async (item: DocumentDataType) => {
@@ -236,7 +197,7 @@ const PublicFolder = () => {
         perPage: perPage,
         folderId: item.folderId,
       };
-      await setFolderCurrent(item.folderId);
+      setFolderCurrent(item.folderId);
       await dispatch.document.getFolderData(conditions);
       setBreadcrumb((prevState) => [
         ...prevState,
@@ -312,6 +273,46 @@ const PublicFolder = () => {
     await dispatch.document.getFolderData(conditions);
   };
 
+  const showDeleteConfirm = ({ currentTarget }: any) => {
+    confirm({
+      title: "Are you sure you want to delete this?",
+      icon: null,
+      okText: "Yes",
+      okType: "danger",
+      cancelText: "No",
+      centered: true,
+      async onOk() {
+        const statusDeleted = await deleteDocumentById(currentTarget.value);
+        if (statusDeleted) {
+          Modal.success({ content: "Delete successfully", centered: true });
+          destroyModal();
+        } else {
+          Modal.error({ content: "Delete failed", centered: true });
+          destroyModal();
+        }
+        let conditions: GetPublicDataPayloadType = {
+          curPage: curPage,
+          perPage: perPage,
+          folderId: FolderCurrent,
+        };
+        if (FolderCurrent === 0) {
+          await fetchData();
+        } else {
+          await dispatch.document.getFolderData(conditions);
+        }
+      },
+      onCancel() {
+        console.log("Cancel");
+      },
+    });
+  };
+
+  const destroyModal = () => {
+    setTimeout(() => {
+      Modal.destroyAll();
+    }, 1500);
+  };
+
   useEffect(() => {
     fetchData();
   }, [curPage, refresh]);
@@ -339,7 +340,7 @@ const PublicFolder = () => {
           <Button
             type="primary"
             onClick={async () => {
-              await setIsModalUploadPublic(true);
+              setIsModalUploadPublic(true);
             }}
             // disabled={!accessibility?.menu_document_form_management.allowEdit}
             icon={<UploadOutlined />}
@@ -348,7 +349,7 @@ const PublicFolder = () => {
           </Button>
           <UploadPublic
             callBack={async (isOpen: boolean, created: boolean) => {
-              await setIsModalUploadPublic(isOpen);
+              setIsModalUploadPublic(isOpen);
               if (created) {
                 let conditions: GetPublicDataPayloadType = {
                   curPage: curPage,

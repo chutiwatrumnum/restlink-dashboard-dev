@@ -279,7 +279,7 @@ const projectNew = () => {
 
   return (
     <>
-      <Header title="projectNew" />
+      <Header title="Project New" />
       <div className="announceTopActionGroup">
         <div className="announceTopActionLeftGroup">
           <DatePicker

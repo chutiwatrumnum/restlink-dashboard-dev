@@ -10,10 +10,10 @@ import {
   Sidebar,
   MainContainer,
 } from "@chatscope/chat-ui-kit-react";
-import { SendServiceChatDataType } from "../../../utils/interfaces/serviceInterface";
+import { SendServiceChatDataType } from "../../../stores/interfaces/Service";
 import { DownloadOutlined } from "@ant-design/icons";
 import { whiteLabel } from "../../../configs/theme";
-import { Empty, Image, Row, Tag, Spin, Button, Avatar, message } from "antd";
+import { Empty, Image, Row, Tag, Spin, Avatar, message } from "antd";
 import { useDispatch, useSelector } from "react-redux";
 import { Dispatch, RootState } from "../../../stores";
 import dayjs from "dayjs";
@@ -25,7 +25,7 @@ import {
 import {
   ServiceChatListDataType,
   ServiceChatDataType,
-} from "../../../utils/interfaces/serviceInterface";
+} from "../../../stores/interfaces/Service";
 import { postServiceMessageByJuristicMutation } from "../../../utils/mutationsGroup/serviceCenterMutations";
 import { useQueryClient } from "@tanstack/react-query";
 import fallbackImg from "../../../assets/images/noImg.jpeg";
@@ -106,14 +106,14 @@ const ServiceChatBoxContainer = ({
                 />
               ) : (
                 <Avatar size={32}>
-                  {message?.ownerMessage.firstName.charAt(0).toUpperCase() ??
+                  {message?.ownerMessage.givenName.charAt(0).toUpperCase() ??
                     "N"}
                 </Avatar>
               )}
             </div>
             <div className="messageContainer">
               <span style={{ fontSize: 12, fontWeight: 500 }}>
-                {message.ownerMessage.firstName ?? "Undefined"}
+                {message.ownerMessage.givenName ?? "Undefined"}
               </span>
               <Message
                 type="text"
@@ -155,14 +155,14 @@ const ServiceChatBoxContainer = ({
                 />
               ) : (
                 <Avatar size={32}>
-                  {message?.ownerMessage.firstName?.charAt(0).toUpperCase() ??
+                  {message?.ownerMessage.givenName?.charAt(0).toUpperCase() ??
                     "N"}
                 </Avatar>
               )}
             </div>
             <div className="messageContainer">
               <span style={{ fontSize: 12, fontWeight: 500 }}>
-                {message.ownerMessage.firstName ?? "Undefined"}
+                {message.ownerMessage.givenName ?? "Undefined"}
               </span>
               <Message
                 type="image"
@@ -217,14 +217,14 @@ const ServiceChatBoxContainer = ({
                 />
               ) : (
                 <Avatar size={32}>
-                  {message?.ownerMessage.firstName?.charAt(0).toUpperCase() ??
+                  {message?.ownerMessage.givenName?.charAt(0).toUpperCase() ??
                     "N"}
                 </Avatar>
               )}
             </div>
             <div className="messageContainer">
               <span style={{ fontSize: 12, fontWeight: 500 }}>
-                {message.ownerMessage.firstName ?? "Undefined"}
+                {message.ownerMessage.givenName ?? "Undefined"}
               </span>
               <Message
                 type="custom"
@@ -449,7 +449,11 @@ const ServiceChatBoxContainer = ({
             <ChatContainer className="rightSideContainer">
               <ConversationHeader className="chatBoxHeader">
                 <ConversationHeader.Content
-                  userName={`${chatData.serviceType} (${chatData.roomAddress})`}
+                  userName={
+                    chatData.service && chatData.service
+                      ? `${chatData?.service?.serviceType?.nameEn} (${chatData?.myHome?.unit?.roomAddress})`
+                      : `${chatData?.serviceType} (${chatData?.roomAddress})`
+                  }
                   className="titleChatName"
                 />
               </ConversationHeader>

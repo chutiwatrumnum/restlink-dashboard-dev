@@ -52,10 +52,11 @@ export const document = createModel<RootModel>()({
       let search = item.search ? `&search=${item.search}` : "";
       let sort = item.sort ? `&sort=${item.sort}` : "&sort=asc";
       let sortBy = item.sortBy ? `&sortBy=${item.sortBy}` : "&sortBy=createdAt";
+      // let folderId = `&folderId=0`;
 
       try {
         const result = await axios.get(
-          `/document-form/public/folders?curPage=${item.curPage}&perPage=${item.perPage}${search}${sort}${sortBy}`
+          `/document-form/dashboard/public/folders?curPage=${item.curPage}&perPage=${item.perPage}${search}${sort}${sortBy}`
         );
         if (result.data.statusCode >= 400) {
           console.error(result.data.message);
@@ -82,8 +83,12 @@ export const document = createModel<RootModel>()({
       let sortBy = item.sortBy ? `&sortBy=${item.sortBy}` : "&sortBy=createdAt";
 
       try {
+        console.log(
+          `/document-form/dashboard/public/folders?curPage=${item.curPage}&perPage=${item.perPage}${search}${sort}${sortBy}`
+        );
+
         const result = await axios.get(
-          `/document-form/public/folders?curPage=${item.curPage}&perPage=${item.perPage}${search}${sort}${sortBy}`
+          `/document-form/dashboard/public/folders?curPage=${item.curPage}&perPage=${item.perPage}${search}${sort}${sortBy}`
         );
         if (result.data.statusCode >= 400) {
           console.error(result.data.message);
@@ -113,100 +118,12 @@ export const document = createModel<RootModel>()({
 
       try {
         const result = await axios.get(
-          `/document-form/public/files?curPage=${item.curPage}&perPage=${item.perPage}${search}${sort}${sortBy}${folderId}`
+          `/document-form/dashboard/public/folders?curPage=${item.curPage}&perPage=${item.perPage}${search}${sort}${sortBy}${folderId}`
         );
-        if (result.data.statusCode >= 400) {
-          return console.error(result.data.message);
-        }
-        dispatch.document.updateCurrentFolderMaxLengthState(
-          result.data.result.totals
-        );
-        dispatch.document.updateTableDataState([
-          ...result.data.result.folders,
-          ...result.data.result.files,
-        ]);
-        dispatch.document.updateIsLoadingState(false);
-      } catch (error) {
-        console.error("ERROR", error);
-      }
-    },
-    async getPersonalData(payload: GetPublicDataPayloadType) {
-      let item = payload;
-      let search = item.search ? `&search=${item.search}` : "";
-      let sort = item.sort ? `&sort=${item.sort}` : "&sort=asc";
-      let sortBy = item.sortBy ? `&sortBy=${item.sortBy}` : "&sortBy=createdAt";
-      let unitId = item.unitId ? `&unitId=${item.unitId}` : "";
-
-      try {
-        const result = await axios.get(
-          `document-form/private/folders?curPage=${item.curPage}&perPage=${item.perPage}${search}${sort}${sortBy}${unitId}`
-        );
-        console.log("result file private:", result.data.result);
+        // console.log("RES", result);
 
         if (result.data.statusCode >= 400) {
-          console.error(result.data.message);
-          return;
-        }
-        dispatch.document.updatePublicFoldersState(result.data.result.folders);
-        dispatch.document.updatePublicFilesState(result.data.result.files);
-        dispatch.document.updateCurrentFolderMaxLengthState(
-          result.data.result.totals
-        );
-        dispatch.document.updateTableDataState([
-          ...result.data.result.folders,
-          ...result.data.result.files,
-        ]);
-        dispatch.document.updateIsLoadingState(false);
-      } catch (error) {
-        console.error("ERROR", error);
-      }
-    },
-    async getSearchPersonalData(payload: GetPublicDataPayloadType) {
-      let item = payload;
-      let search = item.search ? `&search=${item.search}` : "";
-      let sort = item.sort ? `&sort=${item.sort}` : "&sort=asc";
-      let sortBy = item.sortBy ? `&sortBy=${item.sortBy}` : "&sortBy=createdAt";
-      let unitId = item.unitId ? `&unitId=${item.unitId}` : "";
-
-      try {
-        const result = await axios.get(
-          `document-form/private/folders?curPage=${item.curPage}&perPage=${item.perPage}${search}${sort}${sortBy}${unitId}`
-        );
-        if (result.data.statusCode >= 400) {
-          console.error(result.data.message);
-          return;
-        }
-        dispatch.document.updateTableDataState([
-          ...result.data.result.folders,
-          ...result.data.result.files,
-        ]);
-        dispatch.document.updateIsLoadingState(false);
-      } catch (error) {
-        console.error("ERROR", error);
-      }
-    },
-    async getPersonalFolderData(payload: GetPublicDataPayloadType) {
-      let item = payload;
-      let search = item.search ? `&search=${item.search}` : "";
-      let sort = item.sort ? `&sort=${item.sort}` : "&sort=asc";
-      let sortBy = item.sortBy ? `&sortBy=${item.sortBy}` : "&sortBy=createdAt";
-      let unitId = item.unitId ? `&unitId=${item.unitId}` : "";
-      let folderId =
-        item.folderId || item.folderId === 0
-          ? `&folderId=${item.folderId}`
-          : -1;
-
-      if (folderId === -1) return message.error("something went wrong");
-      dispatch.document.updateIsLoadingState(true);
-
-      try {
-        const result = await axios.get(
-          `document-form/private/files?curPage=${item.curPage}&perPage=${item.perPage}${search}${sort}${sortBy}${folderId}${unitId}`
-        );
-        console.log("result folder private:", result.data.result);
-
-        if (result.data.statusCode >= 400) {
-          return console.error(result.data.message);
+          throw new Error(result.data.message);
         }
         dispatch.document.updateCurrentFolderMaxLengthState(
           result.data.result.totals

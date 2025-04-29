@@ -16,7 +16,7 @@ const getProjectID = async () => {
 //  Queries Service Chat
 export const getProjectIDQuery = (payload: { shouldFetch: boolean }) => {
   return useQuery({
-    queryKey: ["serviceChatListOptions"],
+    queryKey: ["projectId"],
     queryFn: getProjectID,
     enabled: payload.shouldFetch,
   });

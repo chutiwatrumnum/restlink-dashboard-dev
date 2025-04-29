@@ -25,7 +25,6 @@ import {
   ChatIcon,
   DocumentIcon,
   PublicFolderIcon,
-  PersonalFolderIcon,
   DeliveryLogIcon,
   EmergencyIcon,
   ServiceCenterIcon,
@@ -98,6 +97,8 @@ const SideMenu = () => {
               defaultSelectedKeys={[window.location.pathname]}
               mode="inline"
               onSelect={({ keyPath }) => {
+                console.log(keyPath);
+
                 setKeyPath(keyPath.toString());
               }}
               onOpenChange={(keys) => {
@@ -118,20 +119,21 @@ const SideMenu = () => {
                 <Link to={`${main_link}/profile`}>Profile</Link>
               </Menu.Item>
 
-              <Menu.Item
+              {/* <Menu.Item
                 key={`${main_link}/managementMain`}
                 icon={
                   <ManagementIcon
                     color={iconMenuColorSelector("managementMain")}
                     className="sideMenuIcon"
                   />
-                }>
+                }
+              >
                 <Link to={`${main_link}/managementMain`}>Management team</Link>
-              </Menu.Item>
+              </Menu.Item> */}
 
               {/* User management */}
 
-              <SubMenu
+              {/* <SubMenu
                 key="userManagement"
                 icon={
                   <UserManagementIcon
@@ -139,7 +141,8 @@ const SideMenu = () => {
                     className="sideMenuIcon"
                   />
                 }
-                title="User management">
+                title="User management"
+              >
                 <Menu.Item
                   key={`${main_link}/residentInformation`}
                   icon={
@@ -147,7 +150,8 @@ const SideMenu = () => {
                       color={iconSubMenuColorSelector("residentInformation")}
                       className="sideMenuIcon"
                     />
-                  }>
+                  }
+                >
                   <Link to={`${main_link}/residentInformation`}>
                     Resident’s information
                   </Link>
@@ -159,16 +163,17 @@ const SideMenu = () => {
                       color={iconSubMenuColorSelector("residentSignUp")}
                       className="sideMenuIcon"
                     />
-                  }>
+                  }
+                >
                   <Link to={`${main_link}/residentSignUp`}>
                     Resident’s sign up
                   </Link>
                 </Menu.Item>
-              </SubMenu>
+              </SubMenu> */}
 
               {/* Facility Center */}
 
-              <SubMenu
+              {/* <SubMenu
                 key="facilities"
                 icon={
                   <FacilityBookingIcon
@@ -176,7 +181,8 @@ const SideMenu = () => {
                     className="sideMenuIcon"
                   />
                 }
-                title="Facility booking">
+                title="Facility booking"
+              >
                 <Menu.Item
                   key={`${main_link}/reservationDashboard`}
                   icon={
@@ -184,7 +190,8 @@ const SideMenu = () => {
                       color={iconSubMenuColorSelector("reservationDashboard")}
                       className="sideMenuIcon"
                     />
-                  }>
+                  }
+                >
                   <Link to={`${main_link}/reservedFacilities`}>Facilities</Link>
                 </Menu.Item>
                 <Menu.Item
@@ -194,23 +201,25 @@ const SideMenu = () => {
                       color={iconSubMenuColorSelector("reservationList")}
                       className="sideMenuIcon"
                     />
-                  }>
+                  }
+                >
                   <Link to={`${main_link}/reservationList`}>
                     Reservation lists
                   </Link>
                 </Menu.Item>
-              </SubMenu>
+              </SubMenu> */}
 
-              <Menu.Item
+              {/* <Menu.Item
                 key={`${main_link}/peopleCounting`}
                 icon={
                   <PeopleCountingIcon
                     color={iconMenuColorSelector("peopleCounting")}
                     className="sideMenuIcon"
                   />
-                }>
+                }
+              >
                 <Link to={`${main_link}/peopleCounting`}>People counting</Link>
-              </Menu.Item>
+              </Menu.Item> */}
               {/* <Menu.Item
                 key={`${main_link}/parcel `}
                 icon={
@@ -242,7 +251,7 @@ const SideMenu = () => {
                     className="sideMenuIcon"
                   />
                 }>
-                <Link to={`${main_link}/projectNew`}>projectNew</Link>
+                <Link to={`${main_link}/projectNew`}>Project New</Link>
               </Menu.Item>
 
               <Menu.Item
@@ -257,49 +266,29 @@ const SideMenu = () => {
               </Menu.Item>
 
               {/* <div className={"group-name"}>Document</div> */}
-              <SubMenu
-                key="Document forms"
-                icon={
-                  <DocumentIcon
-                    color={iconMenuColorSelector("document")}
-                    className="sideMenuIcon"
-                  />
-                }
-                title="Document forms">
-                <Menu.Item
-                  key={`${main_link}11`}
-                  icon={
-                    <PublicFolderIcon
-                      color={iconSubMenuColorSelector("publicFolder")}
-                      className="sideMenuIcon"
-                    />
-                  }>
-                  <Link to={`${main_link}/public-folder`}>Public folder</Link>
-                </Menu.Item>
-                <Menu.Item
-                  key={`${main_link}12`}
-                  icon={
-                    <PersonalFolderIcon
-                      color={iconSubMenuColorSelector("personalFolder")}
-                      className="sideMenuIcon"
-                    />
-                  }>
-                  <Link to={`${main_link}/personal-folder`}>
-                    Personal folder
-                  </Link>
-                </Menu.Item>
-              </SubMenu>
 
               <Menu.Item
-                key={`${main_link}16`}
+                key={`${main_link}/publicFolder`}
+                icon={
+                  <PublicFolderIcon
+                    color={iconMenuColorSelector("publicFolder")}
+                    className="sideMenuIcon"
+                  />
+                }>
+                <Link to={`${main_link}/public-folder`}>Public folder</Link>
+              </Menu.Item>
+
+              <Menu.Item
+                key={`${main_link}/delivery-logs`}
                 icon={
                   <DeliveryLogIcon
-                    color={iconSubMenuColorSelector("delivery-logs")}
+                    color={iconMenuColorSelector("delivery-logs")}
                     className="sideMenuIcon"
                   />
                 }>
                 <Link to={`${main_link}/delivery-logs`}>Delivery logs</Link>
               </Menu.Item>
+
               <Menu.Item
                 key={`${main_link}/emergencyCall`}
                 icon={
@@ -368,7 +357,7 @@ const SideMenu = () => {
                   key={`${main_link}event-logs`}
                   icon={
                     <EventLogIcon
-                      color={iconMenuColorSelector("event-logs")}
+                      color={iconSubMenuColorSelector("event-logs")}
                       className="sideMenuIcon"
                     />
                   }>
@@ -378,7 +367,7 @@ const SideMenu = () => {
                   key={`${main_link}event-joining-logs`}
                   icon={
                     <EventJoinLogIcon
-                      color={iconMenuColorSelector("event-joining-logs")}
+                      color={iconSubMenuColorSelector("event-joining-logs")}
                       className="sideMenuIcon"
                     />
                   }>

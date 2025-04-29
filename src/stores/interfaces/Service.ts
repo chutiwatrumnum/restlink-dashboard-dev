@@ -1,29 +1,67 @@
 // Service Chat Interface
 
+// export interface ServiceChatListDataType {
+//   messageId: number;
+//   message: string;
+//   type: "text" | "file" | "image";
+//   uploadUrl?: string;
+//   fileName?: string;
+//   userId: string;
+//   seen: boolean;
+//   createdAt: string;
+//   lastName: string;
+//   firstName: string;
+//   middleName: string;
+//   unit: number;
+//   serviceDescription: string;
+//   serviceType: string;
+//   serviceStatusNameCode: string;
+//   serviceStatus: string;
+//   unitNo: string;
+//   roomAddress: string;
+//   serviceId: number;
+//   imageProfile: string;
+//   juristicSeen: boolean;
+// }
+
 export interface ServiceChatListDataType {
-  messageId: number;
   message: string;
   type: "text" | "file" | "image";
   uploadUrl?: string;
   fileName?: string;
-  userId: string;
   seen: boolean;
-  createdAt: string;
-  lastName: string;
-  firstName: string;
-  middleName: string;
-  unit: number;
-  serviceDescription: string;
-  serviceType: string;
-  serviceStatusNameCode: string;
-  serviceStatus: string;
-  unitNo: string;
-  roomAddress: string;
-  serviceId: number;
-  imageProfile: string;
   juristicSeen: boolean;
+  createdAt: string;
+  user: User;
+  service: Service;
+  messageId: number;
+  userId: string;
+  serviceId: number;
+  myHome: MyHome;
+  serviceType?: string;
+  roomAddress?: string;
 }
 
+export interface User {
+  familyName: string;
+  givenName: string;
+  imageProfile: string;
+}
+
+export interface Service {
+  description: string;
+  serviceType: ServiceType;
+  serviceStatus: ServiceStatus;
+}
+
+export interface ServiceType {
+  nameEn: string;
+}
+
+export interface ServiceStatus {
+  nameCode: string;
+  nameEn: string;
+}
 export interface ServiceChatDataType {
   id: number;
   message: string;
@@ -38,10 +76,19 @@ export interface ServiceChatDataType {
   fileName?: string;
 }
 
+export interface MyHome {
+  unitId: number;
+  unit: Unit;
+}
+
+export interface Unit {
+  unitNo: string;
+  roomAddress: string;
+}
+
 export interface OwnerMessage {
-  lastName: string;
-  firstName: string;
-  middleName: string;
+  familyName: string;
+  givenName: string;
   imageProfile: string;
 }
 

@@ -38,7 +38,7 @@ import DeviceControl from "./modules/powerManagement/screens/DeviceControl";
 import LiveChat from "./modules/chat/screens/ChatRoomScreen";
 
 import PublicFolder from "./modules/documentForms/screen/PublicFolder";
-import PersonalFolder from "./modules/documentForms/screen/PersonalFolder";
+// import PersonalFolder from "./modules/documentForms/screen/PersonalFolder";
 
 import EventLogs from "./modules/eventLogs/screen/EventLogs";
 import EventJoinLogs from "./modules/eventLogs/screen/EventJoinLogs";
@@ -168,7 +168,6 @@ function App() {
           <Route path="deviceControl" element={<DeviceControl />} />
           {/* Document */}
           <Route path="public-folder" element={<PublicFolder />} />
-          <Route path="personal-folder" element={<PersonalFolder />} />
           {/* Delivery logs */}
           <Route path="delivery-logs" element={<DeliveryLogs />} />
 

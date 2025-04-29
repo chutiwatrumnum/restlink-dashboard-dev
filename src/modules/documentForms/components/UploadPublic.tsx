@@ -21,18 +21,21 @@ interface IupdateFile {
 }
 const UploadPublic = (props: ComponentCreateProps) => {
   const dispatch = useDispatch<Dispatch>();
-  const [DraggerSatatus, setDraggerSatatus] = useState<boolean>(false);
-  const [fileList, setFileList] = useState<UploadFile[]>([]);
-  const [fileUpload, setfileUpload] = useState<UploadFile>();
-  const [buttonloading, setbuttonloading] = useState<boolean>(false);
-  const [ProcessPercent, setProcessPercent] = useState<number>(0);
-  const [statusProcessbar, setstatusProcessbar] =
-    useState<ProgressStatus>("active");
-  const handleCancel = async () => {
-    await props.callBack(!props?.isOpen, false);
-    await setFileList([]);
-  };
   const maxUploadFile: number = 10;
+
+  const [draggerStatus, setDraggerStatus] = useState<boolean>(false);
+  const [fileList, setFileList] = useState<UploadFile[]>([]);
+  const [fileUpload, setFileUpload] = useState<UploadFile>();
+  const [buttonLoading, setButtonLoading] = useState<boolean>(false);
+  const [processPercent, setProcessPercent] = useState<number>(0);
+  const [statusProcessBar, setStatusProcessBar] =
+    useState<ProgressStatus>("active");
+
+  const handleCancel = async () => {
+    props.callBack(!props?.isOpen, false);
+    setFileList([]);
+  };
+
   const getBase64 = async (file: RcFile) => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -42,29 +45,10 @@ const UploadPublic = (props: ComponentCreateProps) => {
     });
   };
 
-  useEffect(() => {
-    if (props?.isOpen) {
-      (async function () {})();
-    }
-  }, [props?.isOpen]);
-
-  useEffect(() => {
-    if (ProcessPercent) {
-      (async function () {
-        fileList.map((e: any, i: number) => {
-          if (e.uid === fileUpload?.uid) {
-            e.percent = ProcessPercent;
-          }
-        });
-        await setFileList(fileList);
-      })();
-    }
-  }, [ProcessPercent]);
-
   const UploadPublicFile = async () => {
-    let resultapi: any;
-    await setbuttonloading(true);
-    await setDraggerSatatus(true);
+    let res;
+    setButtonLoading(true);
+    setDraggerStatus(true);
     for await (const files of fileList) {
       let file: any = files;
       let database64: any = null;
@@ -86,19 +70,20 @@ const UploadPublic = (props: ComponentCreateProps) => {
           e.status = "uploading";
         }
       });
-      await setFileList(fileList);
-      await setfileUpload(file);
-      resultapi = await uploadDocument(dataFileUpload, setProcessPercent);
-      if (!resultapi?.status) {
-        await setDraggerSatatus(false);
-        await setbuttonloading(false);
+      setFileList(fileList);
+      setFileUpload(file);
+      res = await uploadDocument(dataFileUpload, setProcessPercent);
+
+      if (!res?.status) {
+        setDraggerStatus(false);
+        setButtonLoading(false);
         fileList.map((e: any, i: number) => {
           if (e.uid === file.uid) {
             e.status = "error";
           }
         });
-        await setFileList(fileList);
-        await setstatusProcessbar("exception");
+        setFileList(fileList);
+        setStatusProcessBar("exception");
         break;
       } else {
         fileList.map((e: any, i: number) => {
@@ -106,29 +91,28 @@ const UploadPublic = (props: ComponentCreateProps) => {
             e.status = "done";
           }
         });
-        await setFileList(fileList);
-        await setstatusProcessbar("success");
-        resultapi.status = true;
+        setFileList(fileList);
+        setStatusProcessBar("success");
+        res.status = true;
       }
     }
-    if (resultapi?.status) {
-      dispatch.common.updateSuccessModalState({
-        open: true,
-        text: "Successfully upload document file.",
-      });
-      await setbuttonloading(false);
-      await setDraggerSatatus(false);
-      await props.callBack(!props?.isOpen, true);
-      await setFileList([]);
+    if (res?.status) {
+      Modal.success({ content: "Upload successfully", centered: true });
+      destroyModal();
+      setButtonLoading(false);
+      setDraggerStatus(false);
+      props.callBack(!props?.isOpen, true);
+      setFileList([]);
     } else {
-      dispatch.common.updateSuccessModalState({
-        open: true,
-        status: "error",
-        text: resultapi?.message
-          ? resultapi?.message
-          : "failed upload dcument file.",
-      });
+      Modal.success({ content: "Upload failed", centered: true });
+      destroyModal();
     }
+  };
+
+  const destroyModal = () => {
+    setTimeout(() => {
+      Modal.destroyAll();
+    }, 1500);
   };
 
   const propProcess: ProgressProps = {
@@ -138,8 +122,28 @@ const UploadPublic = (props: ComponentCreateProps) => {
     },
     strokeWidth: 3,
     showInfo: true,
-    format: (percent) => percent && `${parseFloat(ProcessPercent.toFixed(2))}%`,
+    format: (percent) => percent && `${parseFloat(processPercent.toFixed(2))}%`,
   };
+
+  useEffect(() => {
+    if (props?.isOpen) {
+      (async function () {})();
+    }
+  }, [props?.isOpen]);
+
+  useEffect(() => {
+    if (processPercent) {
+      (async function () {
+        fileList.map((e: any, i: number) => {
+          if (e.uid === fileUpload?.uid) {
+            e.percent = processPercent;
+          }
+        });
+        setFileList(fileList);
+      })();
+    }
+  }, [processPercent]);
+
   return (
     <>
       <Modal
@@ -152,7 +156,7 @@ const UploadPublic = (props: ComponentCreateProps) => {
           <Button
             key="submit"
             type="primary"
-            loading={buttonloading}
+            loading={buttonLoading}
             disabled={fileList.length > 0 ? false : true}
             style={{ paddingLeft: 30, paddingRight: 30 }}
             onClick={UploadPublicFile}
@@ -200,7 +204,7 @@ const UploadPublic = (props: ComponentCreateProps) => {
           }}
           fileList={fileList}
           maxCount={maxUploadFile}
-          disabled={DraggerSatatus}
+          disabled={draggerStatus}
           onChange={async (info: any) => {
             let data: any = [];
             const result = info?.fileList?.filter(async (e: any, i: number) => {

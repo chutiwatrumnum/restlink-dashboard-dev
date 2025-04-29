@@ -1,6 +1,6 @@
 import { Button, Empty, Tag } from "antd";
 // import { ChatListDataType } from "../../../stores/interfaces/Chat";
-import { ServiceChatListDataType } from "../../../utils/interfaces/serviceInterface";
+import { ServiceChatListDataType } from "../../../stores/interfaces/Service";
 import {
   useServiceCenterByServiceIDQuery,
   useServiceCenterStatusTypeQuery,

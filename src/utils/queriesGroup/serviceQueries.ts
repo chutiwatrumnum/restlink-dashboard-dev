@@ -7,7 +7,7 @@ import axios from "axios";
 import {
   ServiceChatDataType,
   ServiceChatListDataType,
-} from "../interfaces/serviceInterface";
+} from "../../stores/interfaces/Service";
 
 // Services Chat
 const getServiceChatList = async ({
@@ -26,6 +26,7 @@ const getServiceChatList = async ({
     url += `&status=${status}`;
   }
   const res = await axios.get(url);
+  // console.log("SERVICE CHAT LIST : ", res.data.result);
 
   return res.data.result;
 };
@@ -40,10 +41,9 @@ const getServiceChatDataByID = async ({
 
   const res = await axios.get(
     `/service-center-chat/dashboard/chat-message/${id}`
-    // `/service-center-chat/dashboard/chat-message/${id}?curPage=3`
   );
 
-  // console.log("LENGTH => ", res.data.result);
+  // console.log("ServiceChatDataByID => ", res.data.result);
   return res.data.result;
 };
 
@@ -65,6 +65,8 @@ const getOptionsChatList = async () => {
   const res = await axios.get(
     `/service-center-chat/dashboard/select-service-to-chat`
   );
+  // console.log("SERVICE OPT : ", res.data.result);
+
   return res.data.result;
 };
 

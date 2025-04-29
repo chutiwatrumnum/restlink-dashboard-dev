@@ -19,7 +19,7 @@ import { Row, Col, Dropdown, Button, Menu, Spin, Select, Tabs } from "antd";
 import {
   ServiceChatListDataType,
   ServiceChatDataType,
-} from "../../../utils/interfaces/serviceInterface";
+} from "../../../stores/interfaces/Service";
 import type { TabsProps } from "antd";
 
 import "@chatscope/chat-ui-kit-styles/dist/default/styles.min.css";
@@ -51,16 +51,16 @@ const ServiceChat = () => {
 
   // Functions
 
-  const handleServiceSelected = async (value: string, option: any) => {
-    // console.log(value);
+  const handleServiceSelected = async (serviceId: number, option: any) => {
+    // console.log(serviceId);
     // console.log(option);
     let payload = {
-      serviceId: option.serviceId,
+      serviceId: serviceId,
       serviceType: option.serviceType,
       roomAddress: option.roomAddress,
       userId: option.userId,
     };
-    setActiveServiceId(option.serviceId);
+    setActiveServiceId(serviceId);
     onServiceSelected(payload);
   };
 
@@ -141,7 +141,7 @@ const ServiceChat = () => {
   useEffect(() => {
     socket.connect();
     socket.on("connect", () => {
-      // console.log("Socket.IO Connection Opened");
+      console.log("Socket.IO Connection Opened");
     });
     socket.on("service-center-chat-list", () => {
       refetchServiceChatList();
@@ -199,9 +199,10 @@ const ServiceChat = () => {
                   options={chatListOptions}
                   fieldNames={{
                     value: "serviceId",
-                    // label: "label",
+                    label: "label",
                   }}
                   loading={isChatListOptionsLoading}
+                  // disabled={isChatListOptionsLoading}
                   filterOption={(input, option) =>
                     (option?.label.toUpperCase() ?? "").includes(
                       input.toUpperCase()

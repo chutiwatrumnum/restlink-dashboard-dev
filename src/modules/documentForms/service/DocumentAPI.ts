@@ -3,6 +3,7 @@ import {
   dataFiles,
   dataFilesPersonal,
 } from "../../../stores/interfaces/Document";
+
 const deleteDocumentById = async (id: string) => {
   try {
     const resultDelete = await axios.delete(`document-form/delete/${id}`);
@@ -25,19 +26,12 @@ const deleteDocumentById = async (id: string) => {
 };
 const uploadDocument = async (file: dataFiles, processFunc: Function) => {
   try {
+    // console.log("FILE SENDING ", file);
     const resultUploadDocument = await axios.post(
       "document-form/public/upload",
-      file,
-      {
-        onUploadProgress: async (progressEvent: any) => {
-          let percentComplete = progressEvent?.loaded / progressEvent?.total;
-          percentComplete = percentComplete * 100;
-          console.log("percentComplete:", percentComplete);
-          await processFunc(Math.floor(percentComplete));
-        },
-      }
+      file
     );
-    console.log("resultUploadDocument:", resultUploadDocument);
+    // console.log("resultUploadDocument:", resultUploadDocument);
 
     if (resultUploadDocument?.status < 400) {
       return {

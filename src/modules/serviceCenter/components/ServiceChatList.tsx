@@ -1,5 +1,5 @@
 import "@chatscope/chat-ui-kit-styles/dist/default/styles.min.css";
-import { ServiceChatListDataType } from "../../../utils/interfaces/serviceInterface";
+import { ServiceChatListDataType } from "../../../stores/interfaces/Service";
 import { Empty, Image, Col, Row, Avatar, Badge } from "antd";
 import dayjs from "dayjs";
 
@@ -56,7 +56,7 @@ const ServiceChatList = ({
         >
           <Row>
             <Col className="avatarContainer" span={5}>
-              {item.imageProfile ? (
+              {item.user.imageProfile ? (
                 <Avatar
                   size={{
                     xs: 32,
@@ -66,7 +66,7 @@ const ServiceChatList = ({
                     xl: 40,
                     xxl: 56,
                   }}
-                  src={<Image preview={false} src={item.imageProfile} />}
+                  src={<Image preview={false} src={item.user.imageProfile} />}
                 />
               ) : (
                 <Avatar
@@ -79,13 +79,13 @@ const ServiceChatList = ({
                     xxl: 56,
                   }}
                 >
-                  {item?.firstName?.charAt(0).toUpperCase() ?? "N"}
+                  {item?.user.givenName?.charAt(0).toUpperCase() ?? "N"}
                 </Avatar>
               )}
             </Col>
             <Col className="textInUserContainer" span={16}>
               <p className="ellipsisText">
-                <b>{`${item.serviceType} (${item.roomAddress})`}</b>
+                <b>{`${item.service.serviceType.nameEn} (${item.myHome.unit.roomAddress})`}</b>
               </p>
               <span className="ellipsisText">
                 {lastTextSelector(item.type, item)}

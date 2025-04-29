@@ -7,7 +7,7 @@ interface IconPropsType {
 }
 
 const AnnouncementIcon = ({
-  color = whiteLabel.blackColor,
+  color = whiteLabel.mainTextColor,
   className,
 }: IconPropsType) => {
   return (
@@ -17,8 +17,7 @@ const AnnouncementIcon = ({
       height={"24"}
       viewBox="0 0 24 24"
       fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
+      xmlns="http://www.w3.org/2000/svg">
       <g id="Frame 1562328818" clipPath="url(#clip0_1763_17358)">
         <path
           id="Vector"
@@ -1397,7 +1396,7 @@ const ServiceCenterDashboardIcon = ({
 };
 
 const ServiceCenterListIcon = ({
-  color = whiteLabel.defaultIconColor,
+  color = whiteLabel.mainTextColor,
   className,
 }: IconPropsType) => {
   return (
@@ -1418,7 +1417,7 @@ const ServiceCenterListIcon = ({
 };
 
 const ServiceCenterTotal = ({
-  color = whiteLabel.whiteColor,
+  color = whiteLabel.mainTextColor,
   className,
 }: IconPropsType) => {
   return (
@@ -1438,7 +1437,7 @@ const ServiceCenterTotal = ({
 };
 
 const ServiceCenterPending = ({
-  color = whiteLabel.whiteColor,
+  color = whiteLabel.mainTextColor,
   className,
 }: IconPropsType) => {
   return (
@@ -1458,7 +1457,7 @@ const ServiceCenterPending = ({
 };
 
 const ServiceCenterRepairing = ({
-  color = whiteLabel.whiteColor,
+  color = whiteLabel.mainTextColor,
   className,
 }: IconPropsType) => {
   return (
