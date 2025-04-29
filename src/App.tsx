@@ -100,7 +100,7 @@ function App() {
         const resReToken = await dispatch.userAuth.refreshTokenNew();
         if (!resReToken) throw "access_token expired";
         // Token pass
-        // await dispatch.common.getUnitOptions();
+        await dispatch.common.fetchUnitOptions();
         // await dispatch.common.getMasterData();
         // await dispatch.userAuth.refreshUserDataEffects();
         // await dispatch.common.getRoleaccess_token();

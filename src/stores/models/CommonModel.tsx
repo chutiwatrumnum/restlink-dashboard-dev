@@ -19,6 +19,10 @@ export const common = createModel<RootModel>()({
       ...state,
       accessibility: payload,
     }),
+    updateUnitOptions: (state, payload) => ({
+      ...state,
+      unitOptions: payload,
+    }),
   },
   effects: (dispatch) => ({
     async getMasterData() {
@@ -31,6 +35,20 @@ export const common = createModel<RootModel>()({
         dispatch.common.updateMasterData(data.data.result);
       } catch (error) {
         console.error(error);
+      }
+    },
+    async fetchUnitOptions() {
+      try {
+        const response = await axios.get<{ data: { unitNo: string; id: number }[] }>("/events/dashboard/unit");
+
+        const formattedUnitOptions = response.data.data.map(({ unitNo, id }) => ({
+          label: unitNo,
+          value: id,
+        }));
+
+        dispatch.common.updateUnitOptions(formattedUnitOptions);
+      } catch (error) {
+        console.error("Failed to fetch unit options:", error);
       }
     },
     async getRoleaccess_token() {

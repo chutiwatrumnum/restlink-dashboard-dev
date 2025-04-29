@@ -13,40 +13,33 @@ import {
 } from "../../../../stores/interfaces/EventLog";
 import dayjs from "dayjs";
 const getDataEventJoinLogList = async (params: conditionPage) => {
-  let url: string = `events/referral/list?`;
-  const resultparams = await paramsdata(params);
-  if (resultparams.status) {
-    url = url + resultparams.paramsstr;
+  let url = `events/referral/list?`;
+  const resultParams = await paramsdata(params);
+  if (resultParams.status) {
+    url += resultParams.paramsstr;
   }
   try {
-    const result = await axios.get(url);
-    if (result.status === statusSuccess) {
-      const AllDataEventLogs = result.data.result.rows;
-      let data: dataEventJoinLogsType[] = [];
-      AllDataEventLogs.map((e: any) => {
-        let dataEventLogs: dataEventJoinLogsType = {
-          key: e?.id,
-          eventName: e?.eventName,
-          joiningDate: e?.joiningDate,
-          blockNo: e?.blockNo,
-          unitNo: e?.unitNo,
-          participant: e?.participant,
-          bookingBy: e?.bookingBy,
-        };
-        data.push(dataEventLogs);
-      });
+    const response = await axios.get(url);
+  
+      const eventLogs = response.data.result.rows;
+      const data: dataEventJoinLogsType[] = eventLogs.map((log: any) => ({
+        key: log.id,
+        eventName: log.eventName,
+        joiningDate: log.joiningDate,
+        blockNo: log.blockNo,
+        unitNo: log.unitNo,
+        participant: log.participant,
+        bookingBy: log.bookingBy,
+      }));
 
       return {
-        total: result.data.result.total,
+        total: response.data.result.total,
         status: true,
         datavalue: data,
       };
-    } else {
-      console.warn("status code:", result.status);
-      console.warn("data error:", result.data);
-    }
-  } catch (err) {
-    console.error("err:", err);
+  
+  } catch (error) {
+    console.error("Error:", error);
   }
 };
 const getDataEventLogList = async (params: conditionPage) => {
