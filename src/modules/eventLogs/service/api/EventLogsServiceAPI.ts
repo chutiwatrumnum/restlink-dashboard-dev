@@ -17,15 +17,13 @@ const getDataEventJoinLogList = async (params: conditionPage) => {
   const resultparams = await paramsdata(params);
   if (resultparams.status) {
     url = url + resultparams.paramsstr;
-    console.log("url:", url);
   }
-  const token = await encryptStorage.getItem("accessToken");
   try {
     const result = await axios.get(url);
     if (result.status === statusSuccess) {
       const AllDataEventLogs = result.data.result.rows;
       let data: dataEventJoinLogsType[] = [];
-      AllDataEventLogs.map((e: any, i: number) => {
+      AllDataEventLogs.map((e: any) => {
         let dataEventLogs: dataEventJoinLogsType = {
           key: e?.id,
           eventName: e?.eventName,
@@ -56,15 +54,12 @@ const getDataEventLogList = async (params: conditionPage) => {
   const resultparams = await paramsdata(params);
   if (resultparams.status) {
     url = url + resultparams.paramsstr;
-    console.log("url:", url);
   }
-  const token = await encryptStorage.getItem("accessToken");
   try {
     const result = await axios.get(url);
-    console.log("getdataEventLoglist:", result);
 
     if (result.status === statusSuccess) {
-      const AllDataEventLogs = result.data.result.rows;
+      const AllDataEventLogs = result.data.result.data;
       let data: dataEventLogsType[] = [];
       AllDataEventLogs.map((e: any, i: number) => {
         let dataEventLogs: dataEventLogsType = {
@@ -161,7 +156,7 @@ const editEventLogs = async (req: EditEventLogsType) => {
 const addEventLogs = async (req: AddNewEventLogsType) => {
   try {
     const result = await axios.post("/events/create", req);
-    if (result.status === statusCreated) {
+    if (result.status === statusSuccess) {
       return true;
     } else {
       return false;
