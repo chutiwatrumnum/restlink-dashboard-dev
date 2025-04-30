@@ -110,7 +110,7 @@ const Profile = () => {
             </div>
           </div>
           <div className="profileFormContainer">
-            {/* <div className="profileFormColumn">
+            <div className="profileFormColumn">
               <Form.Item
                 label={
                   <Text className="textColor semiBoldText">First name</Text>
@@ -141,9 +141,9 @@ const Profile = () => {
                   />
                 </Form.Item>
               </Row>
-            </div> */}
+            </div>
 
-            {/* <div className="profileFormColumn">
+            <div className="profileFormColumn">
               <Form.Item
                 label={
                   <Text className="textColor semiBoldText">Last name</Text>
@@ -168,8 +168,8 @@ const Profile = () => {
                   maxLength={120}
                 />
               </Form.Item>
-            </div> */}
-            {/* <div className="profileFormColumn">
+            </div>
+            <div className="profileFormColumn">
               <Row justify="space-between">
                 <Form.Item
                   label={
@@ -197,7 +197,7 @@ const Profile = () => {
                   />
                 </Form.Item>
               </Row>
-            </div> */}
+            </div>
           </div>
           <Form.Item className="changePasswordBottomBtnContainer">
             <Row>

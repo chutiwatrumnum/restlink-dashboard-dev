@@ -6,7 +6,7 @@ import {
   editProfileDetail,
 } from "../../../../stores/interfaces/Profile";
 const getDataProfile = async () => {
-  let url: string = `/team-management/profile`;
+  let url: string = `/users/juristic/profile`;
   const token = await encryptStorage.getItem("access_token");
   if (token) {
     try {

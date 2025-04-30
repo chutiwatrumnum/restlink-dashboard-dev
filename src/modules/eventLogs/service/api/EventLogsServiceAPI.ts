@@ -100,7 +100,7 @@ const getDataEventLogList = async (params: conditionPage) => {
 
 const deleteEventLogsById = async (id: string) => {
   try {
-    const resultDelete = await axios.delete(`/events/${id}`);
+    const resultDelete = await axios.delete(`/events/my-event/${id}`);
     if (resultDelete.status === statusSuccess) {
       return true;
     } else {

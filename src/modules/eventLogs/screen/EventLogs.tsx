@@ -269,7 +269,7 @@ const EventLogs = () => {
           SuccessModal("Successfully deleted");
           setRerender(!rerender);
         } else {
-           FailedModal("Failed deleted");
+          FailedModal("Failed deleted");
         }
       },
       onCancel() {
