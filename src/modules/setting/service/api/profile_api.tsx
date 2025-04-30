@@ -49,7 +49,9 @@ const getDataProfile = async () => {
 
 const EditDataProfile = async (data: editProfileDetail) => {
   try {
-    const result = await axios.put(`/team-management/profile`, data);
+    const result = await axios.put(`/users/juristic/image-profile`,
+      data
+    );
     if (result.status === 200) {
       console.log("eidt data success:", result.data);
 
