@@ -133,7 +133,7 @@ const Profile = () => {
                   rules={telRule}
                   style={{ width: "100%" }}>
                   <Input
-                    disabled={edited}
+                    disabled={true}
                     size="large"
                     placeholder="Please input tel"
                     maxLength={10}
@@ -171,7 +171,7 @@ const Profile = () => {
             </div>
             <div className="profileFormColumn">
               <Row justify="space-between">
-                <Form.Item
+                {/* <Form.Item
                   label={
                     <Text className="textColor semiBoldText">Middle name</Text>
                   }
@@ -184,10 +184,23 @@ const Profile = () => {
                     placeholder="Please input Name"
                     maxLength={120}
                   />
-                </Form.Item>
+                </Form.Item> */}
                 <Form.Item
                   label={<Text className="textColor semiBoldText">Role</Text>}
-                  name="role"
+                  name="roleName"
+                  style={{ width: "100%" }}>
+                  <Input
+                    disabled={true}
+                    size="large"
+                    placeholder="Select role"
+                    maxLength={20}
+                  />
+                </Form.Item>
+                <Form.Item
+                  label={
+                    <Text className="textColor semiBoldText">Project Name</Text>
+                  }
+                  name="projectName"
                   style={{ width: "100%" }}>
                   <Input
                     disabled={true}

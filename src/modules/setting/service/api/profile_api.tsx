@@ -5,6 +5,7 @@ import {
   ProfileDetail,
   editProfileDetail,
 } from "../../../../stores/interfaces/Profile";
+
 const getDataProfile = async () => {
   let url: string = `/users/juristic/profile`;
   const token = await encryptStorage.getItem("access_token");
@@ -14,22 +15,20 @@ const getDataProfile = async () => {
       if (result.status === 200) {
         const profile = result.data.result;
         const profileDetail: ProfileDetail = {
-          id: profile.id,
+          userId: profile.userId,
           lastName: profile.lastName,
           firstName: profile.firstName,
-          middleName: profile.middleName,
           nickName: profile.nickName,
           email: profile.email,
-          active: profile.active,
-          verifyByJuristic: profile.verifyByJuristic,
-          channel: profile.channel,
           imageProfile: profile.imageProfile,
           contact: profile.contact,
-          createdAt: profile.createdAt,
-          role: profile.role.name,
+          allowNotifications: profile.allowNotifications,
+          callAllowNotification: profile.callAllowNotification,
+          roleName: profile.roleName,
+          roleCode: profile.roleCode,
+          projectName: profile.projectName,
         };
         return {
-          total: result.data.result.total,
           status: true,
           data: profileDetail,
         };
@@ -42,19 +41,16 @@ const getDataProfile = async () => {
     }
   } else {
     console.log("====================================");
-    console.log("token undefilend.....");
+    console.log("token undefined.....");
     console.log("====================================");
   }
 };
 
 const EditDataProfile = async (data: editProfileDetail) => {
   try {
-    const result = await axios.put(`/users/juristic/image-profile`,
-      data
-    );
+    const result = await axios.put(`/users/juristic/profile`, data);
     if (result.status === 200) {
-      console.log("eidt data success:", result.data);
-
+      console.log("edit data success:", result.data);
       return true;
     } else {
       message.error(result.data.message);
@@ -65,4 +61,5 @@ const EditDataProfile = async (data: editProfileDetail) => {
     return false;
   }
 };
+
 export { getDataProfile, EditDataProfile };

@@ -1,19 +1,27 @@
+// ใน stores/interfaces/Profile.ts
 export interface ProfileDetail {
-    id:               string;
-    lastName:         string;
-    firstName:        string;
-    middleName:       string;
-    nickName:         string;
-    email:            string;
-    active:           boolean;
-    verifyByJuristic: boolean;
-    channel:          string;
-    imageProfile:     string;
-    contact:          string;
-    createdAt:        Date;
-    role:             string;
+    userId: string;
+    lastName: string;
+    firstName: string;
+    nickName: string;
+    email: string;
+    imageProfile: string | null;
+    contact: string;
+    allowNotifications: boolean;
+    callAllowNotification: boolean;
+    roleName: string;
+    roleCode: string;
+    projectName: string;
 }
-export interface editProfileDetail{
-    contact : string
-    imageProfile?:string
+
+// ปรับ interface สำหรับการแก้ไขข้อมูลให้ตรงกับการใช้งานใหม่
+export interface editProfileDetail {
+    // เพิ่มหรือปรับฟิลด์ตามที่ต้องการให้แก้ไขได้
+    firstName?: string;
+    lastName?: string;
+    nickName?: string;
+    contact?: string;
+    allowNotifications?: boolean;
+    callAllowNotification?: boolean;
+    // ฟีลด์อื่นๆ ที่อนุญาตให้แก้ไข
 }
