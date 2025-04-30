@@ -38,7 +38,7 @@ import DeviceControl from "./modules/powerManagement/screens/DeviceControl";
 import LiveChat from "./modules/chat/screens/ChatRoomScreen";
 
 import PublicFolder from "./modules/documentForms/screen/PublicFolder";
-// import PersonalFolder from "./modules/documentForms/screen/PersonalFolder";
+import MaintenanceGuideFolder from "./modules/maintenanceGuide/screen/MaintenanceGuideFolder";
 
 import EventLogs from "./modules/eventLogs/screen/EventLogs";
 import EventJoinLogs from "./modules/eventLogs/screen/EventJoinLogs";
@@ -174,6 +174,11 @@ function App() {
           <Route path="event-logs" element={<EventLogs />} />
           <Route path="event-joining-logs" element={<EventJoinLogs />} />
           {/* <Route path="event-view" element={<EventView />} /> */}
+          {/* Maintenance Guide Folder */}
+          <Route
+            path="maintenanceFolder"
+            element={<MaintenanceGuideFolder />}
+          />
         </Route>
         <Route path="*" element={<Navigate to="/auth" />} />
       </Routes>

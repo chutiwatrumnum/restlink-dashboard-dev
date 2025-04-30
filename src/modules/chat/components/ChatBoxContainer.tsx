@@ -1,10 +1,4 @@
-import {
-  useState,
-  useEffect,
-  useRef,
-  forwardRef,
-  useImperativeHandle,
-} from "react";
+import { useState, useEffect, useRef } from "react";
 import "@chatscope/chat-ui-kit-styles/dist/default/styles.min.css";
 import {
   ChatContainer,
@@ -36,19 +30,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import "../styles/chatRoom.css";
 import "../styles/chatLibControl.css";
 
-interface ChatBoxContainerRef {
-  handleIncomingChat: () => void;
-}
-
-const ChatBoxContainer = forwardRef<
-  ChatBoxContainerRef,
-  { chatData?: ChatListDataType }
->(({ chatData }, ref) => {
+const ChatBoxContainer = ({ chatData }: { chatData?: ChatListDataType }) => {
   // Variables
-  // const getListRef = () =>
-  //   document.querySelector(
-  //     "[data-message-list-container] [data-cs-message-list]"
-  //   );
   const dispatch = useDispatch<Dispatch>();
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -457,6 +440,6 @@ const ChatBoxContainer = forwardRef<
       )}
     </>
   );
-});
+};
 
 export default ChatBoxContainer;

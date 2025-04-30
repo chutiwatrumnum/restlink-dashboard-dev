@@ -13,7 +13,8 @@ import { document } from "./DocumentFormsModel";
 import { deliveryLogs } from "./DeliveryLogsModel";
 import { emergency } from "./EmergencyModel";
 import { serviceCenter } from "./ServiceCenterModel";
-import { eventLog } from './eventLogs'
+import { eventLog } from "./eventLogs";
+import { maintenanceGuide } from "./MaintenanceGuide";
 export interface RootModel extends Models<RootModel> {
   userAuth: typeof userAuth;
   common: typeof common;
@@ -30,6 +31,7 @@ export interface RootModel extends Models<RootModel> {
   projectNew: typeof projectNew;
   serviceCenter: typeof serviceCenter;
   eventLog: typeof eventLog;
+  maintenanceGuide: typeof maintenanceGuide;
 }
 export const models: RootModel = {
   userAuth,
@@ -46,5 +48,6 @@ export const models: RootModel = {
   emergency,
   projectNew,
   serviceCenter,
-  eventLog
+  eventLog,
+  maintenanceGuide,
 };

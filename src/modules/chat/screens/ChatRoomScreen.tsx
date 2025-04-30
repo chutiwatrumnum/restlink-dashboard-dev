@@ -25,14 +25,9 @@ import { Row, Col, Dropdown, Button, Menu, Spin, Select } from "antd";
 import "@chatscope/chat-ui-kit-styles/dist/default/styles.min.css";
 import "../styles/chatRoom.css";
 
-interface ChatBoxContainerRef {
-  handleIncomingChat: () => void;
-}
-
 const ChatRoom = () => {
   // Variables
   const dispatch = useDispatch<Dispatch>();
-  const chatContainerRef = useRef<ChatBoxContainerRef>(null);
   const queryClient = useQueryClient();
   const { chatListSortBy } = useSelector((state: RootState) => state.chat);
   const [activeUserID, setActiveUserID] = useState("");
@@ -80,8 +75,8 @@ const ChatRoom = () => {
   };
 
   const onUserSelectByUnit = (userId: string, option: any) => {
-    console.log(userId);
-    console.log(option);
+    // console.log(userId);
+    // console.log(option);
 
     let payload = {
       userId: userId,
@@ -133,7 +128,7 @@ const ChatRoom = () => {
   useEffect(() => {
     socket.connect();
     socket.on("connect", () => {
-      // console.log("Socket.IO Connection Opened");
+      console.log("Socket.IO Connection Opened");
     });
     socket.on("chat-list", () => {
       refetchChatList();
@@ -244,7 +239,7 @@ const ChatRoom = () => {
         </Col>
         <Col span={16} style={{ height: "100%" }}>
           <div style={{ position: "relative", height: "100%" }}>
-            <ChatBoxContainer chatData={currentChat} ref={chatContainerRef} />
+            <ChatBoxContainer chatData={currentChat} />
           </div>
         </Col>
       </Row>

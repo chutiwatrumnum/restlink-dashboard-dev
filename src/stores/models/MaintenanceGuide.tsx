@@ -1,21 +1,21 @@
 import {
-  DocumentFormType,
-  GetPublicDataPayloadType,
-} from "../interfaces/Document";
+  MaintenanceGuideFormType,
+  GetMaintenanceGuideDataPayloadType,
+} from "../interfaces/MaintenanceGuide";
 import { createModel } from "@rematch/core";
 import { RootModel } from "./index";
 import axios from "axios";
 import { message } from "antd";
 
-export const document = createModel<RootModel>()({
+export const maintenanceGuide = createModel<RootModel>()({
   state: {
     isLoading: true,
     tableData: [],
-    publicFolders: [],
-    publicFiles: [],
+    maintenanceGuideFolders: [],
+    maintenanceGuideFiles: [],
     currentFoldersMaxLength: 0,
     refresh: false,
-  } as DocumentFormType,
+  } as MaintenanceGuideFormType,
   reducers: {
     updateIsLoadingState: (state, payload) => ({
       ...state,
@@ -25,13 +25,13 @@ export const document = createModel<RootModel>()({
       ...state,
       tableData: payload,
     }),
-    updatePublicFoldersState: (state, payload) => ({
+    updateMaintenanceGuideFoldersState: (state, payload) => ({
       ...state,
-      publicFolders: payload,
+      maintenanceGuideFolders: payload,
     }),
-    updatePublicFilesState: (state, payload) => ({
+    updateMaintenanceGuideFilesState: (state, payload) => ({
       ...state,
-      publicFiles: payload,
+      maintenanceGuideFiles: payload,
     }),
     updateCurrentFolderState: (state, payload) => ({
       ...state,
@@ -47,7 +47,7 @@ export const document = createModel<RootModel>()({
     }),
   },
   effects: (dispatch) => ({
-    async getPublicData(payload: GetPublicDataPayloadType) {
+    async getMaintenanceGuideData(payload: GetMaintenanceGuideDataPayloadType) {
       let item = payload;
       let search = item.search ? `&search=${item.search}` : "";
       let sort = item.sort ? `&sort=${item.sort}` : "&sort=asc";
@@ -56,27 +56,33 @@ export const document = createModel<RootModel>()({
 
       try {
         const result = await axios.get(
-          `/document-form/dashboard/public/folders?curPage=${item.curPage}&perPage=${item.perPage}${search}${sort}${sortBy}`
+          `/maintenance-guide/dashboard/folders?curPage=${item.curPage}&perPage=${item.perPage}${search}${sort}${sortBy}`
         );
         if (result.data.statusCode >= 400) {
           console.error(result.data.message);
           return;
         }
-        dispatch.document.updatePublicFoldersState(result.data.result.folders);
-        dispatch.document.updatePublicFilesState(result.data.result.files);
-        dispatch.document.updateCurrentFolderMaxLengthState(
+        dispatch.maintenanceGuide.updateMaintenanceGuideFoldersState(
+          result.data.result.folders
+        );
+        dispatch.maintenanceGuide.updateMaintenanceGuideFilesState(
+          result.data.result.files
+        );
+        dispatch.maintenanceGuide.updateCurrentFolderMaxLengthState(
           result.data.result.totals
         );
-        dispatch.document.updateTableDataState([
+        dispatch.maintenanceGuide.updateTableDataState([
           ...result.data.result.folders,
           ...result.data.result.files,
         ]);
-        dispatch.document.updateIsLoadingState(false);
+        dispatch.maintenanceGuide.updateIsLoadingState(false);
       } catch (error) {
         console.error("ERROR", error);
       }
     },
-    async getSearchPublicData(payload: GetPublicDataPayloadType) {
+    async getSearchMaintenanceGuideData(
+      payload: GetMaintenanceGuideDataPayloadType
+    ) {
       let item = payload;
       let search = item.search ? `&search=${item.search}` : "";
       let sort = item.sort ? `&sort=${item.sort}` : "&sort=asc";
@@ -84,22 +90,22 @@ export const document = createModel<RootModel>()({
 
       try {
         const result = await axios.get(
-          `/document-form/dashboard/public/folders?curPage=${item.curPage}&perPage=${item.perPage}${search}${sort}${sortBy}`
+          `/maintenance-guide/dashboard/folders?curPage=${item.curPage}&perPage=${item.perPage}${search}${sort}${sortBy}`
         );
         if (result.data.statusCode >= 400) {
           console.error(result.data.message);
           return;
         }
-        dispatch.document.updateTableDataState([
+        dispatch.maintenanceGuide.updateTableDataState([
           ...result.data.result.folders,
           ...result.data.result.files,
         ]);
-        dispatch.document.updateIsLoadingState(false);
+        dispatch.maintenanceGuide.updateIsLoadingState(false);
       } catch (error) {
         console.error("ERROR", error);
       }
     },
-    async getFolderData(payload: GetPublicDataPayloadType) {
+    async getFolderData(payload: GetMaintenanceGuideDataPayloadType) {
       let item = payload;
       let search = item.search ? `&search=${item.search}` : "";
       let sort = item.sort ? `&sort=${item.sort}` : "&sort=asc";
@@ -110,25 +116,25 @@ export const document = createModel<RootModel>()({
           : -1;
 
       if (folderId === -1) return message.error("File is no action!");
-      dispatch.document.updateIsLoadingState(true);
+      dispatch.maintenanceGuide.updateIsLoadingState(true);
 
       try {
         const result = await axios.get(
-          `/document-form/dashboard/public/folders?curPage=${item.curPage}&perPage=${item.perPage}${search}${sort}${sortBy}${folderId}`
+          `/maintenance-guide/dashboard/folders?curPage=${item.curPage}&perPage=${item.perPage}${search}${sort}${sortBy}${folderId}`
         );
         // console.log("RES", result);
 
         if (result.data.statusCode >= 400) {
           throw new Error(result.data.message);
         }
-        dispatch.document.updateCurrentFolderMaxLengthState(
+        dispatch.maintenanceGuide.updateCurrentFolderMaxLengthState(
           result.data.result.totals
         );
-        dispatch.document.updateTableDataState([
+        dispatch.maintenanceGuide.updateTableDataState([
           ...result.data.result.folders,
           ...result.data.result.files,
         ]);
-        dispatch.document.updateIsLoadingState(false);
+        dispatch.maintenanceGuide.updateIsLoadingState(false);
       } catch (error) {
         console.error("ERROR", error);
       }

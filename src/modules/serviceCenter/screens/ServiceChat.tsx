@@ -7,6 +7,7 @@ import { socket } from "../../../configs/socket";
 import {
   getServiceChatListQuery,
   getOptionsChatListQuery,
+  getServiceChatDataByIDQuery,
 } from "../../../utils/queriesGroup/serviceQueries";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -48,6 +49,10 @@ const ServiceChat = () => {
 
   const { data: chatListOptions, isLoading: isChatListOptionsLoading } =
     getOptionsChatListQuery();
+
+  const { refetch: updateChatData } = getServiceChatDataByIDQuery({
+    id: currentServiceId ?? "",
+  });
 
   // Functions
 
@@ -108,7 +113,7 @@ const ServiceChat = () => {
   };
 
   const onChatIncoming = async () => {
-    await refetchServiceChatList();
+    await updateChatData();
   };
 
   const menu = (
@@ -147,6 +152,7 @@ const ServiceChat = () => {
       refetchServiceChatList();
     });
     socket.on(`service-center-chat-service-id-${currentServiceId}`, (cmd) => {
+      // console.log(cmd.cmd);
       if (cmd.cmd === "new_message") {
         onChatIncoming();
       } else if (cmd.cmd === "seen") {
@@ -159,7 +165,7 @@ const ServiceChat = () => {
             return seenMessages;
           }
         );
-        console.log("Seen");
+        // console.log("Seen");
       }
       // chatContainerRef.current?.handleIncomingChat();
     });
