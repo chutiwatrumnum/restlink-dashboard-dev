@@ -15,6 +15,7 @@ import { emergency } from "./EmergencyModel";
 import { serviceCenter } from "./ServiceCenterModel";
 import { eventLog } from "./eventLogs";
 import { maintenanceGuide } from "./MaintenanceGuide";
+import {visitor} from "./visitorModel"
 export interface RootModel extends Models<RootModel> {
   userAuth: typeof userAuth;
   common: typeof common;
@@ -32,6 +33,7 @@ export interface RootModel extends Models<RootModel> {
   serviceCenter: typeof serviceCenter;
   eventLog: typeof eventLog;
   maintenanceGuide: typeof maintenanceGuide;
+  visitor: typeof visitor;
 }
 export const models: RootModel = {
   userAuth,
@@ -50,4 +52,5 @@ export const models: RootModel = {
   serviceCenter,
   eventLog,
   maintenanceGuide,
+  visitor
 };

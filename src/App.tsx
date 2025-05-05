@@ -42,6 +42,7 @@ import MaintenanceGuideFolder from "./modules/maintenanceGuide/screen/Maintenanc
 
 import EventLogs from "./modules/eventLogs/screen/EventLogs";
 import EventJoinLogs from "./modules/eventLogs/screen/EventJoinLogs";
+import VisitorManagementLog from "./modules/vistorManagement/screen/VisitorManagementLog";
 // import EventView from "./modules/monitoring/screen/EventView";
 
 import DeliveryLogs from "./modules/deliveryLogs/screen/deliveryLogs";
@@ -173,6 +174,10 @@ function App() {
 
           <Route path="event-logs" element={<EventLogs />} />
           <Route path="event-joining-logs" element={<EventJoinLogs />} />
+          <Route
+            path="visitor-management-log"
+            element={<VisitorManagementLog />}
+          />
           {/* <Route path="event-view" element={<EventView />} /> */}
           {/* Maintenance Guide Folder */}
           <Route

@@ -1221,49 +1221,39 @@ const DeliveryLogIcon = ({
 }: IconPropsType) => {
   return (
     <svg
-      width="50"
-      height="50"
-      viewBox="0 0 50 50"
+      width="102"
+      height="100"
+      viewBox="0 0 102 100"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      className={className}
-    >
-      <g clipPath="url(#clip0_2267_111578)">
-        <path
-          d="M40.9595 20.6888V13.9462H2V36.1342C2 38.8956 4.23858 41.1342 7 41.1342H20.614"
-          stroke={color}
-          strokeWidth="3"
-          strokeLinecap="round"
-        />
-        <path
-          d="M2 13.9462L8.05921 3.49528C8.59581 2.56974 9.5847 2 10.6546 2H32.305C33.3748 2 34.3637 2.56974 34.9003 3.49528L40.9595 13.9462"
-          stroke={color}
-          strokeWidth="3"
-          strokeLinecap="round"
-        />
-        <path
-          d="M21.4531 1.99988V13.9429"
-          stroke={color}
-          strokeWidth="3"
-          strokeLinecap="round"
-        />
-        <path
-          d="M30.3203 36.3103L34.0898 40.0967C34.5038 40.5125 35.1853 40.4842 35.5633 40.0354L41.9939 32.4016"
-          stroke={color}
-          strokeWidth="3"
-          strokeLinecap="round"
-        />
-        <path
-          d="M48.4935 36.5271C48.4935 43.1404 43.158 48.4902 36.5905 48.4902C30.023 48.4902 24.6875 43.1404 24.6875 36.5271C24.6875 29.9137 30.023 24.564 36.5905 24.564C43.158 24.564 48.4935 29.9137 48.4935 36.5271Z"
-          stroke={color}
-          strokeWidth="3"
-        />
-      </g>
-      <defs>
-        <clipPath id="clip0_2267_111578">
-          <rect width="50" height="50" fill="white" />
-        </clipPath>
-      </defs>
+      className={className}>
+      <path
+        d="M33.5483 78.0002C35.8631 78.0002 38.0831 77.0927 39.7199 75.4774C41.3567 73.8621 42.2762 71.6712 42.2762 69.3868C42.2762 67.1024 41.3567 64.9116 39.7199 63.2962C38.0831 61.6809 35.8631 60.7734 33.5483 60.7734C31.2335 60.7734 29.0135 61.6809 27.3767 63.2962C25.7399 64.9116 24.8203 67.1024 24.8203 69.3868C24.8203 71.6712 25.7399 73.8621 27.3767 75.4774C29.0135 77.0927 31.2335 78.0002 33.5483 78.0002ZM77.1881 78.0002C79.5029 78.0002 81.7229 77.0927 83.3597 75.4774C84.9965 73.8621 85.916 71.6712 85.916 69.3868C85.916 67.1024 84.9965 64.9116 83.3597 63.2962C81.7229 61.6809 79.5029 60.7734 77.1881 60.7734C74.8733 60.7734 72.6533 61.6809 71.0165 63.2962C69.3797 64.9116 68.4601 67.1024 68.4601 69.3868C68.4601 71.6712 69.3797 73.8621 71.0165 75.4774C72.6533 77.0927 74.8733 78.0002 77.1881 78.0002Z"
+        stroke="#0B262F"
+        stroke-width="6"
+        stroke-miterlimit="1.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+      <path
+        d="M42.494 69.3736H64.0957V24.584C64.0957 23.8987 63.8199 23.2414 63.3288 22.7568C62.8378 22.2722 62.1718 22 61.4773 22H3M23.2925 69.3736H14.3463C14.0025 69.3736 13.662 69.3067 13.3443 69.1769C13.0267 69.047 12.738 68.8567 12.4949 68.6167C12.2517 68.3768 12.0589 68.0919 11.9273 67.7784C11.7957 67.4649 11.728 67.1289 11.728 66.7896V45.6868"
+        stroke="#0B262F"
+        stroke-width="6"
+        stroke-linecap="round"
+      />
+      <path
+        d="M7.36719 34.9297H24.8231"
+        stroke="#0B262F"
+        stroke-width="6"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+      <path
+        d="M64.0859 34.9297H88.5679C89.074 34.9298 89.5692 35.0747 89.9937 35.3468C90.4181 35.6189 90.7535 36.0066 90.9593 36.4629L98.7709 53.8102C98.9197 54.1396 98.997 54.4961 98.9978 54.8567V66.7992C98.9978 67.1385 98.9301 67.4745 98.7985 67.788C98.6669 68.1015 98.474 68.3864 98.2309 68.6264C97.9877 68.8663 97.6991 69.0566 97.3814 69.1865C97.0637 69.3164 96.7232 69.3832 96.3794 69.3832H88.0878M64.0859 69.3832H68.4499"
+        stroke="#0B262F"
+        stroke-width="6"
+        stroke-linecap="round"
+      />
     </svg>
   );
 };
@@ -1417,7 +1407,7 @@ const ServiceCenterListIcon = ({
 };
 
 const ServiceCenterTotal = ({
-  color = whiteLabel.mainTextColor,
+  color = whiteLabel.whiteColor,
   className,
 }: IconPropsType) => {
   return (
@@ -1437,7 +1427,7 @@ const ServiceCenterTotal = ({
 };
 
 const ServiceCenterPending = ({
-  color = whiteLabel.mainTextColor,
+  color = whiteLabel.whiteColor,
   className,
 }: IconPropsType) => {
   return (
@@ -1457,7 +1447,7 @@ const ServiceCenterPending = ({
 };
 
 const ServiceCenterRepairing = ({
-  color = whiteLabel.mainTextColor,
+  color = whiteLabel.whiteColor,
   className,
 }: IconPropsType) => {
   return (
@@ -1475,6 +1465,71 @@ const ServiceCenterRepairing = ({
     </svg>
   );
 };
+
+
+  const VisitorManagementLogIcon = ({
+    color = whiteLabel.mainTextColor,
+    className,
+  }: IconPropsType) => {
+    return (
+      <svg
+        width={"20"}
+        height={"20"}
+        viewBox="0 0 50 50"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className={className}>
+        <path
+          d="M29.765 17.7216H48V48.2062H2V17.7216H20.3744V14.7288H29.6981L29.765 17.7216Z"
+          stroke={color}
+          stroke-width="3"
+          stroke-miterlimit="10"
+        />
+        <path
+          d="M20.3672 17.7217V21.3271C20.3672 21.3271 22.2061 24.2527 24.9924 24.2527C27.7786 24.2527 29.8906 21.3271 29.8906 21.3271L29.7569 17.7217"
+          stroke={color}
+          stroke-width="3"
+          stroke-miterlimit="10"
+        />
+        <path
+          d="M20.5294 21.5726C20.5294 21.5726 16.5391 21.6952 16.5391 25.0112C16.5391 28.3272 20.2396 28.6337 20.2396 28.6337H30.7002C30.7002 28.6337 33.6595 28.0987 33.6595 24.5765C33.6595 24.5765 33.888 21.5726 29.6915 21.5726"
+          stroke={color}
+          stroke-width="3"
+          stroke-miterlimit="10"
+        />
+        <path
+          d="M7.34375 33.1534L11.8854 41.9803L16.8895 33.1534"
+          stroke={color}
+          stroke-width="3"
+          stroke-miterlimit="10"
+        />
+        <path
+          d="M24.5126 6.28011L29.1382 2L37.6761 2.17276L29.6844 14.7289L21.8877 2H13.6562L20.3606 14.7289"
+          stroke={color}
+          stroke-width="3"
+          stroke-miterlimit="10"
+        />
+        <path
+          d="M24.4453 35.4829H31.4221"
+          stroke={color}
+          stroke-width="3"
+          stroke-miterlimit="10"
+        />
+        <path
+          d="M24.4453 39.1946H40.0332"
+          stroke={color}
+          stroke-width="3"
+          stroke-miterlimit="10"
+        />
+        <path
+          d="M24.0547 43.0735H34.0574"
+          stroke={color}
+          stroke-width="3"
+          stroke-miterlimit="10"
+        />
+      </svg>
+    );
+  };
 
 
 export {
@@ -1528,4 +1583,5 @@ export {
   EventIcon,
   EventLogIcon,
   EventJoinLogIcon,
+  VisitorManagementLogIcon,
 };

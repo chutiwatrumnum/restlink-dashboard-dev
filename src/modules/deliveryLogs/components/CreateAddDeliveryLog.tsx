@@ -199,210 +199,243 @@ const CreateAddDeliveryLog = (props: ComponentCreateProps) => {
         }
     };
     return (
-        <>
-            <Modal
-                title={"Record a delivery"}
-                width={700}
-                centered
-                open={props?.isOpen}
-                onCancel={handleCancel}
-                footer={false}
-                style={{
-                    borderBottom: 20,
-                    borderWidth: 200,
-                    borderBlock: 10,
-                }}
-            >
-                <Form form={form} layout="vertical" name="basic" labelCol={{ span: 22 }} wrapperCol={{ span: 22 }} initialValues={{ remember: true }} onFinish={onFinish} onFinishFailed={onFinishFailed} autoComplete="off">
-                    <Row>
-                        <Col span={12}>
-                            {/* <Form.Item
-                name="blockNo"
-                label="Block no."
-                rules={[
-                  { required: true, message: "Please select Input block no." },
-                ]}
-              >
-                <Select
-                  options={block}
-                  onChange={handleChangeBlock}
-                  placeholder="Input block no."
-                />
-              </Form.Item> */}
-                            <Form.Item name="unitId" label="Unit no." rules={[{ required: true, message: "Please select Input unit no." }]}>
-                                <Select
-                                    showSearch
-                                    optionFilterProp="children"
-                                    filterOption={(input, option) => (option?.label ?? "").toLowerCase().includes(input.toLowerCase())}
-                                    // disabled={selectedblock}
-                                    options={unit}
-                                    onChange={handleChangeUnit}
-                                    placeholder="Input unit no."
-                                />
-                            </Form.Item>
-                            <Form.Item name="occupantsName" label="Occupant's name" rules={[{ required: true, message: "Please select occupant's name" }]}>
-                                <Select disabled={selectedunit} options={occupantsName} placeholder="Select occupant's name" />
-                            </Form.Item>
+      <>
+        <Modal
+          title="Record a delivery"
+          width={700}
+          centered
+          open={props?.isOpen}
+          onCancel={handleCancel}
+          footer={false}
+          style={{
+            borderRadius: "8px",
+            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+          }}>
+          <Form
+            form={form}
+            layout="vertical"
+            name="basic"
+            initialValues={{ remember: true }}
+            onFinish={onFinish}
+            onFinishFailed={onFinishFailed}
+            autoComplete="off">
+            <Row gutter={20}>
+              <Col span={12}>
+                <Form.Item
+                  name="unitId"
+                  label="Unit no."
+                  rules={[
+                    { required: true, message: "Please select Input unit no." },
+                  ]}>
+                  <Select
+                    showSearch
+                    optionFilterProp="children"
+                    filterOption={(input, option) =>
+                      (option?.label ?? "")
+                        .toLowerCase()
+                        .includes(input.toLowerCase())
+                    }
+                    options={unit}
+                    onChange={handleChangeUnit}
+                    placeholder="Input unit no."
+                  />
+                </Form.Item>
 
-                            <Form.Item
-                                label="Sender type"
-                                name="senderType"
-                                rules={[
-                                    {
-                                        pattern: new RegExp(/^[A-Za-z][A-Za-z]*$/),
-                                        message: "english word only",
-                                    },
-                                    { required: true, message: "Please input your sender type!" },
-                                ]}
-                            >
-                                <Input placeholder="Input sender type" />
-                            </Form.Item>
-                            <Form.Item
-                                label="Tracking number"
-                                name="trackingNumber"
-                                rules={[
-                                    {
-                                        pattern: new RegExp(/^[A-Za-z0-9][A-Za-z0-9]*$/),
-                                        message: "english word and digit only",
-                                    },
-                                    {
-                                        required: true,
-                                        message: "Please input your tracking number!",
-                                    },
-                                ]}
-                            >
-                                <Input placeholder="Input tracking number" />
-                            </Form.Item>
-                            <Form.Item
-                                label="Pick-up location"
-                                name="pickUpLocation"
-                                rules={[
-                                    {
-                                        required: true,
-                                        message: "Please input your pick-up location!",
-                                    },
-                                ]}
-                            >
-                                <Input placeholder="Input pick-up location" />
-                            </Form.Item>
-                        </Col>
-                        <Col span={12} style={{ paddingLeft: 10 }}>
-                            <Form.Item
-                                label="Date"
-                                name="Date"
-                                rules={[
-                                    {
-                                        required: true,
-                                        message: "This field is required !",
-                                    },
-                                ]}
-                            >
-                                <RangePicker
-                                    value={dates || value}
-                                    disabledDate={disabledDate}
-                                    onCalendarChange={(val) => {
-                                        setDates(val);
-                                    }}
-                                    onChange={async (val) => {
-                                        if (val) {
-                                            const date1 = dayjs(dayjs(val[0]).format("YYYY-MM-DD"));
-                                            const date2 = dayjs(dayjs().format("YYYY-MM-DD"));
-                                            const diffRsult = date1.diff(date2, "day");
-                                            if (diffRsult > 0) {
-                                                if (diffRsult > 0 && diffRsult <= 4) {
-                                                    const reminderNotificationResult = reminderNotification.slice(0, diffRsult);
-                                                    await setReminderNotificationSelect(reminderNotificationResult);
-                                                    await form.setFieldsValue({
-                                                        reminderNotification: null,
-                                                    });
-                                                } else if (diffRsult > 4) {
-                                                    await setReminderNotificationSelect(reminderNotification);
-                                                    await form.setFieldsValue({
-                                                        reminderNotification: null,
-                                                    });
-                                                }
-                                                await setdisableDatePicker(false);
-                                            } else if (diffRsult === 0) {
-                                                await form.setFieldsValue({
-                                                    reminderNotification: "Select day",
-                                                });
-                                            } else {
-                                                await setdisableDatePicker(true);
-                                            }
-                                        } else {
-                                            await setdisableDatePicker(true);
-                                        }
-                                        setValue(val);
-                                    }}
-                                    onOpenChange={onOpenChange}
-                                />
-                                {/* <DatePicker
-                      disabledDate={disabledDate}
-                      className="fullWidth"
-                      format="YYYY-MM-DD"
-                      defaultValue={dayjs(new Date())}
-                    /> */}
-                            </Form.Item>
+                <Form.Item
+                  name="occupantsName"
+                  label="Occupant's name"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please select occupant's name",
+                    },
+                  ]}>
+                  <Select
+                    disabled={selectedunit}
+                    options={occupantsName}
+                    placeholder="Select occupant's name"
+                  />
+                </Form.Item>
 
-                            <Row>
-                                <Col span={12}>
-                                    <Form.Item
-                                        label="Start time"
-                                        name="startTime"
-                                        rules={[
-                                            {
-                                                required: true,
-                                                message: "This field is required !",
-                                            },
-                                        ]}
-                                    >
-                                        <TimePicker className="fullWidth" format="hh:mm a" />
-                                    </Form.Item>
-                                </Col>
-                                <Col span={11}>
-                                    <Form.Item
-                                        label="End time"
-                                        name="endTime"
-                                        rules={[
-                                            {
-                                                required: true,
-                                                message: "This field is required !",
-                                            },
-                                        ]}
-                                    >
-                                        <TimePicker className="fullWidth" format="hh:mm a" />
-                                    </Form.Item>
-                                </Col>
-                            </Row>
+                <Form.Item
+                  label="Sender type"
+                  name="senderType"
+                  rules={[
+                    {
+                      pattern: new RegExp(/^[A-Za-z][A-Za-z]*$/),
+                      message: "english word only",
+                    },
+                    {
+                      required: true,
+                      message: "Please input your sender type!",
+                    },
+                  ]}>
+                  <Input placeholder="Input sender type" />
+                </Form.Item>
 
-                            <Form.Item
-                                name="reminderNotification"
-                                label="Reminder notification"
-                                rules={[
-                                    {
-                                        required: true,
-                                        message: "Select day",
-                                    },
-                                ]}
-                            >
-                                <Select disabled={disableDatePicker} options={reminderNotificationSelect} placeholder="Select day" />
-                            </Form.Item>
-                            <Form.Item label="Arrival Date" name="arrivalDate">
-                            <DatePicker  />
-                            </Form.Item>
-                            <Form.Item label="Comment(Optional)" name="description">
-                                <Input.TextArea style={{ height: 200 }} placeholder="Input comment" maxLength={100} rows={6} showCount />
-                            </Form.Item>
-                        </Col>
-                    </Row>
-                    <Form.Item className="noMargin" wrapperCol={{ offset: 22, span: 2 }} style={{ paddingRight: 30 }}>
-                        <Button type="primary" htmlType="submit">
-                            Save
-                        </Button>
+                <Form.Item
+                  label="Tracking number"
+                  name="trackingNumber"
+                  rules={[
+                    {
+                      pattern: new RegExp(/^[A-Za-z0-9][A-Za-z0-9]*$/),
+                      message: "english word and digit only",
+                    },
+                    {
+                      required: true,
+                      message: "Please input your tracking number!",
+                    },
+                  ]}>
+                  <Input placeholder="Input tracking number" />
+                </Form.Item>
+
+                <Form.Item
+                  label="Pick-up location"
+                  name="pickUpLocation"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please input your pick-up location!",
+                    },
+                  ]}>
+                  <Input placeholder="Input pick-up location" />
+                </Form.Item>
+              </Col>
+
+              <Col span={12}>
+                <Form.Item
+                  label="Date"
+                  name="Date"
+                  rules={[
+                    {
+                      required: true,
+                      message: "This field is required!",
+                    },
+                  ]}>
+                  <RangePicker
+                    value={dates || value}
+                    disabledDate={disabledDate}
+                    onCalendarChange={(val) => {
+                      setDates(val);
+                    }}
+                    onChange={async (val) => {
+                      if (val) {
+                        const date1 = dayjs(dayjs(val[0]).format("YYYY-MM-DD"));
+                        const date2 = dayjs(dayjs().format("YYYY-MM-DD"));
+                        const diffRsult = date1.diff(date2, "day");
+                        if (diffRsult > 0) {
+                          if (diffRsult > 0 && diffRsult <= 4) {
+                            const reminderNotificationResult =
+                              reminderNotification.slice(0, diffRsult);
+                            await setReminderNotificationSelect(
+                              reminderNotificationResult
+                            );
+                            await form.setFieldsValue({
+                              reminderNotification: null,
+                            });
+                          } else if (diffRsult > 4) {
+                            await setReminderNotificationSelect(
+                              reminderNotification
+                            );
+                            await form.setFieldsValue({
+                              reminderNotification: null,
+                            });
+                          }
+                          await setdisableDatePicker(false);
+                        } else if (diffRsult === 0) {
+                          await form.setFieldsValue({
+                            reminderNotification: "Select day",
+                          });
+                        } else {
+                          await setdisableDatePicker(true);
+                        }
+                      } else {
+                        await setdisableDatePicker(true);
+                      }
+                      setValue(val);
+                    }}
+                    onOpenChange={onOpenChange}
+                    style={{ width: "100%" }}
+                  />
+                </Form.Item>
+
+                <Row gutter={12}>
+                  <Col span={12}>
+                    <Form.Item
+                      label="Start time"
+                      name="startTime"
+                      rules={[
+                        {
+                          required: true,
+                          message: "This field is required!",
+                        },
+                      ]}>
+                      <TimePicker
+                        className="fullWidth"
+                        format="hh:mm a"
+                        style={{ width: "100%" }}
+                      />
                     </Form.Item>
-                </Form>
-            </Modal>
-        </>
+                  </Col>
+                  <Col span={12}>
+                    <Form.Item
+                      label="End time"
+                      name="endTime"
+                      rules={[
+                        {
+                          required: true,
+                          message: "This field is required!",
+                        },
+                      ]}>
+                      <TimePicker
+                        className="fullWidth"
+                        format="hh:mm a"
+                        style={{ width: "100%" }}
+                      />
+                    </Form.Item>
+                  </Col>
+                </Row>
+
+                <Form.Item
+                  name="reminderNotification"
+                  label="Reminder notification"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Select day",
+                    },
+                  ]}>
+                  <Select
+                    disabled={disableDatePicker}
+                    options={reminderNotificationSelect}
+                    placeholder="Select day"
+                  />
+                </Form.Item>
+
+                <Form.Item label="Arrival Date" name="arrivalDate">
+                  <DatePicker style={{ width: "100%" }} />
+                </Form.Item>
+
+                <Form.Item label="Comment (Optional)" name="description">
+                  <Input.TextArea
+                    placeholder="Input comment"
+                    maxLength={100}
+                    rows={4}
+                    showCount
+                    style={{ resize: "none" }}
+                  />
+                </Form.Item>
+              </Col>
+            </Row>
+
+            <Form.Item style={{ marginBottom: 0, textAlign: "right" }}>
+              <Button type="primary" htmlType="submit">
+                Save
+              </Button>
+            </Form.Item>
+          </Form>
+        </Modal>
+      </>
     );
 };
 
