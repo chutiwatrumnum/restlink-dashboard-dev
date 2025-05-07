@@ -33,7 +33,7 @@
   --header-color: #ACEADE;
   --BG-color: rgba(172, 234, 222, 0.2);
   --login-color: #36CCCC;
-  --BG-Table-color: rgba(172, 234, 222, 0.3);
+  --BG-Table-color: rgba(233,248,245,255);
   --white-color: #ffffff;
   --whiteTrans-color: rgba(255, 255, 255, 0.8);
   --black-color: #403d38;
@@ -70,7 +70,7 @@
   /* Table color */
   --tableHeadBg-color: var(--header-color);
   --tableHeadText-color: var(--black-color);
-  --subTableHeadBg-color: var(--gray-color);
+  --subTableHeadBg-color: var(--header-color);
 }
 
 @media (prefers-color-scheme: light) {

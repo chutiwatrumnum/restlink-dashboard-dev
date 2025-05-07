@@ -212,11 +212,18 @@
   background-color: var(--BG-Table-color) !important;
 }
 
+.ant-table-tbody > tr.ant-table-row:hover > td {
+  background-color: var(--secondary-color) !important;
+}
+
 .ant-btn-primary:hover {
   background-color: var(--primary-color) !important;
   opacity: 0.9;
   transition: 0.3s;
 }
+
+
+
 
 /* Scrollbar Control */
 /* *::-webkit-scrollbar-track {

@@ -1,4 +1,4 @@
-import type { ColumnsType} from "antd/es/table";
+import type { ColumnsType } from "antd/es/table";
 export interface ResidentAddNew {
   firstName: string;
   lastName: string,
@@ -41,19 +41,19 @@ export interface DataType {
   endTime: string;
   isApproveAll: boolean;
   isRejectAll: boolean;
-  status:string;
+  status: string;
 }
-export interface IchildData{
-  [index:number]:ExpandedDataType[]
+export interface IchildData {
+  [index: number]: ExpandedDataType[]
 }
- export interface ExpandedDataType {
+export interface ExpandedDataType {
   key: string;
   name: string;
   status: string;
   createDate: string;
   iuNumber: string;
   licensePlate: string;
-  type:string;
+  type: string;
   approved: boolean;
   reject: boolean;
 }
@@ -66,8 +66,8 @@ export interface visitorType {
   loading: boolean
   total: number
   residentMaxLength: number;
-  filterData:conditionPage
-  childrenVisitor:IchildData
+  filterData: conditionPage
+  childrenVisitor: IchildData
 }
 export interface AnnouncePayloadType {
   search: string | null;
@@ -85,19 +85,19 @@ export interface conditionPage {
   endDate?: string
   sort?: string
   sortBy?: string
-  reject?:boolean
+  reject?: boolean
 }
-export interface rejectRequest{
-  userId:string,
-  rejectReason:string
+export interface rejectRequest {
+  userId: string,
+  rejectReason: string
 }
-export interface columnTable{
-  defaultTable:ColumnsType<DataType>,
-  allTabsColumn:ColumnsType<DataType>,
-  rejectTabsColumn:ColumnsType<DataType>,
+export interface columnTable {
+  defaultTable: ColumnsType<DataType>,
+  allTabsColumn: ColumnsType<DataType>,
+  rejectTabsColumn: ColumnsType<DataType>,
 }
 
-export interface IApprovedBody{
- id:number
-  status: "approve"|"reject"
+export interface IApprovedBody {
+  id: number
+  status: "approve" | "reject"
 }

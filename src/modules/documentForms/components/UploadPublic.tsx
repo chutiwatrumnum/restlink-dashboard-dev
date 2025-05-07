@@ -104,7 +104,7 @@ const UploadPublic = (props: ComponentCreateProps) => {
       props.callBack(!props?.isOpen, true);
       setFileList([]);
     } else {
-      Modal.success({ content: "Upload failed", centered: true });
+      Modal.error({ content: "Upload failed", centered: true });
       destroyModal();
     }
   };
