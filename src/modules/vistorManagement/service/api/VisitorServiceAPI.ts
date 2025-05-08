@@ -126,7 +126,7 @@ const ApprovedVisitorLogsId = async (params: IApprovedBody, type: boolean) => {
         }
         console.log("request data:", data);
 
-        const resultApproved = await axios.put(`/visitor/events/confirm`, data);
+        const resultApproved = await axios.put(`/events/visitor/confirm`, data);
         console.log("resp EvenLog data", resultApproved);
 
         if (resultApproved.status === statusSuccess) {
@@ -153,7 +153,7 @@ const getdataVisitorLoglist = async (params: conditionPage) => {
         const AllDataResident = result.data.dataList;
         let data: DataType[] = [];
         let allChildData = {} as IchildData;
-        AllDataResident.map((e: any, i: number) => {
+        AllDataResident.map((e: any) => {
             let childData: ExpandedDataType[] = [];
             let userdata: DataType = {
                 key: e.id,
@@ -197,6 +197,9 @@ const getdataVisitorLoglist = async (params: conditionPage) => {
         };
     } catch (err) {
         console.error("err:", err);
+        return {
+            status: false,
+        };
     }
 };
 
