@@ -23,5 +23,6 @@ export interface editProfileDetail {
     contact?: string;
     allowNotifications?: boolean;
     callAllowNotification?: boolean;
+    imageProfile?: string;
     // ฟีลด์อื่นๆ ที่อนุญาตให้แก้ไข
 }
