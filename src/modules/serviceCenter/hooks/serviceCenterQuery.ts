@@ -35,7 +35,7 @@ export const useServiceCenterServiceListQuery = (payloadQuery: ServiceCenterPayl
                     statusName: item.status.nameEn,
                     roomAddress: item.unit.roomAddress,
                     issue: item.cause != null ? item.cause : "",
-                    fullname: item.createdBy.familyName + " " + item.createdBy.givenName,
+                    fullname: item.createdBy.givenName + " " + item.createdBy.familyName,
                 };
             });
             return { data: dataTableList, total: data.total };

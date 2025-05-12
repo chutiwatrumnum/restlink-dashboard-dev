@@ -1,191 +1,60 @@
 import axios from "axios";
-import { DataType, ResidentAddNew, conditionPage, rejectRequest, ExpandedDataType, IchildData, IApprovedBody } from "../../../../stores/interfaces/Visitor";
+import { DataType, conditionPage, ExpandedDataType, IchildData, IApprovedBody } from "../../../../stores/interfaces/Visitor";
 import { paramsdata } from "./paramsAPI";
-import { encryptStorage } from "../../../../utils/encryptStorage";
-import { statusSuccess, statusCreated } from "../../../../constant/status_code";
+import { statusSuccess } from "../../../../constant/status_code";
 import dayjs from "dayjs";
-// const getdataVisitorlist = async (params: conditionPage) => {
-//     let url: string = `/visitor/facilities?`;
-//     const resultparams = await paramsdata(params);
-//     if (resultparams.status) {
-//         url = url + resultparams.paramsstr;
-//         console.log("url:", url);
-//     }
-//     const token = await encryptStorage.getItem("accessToken");
-//     if (token) {
-//         try {
-//             const result = await axios.get(url);
-//             if (result.status === statusSuccess) {
-//                 const AllDataResident = result.data.result.dataList;
-//                 let data: DataType[] = [];
-//                 let allChildData = {} as IchildData;
-//                 AllDataResident.map((e: any, i: number) => {
-//                     let childData: ExpandedDataType[] = [];
-//                     let userdata: DataType = {
-//                         key: e.id,
-//                         name: e.createdBy.fullName,
-//                         totalVisitor: e.visitorList.length,
-//                         createdAt: e.createdAt,
-//                         bookingAt: e.joinAt,
-//                         startTime: e.startTime,
-//                         endTime: e.endTime,
-//                         isApproveAll: e.isApproveAll,
-//                         isRejectAll: e.isRejectAll,
-//                         status: e.status ? e.status : "Pending",
-//                     };
-//                     if (e.visitorList.length > 0) {
-//                         e.visitorList.map((childitem: any, childindex: number) => {
-//                             let childrenData: ExpandedDataType = {
-//                                 key: childitem.id,
-//                                 name: childitem.fullName,
-//                                 status: childitem.status,
-//                                 createDate: dayjs().toString(),
-//                                 iuNumber: childitem.iuNumber ? childitem.iuNumber : "-",
-//                                 licensePlate: childitem.licensePlate ? childitem.licensePlate : "-",
-//                                 type: childitem.type,
-//                                 approved: childitem.approve,
-//                                 reject: childitem.reject,
-//                             };
-//                             childData.push(childrenData);
-//                         });
-//                         allChildData[e.id] = childData;
-//                     } else {
-//                         userdata.status = "confirmed";
-//                     }
-//                     data.push(userdata);
-//                 });
-
-//                 return {
-//                     total: result.data.result.maxRowLength,
-//                     status: true,
-//                     datavlaue: data,
-//                     childdata: allChildData,
-//                 };
-//             } else {
-//                 console.warn("status code:", result.status);
-//                 console.warn("data error:", result.data);
-//             }
-//         } catch (err) {
-//             console.error("err:", err);
-//         }
-//     } else {
-//         console.log("====================================");
-//         console.log("token undefilend.....");
-//         console.log("====================================");
-//     }
-// };
-
-const ApprovedId = async (params: IApprovedBody, type: boolean) => {
-    try {
-        let data: any;
-        //true = header or false = child
-        if (type) {
-            let dataHeader = {
-                refBookingId: params.id,
-                status: params.status,
-            };
-            data = dataHeader;
-        } else {
-            let dataChild = {
-                visitorId: params.id,
-                status: params.status,
-            };
-            data = dataChild;
-        }
-        console.log("request data:", data);
-        const resultApproved = await axios.put(`/visitor/facilities/confirm`, data);
-        console.log("resp Facility data", resultApproved);
-        if (resultApproved.status === statusSuccess) {
-            return true;
-        } else {
-            return false;
-        }
-    } catch (err) {
-        console.error(err);
-        return {
-            status: false,
-        };
-    }
-};
-const ApprovedVisitorLogsId = async (params: IApprovedBody, type: boolean) => {
-    try {
-        let data: any;
-        //true = header or false = child
-        if (type) {
-            let dataHeader = {
-                refId: params.id,
-                status: params.status,
-            };
-            data = dataHeader;
-        } else {
-            let dataChild = {
-                visitorId: params.id,
-                status: params.status,
-            };
-            data = dataChild;
-        }
-        console.log("request data:", data);
-
-        const resultApproved = await axios.put(`/events/visitor/confirm`, data);
-        console.log("resp EvenLog data", resultApproved);
-
-        if (resultApproved.status === statusSuccess) {
-            return true;
-        } else {
-            return false;
-        }
-    } catch (err) {
-        console.error(err);
-        return {
-            status: false,
-        };
-    }
-};
-
 const getdataVisitorLoglist = async (params: conditionPage) => {
-    let url: string = `/events/visitor/events-log?`;
+    let url = `/events/visitor/events-log?`;
     const resultparams = await paramsdata(params);
+
     if (resultparams.status) {
-        url = url + resultparams.paramsstr;
+        url += resultparams.paramsstr;
     }
+
     try {
         const result = await axios.get(url);
         const AllDataResident = result.data.dataList;
         let data: DataType[] = [];
-        let allChildData = {} as IchildData;
-        AllDataResident.map((e: any) => {
-            let childData: ExpandedDataType[] = [];
+        let allChildData: IchildData = {};
+
+        AllDataResident.forEach((item: any) => {
+            // สร้างข้อมูลหลัก
             let userdata: DataType = {
-                key: e.id,
-                name: e.createdBy.fullName,
-                totalVisitor: e.visitorList.length,
-                createdAt: e.createdAt,
-                bookingAt: e.joinAt,
-                startTime: e.events ? e.events.startTime : "-",
-                endTime: e.events ? e.events.endTime : "-",
-                isApproveAll: e.isApproveAll,
-                isRejectAll: e.isRejectAll,
-                status: e.status ? e.status : "Pending",
+                key: item.id,
+                name: item.createdBy.fullName,
+                totalVisitor: item.visitorList.length,
+                createdAt: item.createdAt,
+                bookingAt: item.joinAt,
+                startTime: item.events?.startTime || "-",
+                endTime: item.events?.endTime || "-",
+                isApproveAll: item.isApproveAll,
+                isRejectAll: item.isRejectAll,
+                status: item.status || "Pending",
             };
-            if (e.visitorList.length > 0) {
-                e.visitorList.map((childitem: any) => {
-                    let childrenData: ExpandedDataType = {
-                        key: childitem.id,
-                        name: childitem.fullName,
-                        status: childitem.status,
+
+            // สร้างข้อมูลลูก
+            if (item.visitorList.length > 0) {
+                let childData: ExpandedDataType[] = [];
+
+                item.visitorList.forEach((child: any) => {
+                    childData.push({
+                        key: child.id,
+                        name: child.fullName,
+                        status: child.status,
                         createDate: dayjs().toString(),
-                        iuNumber: childitem.iuNumber ? childitem.iuNumber : "-",
-                        licensePlate: childitem.licensePlate ? childitem.licensePlate : "-",
-                        type: childitem.type,
-                        approved: childitem.approve,
-                        reject: childitem.reject,
-                    };
-                    childData.push(childrenData);
+                        iuNumber: child.iuNumber || "-",
+                        licensePlate: child.licensePlate || "-",
+                        type: child.type,
+                        approved: child.approve,
+                        reject: child.reject,
+                    });
                 });
-                allChildData[e.id] = childData;
+
+                allChildData[item.id] = childData;
             } else {
-                userdata.status = "confrimed";
+                userdata.status = "confirmed";
             }
+
             data.push(userdata);
         });
 
@@ -196,32 +65,93 @@ const getdataVisitorLoglist = async (params: conditionPage) => {
             childdata: allChildData,
         };
     } catch (err) {
-        console.error("err:", err);
-        return {
-            status: false,
-        };
+        console.error("Error:", err);
+        return { status: false };
     }
 };
 
+// อนุมัติ visitor ใน facility
+const ApprovedId = async (params: IApprovedBody, type: boolean) => {
+    try {
+        let data: any;
+
+        // true = header, false = child
+        if (type) {
+            data = {
+                refBookingId: params.id,
+                status: params.status,
+            };
+        } else {
+            data = {
+                visitorId: params.id,
+                status: params.status,
+            };
+        }
+
+        console.log("Request data:", data);
+        const result = await axios.put(`/visitor/facilities/confirm`, data);
+        console.log("Response:", result);
+
+        return result.status === statusSuccess;
+    } catch (err) {
+        console.error("Error:", err);
+        return false;
+    }
+};
+
+// อนุมัติ visitor logs
+const ApprovedVisitorLogsId = async (params: IApprovedBody, type: boolean) => {
+    try {
+        let data: any;
+
+        // true = header, false = child
+        if (type) {
+            data = {
+                refId: params.id,
+                status: params.status,
+            };
+        } else {
+            data = {
+                visitorId: params.id,
+                status: params.status,
+            };
+        }
+
+        console.log("Request data:", data);
+        const result = await axios.put(`/events/visitor/confirm`, data);
+        console.log("Response:", result);
+
+        return result.status === statusSuccess;
+    } catch (err) {
+        console.error("Error:", err);
+        return false;
+    }
+};
+
+// ดาวน์โหลด visitor logs
 const dowloadVisitorLogs = async () => {
-    var now = dayjs();
-    axios({
-        url: `/visitor/facilities/download`, //your url
-        method: "GET",
-        responseType: "blob", // important
-    }).then((response) => {
-        // create file link in browser's memory
+    try {
+        const now = dayjs();
+        const response = await axios({
+            url: `/visitor/facilities/download`,
+            method: "GET",
+            responseType: "blob",
+        });
+
+        // สร้างลิงก์ดาวน์โหลด
         const href = URL.createObjectURL(response.data);
-        console.log("response.data======", response.data);
-        // create "a" HTML element with href to file & click
         const link = document.createElement("a");
         link.href = href;
-        link.setAttribute("download", dayjs(now).format("DD-MM-YYYY")); //or any other extension
+        link.setAttribute("download", `${now.format("DD-MM-YYYY")}.pdf`);
         document.body.appendChild(link);
         link.click();
-        // clean up "a" element & remove ObjectURL
-        // document.body.removeChild(link);
-        // URL.revokeObjectURL(href);
-    });
+
+        // ทำความสะอาด
+        document.body.removeChild(link);
+        URL.revokeObjectURL(href);
+    } catch (err) {
+        console.error("Download error:", err);
+    }
 };
+
 export { ApprovedId, ApprovedVisitorLogsId, getdataVisitorLoglist, dowloadVisitorLogs };

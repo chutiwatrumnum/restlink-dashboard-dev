@@ -48,6 +48,8 @@ export interface dataEventJoinLogsType {
   unitNo: string;
   participant: number;
   bookingBy: string;
+  roomAddress: string;
+
 }
 export interface dataEventLogsType {
   key: number;

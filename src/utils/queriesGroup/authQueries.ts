@@ -6,18 +6,16 @@ import { encryptStorage } from "../../utils/encryptStorage";
 const getProjectID = async () => {
   let url = `/my-project`;
   const res = await axios.get(url);
-  // console.log("RES : ", res);
-
+  console.log("RES : ", res);
   encryptStorage.setItem("projectId", res.data.data.myProjectId);
 
   return res.data.data;
 };
 
 //  Queries Service Chat
-export const getProjectIDQuery = (payload: { shouldFetch: boolean }) => {
+export const getProjectIDQuery = () => {
   return useQuery({
     queryKey: ["projectId"],
     queryFn: getProjectID,
-    enabled: payload.shouldFetch,
   });
 };

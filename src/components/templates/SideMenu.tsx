@@ -389,20 +389,20 @@ const SideMenu = () => {
                     Event joining logs
                   </Link>
                 </Menu.Item>
+                <Menu.Item
+                  key={`${main_link}visitor-management-log`}
+                  icon={
+                    <VisitorManagementLogIcon
+                      color={iconSubMenuColorSelector("visitor-management-log")}
+                      className="sideMenuIcon"
+                    />
+                  }>
+                  <Link to={`${main_link}/visitor-management-log`}>
+                    Visitor management log
+                  </Link>
+                </Menu.Item>
               </SubMenu>
-              <div className={"group-name"}>Visitor management</div>
-              <Menu.Item
-                key={`${main_link}visitor-management-log`}
-                icon={
-                  <VisitorManagementLogIcon
-                    color={iconMenuColorSelector("visitor-management-log")}
-                    className="sideMenuIcon"
-                  />
-                }>
-                <Link to={`${main_link}/visitor-management-log`}>
-                  Visitor management log
-                </Link>
-              </Menu.Item>
+
               {/* <SubMenu
                 key="powerManagement"
                 icon={

@@ -14,8 +14,8 @@ const SuccessModal = (message: string) => {
     footer: null,
     content: (
       <div className="successModalContainer">
-        <p  style={{color:whiteLabel.successColor}}>{message}</p>
         <SuccessIcon className="successIcon" />
+        <p style={{ color: whiteLabel.successColor }}>{message}</p>
       </div>
     ),
     centered: true,

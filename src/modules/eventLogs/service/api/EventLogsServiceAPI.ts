@@ -22,12 +22,13 @@ const getDataEventJoinLogList = async (params: conditionPage) => {
     const response = await axios.get(url);
   
       const eventLogs = response.data.result.rows;
+    console.log('first', eventLogs)
       const data: dataEventJoinLogsType[] = eventLogs.map((log: any) => ({
         key: log.id,
         eventName: log.eventName,
         joiningDate: log.joiningDate,
         blockNo: log.blockNo,
-        unitNo: log.unitNo,
+        unitNo: log.roomAddress,
         participant: log.participant,
         bookingBy: log.bookingBy,
       }));

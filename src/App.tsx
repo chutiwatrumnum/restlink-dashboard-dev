@@ -3,7 +3,7 @@ import { Navigate, Route, Routes, BrowserRouter } from "react-router-dom";
 import { encryptStorage } from "./utils/encryptStorage";
 import { useDispatch, useSelector } from "react-redux";
 import { Dispatch, RootState } from "./stores";
-import { getProjectIDQuery } from "./utils/queriesGroup/authQueries";
+// import { getProjectIDQuery } from "./utils/queriesGroup/authQueries";
 
 import "antd/dist/reset.css";
 import "./App.css";
@@ -62,9 +62,9 @@ function App() {
   const { isAuth } = useSelector((state: RootState) => state.userAuth);
 
   // API
-  const { data: projectID, refetch: refetchChatList } = getProjectIDQuery({
-    shouldFetch: isAuth,
-  });
+  // const { data: projectID, refetch: refetchProjectId } = getProjectIDQuery({
+  //   shouldFetch: isAuth,
+  // });
 
   /*
   const tokenCheck = async () => {
@@ -106,7 +106,7 @@ function App() {
         // await dispatch.userAuth.refreshUserDataEffects();
         // await dispatch.common.getRoleaccess_token();
         dispatch.userAuth.updateAuthState(true);
-        await refetchChatList();
+        // await refetchProjectId();
         return true;
       } catch (e) {
         dispatch.userAuth.updateAuthState(false);

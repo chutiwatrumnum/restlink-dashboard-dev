@@ -1,5 +1,6 @@
 import { Modal } from "antd";
-import FAILED_ICON from "../../assets/icons/Failed.svg";
+import { FailedIcon } from "../../assets/icons/Icons";
+
 import { whiteLabel } from "../../configs/theme";
 import "../styles/common.css";
 
@@ -14,8 +15,8 @@ const FailedModal = (message: string) => {
     footer: null,
     content: (
       <div className="successModalContainer">
-        <p style={{color:whiteLabel.dangerColor}}>{message}</p>
-        <img src={FAILED_ICON} alt="failedIcon" style={{ width: 50 }} />
+        <FailedIcon className="successIcon" />
+        <p style={{ color: whiteLabel.dangerColor }}>{message}</p>
       </div>
     ),
     centered: true,

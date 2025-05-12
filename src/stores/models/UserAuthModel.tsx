@@ -116,12 +116,14 @@ export const userAuth = createModel<RootModel>()({
     async onLogout() {
       try {
         await axios.post("/users/logout");
+        encryptStorage.removeItem("projectId");
         encryptStorage.removeItem("access_token");
         encryptStorage.removeItem("refreshToken");
         dispatch.userAuth.updateAuthState(false);
         return true;
       } catch (error) {
         dispatch.userAuth.updateAuthState(false);
+        encryptStorage.removeItem("projectId");
         encryptStorage.removeItem("access_token");
         encryptStorage.removeItem("refreshToken");
         return false;
@@ -129,12 +131,13 @@ export const userAuth = createModel<RootModel>()({
     },
     async logoutEffects() {
       try {
-        const logout = await axios.post("/users/logout");
-        if (logout.status >= 400) {
-          console.log("FAILED ", logout.statusText);
-          return;
-        }
+        // const logout = await axios.post("/users/logout");
+        // if (logout.status >= 400) {
+        //   console.log("FAILED ", logout.statusText);
+        //   return;
+        // }
         dispatch.userAuth.updateAuthState(false);
+        encryptStorage.removeItem("projectId");
         encryptStorage.removeItem("access_token");
         encryptStorage.removeItem("refreshToken");
       } catch (error) {
