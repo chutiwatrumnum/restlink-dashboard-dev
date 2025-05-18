@@ -3,18 +3,33 @@ import { paramsdata } from "./paramsAPI";
 import { AddNewDeliveryLogsType, conditionPage, dataDeliveryLogsType, EditDeliveryLogsType, blockDetail } from "../../../../stores/interfaces/DeliveryLogs";
 import dayjs from "dayjs";
 
-const getdataDeliveryLogslist = async (params: conditionPage) => {
-    let url: string = `/parcels/list?`;
-    const resultparams = await paramsdata(params);
-    if (resultparams.status) {
-        url = url + resultparams.paramsstr;
+const getdataDeliveryLogslist = async (filter: conditionPage) => {
+    let url: string = `/parcels/list`;
+    const params = new URLSearchParams();
+    params.append("perPage", filter.perPage.toString());
+    params.append("curPage", filter.curPage.toString());
+    if (filter.startDate) {
+      params.append("startDate", filter.startDate);
+    }
+    if (filter.endDate) {
+      params.append("endDate", filter.endDate);
+    }
+    if (filter.unitId) {
+      params.append("unitId", filter.unitId);
+    }
+    if (filter.search) {
+        params.append("search", filter.search);
+    }
+    if (filter.sort&&filter.sortBy) {
+        params.append("sortBy", filter.sortBy);
+        params.append("sort", filter.sort.slice(0, -3));
     }
     try {
-        const result = await axios.get(url);
+        const result = await axios.get(url,{params});
         if (result.status < 400) {
             const AllDataDeliveryLogs = result.data.result.rows;
             let data: dataDeliveryLogsType[] = [];
-            AllDataDeliveryLogs.map((e: any, i: number) => {
+            AllDataDeliveryLogs.map((e: any) => {
                 let dataDeliveryLogs: dataDeliveryLogsType = {
                     key: e.id,
                     name: e.name,
