@@ -103,7 +103,7 @@ const DeliveryLogs = () => {
   const onSearch = async (value: string) => {
     params = paramsData;
     params.search = value;
-    await setParamsData(params);
+     setParamsData(params);
     await dispatch.deliveryLogs.getTableDataDeliveryLogs(paramsData);
   };
   const columns: ColumnsType<dataDeliveryLogsType> = [
@@ -349,10 +349,10 @@ const DeliveryLogs = () => {
     });
   };
   const onChangeUnit = async(value: string) => {
-    console.log(`selected ${value}`);
     params = paramsData;
     params.unitId = parseInt(value);
-    await setParamsData(params);
+     setParamsData(params);
+    await dispatch.deliveryLogs.getTableDataDeliveryLogs(paramsData);
   };
 
   return (
@@ -375,7 +375,6 @@ const DeliveryLogs = () => {
         <Select
     showSearch
     allowClear
-    // defaultValue={unit[0]?.label?unit[0]?.label:undefined}
     placeholder="Select unit"
     optionFilterProp="label"
     onChange={onChangeUnit}
