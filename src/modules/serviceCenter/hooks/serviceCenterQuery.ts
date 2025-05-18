@@ -16,7 +16,7 @@ export const useServiceCenterServiceListQuery = (payloadQuery: ServiceCenterPayl
             params.serviceTypeId = payload.serviceTypeId;
         }
         if (payload.search) {
-            params.search = payload.search;
+            params.roomAddress = payload.search;
         }
         if (payload.status) {
             params.status = payload.status;
