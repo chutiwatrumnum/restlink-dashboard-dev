@@ -6,6 +6,7 @@ import {
   changeCollectedById,
   deleteDeliveryLogsById,
   dowloadDeliveryLogs,
+  getDataBlock,
 } from "../service/api/DeliveryLogsServiceAPI";
 import {
   Row,
@@ -16,6 +17,7 @@ import {
   Modal,
   Checkbox,
   Table,
+  Select,
 } from "antd";
 import type { DatePickerProps } from "antd";
 import {
@@ -31,11 +33,15 @@ import { Dispatch, RootState } from "../../../stores";
 import {
   dataDeliveryLogsType,
   conditionPage,
+  unitDetail,
 } from "../../../stores/interfaces/DeliveryLogs";
 const { confirm } = Modal;
 const DeliveryLogs = () => {
   const { loading, tableDataDeliveryLog, total } = useSelector(
     (state: RootState) => state.deliveryLogs
+  );
+  const {unitOptions } = useSelector(
+    (state: RootState) => state.common
   );
   const [currentPage, setCurrentPage] = useState<number>(1);
   // setting pagination Option
@@ -56,6 +62,7 @@ const DeliveryLogs = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModalCreate, setIsModalCreate] = useState(false);
   const [paramsData, setParamsData] = useState<conditionPage>(params);
+  const [unit, setunitDetail] = useState<unitDetail[]>([]);
   const dispatch = useDispatch<Dispatch>();
   const { RangePicker } = DatePicker;
   const customFormat: DatePickerProps["format"] = (value) =>
@@ -68,8 +75,9 @@ const DeliveryLogs = () => {
   };
   useEffect(() => {
     (async function () {
-      await setParamsData(params);
+      setParamsData(params);
       await dispatch.deliveryLogs.getTableDataDeliveryLogs(paramsData);
+      await initDataCreate()
     })();
   }, [rerender]);
 
@@ -119,9 +127,9 @@ const DeliveryLogs = () => {
       title: "Name",
       dataIndex: "name",
       align: "center",
-      // sorter: {
-      //   compare: (a, b) => a.name.localeCompare(b.name),
-      // },
+      sorter: {
+        compare: (a, b) => a.name.localeCompare(b.name),
+      },
     },
     {
       title: "Contact",
@@ -319,7 +327,11 @@ const DeliveryLogs = () => {
     await setParamsData(params);
     await dispatch.deliveryLogs.getTableDataDeliveryLogs(paramsData);
   };
+  const initDataCreate = async () => {
+    const dataeblock = await getDataBlock();
+    setunitDetail(dataeblock?.dataselectblock as unitDetail[]);
 
+};
   const exportEventLogs = ({ currentTarget }: any) => {
     confirm({
       title: "Are you sure you want to export file this?",
@@ -335,6 +347,12 @@ const DeliveryLogs = () => {
         console.log("Cancel");
       },
     });
+  };
+  const onChangeUnit = async(value: string) => {
+    console.log(`selected ${value}`);
+    params = paramsData;
+    params.unitId = parseInt(value);
+    await setParamsData(params);
   };
 
   return (
@@ -353,6 +371,16 @@ const DeliveryLogs = () => {
           span={10}
           style={{ display: "flex", justifyContent: "flex-start" }}
         >
+             <Col>
+        <Select
+    showSearch
+    allowClear
+    // defaultValue={unit[0]?.label?unit[0]?.label:undefined}
+    placeholder="Select unit"
+    optionFilterProp="label"
+    onChange={onChangeUnit}
+    options={unit}
+  /></Col>
           <Search
             placeholder="Search by tracking no."
             allowClear
@@ -361,6 +389,7 @@ const DeliveryLogs = () => {
             style={{ width: 300 }}
           />
         </Col>
+     
 
         <Col span={4} style={{ display: "flex", justifyContent: "flex-end" }}>
           <Button

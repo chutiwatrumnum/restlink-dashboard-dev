@@ -85,6 +85,7 @@ export interface conditionPage {
   endDate?: string
   sort?: string
   sortBy?: string
+  unitId?: number
 }
 
 export interface blockDetail {

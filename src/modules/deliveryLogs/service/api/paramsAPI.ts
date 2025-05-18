@@ -8,6 +8,9 @@ export const paramsdata = async (condition: conditionPage) => {
     if (condition.endDate) {
       datastr = datastr + "&endDate=" + condition.endDate;
     }
+    if (condition.unitId) {
+      datastr = datastr + "&unitId=" + condition.unitId;
+    }
     if (condition.search) {
         datastr+="&search="+condition.search
     }
