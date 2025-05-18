@@ -245,7 +245,7 @@ const ServiceCenterLists = () => {
       },
     },
     {
-      title: "Acton",
+      title: "Action",
       key: "action",
       align: "center",
       render: (_, record) => {

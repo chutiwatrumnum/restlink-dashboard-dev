@@ -45,6 +45,7 @@ export interface dataDeliveryLogsType{
   blockId:number
   blockNo:string
   unitNo:string
+  roomAddress:string
   unitId:number
   createdAt:string
   FromDateTime:string,

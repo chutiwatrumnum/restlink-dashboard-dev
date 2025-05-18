@@ -23,16 +23,22 @@ import dayjs from "dayjs";
 import { useDispatch, useSelector } from "react-redux";
 import { Dispatch, RootState } from "../../../stores";
 import { ConvertDate } from "../../../utils/helper";
-import "../styles/document.css";
+import UploadPublic from "../components/UploadPublic";
+import { deleteDocumentById } from "../service/DocumentAPI";
+import {
+  callConfirmModal,
+  callFailedModal,
+  callSuccessModal,
+} from "../../../components/common/Modal";
 
+import type { ColumnsType } from "antd/es/table";
+import { BreadcrumbType } from "../interface/Public";
 import {
   GetPublicDataPayloadType,
   DocumentDataType,
 } from "../../../stores/interfaces/Document";
-import { BreadcrumbType } from "../interface/Public";
-import type { ColumnsType } from "antd/es/table";
-import UploadPublic from "../components/UploadPublic";
-import { deleteDocumentById } from "../service/DocumentAPI";
+
+import "../styles/document.css";
 
 const { Text, Link } = Typography;
 const { Search } = Input;
@@ -284,33 +290,25 @@ const PublicFolder = () => {
       async onOk() {
         const statusDeleted = await deleteDocumentById(currentTarget.value);
         if (statusDeleted) {
-          Modal.success({ content: "Delete successfully", centered: true });
-          destroyModal();
+          callSuccessModal("Delete successfully", 1500);
+          let conditions: GetPublicDataPayloadType = {
+            curPage: curPage,
+            perPage: perPage,
+            folderId: FolderCurrent,
+          };
+          if (FolderCurrent === 0) {
+            await fetchData();
+          } else {
+            await dispatch.document.getFolderData(conditions);
+          }
         } else {
-          Modal.error({ content: "Delete failed", centered: true });
-          destroyModal();
-        }
-        let conditions: GetPublicDataPayloadType = {
-          curPage: curPage,
-          perPage: perPage,
-          folderId: FolderCurrent,
-        };
-        if (FolderCurrent === 0) {
-          await fetchData();
-        } else {
-          await dispatch.document.getFolderData(conditions);
+          callFailedModal("Delete failed", 1500);
         }
       },
       onCancel() {
         console.log("Cancel");
       },
     });
-  };
-
-  const destroyModal = () => {
-    setTimeout(() => {
-      Modal.destroyAll();
-    }, 1500);
   };
 
   useEffect(() => {
@@ -321,7 +319,7 @@ const PublicFolder = () => {
     <>
       <Header title="Document forms" />
       <div className="document">
-        <Breadcrumb className="breadcrumbContainer" items={breadcrumb} />
+        <Breadcrumb className="breadcrumbPublicContainer" items={breadcrumb} />
       </div>
       <Row style={{ marginBottom: 15 }}>
         <Col

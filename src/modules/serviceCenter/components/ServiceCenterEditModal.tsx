@@ -58,6 +58,7 @@ const ServiceCenterEditModal = ({
   // Initialize data when component mounts or data changes
   useEffect(() => {
     if (data) {
+      console.log("Data changed:", data);
       initializeFormData();
     }
   }, [data]);
@@ -65,15 +66,36 @@ const ServiceCenterEditModal = ({
   // Update modal visibility
   useEffect(() => {
     setOpen(isEditModalOpen);
-  }, [isEditModalOpen]);
+    if (isEditModalOpen) {
+      console.log("Modal opened with data:", data);
+      console.log("Select list options:", selectList);
+    }
+  }, [isEditModalOpen, data, selectList]);
 
   // Update disabled columns based on current status
   useEffect(() => {
     updateDisabledColumns();
+    console.log("Current status updated:", currentStatus);
+    console.log("Disabled columns:", disableColumn);
   }, [currentStatus]);
 
   const initializeFormData = useCallback(() => {
     if (!data) return;
+
+    console.log("Initializing form data with:", {
+      id: data.id,
+      statusId: data.statusId,
+      statusName: data.statusName,
+      fullname: data.fullname,
+      serviceTypeName: data.serviceTypeName,
+      description: data.description,
+      createdAt: data.createdAt,
+      acknowledgeDate: data.acknowledgeDate,
+      actionDate: data.actionDate,
+      completedDate: data.completedDate,
+      cause: data.cause,
+      solution: data.solution,
+    });
 
     // Set current status
     setCurrentStatus({
@@ -98,6 +120,8 @@ const ServiceCenterEditModal = ({
 
   const initializeImageLists = useCallback(() => {
     if (!data?.imageItems) return;
+
+    console.log("Initializing image lists with:", data.imageItems);
 
     // Reset all image lists
     const pending: UploadFile[] = [];
@@ -124,12 +148,23 @@ const ServiceCenterEditModal = ({
       }
     });
 
+    console.log("Processed image lists:", {
+      pending,
+      repairing,
+      success,
+    });
+
     setImagePendingList(pending);
     setImageRepairingList(repairing);
     setImageSuccessList(success);
   }, [data]);
 
   const updateDisabledColumns = useCallback(() => {
+    console.log(
+      "Updating disabled columns based on status:",
+      currentStatus.label
+    );
+
     switch (currentStatus.label) {
       case "Pending":
         setDisableColumn({
@@ -170,6 +205,7 @@ const ServiceCenterEditModal = ({
   }, [currentStatus]);
 
   const resetForm = useCallback(() => {
+    console.log("Resetting form");
     serviceCenterForm.resetFields();
     setImagePendingList([]);
     setImageRepairingList([]);
@@ -181,16 +217,19 @@ const ServiceCenterEditModal = ({
   }, [serviceCenterForm]);
 
   const handleClose = useCallback(() => {
+    console.log("Closing modal");
     resetForm();
     onCancel();
   }, [resetForm, onCancel]);
 
   const handleStatusChange = useCallback(
     (value: string) => {
+      console.log("Status changed to:", value);
       const selectedStatus = selectList?.find(
         (item: ServiceCenterSelectListType) => item.value === value
       );
       if (selectedStatus) {
+        console.log("Selected status:", selectedStatus);
         setCurrentStatus(selectedStatus);
       }
     },
@@ -199,6 +238,9 @@ const ServiceCenterEditModal = ({
 
   const handleSave = useCallback(
     async (values: any) => {
+      console.log("Form values to save:", values);
+      console.log("Current status:", currentStatus);
+
       ConfirmModal({
         title: "Are you sure you want to edit this?",
         okMessage: "Yes",
@@ -216,7 +258,9 @@ const ServiceCenterEditModal = ({
               solution: values.solution,
             };
 
+            console.log("Sending payload:", payload);
             await mutationEditServiceCenter.mutateAsync(payload);
+            console.log("Edit successful");
             resetForm();
             onOk();
             onRefresh();

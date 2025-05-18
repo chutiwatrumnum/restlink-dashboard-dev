@@ -130,7 +130,6 @@ const Profile = () => {
                     <Text className="textColor semiBoldText">Mobile no.</Text>
                   }
                   name="contact"
-                  rules={telRule}
                   style={{ width: "100%" }}>
                   <Input
                     disabled={true}

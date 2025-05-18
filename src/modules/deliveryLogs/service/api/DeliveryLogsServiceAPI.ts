@@ -23,6 +23,7 @@ const getdataDeliveryLogslist = async (params: conditionPage) => {
       const result = await axios.get(url);
       if (result.status < 400) {
         const AllDataDeliveryLogs = result.data.result.rows;
+        console.log('first', AllDataDeliveryLogs)
         let data: dataDeliveryLogsType[] = [];
         AllDataDeliveryLogs.map((e: any, i: number) => {
           let dataDeliveryLogs: dataDeliveryLogsType = {
@@ -32,7 +33,7 @@ const getdataDeliveryLogslist = async (params: conditionPage) => {
             senderType: e.senderType,
             trackingNumber: e.trackingNumber,
             blockNo: e.blockNo,
-            unitNo: e.unitNo,
+            unitNo: e.roomAddress,
             createdAt: e.createdAt,
             FromDateTime: `${e.startDate} ${e.startTime}`,
             ToDateTime: `${e.endDate} ${e.endTime}`,

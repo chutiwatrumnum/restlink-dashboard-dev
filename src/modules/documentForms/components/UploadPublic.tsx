@@ -6,6 +6,10 @@ import { Dispatch } from "../../../stores";
 import type { RcFile, UploadFile } from "antd/es/upload/interface";
 import { dataFiles } from "../../../stores/interfaces/Document";
 import { uploadDocument } from "../service/DocumentAPI";
+import {
+  callFailedModal,
+  callSuccessModal,
+} from "../../../components/common/Modal";
 
 import { DocumentDataType } from "../../../stores/interfaces/Document";
 type ProgressStatus = "normal" | "exception" | "active" | "success";
@@ -97,22 +101,14 @@ const UploadPublic = (props: ComponentCreateProps) => {
       }
     }
     if (res?.status) {
-      Modal.success({ content: "Upload successfully", centered: true });
-      destroyModal();
+      callSuccessModal("Upload successfully", 1500);
       setButtonLoading(false);
       setDraggerStatus(false);
       props.callBack(!props?.isOpen, true);
       setFileList([]);
     } else {
-      Modal.error({ content: "Upload failed", centered: true });
-      destroyModal();
+      callFailedModal("Upload failed", 1500);
     }
-  };
-
-  const destroyModal = () => {
-    setTimeout(() => {
-      Modal.destroyAll();
-    }, 1500);
   };
 
   const propProcess: ProgressProps = {

@@ -15,6 +15,7 @@
 
 .breadcrumbContainer {
   padding: 10px 0;
+  line-height: 1;
 }
 
 .breadcrumbContainer li:last-child {

@@ -252,7 +252,7 @@ const SideMenu = () => {
                     className="sideMenuIcon"
                   />
                 }>
-                <Link to={`${main_link}/projectNew`}>Project New</Link>
+                <Link to={`${main_link}/projectNew`}>Project News</Link>
               </Menu.Item>
 
               <Menu.Item
