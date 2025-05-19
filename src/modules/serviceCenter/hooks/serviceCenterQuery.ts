@@ -8,6 +8,10 @@ export const useServiceCenterServiceListQuery = (payloadQuery: ServiceCenterPayl
             curPage: payload.curPage,
             perPage: payload.perPage,
         };
+        if (payload.unitId) {
+            params.unitId = payload.unitId;
+            
+        }
         if (payload.startMonth || payload.endMonth) {
             params.startMonth = payload.startMonth;
             params.endMonth = payload.endMonth;

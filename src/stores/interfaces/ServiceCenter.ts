@@ -10,6 +10,7 @@ export interface ServiceCenterPayloadType {
   startMonth?: Date;
   endMonth?: Date;
   serviceTypeId?: string;
+  unitId?: string;
 }
 export interface ServiceCenterDataType {
   id: number;
