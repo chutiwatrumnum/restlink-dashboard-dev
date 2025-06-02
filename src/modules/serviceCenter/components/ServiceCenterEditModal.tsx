@@ -282,51 +282,144 @@ const ServiceCenterEditModal = ({
 
     return (
       <Form
-        form={serviceCenterForm}
-        name="serviceCenterEditModal"
-        initialValues={{ remember: true }}
-        autoComplete="off"
-        layout="vertical"
-        onFinish={handleSave}
-        onFinishFailed={(error) => {
-          console.log("FORM VALIDATION FAILED:", error);
-        }}>
-        <div className="announceModalColumn">
-          <div className="announceModalContainer">
-            <div className="announceModalColumn">
-              <Form.Item<ServiceCenterDataType>
-                label="Owner"
-                name="fullname"
-                rules={noSpacialInputRule}>
-                <Input
-                  size="large"
-                  disabled={true}
-                  placeholder="Please input fullname"
-                />
-              </Form.Item>
-
-              <Form.Item<ServiceCenterDataType>
-                label="Submission Date"
-                name="createdAt"
-                rules={requiredRule}>
-                <DatePicker
-                  disabled={true}
-                  style={{ width: "100%" }}
-                  size="large"
-                />
-              </Form.Item>
-
-              <Form.Item<ServiceCenterDataType>
-                label="Action Date"
-                name="actionDate"
-                rules={!disableColumn.actionDate ? requiredRule : undefined}>
-                <DatePicker
-                  disabled={disableColumn.actionDate}
-                  style={{ width: "100%" }}
-                  size="large"
-                />
-              </Form.Item>
-
+      form={serviceCenterForm}
+      name="serviceCenterEditModal"
+      initialValues={{ remember: true }}
+      autoComplete="off"
+      layout="vertical"
+      onFinish={handleSave}
+      onFinishFailed={(error) => {
+        console.log("FORM VALIDATION FAILED:", error);
+      }}>
+      <div className="announceModalColumn">
+        <div className="announceModalContainer">
+          
+          {/* Column 1: Basic Information */}
+          <div className="announceModalColumn">
+            <h4>ข้อมูลพื้นฐาน</h4>
+            
+            <Form.Item<ServiceCenterDataType>
+              label="Owner"
+              name="fullname"
+              rules={noSpacialInputRule}>
+              <Input
+                size="large"
+                disabled={true}
+                placeholder="Please input fullname"
+              />
+            </Form.Item>
+    
+            <Form.Item<ServiceCenterDataType>
+              label="Problem"
+              name="serviceTypeName">
+              <Input
+                size="large"
+                disabled={true}
+                placeholder="Please input Problem"
+              />
+            </Form.Item>
+    
+            <Form.Item<ServiceCenterDataType>
+              label="Description"
+              name="description">
+              <Input.TextArea
+                disabled={true}
+                rows={6}
+                placeholder="Please input description"
+              />
+            </Form.Item>
+    
+            <Form.Item<ServiceCenterDataType>
+              label="Submission Date"
+              name="createdAt"
+              rules={requiredRule}>
+              <DatePicker
+                disabled={true}
+                style={{ width: "100%" }}
+                size="large"
+              />
+            </Form.Item>
+          </div>
+    
+          {/* Column 2: Status & Dates */}
+          <div className="announceModalColumn">
+            <h4>สถานะและวันที่</h4>
+            
+            <Form.Item<ServiceCenterDataType>
+              label="Status"
+              name="statusName"
+              rules={requiredRule}>
+              <Select
+                onChange={handleStatusChange}
+                size="large"
+                placeholder="Please select service type"
+                options={selectList?.length > 0 ? selectList : []}
+              />
+            </Form.Item>
+    
+            <Form.Item<ServiceCenterDataType>
+              label="Acknowledge Date"
+              name="acknowledgeDate"
+              rules={
+                !disableColumn.acknowledgeDate ? requiredRule : undefined
+              }>
+              <DatePicker
+                disabled={disableColumn.acknowledgeDate}
+                style={{ width: "100%" }}
+                size="large"
+              />
+            </Form.Item>
+    
+            <Form.Item<ServiceCenterDataType>
+              label="Action Date"
+              name="actionDate"
+              rules={!disableColumn.actionDate ? requiredRule : undefined}>
+              <DatePicker
+                disabled={disableColumn.actionDate}
+                style={{ width: "100%" }}
+                size="large"
+              />
+            </Form.Item>
+    
+            <Form.Item<ServiceCenterDataType>
+              label="Completed Date"
+              name="completedDate"
+              rules={!disableColumn.completedDate ? requiredRule : undefined}>
+              <DatePicker
+                disabled={disableColumn.completedDate}
+                style={{ width: "100%" }}
+                size="large"
+              />
+            </Form.Item>
+          </div>
+    
+          {/* Column 3: Solution & Images */}
+          <div className="announceModalColumn">
+            <h4>การแก้ไขและรูปภาพ</h4>
+            
+            <Form.Item<ServiceCenterDataType>
+              label="Cause"
+              name="cause"
+              rules={!disableColumn.cause ? requiredRule : undefined}>
+              <Input.TextArea
+                disabled={disableColumn.cause}
+                rows={4}
+                placeholder="Please input cause"
+              />
+            </Form.Item>
+    
+            <Form.Item<ServiceCenterDataType>
+              label="Solution"
+              name="solution"
+              rules={!disableColumn.solution ? requiredRule : undefined}>
+              <Input.TextArea
+                disabled={disableColumn.solution}
+                rows={4}
+                placeholder="Please input solution"
+              />
+            </Form.Item>
+    
+            <div style={{ marginTop: '20px' }}>
               <ServiceImageGallery
                 title="Pending"
                 maximum={1}
@@ -335,7 +428,7 @@ const ServiceCenterEditModal = ({
                 imageStatusId={statusId}
                 serviceId={serviceId}
               />
-
+    
               <ServiceImageGallery
                 title="Repairing"
                 maximum={3}
@@ -344,7 +437,7 @@ const ServiceCenterEditModal = ({
                 imageStatusId={statusId}
                 serviceId={serviceId}
               />
-
+    
               <ServiceImageGallery
                 title="Success"
                 maximum={3}
@@ -354,96 +447,17 @@ const ServiceCenterEditModal = ({
                 serviceId={serviceId}
               />
             </div>
-
-            <div className="announceModalColumn">
-              <Form.Item<ServiceCenterDataType>
-                label="Status"
-                name="statusName"
-                rules={requiredRule}>
-                <Select
-                  onChange={handleStatusChange}
-                  size="large"
-                  placeholder="Please select service type"
-                  options={selectList?.length > 0 ? selectList : []}
-                />
-              </Form.Item>
-
-              <Form.Item<ServiceCenterDataType>
-                label="Problem"
-                name="serviceTypeName">
-                <Input
-                  size="large"
-                  disabled={true}
-                  placeholder="Please input Problem"
-                />
-              </Form.Item>
-
-              <Form.Item<ServiceCenterDataType>
-                label="Acknowledge Date"
-                name="acknowledgeDate"
-                rules={
-                  !disableColumn.acknowledgeDate ? requiredRule : undefined
-                }>
-                <DatePicker
-                  disabled={disableColumn.acknowledgeDate}
-                  style={{ width: "100%" }}
-                  size="large"
-                />
-              </Form.Item>
-
-              <Form.Item<ServiceCenterDataType>
-                label="Completed Date"
-                name="completedDate"
-                rules={!disableColumn.completedDate ? requiredRule : undefined}>
-                <DatePicker
-                  disabled={disableColumn.completedDate}
-                  style={{ width: "100%" }}
-                  size="large"
-                />
-              </Form.Item>
-
-              <Form.Item<ServiceCenterDataType>
-                label="Description"
-                name="description">
-                <Input.TextArea
-                  disabled={true}
-                  rows={7}
-                  placeholder="Please input description"
-                />
-              </Form.Item>
-            </div>
-
-            <div className="announceModalColumn">
-              <Form.Item<ServiceCenterDataType>
-                label="Cause"
-                name="cause"
-                rules={!disableColumn.cause ? requiredRule : undefined}>
-                <Input.TextArea
-                  disabled={disableColumn.cause}
-                  rows={7}
-                  placeholder="Please input cause"
-                />
-              </Form.Item>
-
-              <Form.Item<ServiceCenterDataType>
-                label="Solution"
-                name="solution"
-                rules={!disableColumn.solution ? requiredRule : undefined}>
-                <Input.TextArea
-                  disabled={disableColumn.solution}
-                  rows={7}
-                  placeholder="Please input solution"
-                />
-              </Form.Item>
-            </div>
           </div>
-          <SmallButton
-            className="saveButton"
-            message="Save"
-            form={serviceCenterForm}
-          />
+    
         </div>
-      </Form>
+        
+        <SmallButton
+          className="saveButton"
+          message="Save"
+          form={serviceCenterForm}
+        />
+      </div>
+    </Form>
     );
   };
 

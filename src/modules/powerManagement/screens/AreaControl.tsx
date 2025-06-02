@@ -33,90 +33,90 @@ const { RangePicker } = TimePicker;
 
 const AreaControl = () => {
   const dispatch = useDispatch<Dispatch>();
-  const { areaData } = useSelector((state: RootState) => state.powerManagement);
-  // const areaData = [
-  //   {
-  //     id: 1,
-  //     name: "Lighting control area",
-  //     subName: "-",
-  //     imageUrl:
-  //       "https://firebasestorage.googleapis.com/v0/b/dbp-maint.appspot.com/o/Rectangle%20173047108.png?alt=media&token=8cbde0a9-a405-4b2a-a6e5-b8deeae9cf4d",
-  //     startTime: "09:02",
-  //     endTime: "11:02",
-  //     active: true,
-  //     status: 1,
-  //     rcuConfigList: [
-  //       {
-  //         id: 1,
-  //         rcuControlAreaId: 1,
-  //         name: "recreation garden (1 fl)",
-  //         subName: "-",
-  //         imageUrl: "https",
-  //         active: true,
-  //         groupShow: "0",
-  //         deviceType: "0",
-  //         status: 0,
-  //       },
-  //       {
-  //         id: 2,
-  //         rcuControlAreaId: 1,
-  //         name: "mind oasis (1 fl)",
-  //         subName: "-",
-  //         imageUrl: "https",
-  //         active: true,
-  //         groupShow: "0",
-  //         deviceType: "0",
-  //         status: 0,
-  //       },
-  //       {
-  //         id: 3,
-  //         rcuControlAreaId: 1,
-  //         name: "multiscape (1 fl)",
-  //         subName: "-",
-  //         imageUrl: "https",
-  //         active: true,
-  //         groupShow: "0",
-  //         deviceType: "0",
-  //         status: 0,
-  //       },
-  //     ],
-  //   },
-  //   {
-  //     id: 2,
-  //     name: "Lighting control area 2",
-  //     subName: "-",
-  //     imageUrl:
-  //       "https://firebasestorage.googleapis.com/v0/b/dbp-maint.appspot.com/o/Rectangle%20173047108.png?alt=media&token=8cbde0a9-a405-4b2a-a6e5-b8deeae9cf4d",
-  //     startTime: "09:10",
-  //     endTime: "16:10",
-  //     active: true,
-  //     status: 0,
-  //     rcuConfigList: [
-  //       {
-  //         id: 4,
-  //         rcuControlAreaId: 2,
-  //         name: "garden lounge (23 fl)",
-  //         subName: "-",
-  //         imageUrl: "https",
-  //         active: true,
-  //         groupShow: "0",
-  //         deviceType: "0",
-  //         status: 0,
-  //       },
-  //       {
-  //         id: 5,
-  //         rcuControlAreaId: 2,
-  //         name: "garden roof (29 fl)",
-  //         subName: "-",
-  //         imageUrl: "https",
-  //         active: true,
-  //         groupShow: "0",
-  //         deviceType: "0",
-  //         status: 0,
-  //       },
-  //     ],
-  //   },
-  // ];
+  // const { areaData } = useSelector((state: RootState) => state.powerManagement);
+  const areaData = [
+    {
+      id: 1,
+      name: "Lighting control area",
+      subName: "-",
+      imageUrl:
+        "https://firebasestorage.googleapis.com/v0/b/dbp-maint.appspot.com/o/Rectangle%20173047108.png?alt=media&token=8cbde0a9-a405-4b2a-a6e5-b8deeae9cf4d",
+      startTime: "09:02",
+      endTime: "11:02",
+      active: true,
+      status: 1,
+      rcuConfigList: [
+        {
+          id: 1,
+          rcuControlAreaId: 1,
+          name: "recreation garden (1 fl)",
+          subName: "-",
+          imageUrl: "https",
+          active: true,
+          groupShow: "0",
+          deviceType: "0",
+          status: 0,
+        },
+        {
+          id: 2,
+          rcuControlAreaId: 1,
+          name: "mind oasis (1 fl)",
+          subName: "-",
+          imageUrl: "https",
+          active: true,
+          groupShow: "0",
+          deviceType: "0",
+          status: 0,
+        },
+        {
+          id: 3,
+          rcuControlAreaId: 1,
+          name: "multiscape (1 fl)",
+          subName: "-",
+          imageUrl: "https",
+          active: true,
+          groupShow: "0",
+          deviceType: "0",
+          status: 0,
+        },
+      ],
+    },
+    {
+      id: 2,
+      name: "Lighting control area 2",
+      subName: "-",
+      imageUrl:
+        "https://firebasestorage.googleapis.com/v0/b/dbp-maint.appspot.com/o/Rectangle%20173047108.png?alt=media&token=8cbde0a9-a405-4b2a-a6e5-b8deeae9cf4d",
+      startTime: "09:10",
+      endTime: "16:10",
+      active: true,
+      status: 0,
+      rcuConfigList: [
+        {
+          id: 4,
+          rcuControlAreaId: 2,
+          name: "garden lounge (23 fl)",
+          subName: "-",
+          imageUrl: "https",
+          active: true,
+          groupShow: "0",
+          deviceType: "0",
+          status: 0,
+        },
+        {
+          id: 5,
+          rcuControlAreaId: 2,
+          name: "garden roof (29 fl)",
+          subName: "-",
+          imageUrl: "https",
+          active: true,
+          groupShow: "0",
+          deviceType: "0",
+          status: 0,
+        },
+      ],
+    },
+  ];
 
   const { accessibility } = useSelector((state: RootState) => state.common);
   const [refresh, setRefresh] = useState(true);

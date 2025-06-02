@@ -35,7 +35,7 @@ const CreateModal = ({
         className={"createModalController " + className}
         open={open}
         title={
-          <span style={{ fontWeight: whiteLabel.normalWeight }}>{title}</span>
+          <span style={{ fontWeight: whiteLabel.boldWeight }}>{title}</span>
         }
         onOk={onOk}
         onCancel={onCancel}

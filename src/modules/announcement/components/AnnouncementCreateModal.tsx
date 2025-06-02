@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Form, Input, DatePicker, Row, TimePicker } from "antd";
+import { Form, Input, DatePicker, Row, TimePicker, Select } from "antd";
 import { requiredRule } from "../../../configs/inputRule";
 import { useDispatch } from "react-redux";
 import { Dispatch } from "../../../stores";
@@ -74,6 +74,7 @@ const AnnouncementCreateModal = ({
                     "HH:mm"
                   )}`
                 ).dateTimeUTC,
+                type: value.type,
               };
               // console.log(payload);
               const result = await dispatch.announcement.addNewAnnounce(
@@ -90,14 +91,16 @@ const AnnouncementCreateModal = ({
         }}
         onFinishFailed={() => {
           console.log("FINISHED FAILED");
-        }}>
+        }}
+      >
         <div className="announceModalColumn">
           <div className="announceModalContainer">
             <div className="announceModalColumn">
               <Form.Item<AnnounceFormDataType>
                 label="Title"
                 name="title"
-                rules={requiredRule}>
+                rules={requiredRule}
+              >
                 <Input
                   size="large"
                   placeholder="Please input title"
@@ -106,9 +109,25 @@ const AnnouncementCreateModal = ({
                 />
               </Form.Item>
               <Form.Item<AnnounceFormDataType>
+                label="Type"
+                name="type"
+                rules={requiredRule}
+              >
+                <Select size="large" placeholder="Please select type">
+                  <Select.Option value="projectNews">
+                    Project news
+                  </Select.Option>
+                  <Select.Option value="announcement">
+                    Announcement
+                  </Select.Option>
+                  <Select.Option value="devNews">Developer news</Select.Option>
+                </Select>
+              </Form.Item>
+              <Form.Item<AnnounceFormDataType>
                 label="Image"
                 name="image"
-                rules={requiredRule}>
+                rules={requiredRule}
+              >
                 <UploadImageGroup
                   onChange={(url) => {
                     setPreviewImage(url);
@@ -125,14 +144,16 @@ const AnnouncementCreateModal = ({
                   label="Start date"
                   name="startDate"
                   rules={requiredRule}
-                  style={{ width: "48%" }}>
+                  style={{ width: "48%" }}
+                >
                   <DatePicker style={{ width: "100%" }} size="large" />
                 </Form.Item>
                 <Form.Item<AnnounceFormDataType>
                   label="End date"
                   name="endDate"
                   rules={requiredRule}
-                  style={{ width: "48%" }}>
+                  style={{ width: "48%" }}
+                >
                   <DatePicker style={{ width: "100%" }} size="large" />
                 </Form.Item>
               </Row>
@@ -142,7 +163,8 @@ const AnnouncementCreateModal = ({
                   label="Start time"
                   name="startTime"
                   rules={requiredRule}
-                  style={{ width: "48%" }}>
+                  style={{ width: "48%" }}
+                >
                   <TimePicker
                     format="HH:mm"
                     style={{ width: "100%" }}
@@ -154,7 +176,8 @@ const AnnouncementCreateModal = ({
                   label="End time"
                   name="endTime"
                   rules={requiredRule}
-                  style={{ width: "48%" }}>
+                  style={{ width: "48%" }}
+                >
                   <TimePicker
                     format="HH:mm"
                     style={{ width: "100%" }}
@@ -165,7 +188,8 @@ const AnnouncementCreateModal = ({
               <Form.Item<AnnounceFormDataType>
                 label="Announcement body"
                 name="description"
-                rules={requiredRule}>
+                rules={requiredRule}
+              >
                 <Input.TextArea
                   rows={7}
                   placeholder="Please input announcement body"
@@ -188,7 +212,7 @@ const AnnouncementCreateModal = ({
     <>
       <FormModal
         isOpen={open}
-        title="Add new Announcement"
+        title="Add new"
         content={<ModalContent />}
         onOk={onOk}
         onCancel={onModalClose}

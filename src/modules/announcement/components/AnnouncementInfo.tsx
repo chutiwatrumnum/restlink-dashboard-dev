@@ -65,7 +65,11 @@ const AnnouncementInfoModal = ({
               </div>
               <div className="announcementInfoDetailsColumn">
                 <b>Created by</b>
-                <p>{`${data.createBy?.firstName} ${data.createBy?.middleName} ${data.createBy?.lastName}`}</p>
+                <p>
+                  {data.createBy?.givenName
+                    ? `${data.createBy?.givenName} ${data.createBy?.familyName}`
+                    : "-"}
+                </p>
               </div>
               <div className="announcementInfoDetailsColumn">
                 <b>Start date/Time</b>

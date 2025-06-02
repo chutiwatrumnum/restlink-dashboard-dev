@@ -11,7 +11,7 @@ import {
   Col,
   Select,
   DatePicker,
-  TimePicker,
+  TimePicker,AutoComplete
 } from "antd";
 import {
   EditDeliveryLogsType,
@@ -55,6 +55,29 @@ const reminderNotification: any = [
     value: 4,
   },
 ];
+
+// เพิ่มรายการบริษัทขนส่งในไทย
+const senderTypeOptions = [
+  { label: "Thailand Post (ไปรษณีย์ไทย)", value: "Thailand Post" },
+  { label: "Kerry Express", value: "Kerry Express" },
+  { label: "Flash Express", value: "Flash Express" },
+  { label: "J&T Express", value: "J&T Express" },
+  { label: "DHL", value: "DHL" },
+  { label: "FedEx", value: "FedEx" },
+  { label: "UPS", value: "UPS" },
+  { label: "SCG Express", value: "SCG Express" },
+  { label: "Ninja Van", value: "Ninja Van" },
+  { label: "Best Express", value: "Best Express" },
+  { label: "Shopee Express", value: "Shopee Express" },
+  { label: "Lazada Express", value: "Lazada Express" },
+  { label: "Alpha Fast", value: "Alpha Fast" },
+  { label: "CJ Logistics", value: "CJ Logistics" },
+  { label: "Grab Express", value: "Grab Express" },
+  { label: "foodpanda", value: "foodpanda" },
+  { label: "Lalamove", value: "Lalamove" },
+  { label: "GoGoVan", value: "GoGoVan" },
+];
+
 type RangeValue = [Dayjs | null, Dayjs | null] | null;
 let blocklst: any[] = [];
 const EditDeliverylog = (props: EditEventLogProps) => {
@@ -77,6 +100,31 @@ const EditDeliverylog = (props: EditEventLogProps) => {
   const resetValue = async () => {
     await form.resetFields();
   };
+
+  // Custom validator for time validation
+  const validateTimeRange = () => ({
+    validator: async () => {
+        const startTime = form.getFieldValue('startTime');
+        const endTime = form.getFieldValue('endTime');
+        
+        if (startTime && endTime) {
+            const start = dayjs(startTime);
+            const end = dayjs(endTime);
+            
+            // Check if end time is after start time (same day)
+            if (end.isBefore(start) || end.isSame(start)) {
+                return Promise.reject(new Error('End time must be greater than start time and cannot cross midnight'));
+            }
+            
+            // Check minimum 30 minutes difference
+            const timeDiff = end.diff(start, 'minute');
+            if (timeDiff < 30) {
+                return Promise.reject(new Error('Delivery window must be at least 30 minutes'));
+            }
+        }
+        return Promise.resolve();
+    },
+});
   useEffect(() => {
     if (props?.isOpen) {
       (async function () {
@@ -263,8 +311,7 @@ const EditDeliverylog = (props: EditEventLogProps) => {
           borderBottom: 20,
           borderWidth: 200,
           borderBlock: 10,
-        }}
-      >
+        }}>
         <Form
           form={form}
           layout="vertical"
@@ -274,8 +321,7 @@ const EditDeliverylog = (props: EditEventLogProps) => {
           initialValues={{ remember: true }}
           onFinish={onFinish}
           onFinishFailed={onFinishFailed}
-          autoComplete="off"
-        >
+          autoComplete="off">
           <Row>
             <Col span={12}>
               {/* <Form.Item
@@ -293,11 +339,13 @@ const EditDeliverylog = (props: EditEventLogProps) => {
               </Form.Item> */}
               <Form.Item
                 name="unitId"
-                label="Unit no."
+                label="Room address"
                 rules={[
-                  { required: true, message: "Please select Input unit no." },
-                ]}
-              >
+                  {
+                    required: true,
+                    message: "Please select Input room address",
+                  },
+                ]}>
                 <Select
                   showSearch
                   optionFilterProp="children"
@@ -316,27 +364,55 @@ const EditDeliverylog = (props: EditEventLogProps) => {
                 label="Occupant's name"
                 rules={[
                   { required: true, message: "Please select occupant's name" },
-                ]}
-              >
+                ]}>
                 <Select
                   disabled={selectedunit}
                   options={occupantsName}
                   placeholder="Select occupant's name"
                 />
               </Form.Item>
-
               <Form.Item
                 label="Sender type"
                 name="senderType"
                 rules={[
                   {
-                    pattern: new RegExp(/^[A-Za-z][A-Za-z]*$/),
-                    message: "english word only",
+                    required: true,
+                    message: "Please select or input sender type!",
                   },
-                  { required: true, message: "Please input your sender type!" },
-                ]}
-              >
-                <Input placeholder="Input sender type" />
+                  {
+                    validator: async (_, value) => {
+                      if (value && typeof value === "string") {
+                        // ตรวจสอบว่าเป็นภาษาอังกฤษและตัวเลขเท่านั้น
+                        const pattern = /^[A-Za-z0-9\s&.-]+$/;
+                        if (!pattern.test(value)) {
+                          return Promise.reject(
+                            new Error(
+                              "Please use English characters, numbers, and basic symbols only"
+                            )
+                          );
+                        }
+                        // ตรวจสอบความยาว
+                        if (value.length > 50) {
+                          return Promise.reject(
+                            new Error(
+                              "Sender type should not exceed 50 characters"
+                            )
+                          );
+                        }
+                      }
+                      return Promise.resolve();
+                    },
+                  },
+                ]}>
+                <AutoComplete
+                  options={senderTypeOptions}
+                  placeholder="Select or type sender type"
+                  filterOption={(inputValue, option) =>
+                    option!.label
+                      .toUpperCase()
+                      .indexOf(inputValue.toUpperCase()) !== -1
+                  }
+                />
               </Form.Item>
               <Form.Item
                 label="Tracking number"
@@ -350,8 +426,7 @@ const EditDeliverylog = (props: EditEventLogProps) => {
                     required: true,
                     message: "Please input your tracking number!",
                   },
-                ]}
-              >
+                ]}>
                 <Input placeholder="Input tracking number" />
               </Form.Item>
               <Form.Item
@@ -362,8 +437,7 @@ const EditDeliverylog = (props: EditEventLogProps) => {
                     required: true,
                     message: "Please input your pick-up location!",
                   },
-                ]}
-              >
+                ]}>
                 <Input placeholder="Input pick-up location" />
               </Form.Item>
             </Col>
@@ -376,8 +450,7 @@ const EditDeliverylog = (props: EditEventLogProps) => {
                     required: true,
                     message: "This field is required !",
                   },
-                ]}
-              >
+                ]}>
                 <RangePicker
                   value={dates || value}
                   disabledDate={disabledDate}
@@ -438,11 +511,20 @@ const EditDeliverylog = (props: EditEventLogProps) => {
                     rules={[
                       {
                         required: true,
-                        message: "This field is required !",
+                        message: "This field is required!",
                       },
-                    ]}
-                  >
-                    <TimePicker className="fullWidth" format="hh:mm a" />
+                      validateTimeRange(),
+                    ]}>
+                    <TimePicker
+                      className="fullWidth"
+                      format="hh:mm a"
+                      style={{ width: "100%" }}
+                      onChange={() => {
+                        // Re-validate end time when start time changes
+                        form.validateFields(["endTime"]);
+                      }}
+                      minuteStep={15}
+                    />
                   </Form.Item>
                 </Col>
                 <Col span={11}>
@@ -452,11 +534,20 @@ const EditDeliverylog = (props: EditEventLogProps) => {
                     rules={[
                       {
                         required: true,
-                        message: "This field is required !",
+                        message: "This field is required!",
                       },
-                    ]}
-                  >
-                    <TimePicker className="fullWidth" format="hh:mm a" />
+                      validateTimeRange(),
+                    ]}>
+                    <TimePicker
+                      className="fullWidth"
+                      format="hh:mm a"
+                      style={{ width: "100%" }}
+                      onChange={() => {
+                        // Re-validate start time when end time changes
+                        form.validateFields(["startTime"]);
+                      }}
+                      minuteStep={15}
+                    />
                   </Form.Item>
                 </Col>
               </Row>
@@ -469,8 +560,7 @@ const EditDeliverylog = (props: EditEventLogProps) => {
                     required: true,
                     message: "Select day",
                   },
-                ]}
-              >
+                ]}>
                 <Select
                   disabled={disableDatePicker}
                   options={reminderNotificationSelect}
@@ -478,8 +568,8 @@ const EditDeliverylog = (props: EditEventLogProps) => {
                 />
               </Form.Item>
               <Form.Item label="Arrival Date" name="arrivalDate">
-                            <DatePicker  />
-                            </Form.Item>
+                <DatePicker />
+              </Form.Item>
               <Form.Item label="Comment(Optional)" name="description">
                 <Input.TextArea
                   style={{ height: 200 }}
@@ -494,8 +584,7 @@ const EditDeliverylog = (props: EditEventLogProps) => {
           <Form.Item
             className="noMargin"
             wrapperCol={{ offset: 22, span: 2 }}
-            style={{ paddingRight: 30 }}
-          >
+            style={{ paddingRight: 30 }}>
             <Button type="primary" htmlType="submit">
               Save
             </Button>

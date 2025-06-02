@@ -82,7 +82,7 @@ const UploadImageGroup = ({
           style={
             imageUrl
               ? {
-                  backgroundColor: "rgba(0,0,0,0.4)",
+                  // backgroundColor: "rgba(0,0,0,0.4)",
                   width: "100%",
                   height: "100%",
                   display: "flex",
@@ -102,16 +102,16 @@ const UploadImageGroup = ({
         >
           <p>
             {imageUrl ? (
-              <NoImageIcon color={whiteLabel.whiteColor} />
+              <NoImageIcon color={whiteLabel.blackColor} />
             ) : (
-              <NoImageIcon color={whiteLabel.grayTransColor} />
+              <NoImageIcon color={whiteLabel.blackColor} />
             )}
           </p>
           <Text
             style={{
               color: imageUrl
-                ? whiteLabel.whiteTransColor
-                : whiteLabel.grayTransColor,
+                ? whiteLabel.blackColor
+                : whiteLabel.blackColor,
             }}
           >
             <p>Upload your photo</p>
@@ -119,8 +119,8 @@ const UploadImageGroup = ({
           <Text
             style={{
               color: imageUrl
-                ? whiteLabel.whiteColor
-                : whiteLabel.grayTransColor,
+                ? whiteLabel.blackColor
+                : whiteLabel.blackColor
             }}
           >
             <p>{`*File size <1MB, ${ratio}, *JPGs`}</p>

@@ -1,4 +1,7 @@
-@import url(https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap);
+/* @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap"); */
+@import url("https://fonts.googleapis.com/css2?family=Kanit:wght@100;200;300;400;500;600;700;800;900&display=swap");
+@import "tailwindcss";
+
 :root {
   font-family: "Kanit";
   line-height: 1.5;
@@ -27,13 +30,13 @@
   --font-size-base: 16px;
 
   /* Colors */
-  --primary-color: #36CCCC;
-  --secondary-color: #E7F5F5;
-  --tertiary-color: #36CCCC;
-  --header-color: #ACEADE;
+  --primary-color: #36cccc;
+  --secondary-color: #e7f5f5;
+  --tertiary-color: #36cccc;
+  --header-color: #aceade;
   --BG-color: rgba(172, 234, 222, 0.2);
-  --login-color: #36CCCC;
-  --BG-Table-color: rgba(233,248,245,255);
+  --login-color: #36cccc;
+  --BG-Table-color: rgba(233, 248, 245, 255);
   --white-color: #ffffff;
   --whiteTrans-color: rgba(255, 255, 255, 0.8);
   --black-color: #403d38;

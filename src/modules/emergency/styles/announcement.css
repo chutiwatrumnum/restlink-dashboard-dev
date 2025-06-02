@@ -50,6 +50,7 @@
 
 .emergencyFormModal {
   width: 30% !important;
+  font-weight: 'bold'
 }
 
 .announcementInfoRow {

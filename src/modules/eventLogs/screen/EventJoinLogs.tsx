@@ -52,7 +52,7 @@ const EventJoinLogs = () => {
 
   const { Search } = Input;
   const scroll: { x?: number | string } = {
-    x: "100vw",
+    x: 1500,
   };
   useEffect(() => {
     (async function () {
@@ -88,21 +88,6 @@ const EventJoinLogs = () => {
   };
   const columns: ColumnsType<dataEventJoinLogsType> = [
     {
-      title: "Delete",
-      dataIndex: "delete",
-      align: "center",
-      width: "5%",
-      render: (_, record) => (
-        <>
-          <Button
-            value={record.key}
-            type="text"
-            icon={<DeleteOutlined />}
-            onClick={showDeleteConfirm}></Button>
-        </>
-      ),
-    },
-    {
       title: "Event name",
       dataIndex: "eventName",
       align: "center",
@@ -121,7 +106,7 @@ const EventJoinLogs = () => {
       },
     },
     {
-      title: "Unit no.",
+      title: "Room number",
       dataIndex: "unitNo",
       align: "center",
       width: "6%",
@@ -146,30 +131,32 @@ const EventJoinLogs = () => {
       key: "bookingBy",
       width: "5%",
     },
+
     {
-      title: "Detail",
-      dataIndex: "detail",
+      title: "Action",
+      dataIndex: "action",
       align: "center",
-      key: "detail",
-      width: "5%",
+      width: "2%",
+      fixed: "right",
       render: (_, record) => (
         <>
-          <Row>
-            <Col span={24}>
-              <Button
-                value={record.key}
-                type="text"
-                icon={<InfoCircleOutlined />}
-                onClick={async () => {
-                  const dataInfo = await getDataJoinLogByid(record.key);
-                  if (dataInfo?.status) {
-                    await setDataInfo(dataInfo.data);
-                    await setIsModalOpenInfo(true);
-                  }
-                }}
-              />
-            </Col>
-          </Row>
+          <Button
+            value={record.key}
+            type="text"
+            icon={<InfoCircleOutlined />}
+            onClick={async () => {
+              const dataInfo = await getDataJoinLogByid(record.key);
+              if (dataInfo?.status) {
+                await setDataInfo(dataInfo.data);
+                await setIsModalOpenInfo(true);
+              }
+            }}
+          />
+          <Button
+            value={record.key}
+            type="text"
+            icon={<DeleteOutlined />}
+            onClick={showDeleteConfirm}></Button>
         </>
       ),
     },

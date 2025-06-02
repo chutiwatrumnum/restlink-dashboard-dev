@@ -58,7 +58,7 @@ const EventLogs = () => {
 
   const { Search } = Input;
   const scroll: { x?: number | string } = {
-    x: "100vw",
+    x: 1500,
   };
   useEffect(() => {
     (async function () {
@@ -92,21 +92,6 @@ const EventLogs = () => {
   };
   const columns: ColumnsType<dataEventLogsType> = [
     {
-      title: "Delete",
-      dataIndex: "delete",
-      align: "center",
-      width: "5%",
-      render: (_, record) => (
-        <>
-          <Button
-            value={record.key}
-            type="text"
-            icon={<DeleteOutlined />}
-            onClick={showDeleteConfirm}></Button>
-        </>
-      ),
-    },
-    {
       title: "Title",
       dataIndex: "title",
       align: "center",
@@ -124,7 +109,7 @@ const EventLogs = () => {
       dataIndex: "locked",
       align: "center",
       key: "locked",
-      width: "3%",
+      width: "7%",
       render: (_, record) => (
         <>
           <Row>
@@ -206,7 +191,7 @@ const EventLogs = () => {
       title: "Visitor register",
       dataIndex: "visitorRegister",
       align: "center",
-      width: "5%",
+      width: "7%",
       // sorter: {
       //   compare: (a, b) => a.visitorRegister.localeCompare(b.visitorRegister),
       // },
@@ -223,27 +208,27 @@ const EventLogs = () => {
       //   compare: (a, b) => a.email.localeCompare(b.email),
       // },
     },
-
     {
-      title: "Edit",
-      dataIndex: "edit",
+      title: "Action",
+      dataIndex: "action",
       align: "center",
-      key: "edit",
-      width: "10%",
+      width: "7%",
+      fixed: "right",
       render: (_, record) => (
         <>
-          <Row>
-            <Col span={24}>
-              <Button
-                value={record.key}
-                onClick={async () => {
-                  await editButton(record);
-                }}
-                type="text"
-                icon={<EditOutlined />}
-              />
-            </Col>
-          </Row>
+          <Button
+            value={record.key}
+            onClick={async () => {
+              await editButton(record);
+            }}
+            type="text"
+            icon={<EditOutlined />}
+          />
+          <Button
+            value={record.key}
+            type="text"
+            icon={<DeleteOutlined />}
+            onClick={showDeleteConfirm}></Button>
         </>
       ),
     },

@@ -15,11 +15,10 @@ import AuthorizedLayout from "./navigation/AuthorizedLayout";
 // authorize routes
 import SummaryDashboard from "./modules/summary/screens/Summary";
 import Announcement from "./modules/announcement/screens/Announcement";
-import ProjectNew from "./modules/projectNew/screens/projectNew";
 import PeopleCountingMain from "./modules/peopleCounting/screens/PeopleCountingMain";
 import ManagementMain from "./modules/management/screens/ManagementMain";
 import ResidentInformationMain from "./modules/userManagement/screens/ResidentInformationMain";
-import ResidentSignUp from "./modules/userManagement/screens/ResidentSignUp";
+import ResidentActivation from "./modules/userManagement/screens/ResidentActivation";
 
 import ServiceDashboard from "./modules/serviceCenter/screens/ServiceDashboard";
 import ServiceCenterLists from "./modules/serviceCenter/screens/ServiceCenterLists";
@@ -147,15 +146,14 @@ function App() {
             path="residentInformation"
             element={<ResidentInformationMain />}
           />
-          <Route path="residentSignUp" element={<ResidentSignUp />} />
+          <Route path="residentActivation" element={<ResidentActivation />} />
           <Route path="parcelAlert" element={<SummaryDashboard />} />
           <Route path="announcement" element={<Announcement />} />
-          <Route path="projectNew" element={<ProjectNew />} />
           <Route path="payment" element={<SummaryDashboard />} />
           <Route path="liveChat" element={<LiveChat />} />
           <Route path="smartMailbox" element={<SummaryDashboard />} />
           <Route path="securityCenter" element={<SummaryDashboard />} />
-          <Route path="emergencyCall" element={<Emergency />} />
+          <Route path="contactLists" element={<Emergency/>} />
           {/* User management */}
           <Route path="residentManagement" element={<SummaryDashboard />} />
           <Route path="registration" element={<SummaryDashboard />} />
@@ -168,7 +166,8 @@ function App() {
           <Route path="areaControl" element={<AreaControl />} />
           <Route path="deviceControl" element={<DeviceControl />} />
           {/* Document */}
-          <Route path="public-folder" element={<PublicFolder />} />
+          <Route path="homeDocument" element={<PublicFolder />} />
+          <Route path="projectInfo" element={<MaintenanceGuideFolder />} />
           {/* Delivery logs */}
           <Route path="delivery-logs" element={<DeliveryLogs />} />
 
@@ -179,11 +178,6 @@ function App() {
             element={<VisitorManagementLog />}
           />
           {/* <Route path="event-view" element={<EventView />} /> */}
-          {/* Maintenance Guide Folder */}
-          <Route
-            path="maintenanceFolder"
-            element={<MaintenanceGuideFolder />}
-          />
         </Route>
         <Route path="*" element={<Navigate to="/auth" />} />
       </Routes>

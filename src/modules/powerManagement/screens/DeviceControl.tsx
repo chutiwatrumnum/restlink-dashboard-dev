@@ -20,91 +20,91 @@ const { Title } = Typography;
 
 const DeviceControl = () => {
   const dispatch = useDispatch<Dispatch>();
-  const { devicesData } = useSelector(
-    (state: RootState) => state.powerManagement
-  );
-  // const devicesData = [
-  //   {
-  //     id: 3,
-  //     name: "City gym Floor 6",
-  //     imageUrl:
-  //       "https://firebasestorage.googleapis.com/v0/b/dbp-maint.appspot.com/o/device-control1.png?alt=media&token=cf5efdad-784b-4c9c-abc8-0d09dfd98e3d",
-  //     deviceList: [
-  //       {
-  //         id: 6,
-  //         rcuControlAreaId: 3,
-  //         name: "1st air conditioner",
-  //         snumOpen: 0,
-  //         snumClose: 4,
-  //         ip: "192.168.1.232",
-  //       },
-  //       {
-  //         id: 7,
-  //         rcuControlAreaId: 3,
-  //         name: "2st air conditioner",
-  //         snumOpen: 0,
-  //         snumClose: 4,
-  //         ip: "192.168.1.232",
-  //       },
-  //       {
-  //         id: 8,
-  //         rcuControlAreaId: 3,
-  //         name: "3st air conditioner",
-  //         snumOpen: 0,
-  //         snumClose: 4,
-  //         ip: "192.168.1.232",
-  //       },
-  //     ],
-  //   },
-  //   {
-  //     id: 5,
-  //     name: "Co-working space Floor 29",
-  //     imageUrl:
-  //       "https://firebasestorage.googleapis.com/v0/b/dbp-maint.appspot.com/o/device-control3.png?alt=media&token=34a441ac-3b40-4bcd-bb4a-d027a84bfdb2",
-  //     deviceList: [
-  //       {
-  //         id: 10,
-  //         rcuControlAreaId: 5,
-  //         name: "1st air conditioner",
-  //         snumOpen: 0,
-  //         snumClose: 4,
-  //         ip: "192.168.1.232",
-  //       },
-  //       {
-  //         id: 11,
-  //         rcuControlAreaId: 5,
-  //         name: "2st air conditioner",
-  //         snumOpen: 0,
-  //         snumClose: 4,
-  //         ip: "192.168.1.232",
-  //       },
-  //       {
-  //         id: 12,
-  //         rcuControlAreaId: 5,
-  //         name: "3st air conditioner",
-  //         snumOpen: 0,
-  //         snumClose: 4,
-  //         ip: "192.168.1.232",
-  //       },
-  //     ],
-  //   },
-  //   {
-  //     id: 4,
-  //     name: "Meeting room Floor 29",
-  //     imageUrl:
-  //       "https://firebasestorage.googleapis.com/v0/b/dbp-maint.appspot.com/o/device-control2.png?alt=media&token=8af90d74-6900-41eb-97df-958344f9fad4",
-  //     deviceList: [
-  //       {
-  //         id: 9,
-  //         rcuControlAreaId: 4,
-  //         name: "1st air conditioner",
-  //         snumOpen: 0,
-  //         snumClose: 4,
-  //         ip: "192.168.1.232",
-  //       },
-  //     ],
-  //   },
-  // ];
+  // const { devicesData } = useSelector(
+  //   (state: RootState) => state.powerManagement
+  // );
+  const devicesData = [
+    {
+      id: 3,
+      name: "City gym Floor 6",
+      imageUrl:
+        "https://firebasestorage.googleapis.com/v0/b/dbp-maint.appspot.com/o/device-control1.png?alt=media&token=cf5efdad-784b-4c9c-abc8-0d09dfd98e3d",
+      deviceList: [
+        {
+          id: 6,
+          rcuControlAreaId: 3,
+          name: "1st air conditioner",
+          snumOpen: 0,
+          snumClose: 4,
+          ip: "192.168.1.232",
+        },
+        {
+          id: 7,
+          rcuControlAreaId: 3,
+          name: "2st air conditioner",
+          snumOpen: 0,
+          snumClose: 4,
+          ip: "192.168.1.232",
+        },
+        {
+          id: 8,
+          rcuControlAreaId: 3,
+          name: "3st air conditioner",
+          snumOpen: 0,
+          snumClose: 4,
+          ip: "192.168.1.232",
+        },
+      ],
+    },
+    {
+      id: 5,
+      name: "Co-working space Floor 29",
+      imageUrl:
+        "https://firebasestorage.googleapis.com/v0/b/dbp-maint.appspot.com/o/device-control3.png?alt=media&token=34a441ac-3b40-4bcd-bb4a-d027a84bfdb2",
+      deviceList: [
+        {
+          id: 10,
+          rcuControlAreaId: 5,
+          name: "1st air conditioner",
+          snumOpen: 0,
+          snumClose: 4,
+          ip: "192.168.1.232",
+        },
+        {
+          id: 11,
+          rcuControlAreaId: 5,
+          name: "2st air conditioner",
+          snumOpen: 0,
+          snumClose: 4,
+          ip: "192.168.1.232",
+        },
+        {
+          id: 12,
+          rcuControlAreaId: 5,
+          name: "3st air conditioner",
+          snumOpen: 0,
+          snumClose: 4,
+          ip: "192.168.1.232",
+        },
+      ],
+    },
+    {
+      id: 4,
+      name: "Meeting room Floor 29",
+      imageUrl:
+        "https://firebasestorage.googleapis.com/v0/b/dbp-maint.appspot.com/o/device-control2.png?alt=media&token=8af90d74-6900-41eb-97df-958344f9fad4",
+      deviceList: [
+        {
+          id: 9,
+          rcuControlAreaId: 4,
+          name: "1st air conditioner",
+          snumOpen: 0,
+          snumClose: 4,
+          ip: "192.168.1.232",
+        },
+      ],
+    },
+  ];
 
   // const { accessibility } = useSelector((state: RootState) => state.common);
   const [refresh, setRefresh] = useState(true);

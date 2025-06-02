@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Button, Row, Pagination } from "antd";
+import { Button, Row, Pagination, Tabs, message, Flex } from "antd";
 import Header from "../../../components/templates/Header";
 import DatePicker from "../../../components/common/DatePicker";
 import SearchBox from "../../../components/common/SearchBox";
@@ -14,7 +14,7 @@ import { Dispatch, RootState } from "../../../stores";
 import ConfirmModal from "../../../components/common/ConfirmModal";
 
 import type { ColumnsType } from "antd/es/table";
-import type { PaginationProps } from "antd";
+import type { PaginationProps, TabsProps } from "antd";
 import dayjs from "dayjs";
 import {
   AnnounceFormDataType,
@@ -33,6 +33,24 @@ const Announcement = () => {
   const announcementMaxLength = useSelector(
     (state: RootState) => state.announcement.announcementMaxLength
   );
+  const items: TabsProps["items"] = [
+    {
+      key: "announcement",
+      label: "Announcement",
+      children: null,
+    },
+    {
+      key: "projectNews",
+      label: "Project news",
+      children: null,
+    },
+    {
+      key: "devNews",
+      label: "Developer news",
+      children: null,
+    },
+  ];
+
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
@@ -43,6 +61,9 @@ const Announcement = () => {
   const [startDate, setStartDate] = useState();
   const [endDate, setEndDate] = useState();
   const [refresh, setRefresh] = useState(false);
+  const [fetchType, setFetchType] = useState<
+    "projectNews" | "announcement" | "devNews"
+  >("announcement");
 
   // functions
   const onSearch = (value: string) => {
@@ -120,6 +141,7 @@ const Announcement = () => {
       perPage: perPage,
       startDate: startDate,
       endDate: endDate,
+      fetchType: fetchType,
     };
     await dispatch.announcement.getTableData(payload);
   };
@@ -134,7 +156,10 @@ const Announcement = () => {
       okMessage: "Yes",
       cancelMessage: "Cancel",
       onOk: async () => {
-        await dispatch.announcement.deleteTableData(value.id);
+        await dispatch.announcement.deleteTableData({
+          id: value.id,
+          type: fetchType,
+        });
         onRefresh();
       },
       onCancel: () => console.log("Cancel"),
@@ -149,23 +174,16 @@ const Announcement = () => {
     setPerPage(pageSize);
   };
 
+  const onTabsChange = (key: string) => {
+    if (key === "projectNews" || key === "announcement" || key === "devNews") {
+      setFetchType(key);
+    } else {
+      message.error("Something went wrong");
+      console.log(key);
+    }
+  };
+
   const columns: ColumnsType<DataAnnouncementType> = [
-    {
-      title: "Delete",
-      key: "delete",
-      align: "center",
-      render: (_, record) => {
-        return (
-          <>
-            <Button
-              onClick={() => showDeleteConfirm(record)}
-              type="text"
-              icon={<TrashIcon />}
-            />
-          </>
-        );
-      },
-    },
     {
       title: "Image",
       key: "imageUrl",
@@ -174,10 +192,22 @@ const Announcement = () => {
     },
     {
       title: "Title",
-      dataIndex: "title",
+      // dataIndex: "title",
       key: "title",
       align: "center",
       sorter: (a, b) => a.title.localeCompare(b.title),
+      render: ({ title }) => (
+        <div
+          style={{
+            width: "100%",
+            overflow: "hidden",
+            whiteSpace: "nowrap",
+            textOverflow: "ellipsis",
+          }}
+        >
+          <span>{title}</span>
+        </div>
+      ),
     },
     {
       title: "Status",
@@ -232,8 +262,8 @@ const Announcement = () => {
       render: ({ createBy }) => {
         return (
           <span>
-            {createBy?.firstName && createBy?.middleName && createBy?.lastName
-              ? `${createBy?.firstName ?? "-"}`
+            {createBy?.givenName
+              ? `${createBy?.givenName ?? "-"}`
               : "Removed admin"}
           </span>
         );
@@ -250,32 +280,37 @@ const Announcement = () => {
       sorter: (a, b) => dayjs(a.createdAt).unix() - dayjs(b.createdAt).unix(),
     },
     {
-      title: "Edit",
+      title: "Actions",
       key: "edit",
       align: "center",
-      render: (_, record) => {
-        return (
-          <>
-            <Button
-              type="text"
-              icon={<InfoIcon />}
-              onClick={() => onInfoClick(record)}
-            />
-            <Button
-              type="text"
-              icon={<EditIcon />}
-              onClick={() => onEdit(record)}
-            />
-          </>
-        );
-      },
+      fixed: "right",
+      width: 120,
+      render: (_, record) => (
+        <>
+          <Button
+            type="text"
+            icon={<InfoIcon />}
+            onClick={() => onInfoClick(record)}
+          />
+          <Button
+            type="text"
+            icon={<EditIcon />}
+            onClick={() => onEdit(record)}
+          />
+          <Button
+            onClick={() => showDeleteConfirm(record)}
+            type="text"
+            icon={<TrashIcon />}
+          />
+        </>
+      ),
     },
   ];
 
   // Actions
   useEffect(() => {
     fetchData();
-  }, [startDate, endDate, search, curPage, refresh, perPage]);
+  }, [startDate, endDate, search, curPage, refresh, perPage, fetchType]);
 
   return (
     <>
@@ -299,11 +334,17 @@ const Announcement = () => {
           className="createAnnouncementBtn"
         />
       </div>
+      <Tabs
+        defaultActiveKey="announcement"
+        items={items}
+        onChange={onTabsChange}
+      />
       <AnnounceTable columns={columns} data={data} />
       <Row
         className="announceBottomActionContainer"
         justify="end"
-        align="middle">
+        align="middle"
+      >
         <Pagination
           defaultCurrent={1}
           pageSize={perPage}
@@ -314,7 +355,6 @@ const Announcement = () => {
           onShowSizeChange={onShowSizeChange}
         />
       </Row>
-
       <AnnouncementCreateModal
         isCreateModalOpen={isCreateModalOpen}
         onOk={onCreateOk}
@@ -327,6 +367,7 @@ const Announcement = () => {
         onCancel={onEditCancel}
         data={editData}
         onRefresh={onRefresh}
+        type={fetchType}
       />
       <AnnouncementInfo
         isInfoModalOpen={isInfoModalOpen}

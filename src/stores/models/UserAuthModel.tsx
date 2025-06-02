@@ -99,7 +99,7 @@ export const userAuth = createModel<RootModel>()({
         }
 
         const projectId = await encryptStorage.getItem("projectId");
-        console.log({ token: res.data.access_token, projId: projectId });
+        // console.log({ token: res.data.access_token, projId: projectId });
         encryptStorage.setItem("access_token", res.data.access_token);
         dispatch.userAuth.updateAuthState(true);
         return true;

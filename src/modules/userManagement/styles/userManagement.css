@@ -54,13 +54,12 @@
   width: 80% !important;
 }
 
-.buttonSuccess{
-color: green;
-border-color: green;
+.buttonSuccess {
+  color: green;
+  border-color: green;
 }
 
-.buttonDisableSuccess{
-  color: #BCBEC0;
-  border-color: #BCBEC0;
-  }
-
+.buttonDisableSuccess {
+  color: #bcbec0;
+  border-color: #bcbec0;
+}

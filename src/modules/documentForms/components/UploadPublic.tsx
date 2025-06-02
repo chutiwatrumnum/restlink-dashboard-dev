@@ -1,18 +1,29 @@
 import { useState, useEffect } from "react";
-import { Button, Modal, message, Upload, ProgressProps } from "antd";
+import {
+  Button,
+  Modal,
+  message,
+  Upload,
+  ProgressProps,
+  Select,
+  Radio,
+} from "antd";
 import { InboxOutlined } from "@ant-design/icons";
 import { useDispatch } from "react-redux";
 import { Dispatch } from "../../../stores";
-import type { RcFile, UploadFile } from "antd/es/upload/interface";
 import { dataFiles } from "../../../stores/interfaces/Document";
 import { uploadDocument } from "../service/DocumentAPI";
 import {
   callFailedModal,
   callSuccessModal,
 } from "../../../components/common/Modal";
+import { getUnitListQuery } from "../../../utils/queriesGroup/documentQueries";
 
+import type { RcFile, UploadFile } from "antd/es/upload/interface";
+import type { RadioChangeEvent } from "antd";
 import { DocumentDataType } from "../../../stores/interfaces/Document";
 type ProgressStatus = "normal" | "exception" | "active" | "success";
+
 const { Dragger } = Upload;
 interface ComponentCreateProps {
   isOpen: boolean;
@@ -26,6 +37,7 @@ interface IupdateFile {
 const UploadPublic = (props: ComponentCreateProps) => {
   const dispatch = useDispatch<Dispatch>();
   const maxUploadFile: number = 10;
+  const { data: unitData, isLoading: isLoadingUnit } = getUnitListQuery();
 
   const [draggerStatus, setDraggerStatus] = useState<boolean>(false);
   const [fileList, setFileList] = useState<UploadFile[]>([]);
@@ -34,6 +46,9 @@ const UploadPublic = (props: ComponentCreateProps) => {
   const [processPercent, setProcessPercent] = useState<number>(0);
   const [statusProcessBar, setStatusProcessBar] =
     useState<ProgressStatus>("active");
+  const [isAllowAll, setIsAllowAll] = useState<"y" | "n">("y");
+  const [selectedAddress, setSelectedAddress] = useState<number[]>([]);
+  const [disabled, setDisabled] = useState(false);
 
   const handleCancel = async () => {
     props.callBack(!props?.isOpen, false);
@@ -68,7 +83,10 @@ const UploadPublic = (props: ComponentCreateProps) => {
         fileSize: `${(file.originFileObj.size / 1024 / 1024).toFixed(2)} MB`,
         folderId: props?.FolderId,
         base64: database64,
+        allowAll: isAllowAll,
+        unitId: selectedAddress,
       };
+
       fileList.map((e: any, i: number) => {
         if (e.uid === file.uid) {
           e.status = "uploading";
@@ -76,7 +94,7 @@ const UploadPublic = (props: ComponentCreateProps) => {
       });
       setFileList(fileList);
       setFileUpload(file);
-      res = await uploadDocument(dataFileUpload, setProcessPercent);
+      res = await uploadDocument(dataFileUpload);
 
       if (!res?.status) {
         setDraggerStatus(false);
@@ -109,6 +127,18 @@ const UploadPublic = (props: ComponentCreateProps) => {
     } else {
       callFailedModal("Upload failed", 1500);
     }
+    setDisabled(false);
+  };
+
+  const handleSelectAddressChange = (value: string[]) => {
+    let arrNumber = value.map(Number);
+    // console.log(arrNumber);
+    setSelectedAddress(arrNumber);
+  };
+
+  const onIsAllowAllChange = (e: RadioChangeEvent) => {
+    // console.log(e.target.value);
+    setIsAllowAll(e.target.value);
   };
 
   const propProcess: ProgressProps = {
@@ -143,7 +173,9 @@ const UploadPublic = (props: ComponentCreateProps) => {
   return (
     <>
       <Modal
-        title="Add new public document "
+        title={`Add new document to ${
+          props?.folderDetail?.name ?? "Home documents"
+        }`}
         width={700}
         centered
         open={props?.isOpen}
@@ -155,13 +187,40 @@ const UploadPublic = (props: ComponentCreateProps) => {
             loading={buttonLoading}
             disabled={fileList.length > 0 ? false : true}
             style={{ paddingLeft: 30, paddingRight: 30 }}
-            onClick={UploadPublicFile}
+            onClick={() => {
+              UploadPublicFile();
+              setDisabled(true);
+            }}
           >
             Upload
           </Button>,
         ]}
       >
-        <div>{props?.folderDetail?.folderName ?? "Public folder"}</div>
+        <div className="flex flex-col mb-8 gap-4">
+          <span>Send to</span>
+          <Radio.Group
+            name="isAllowAllRadio"
+            value={isAllowAll}
+            onChange={onIsAllowAllChange}
+            disabled={disabled}
+            options={[
+              { value: "y", label: "Select all" },
+              { value: "n", label: "Custom select" },
+            ]}
+          />
+          <span>Select address no.</span>
+          <Select
+            mode="multiple"
+            size="large"
+            placeholder="Please select address no."
+            onChange={handleSelectAddressChange}
+            style={{ width: "100%" }}
+            options={unitData}
+            loading={isLoadingUnit}
+            fieldNames={{ value: "unitId" }}
+            disabled={isAllowAll === "y" || disabled}
+          />
+        </div>
         <Dragger
           accept="application/pdf"
           customRequest={({ file, onSuccess, onError }: any) => {

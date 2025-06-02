@@ -13,6 +13,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Dispatch, RootState } from "../../../stores";
 import { dataDeliveryLogsType, conditionPage, unitDetail } from "../../../stores/interfaces/DeliveryLogs";
 const { confirm } = Modal;
+
 const DeliveryLogs = () => {
     const { loading, tableDataDeliveryLog, total } = useSelector((state: RootState) => state.deliveryLogs);
     const [currentPage, setCurrentPage] = useState<number>(1);
@@ -42,8 +43,9 @@ const DeliveryLogs = () => {
 
     const { Search } = Input;
     const scroll: { x?: number | string } = {
-        x: "100vw",
+     x: 1500, // ปรับค่าตามความกว้างรวมของคอลัมน์
     };
+    
     useEffect(() => {
         (async function () {
             setParamsData(params);
@@ -70,129 +72,129 @@ const DeliveryLogs = () => {
         await dispatch.deliveryLogs.getTableDataDeliveryLogs(paramsData);
     };
     const columns: ColumnsType<dataDeliveryLogsType> = [
-        {
-            title: "Delete",
-            dataIndex: "delete",
-            align: "center",
-            width: "5%",
-            render: (_, record) => (
-                <>
-                    <Button value={record.key} type="text" icon={<DeleteOutlined />} onClick={showDeleteConfirm}></Button>
-                </>
-            ),
+      {
+        title: "Name",
+        dataIndex: "name",
+        align: "center",
+        sorter: {
+          compare: (a, b) => a.name.localeCompare(b.name),
         },
-        {
-            title: "Name",
-            dataIndex: "name",
-            align: "center",
-            sorter: {
-                compare: (a, b) => a.name.localeCompare(b.name),
-            },
+      },
+      {
+        title: "Contact",
+        dataIndex: "contact",
+        align: "center",
+      },
+      //   {
+      //     title: "Sender type",
+      //     dataIndex: "senderType",
+      //     align: "center",
+      //     ellipsis: true,
+      //     width: "10%",
+      //     sorter: {
+      //       compare: (a, b) => a.senderType.localeCompare(b.senderType),
+      //     },
+      //   },
+      {
+        title: "Tracking No.",
+        dataIndex: "trackingNumber",
+        align: "center",
+        ellipsis: true,
+        width: "10%",
+      },
+      {
+        title: "Block No.",
+        dataIndex: "blockNo",
+        align: "center",
+        sorter: {
+          compare: (a, b) => a.blockNo.localeCompare(b.blockNo),
         },
-        {
-            title: "Contact",
-            dataIndex: "contact",
-            align: "center",
+      },
+      {
+        title: "Room number",
+        dataIndex: "unitNo",
+        align: "center",
+        sorter: {
+          compare: (a, b) => a.unitNo.localeCompare(b.unitNo),
         },
-        {
-            title: "Sender type",
-            dataIndex: "senderType",
-            align: "center",
-            ellipsis: true,
-            width: "10%",
-            sorter: {
-                compare: (a, b) => a.senderType.localeCompare(b.senderType),
-            },
+      },
+      {
+        title: "Create date",
+        dataIndex: "createdAt",
+        align: "center",
+        render: (_, record) => {
+          return (
+            <div>
+              {record.createdAt !== "-"
+                ? dayjs(record.createdAt).format("DD/MM/YYYY")
+                : "-"}
+            </div>
+          );
         },
-        {
-            title: "Tracking No.",
-            dataIndex: "trackingNumber",
-            align: "center",
-            ellipsis: true,
-            width: "10%",
+      },
+      {
+        title: "From date-time",
+        dataIndex: "FromDateTime",
+        align: "center",
+      },
+      {
+        title: "To date-time",
+        dataIndex: "ToDateTime",
+        align: "center",
+      },
+      {
+        title: "Pick-up type",
+        dataIndex: "pickUpType",
+        align: "center",
+        sorter: {
+          compare: (a, b) => a.name.localeCompare(b.name),
         },
-        {
-            title: "Block No.",
-            dataIndex: "blockNo",
-            align: "center",
-            sorter: {
-                compare: (a, b) => a.blockNo.localeCompare(b.blockNo),
-            },
-        },
-        {
-            title: "Unit No.",
-            dataIndex: "unitNo",
-            align: "center",
-            sorter: {
-                compare: (a, b) => a.unitNo.localeCompare(b.unitNo),
-            },
-        },
-        {
-            title: "Create date",
-            dataIndex: "createdAt",
-            align: "center",
-            render: (_, record) => {
-                return <div>{record.createdAt !== "-" ? dayjs(record.createdAt).format("DD/MM/YYYY") : "-"}</div>;
-            },
-        },
-        {
-            title: "From date-time",
-            dataIndex: "FromDateTime",
-            align: "center",
-        },
-        {
-            title: "To date-time",
-            dataIndex: "ToDateTime",
-            align: "center",
-        },
-        {
-            title: "Pick-up type",
-            dataIndex: "pickUpType",
-            align: "center",
-            sorter: {
-                compare: (a, b) => a.name.localeCompare(b.name),
-            },
-        },
-
-        {
-            title: "Edit",
-            dataIndex: "edit",
-            align: "center",
-            key: "edit",
-            width: "10%",
-            render: (_, record) => (
-                <>
-                    <Row>
-                        <Col span={24}>
-                            <Button
-                                // disabled={record.collected}
-                                value={record.key}
-                                onClick={async () => {
-                                    await editButton(record);
-                                }}
-                                type="text"
-                                icon={<EditOutlined />}
-                            />
-                        </Col>
-                    </Row>
-                </>
-            ),
-        },
-        {
-            title: "Collected",
-            dataIndex: "collected",
-            align: "center",
-            width: "auto",
-            render: (_, record) => (
-                <>
-                    <Row>
-                        <Col span={24}>
-                            <Checkbox disabled={record.collected} checked={record.collected} value={record.key} onChange={changeCollected}></Checkbox>
-                        </Col>
-                    </Row>
-                </>
-            ),
-        },
+      },
+      {
+        title: "Collected",
+        dataIndex: "collected",
+        align: "center",
+        width: "auto",
+        render: (_, record) => (
+          <>
+            <Row>
+              <Col span={24}>
+                <Checkbox
+                  disabled={record.collected}
+                  checked={record.collected}
+                  value={record.key}
+                  onChange={changeCollected}></Checkbox>
+              </Col>
+            </Row>
+          </>
+        ),
+      },
+      {
+        title: "Action",
+        dataIndex: "action",
+        key: "action",
+        align: "center",
+        width: 120, // กำหนดความกว้างที่เหมาะสม
+        fixed: "right",
+        render: (_, record) => (
+          <>
+            <Button
+              value={record.key}
+              onClick={async () => {
+                await editButton(record);
+              }}
+              type="text"
+              icon={<EditOutlined />}
+            />
+            <Button
+              value={record.key}
+              type="text"
+              icon={<DeleteOutlined />}
+              onClick={showDeleteConfirm}
+            />
+          </>
+        ),
+      },
     ];
 
     const editButton = async (data: dataDeliveryLogsType) => {
@@ -304,60 +306,91 @@ const DeliveryLogs = () => {
     };
 
     return (
-        <>
-            <Header title="Delivery logs" />
-            <Row style={{ marginTop: 15, marginBottom: 15 }}>
-                <Col span={10}>
-                    <RangePicker onChange={handleDate} style={{ width: "95%" }} picker="month" format={customFormat} />
-                </Col>
-                <Col span={10} style={{ display: "flex", justifyContent: "flex-start" }}>
-                    <Col>
-                        <Select showSearch allowClear placeholder="Select unit" optionFilterProp="label" onChange={onChangeUnit} options={unit} />
-                    </Col>
-                    <Search placeholder="Search by tracking no." allowClear onSearch={onSearch} className="searchBox" style={{ width: 300 }} />
-                </Col>
-
-                <Col span={4} style={{ display: "flex", justifyContent: "flex-end" }}>
-                    <Button type="primary" style={{ marginRight: 10 }} onClick={exportEventLogs}>
-                        <VerticalAlignBottomOutlined />
-                        Export
-                    </Button>
-
-                    <Button
-                        type="primary"
-                        onClick={() => {
-                            setIsModalCreate(true);
-                        }}
-                    >
-                        Add new
-                    </Button>
-                    <CreateAddEventLog
-                        callBack={(isOpen: boolean, created: boolean) => {
-                            setIsModalCreate(isOpen);
-                            if (created) {
-                                setRerender(!rerender);
-                            }
-                        }}
-                        isOpen={isModalCreate}
-                    />
-                </Col>
-            </Row>
-            <Row>
-                <Col span={24}>
-                    <Table columns={columns} pagination={PaginationConfig} dataSource={tableDataDeliveryLog} loading={loading} onChange={onChangeTable} scroll={scroll} />
-                </Col>
-            </Row>
-            <EditEventLog
-                callBack={(isOpen: boolean, saved: boolean) => {
-                    setIsModalOpen(isOpen);
-                    if (saved) {
-                        setRerender(!rerender);
-                    }
-                }}
-                isOpen={isModalOpen}
-                deliveryLogs={dataEdit}
+      <>
+        <Header title="Delivery logs" />
+        <Row style={{ marginTop: 15, marginBottom: 15 }}>
+          <Col span={6}>
+            <RangePicker
+              onChange={handleDate}
+              style={{ width: "95%" }}
+              picker="month"
+              format={customFormat}
             />
-        </>
+          </Col>
+          <Col
+            span={6}
+            style={{ display: "flex", justifyContent: "flex-start" }}>
+            <Search
+              placeholder="Search by tracking no."
+              allowClear
+              onSearch={onSearch}
+              className="searchBox"
+              style={{ width: 300 }}
+            />
+          </Col>
+          <Col
+            span={6}
+            style={{ display: "flex", justifyContent: "flex-start" }}>
+            <Select
+              showSearch
+              allowClear
+              placeholder="Select Room number"
+              optionFilterProp="label"
+              onChange={onChangeUnit}
+              options={unit}
+            />
+          </Col>
+
+          <Col span={6} style={{ display: "flex", justifyContent: "flex-end" }}>
+            <Button
+              type="primary"
+              style={{ marginRight: 10 }}
+              onClick={exportEventLogs}>
+              <VerticalAlignBottomOutlined />
+              Export
+            </Button>
+
+            <Button
+              type="primary"
+              onClick={() => {
+                setIsModalCreate(true);
+              }}>
+              Add new
+            </Button>
+            <CreateAddEventLog
+              callBack={(isOpen: boolean, created: boolean) => {
+                setIsModalCreate(isOpen);
+                if (created) {
+                  setRerender(!rerender);
+                }
+              }}
+              isOpen={isModalCreate}
+            />
+          </Col>
+        </Row>
+        <Row>
+          <Col span={24}>
+            <Table
+              columns={columns}
+              pagination={PaginationConfig}
+              dataSource={tableDataDeliveryLog}
+              loading={loading}
+              onChange={onChangeTable}
+              scroll={scroll}
+            />
+          </Col>
+        </Row>
+        <EditEventLog
+          callBack={(isOpen: boolean, saved: boolean) => {
+            setIsModalOpen(isOpen);
+            if (saved) {
+              setRerender(!rerender);
+            }
+          }}
+          isOpen={isModalOpen}
+          deliveryLogs={dataEdit}
+        />
+      </>
     );
 };
 

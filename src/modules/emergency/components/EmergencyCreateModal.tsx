@@ -81,7 +81,7 @@ const EmergencyCreateModal = ({
           <Form.Item<DataEmergencyCreateByType>
             label="Image"
             name="image"
-            labelCol={{ style: { fontWeight: "bold" } }}>
+            >
             <UploadImageGroup
               onChange={(url) => setPreviewImage(url)}
               image={previewImage}
@@ -92,8 +92,7 @@ const EmergencyCreateModal = ({
           <Form.Item<DataEmergencyCreateByType>
             label="Name"
             name="name"
-            rules={requiredRule}
-            labelCol={{ style: { fontWeight: "bold" } }}>
+            rules={requiredRule}>
             <Input
               size="large"
               placeholder="Please input name"
@@ -105,8 +104,7 @@ const EmergencyCreateModal = ({
           <Form.Item<DataEmergencyCreateByType>
             label="Tel."
             name="tel"
-            rules={telRule}
-            labelCol={{ style: { fontWeight: "bold" } }}>
+            rules={telRule}>
             <Input
               size="large"
               placeholder="Please input tel"
@@ -126,7 +124,7 @@ const EmergencyCreateModal = ({
   return (
     <FormModal
       isOpen={open}
-      title="Add emergency call"
+      title="Add contact lists"
       content={renderModalContent()}
       onOk={onOk}
       onCancel={onModalClose}

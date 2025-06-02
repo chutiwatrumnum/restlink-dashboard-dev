@@ -25,7 +25,8 @@ const InfoResidentInformation = (props: InfoResidentInformationProps) => {
         centered
         open={props?.isOpen}
         onCancel={handleCancel}
-        footer={false}>
+        footer={false}
+      >
         <Row style={{ paddingTop: 10, paddingBottom: 2 }}>
           <Col className="textStyleTitleInfo" span={14}>
             {"First name "}
@@ -33,13 +34,14 @@ const InfoResidentInformation = (props: InfoResidentInformationProps) => {
           <Col
             className="textStyleTitleInfo"
             span={10}
-            style={{ fontWeight: 400 }}>
+            style={{ fontWeight: 400 }}
+          >
             {"Move-in date"}
           </Col>
         </Row>
         <Row style={rowStyle}>
           <Col className="textStyleSubTitleInfo" span={14}>
-            {props?.resident?.firstName}
+            {props?.resident?.givenName}
           </Col>
           <Col className="textStyleSubTitleInfo" span={10}>
             {props?.resident?.moveInDate !== null
@@ -51,13 +53,15 @@ const InfoResidentInformation = (props: InfoResidentInformationProps) => {
           <Col
             className="textStyleTitleInfo"
             span={14}
-            style={{ fontWeight: 400 }}>
+            style={{ fontWeight: 400 }}
+          >
             {"Nickname"}
           </Col>
           <Col
             className="textStyleTitleInfo"
             span={10}
-            style={{ fontWeight: 400 }}>
+            style={{ fontWeight: 400 }}
+          >
             {"Move-out date"}
           </Col>
         </Row>
@@ -75,22 +79,24 @@ const InfoResidentInformation = (props: InfoResidentInformationProps) => {
           <Col
             className="textStyleTitleInfo"
             span={14}
-            style={{ fontWeight: 400 }}>
+            style={{ fontWeight: 400 }}
+          >
             {"Last name "}
           </Col>
           <Col
             className="textStyleTitleInfo"
             span={10}
-            style={{ fontWeight: 400 }}>
+            style={{ fontWeight: 400 }}
+          >
             {"Role"}
           </Col>
         </Row>
         <Row style={rowStyle}>
           <Col className="textStyleSubTitleInfo" span={14}>
-            {props?.resident?.lastName}
+            {props?.resident?.familyName}
           </Col>
           <Col className="textStyleSubTitleInfo" span={10}>
-            {props?.resident?.role}
+            {props?.resident?.role?.name}
           </Col>
         </Row>
 
@@ -98,19 +104,21 @@ const InfoResidentInformation = (props: InfoResidentInformationProps) => {
           <Col
             className="textStyleTitleInfo"
             span={14}
-            style={{ fontWeight: 400 }}>
+            style={{ fontWeight: 400 }}
+          >
             {"Room address"}
           </Col>
           <Col
             className="textStyleTitleInfo"
             span={10}
-            style={{ fontWeight: 400 }}>
+            style={{ fontWeight: 400 }}
+          >
             {"Birthday (Op) "}
           </Col>
         </Row>
         <Row style={rowStyle}>
           <Col className="textStyleSubTitleInfo" span={14}>
-            {props?.resident?.roomAddress}
+            {props?.resident?.unit?.roomAddress}
           </Col>
           <Col className="textStyleSubTitleInfo" span={10}>
             {props?.resident?.birthDate
@@ -122,13 +130,15 @@ const InfoResidentInformation = (props: InfoResidentInformationProps) => {
           <Col
             className="textStyleTitleInfo"
             span={14}
-            style={{ fontWeight: 400 }}>
+            style={{ fontWeight: 400 }}
+          >
             {"Mobile no."}
           </Col>
           <Col
             className="textStyleTitleInfo"
             span={10}
-            style={{ fontWeight: 400 }}>
+            style={{ fontWeight: 400 }}
+          >
             {"Registration channel"}
           </Col>
         </Row>
@@ -137,7 +147,7 @@ const InfoResidentInformation = (props: InfoResidentInformationProps) => {
             {props?.resident?.contact}
           </Col>
           <Col className="textStyleSubTitleInfo" span={10}>
-            {props?.resident?.channel}
+            {props?.resident?.channel ?? "-"}
           </Col>
         </Row>
       </Modal>

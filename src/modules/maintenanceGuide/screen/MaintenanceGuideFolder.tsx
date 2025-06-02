@@ -62,25 +62,6 @@ const MaintenanceGuideFolder = () => {
   const [breadcrumb, setBreadcrumb] = useState<BreadcrumbType[]>([]);
 
   const columns: ColumnsType<MaintenanceGuideDataType> = [
-    // {
-    //   title: "Delete",
-    //   dataIndex: "delete",
-    //   align: "center",
-    //   width: "1%",
-    //   render: (_, record) => (
-    //     <>
-    //       {record?.idFile ? (
-    //         <Button
-    //           value={record?.idFile}
-    //           type="text"
-    //           icon={<DeleteOutlined />}
-    //           onClick={showDeleteConfirm}
-    //           // disabled={!accessibility?.menu_maintenanceGuide_form_management.allowEdit}
-    //         ></Button>
-    //       ) : null}
-    //     </>
-    //   ),
-    // },
     {
       title: "Name",
       key: "name",
@@ -157,6 +138,26 @@ const MaintenanceGuideFolder = () => {
         );
       },
     },
+    // {
+    //   title: "Delete",
+    //   dataIndex: "delete",
+    //   align: "center",
+    //   width: "1%",
+    //   hidden: breadcrumb.length === 1,
+    //   render: (_, record) => (
+    //     <>
+    //       {record?.idFile ? (
+    //         <Button
+    //           value={record?.idFile}
+    //           type="text"
+    //           icon={<DeleteOutlined />}
+    //           onClick={showDeleteConfirm}
+    //           // disabled={!accessibility?.menu_maintenanceGuide_form_management.allowEdit}
+    //         ></Button>
+    //       ) : null}
+    //     </>
+    //   ),
+    // },
   ];
 
   // functions
@@ -178,7 +179,7 @@ const MaintenanceGuideFolder = () => {
         {
           title: (
             <Link onClick={homeBreadcrumbClick} className="breadcrumbTxt">
-              MaintenanceGuide folder
+              Project info
             </Link>
           ),
         },
@@ -324,7 +325,7 @@ const MaintenanceGuideFolder = () => {
 
   return (
     <>
-      <Header title="Maintenance guide" />
+      <Header title="Documents" />
       <div className="maintenanceGuide">
         <Breadcrumb className="breadcrumbContainer" items={breadcrumb} />
       </div>

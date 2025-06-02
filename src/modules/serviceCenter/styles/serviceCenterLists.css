@@ -15,7 +15,7 @@
 
 .serviceCenterDatePicker,
 .serviceCenterSearchBox {
-  width: 48% !important;
+  width: 100% !important;
   margin-left: 20px;
 }
 
@@ -29,7 +29,10 @@
   border-radius: 12px;
   background-color: white;
 }
-
+.serviceCenterSelect{
+  width: 100% !important;
+  margin-left: 20px;
+}
 .serviceCenterSelect .ant-select-selector {
   height: 40px !important;
   border-radius: 8px !important;

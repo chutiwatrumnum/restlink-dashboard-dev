@@ -20,7 +20,7 @@ const UnauthorizedLayout = () => {
   if (userAuth.isAuth) {
     return (
       <Navigate
-        to={from.includes("dashboard") ? from : "/dashboard/announcement"}
+        to={from.includes("dashboard") ? from : "/dashboard/profile"}
         state={{ from: location }}
         replace
       />

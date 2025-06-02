@@ -4,33 +4,34 @@ export interface DocumentFormType {
   publicFolders: DocumentDataType[];
   publicFiles: DocumentDataType[];
   currentFoldersMaxLength: number;
+  foldersLength: number;
   refresh: boolean;
 }
 export type updateStatus = "active" | "exception" | "success";
 // export type fileSizeType=`${number} MB`
 export interface DocumentDataType {
-  idFile?: string;
-  folderName: string;
-  fileName: string;
-  active: boolean;
-  folderId: number;
-  pathFile: string;
-  isPublic: boolean;
-  fileType: string;
-  fileSize: string;
-  createdAt: string;
-  updatedAt: string | null;
-  createdBy: string;
-  updatedBy: string | null;
+  id: number | string;
   fullName: string;
+  // Folder Type
+  name?: string;
+  folderOwnerId?: number;
+  createdAt?: string;
+  // File type
+  documentHomeFolderId?: number;
+  fileName?: string;
+  filePath?: string;
+  fileSize?: number;
+  fileSizeDescription?: string;
+  fileType?: "pdf";
+  projectId?: string;
 }
 export interface GetPublicDataPayloadType {
-  curPage?: number;
-  perPage?: number;
+  curPage: number;
+  perPage: number;
+  folderId: number;
   search?: string;
   sort?: string;
   sortBy?: string;
-  folderId?: number;
   unitId?: number;
 }
 export interface dataFiles {
@@ -39,6 +40,8 @@ export interface dataFiles {
   fileSize: string;
   folderId: number;
   base64: string;
+  allowAll: "y" | "n";
+  unitId: number[];
 }
 export interface dataFilesPersonal {
   fileName: string;

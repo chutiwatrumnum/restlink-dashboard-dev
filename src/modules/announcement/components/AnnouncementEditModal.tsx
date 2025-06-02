@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Form, Input, DatePicker, Row, TimePicker } from "antd";
+import { Form, Input, DatePicker, Row, TimePicker, Select } from "antd";
 import { requiredRule } from "../../../configs/inputRule";
 import dayjs from "dayjs";
 import { useDispatch } from "react-redux";
@@ -23,6 +23,7 @@ type AnnouncementEditModalType = {
   onCancel: () => void;
   data: AnnounceFormDataType;
   onRefresh: () => void;
+  type: "projectNews" | "announcement" | "devNews";
 };
 
 const AnnouncementEditModal = ({
@@ -31,6 +32,7 @@ const AnnouncementEditModal = ({
   onCancel,
   data,
   onRefresh,
+  type,
 }: AnnouncementEditModalType) => {
   const dispatch = useDispatch<Dispatch>();
   const id = data.id;
@@ -60,6 +62,7 @@ const AnnouncementEditModal = ({
         endTime: dayjs(data.endTime),
         description: data.description,
         link: data.link,
+        type: type,
       });
     }
   }, [data]);
@@ -95,6 +98,7 @@ const AnnouncementEditModal = ({
                     "HH:mm"
                   )}`
                 ).dateTimeUTC,
+                type: value.type,
               };
               // console.log(payload);
 
@@ -111,20 +115,37 @@ const AnnouncementEditModal = ({
         }}
         onFinishFailed={() => {
           console.log("FINISHED FAILED");
-        }}>
+        }}
+      >
         <div className="announceModalColumn">
           <div className="announceModalContainer">
             <div className="announceModalColumn">
               <Form.Item<AnnounceFormDataType>
                 label="Title"
                 name="title"
-                rules={requiredRule}>
+                rules={requiredRule}
+              >
                 <Input
                   size="large"
                   placeholder="Please input title"
                   maxLength={120}
                   showCount
                 />
+              </Form.Item>
+              <Form.Item<AnnounceFormDataType>
+                label="Type"
+                name="type"
+                rules={requiredRule}
+              >
+                <Select size="large" placeholder="Please select type" disabled>
+                  <Select.Option value="projectNews">
+                    Project news
+                  </Select.Option>
+                  <Select.Option value="announcement">
+                    Announcement
+                  </Select.Option>
+                  <Select.Option value="devNews">Developer news</Select.Option>
+                </Select>
               </Form.Item>
               <Form.Item<AnnounceFormDataType> label="Image" name="image">
                 <UploadImageGroup
@@ -143,14 +164,16 @@ const AnnouncementEditModal = ({
                   label="Start date"
                   name="startDate"
                   rules={requiredRule}
-                  style={{ width: "48%" }}>
+                  style={{ width: "48%" }}
+                >
                   <DatePicker style={{ width: "100%" }} size="large" />
                 </Form.Item>
                 <Form.Item<AnnounceFormDataType>
                   label="End date"
                   name="endDate"
                   rules={requiredRule}
-                  style={{ width: "48%" }}>
+                  style={{ width: "48%" }}
+                >
                   <DatePicker style={{ width: "100%" }} size="large" />
                 </Form.Item>
               </Row>
@@ -160,7 +183,8 @@ const AnnouncementEditModal = ({
                   label="Start time"
                   name="startTime"
                   rules={requiredRule}
-                  style={{ width: "48%" }}>
+                  style={{ width: "48%" }}
+                >
                   <TimePicker
                     format="HH:mm"
                     style={{ width: "100%" }}
@@ -172,7 +196,8 @@ const AnnouncementEditModal = ({
                   label="End time"
                   name="endTime"
                   rules={requiredRule}
-                  style={{ width: "48%" }}>
+                  style={{ width: "48%" }}
+                >
                   <TimePicker
                     format="HH:mm"
                     style={{ width: "100%" }}
@@ -184,7 +209,8 @@ const AnnouncementEditModal = ({
               <Form.Item<AnnounceFormDataType>
                 label="Announcement body"
                 name="description"
-                rules={requiredRule}>
+                rules={requiredRule}
+              >
                 <Input.TextArea
                   rows={7}
                   placeholder="Please input announcement body"
@@ -211,7 +237,7 @@ const AnnouncementEditModal = ({
     <>
       <FormModal
         isOpen={open}
-        title="Edit Announcement"
+        title="Edit"
         content={<ModalContent />}
         onOk={onOk}
         onCancel={onClose}

@@ -25,6 +25,7 @@ import { AddNewEventLogsType } from "../../../stores/interfaces/EventLog";
 import SendToGroup from "../../../components/group/SendToGroup";
 import SuccessModal from "../../../components/common/SuccessModal";
 import FailedModal from "../../../components/common/FailedModal";
+
 interface ComponentCreateProps {
   isOpen: boolean;
   callBack: (isOpen: boolean, saved: boolean) => void;
@@ -43,10 +44,12 @@ const CreateAddEventLog = (props: ComponentCreateProps) => {
   const [isMaxBookingPerUnit, setIsMaxBookingPerUnit] =
     useState<boolean>(false);
   const dispatch = useDispatch<Dispatch>();
+
   const handleCancel = () => {
     resetValue();
     props.callBack(!props?.isOpen, false);
   };
+
   const onSelectedUnits = (data: number[]) => {
     setUnits(data);
     if (data.length > 0) {
@@ -55,6 +58,7 @@ const CreateAddEventLog = (props: ComponentCreateProps) => {
       form.setFieldsValue({ sendTo: undefined });
     }
   };
+
   const onSendToChange = async (value: {
     value: string;
     label: React.ReactNode;
@@ -65,6 +69,7 @@ const CreateAddEventLog = (props: ComponentCreateProps) => {
       setIsSendToModalOpen(true);
     }
   };
+
   const resetValue = () => {
     form.resetFields();
     setIsAllSelected(false);
@@ -74,8 +79,29 @@ const CreateAddEventLog = (props: ComponentCreateProps) => {
     setUnits([]);
     setIsMaxBookingPerUnit(false);
   };
-  //from
+
+  // Form instance
   const [form] = Form.useForm();
+
+  // Custom validator for time validation
+  const validateTimeRange = () => ({
+    validator: async () => {
+      const startTime = form.getFieldValue('startTime');
+      const endTime = form.getFieldValue('endTime');
+      
+      if (startTime && endTime) {
+        const start = dayjs(startTime);
+        const end = dayjs(endTime);
+        
+        // Check if end time is after start time (same day)
+        if (end.isBefore(start) || end.isSame(start)) {
+          return Promise.reject(new Error('End time must be greater than start time and cannot cross midnight'));
+        }
+      }
+      return Promise.resolve();
+    },
+  });
+
   const onFinish = async (values: any) => {
     confirm({
       title: "Confirm action",
@@ -103,7 +129,7 @@ const CreateAddEventLog = (props: ComponentCreateProps) => {
           unitAll: values?.sendTo,
         };
         if (dataEventLog.isPayable) {
-          dataEventLog.fee = values?.free;
+          dataEventLog.fee = values?.Fee; // แก้ไขจาก 'free' เป็น 'Fee'
         }
         if (isAllSelected) {
           dataEventLog.unitAll = isAllSelected;
@@ -113,11 +139,11 @@ const CreateAddEventLog = (props: ComponentCreateProps) => {
         }
         const resultCreated = await addEventLogs(dataEventLog);
         if (resultCreated) {
-              SuccessModal("Successfully create");
+          SuccessModal("Successfully create");
           await resetValue();
           await props.callBack(!props?.isOpen, true);
         } else {
-       FailedModal("Failed create");
+          FailedModal("Failed create");
         }
       },
       onCancel() {
@@ -133,6 +159,7 @@ const CreateAddEventLog = (props: ComponentCreateProps) => {
   const handleImageChange = (url: string) => {
     setPreviewImage(url);
   };
+
   const onCancelSendToModal = () => {
     setIsSendToModalOpen(false);
   };
@@ -141,6 +168,7 @@ const CreateAddEventLog = (props: ComponentCreateProps) => {
     // Can not select days before today and today
     return current && current < dayjs().startOf("day");
   };
+
   return (
     <>
       <Modal
@@ -192,7 +220,7 @@ const CreateAddEventLog = (props: ComponentCreateProps) => {
                   },
                 ]}>
                 <Input.TextArea
-                  placeholder="Input announcement body"
+                  placeholder="Input description"
                   maxLength={1000}
                   rows={6}
                   showCount
@@ -261,7 +289,6 @@ const CreateAddEventLog = (props: ComponentCreateProps) => {
                   {isMaxBookingPerUnit ? (
                     <Form.Item
                       name={"maxBookingPerUnit"}
-                      // label="Limit per unit"
                       rules={[
                         { type: "number" },
                         {
@@ -298,8 +325,16 @@ const CreateAddEventLog = (props: ComponentCreateProps) => {
                             required: true,
                             message: "This field is required !",
                           },
+                          validateTimeRange(),
                         ]}>
-                        <TimePicker className="fullWidth" format="hh:mm a" />
+                        <TimePicker 
+                          className="fullWidth" 
+                          format="hh:mm a"
+                          onChange={() => {
+                            // Re-validate end time when start time changes
+                            form.validateFields(['endTime']);
+                          }}
+                        />
                       </Form.Item>
                     </Col>
                     <Col span={12}>
@@ -311,8 +346,16 @@ const CreateAddEventLog = (props: ComponentCreateProps) => {
                             required: true,
                             message: "This field is required !",
                           },
+                          validateTimeRange(),
                         ]}>
-                        <TimePicker className="fullWidth" format="hh:mm a" />
+                        <TimePicker 
+                          className="fullWidth" 
+                          format="hh:mm a"
+                          onChange={() => {
+                            // Re-validate start time when end time changes
+                            form.validateFields(['startTime']);
+                          }}
+                        />
                       </Form.Item>
                     </Col>
                   </Row>
@@ -389,8 +432,8 @@ const CreateAddEventLog = (props: ComponentCreateProps) => {
               <Col span={24}>
                 {Payable ? (
                   <Form.Item
-                    name={"free"}
-                    label="Free"
+                    name={"Fee"}
+                    label="Fee"
                     rules={[
                       { type: "number" },
                       {
@@ -412,7 +455,7 @@ const CreateAddEventLog = (props: ComponentCreateProps) => {
                     <InputNumber
                       className="fullWidth"
                       prefix="$"
-                      placeholder="Input free"
+                      placeholder="Input fee"
                     />
                   </Form.Item>
                 ) : null}

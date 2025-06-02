@@ -10,10 +10,10 @@ export interface DeliveryLogsPayloadType {
 export interface AddNewDeliveryLogsType {
   userId: string;
   unitId: number;
-  reminderNotification: number ;
-  senderType:string
-  trackingNumber:string
-  pickUpLocation:string
+  reminderNotification: number;
+  senderType: string
+  trackingNumber: string
+  pickUpLocation: string
   startDate: string | Dayjs;
   startTime: string | Dayjs;
   endDate: string | Dayjs;
@@ -25,10 +25,10 @@ export interface EditDeliveryLogsType {
   id: number,
   userId: string;
   unitId: number;
-  reminderNotification: number ;
-  senderType:string
-  trackingNumber:string
-  pickUpLocation:string
+  reminderNotification: number;
+  senderType: string
+  trackingNumber: string
+  pickUpLocation: string
   startDate: string | Dayjs;
   startTime: string | Dayjs;
   endDate: string | Dayjs;
@@ -36,46 +36,46 @@ export interface EditDeliveryLogsType {
   arrivalDate: string | Dayjs;
   comment?: string | null;
 }
-export interface dataDeliveryLogsType{
-  key:number
-  name:string
-  contact:string
-  senderType:string
-  trackingNumber:string
-  blockId:number
-  blockNo:string
-  unitNo:string
-  roomAddress:string
-  unitId:number
-  createdAt:string
-  FromDateTime:string,
-  ToDateTime:string
-  pickUpType:string
-  collected:boolean
-  reminderNotification:number
-  comment:string
-  startDate:string
-  startTime:string
-  endDate:string
-  endTime:string
-  arrivalDate:string
-  pickUpLocation:string
+export interface dataDeliveryLogsType {
+  key: number
+  name: string
+  contact: string
+  senderType: string
+  trackingNumber: string
+  blockId: number
+  blockNo: string
+  unitNo: string
+  roomAddress: string
+  unitId: number
+  createdAt: string
+  FromDateTime: string,
+  ToDateTime: string
+  pickUpType: string
+  collected: boolean
+  reminderNotification: number
+  comment: string
+  startDate: string
+  startTime: string
+  endDate: string
+  endTime: string
+  arrivalDate: string
+  pickUpLocation: string
 }
-export interface IChangeLockedById{
-  id:number
-  locked:boolean
+export interface IChangeLockedById {
+  id: number
+  locked: boolean
 }
-export interface dataEventJoinLogsByIDType{
- typeEventJoinLog:string
-  participant:string[]
+export interface dataEventJoinLogsByIDType {
+  typeEventJoinLog: string
+  participant: string[]
 }
 
 export interface deliveryLogsType {
-  tableDataDeliveryLog:dataDeliveryLogsType[],
+  tableDataDeliveryLog: dataDeliveryLogsType[],
   loading: boolean
   total: number
   EventMaxLength: number;
-  filterData:conditionPage
+  filterData: conditionPage
 }
 export interface conditionPage {
   perPage: number

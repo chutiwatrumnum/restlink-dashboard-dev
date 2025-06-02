@@ -7,6 +7,10 @@ import {
 import { RootModel } from "./index";
 import axios from "axios";
 import { message } from "antd";
+import {
+  callSuccessModal,
+  callFailedModal,
+} from "../../components/common/Modal";
 import SuccessModal from "../../components/common/SuccessModal";
 import FailedModal from "../../components/common/FailedModal";
 
@@ -36,15 +40,19 @@ export const announcement = createModel<RootModel>()({
       }
 
       try {
-        const result = await axios.get(
-          `/announcement/list/dashboard?curPage=${item.curPage}&perPage=${item.perPage}${searchWord}${timeRange}&sort=asc&sortBy=createdAt`
-        );
+        let url = `/announcement/list/dashboard?curPage=${item.curPage}&perPage=${item.perPage}${searchWord}${timeRange}&sort=asc&sortBy=createdAt`;
+        if (payload.fetchType === "projectNews") {
+          url = `/project-news/list/dashboard?curPage=${item.curPage}&perPage=${item.perPage}${searchWord}${timeRange}&sort=asc&sortBy=createdAt`;
+        } else if (payload.fetchType === "devNews") {
+          url = `/news/list/dashboard?curPage=${item.curPage}&perPage=${item.perPage}${searchWord}${timeRange}&sort=asc&sortBy=createdAt`;
+        }
+        const result = await axios.get(url);
 
         if (result.data.statusCode >= 400) {
           console.error(result.data.message);
           return;
         }
-        console.log(result.data.result);
+        // console.log(result.data.result);
 
         dispatch.announcement.updateTableDataState(result.data.result.rows);
         dispatch.announcement.updateAnnouncementMaxLengthState(
@@ -54,17 +62,33 @@ export const announcement = createModel<RootModel>()({
         console.error("ERROR", error);
       }
     },
-    async deleteTableData(payload: number) {
+    async deleteTableData(payload: {
+      id: number;
+      type: "projectNews" | "announcement" | "devNews";
+    }) {
       try {
-        const result = await axios.delete(`/announcement/${payload}`);
+        let url = `/announcement/${payload.id}`;
+        if (payload.type === "projectNews") {
+          url = `/project-news/${payload.id}`;
+        } else if (payload.type === "devNews") {
+          url = `/news/${payload.id}`;
+        }
+        const result = await axios.delete(url);
         if (result.status >= 400) console.log(result);
-        SuccessModal("Successfully deleted");
+        callSuccessModal("Successfully deleted");
       } catch (error) {
         console.error("ERROR", error);
       }
     },
+
     async addNewAnnounce(payload: AddNewAnnouncementType) {
       try {
+        let url = `/announcement`;
+        if (payload.type === "projectNews") {
+          url = `/project-news`;
+        } else if (payload.type === "devNews") {
+          url = `/news`;
+        }
         const newData = {
           title: payload.title,
           description: payload.description,
@@ -73,8 +97,9 @@ export const announcement = createModel<RootModel>()({
           startDate: payload.startDate,
           endDate: payload.endDate,
         };
+        // console.log(payload.type);
 
-        const result = await axios.post("/announcement", newData);
+        const result = await axios.post(url, newData);
         if (result.status >= 400) {
           console.error(result.data.message);
           FailedModal(result.data.message);
@@ -86,12 +111,18 @@ export const announcement = createModel<RootModel>()({
         console.error(error);
       }
     },
+
     async editAnnounce(payload: AddNewAnnouncementType) {
       // console.log(payload);
-
       const base64 = payload?.imageUrl;
 
       try {
+        let url = `/announcement`;
+        if (payload.type === "projectNews") {
+          url = `/project-news`;
+        } else if (payload.type === "devNews") {
+          url = `/news`;
+        }
         if (!base64) {
           console.log("image not change");
           const newData = {
@@ -103,7 +134,7 @@ export const announcement = createModel<RootModel>()({
             endDate: payload.endDate,
           };
 
-          const result = await axios.put("/announcement", newData);
+          const result = await axios.put(url, newData);
           if (result.status >= 400) {
             console.error(result.data.message);
             message.error(result.data.message);
@@ -120,7 +151,7 @@ export const announcement = createModel<RootModel>()({
             startDate: payload.startDate,
             endDate: payload.endDate,
           };
-          const result = await axios.put("/announcement", newData);
+          const result = await axios.put(url, newData);
           if (result.status >= 400) {
             console.error(result.data.message);
             message.error(result.data.message);

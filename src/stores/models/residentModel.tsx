@@ -20,6 +20,7 @@ export const resident = createModel<RootModel>()({
     total: 0,
     residentMaxLength: 0,
     filterData: filterDataInit,
+    qrCode: "",
   } as residentType,
   reducers: {
     updateloadingDataState: (state, payload) => ({
@@ -41,6 +42,10 @@ export const resident = createModel<RootModel>()({
     updateAnnouncementMaxLengthState: (state, payload) => ({
       ...state,
       residentMaxLength: payload,
+    }),
+    updateQrCodeState: (state, payload) => ({
+      ...state,
+      qrCode: payload,
     }),
   },
   effects: (dispatch) => ({

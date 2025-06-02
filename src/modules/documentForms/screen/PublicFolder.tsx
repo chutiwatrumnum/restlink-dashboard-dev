@@ -14,17 +14,19 @@ import {
   Modal,
 } from "antd";
 import {
-  FolderFilled,
-  FileFilled,
+  FolderOutlined,
+  FileOutlined,
   DeleteOutlined,
   UploadOutlined,
+  PlusCircleOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { useDispatch, useSelector } from "react-redux";
 import { Dispatch, RootState } from "../../../stores";
 import { ConvertDate } from "../../../utils/helper";
 import UploadPublic from "../components/UploadPublic";
-import { deleteDocumentById } from "../service/DocumentAPI";
+import NewFolderModal from "../components/NewFolderModal";
+import { deleteDocumentFileById } from "../service/DocumentAPI";
 import {
   callConfirmModal,
   callFailedModal,
@@ -50,14 +52,13 @@ const PublicFolder = () => {
     isLoading,
     tableData,
     currentFoldersMaxLength,
-    publicFiles,
-    publicFolders,
     refresh,
+    foldersLength,
   } = useSelector((state: RootState) => state.document);
   const { accessibility } = useSelector((state: RootState) => state.common);
   const defaultURL = "public-folder";
   const scroll: { x?: number | string } = {
-    x: "50vw",
+    x: 1500, // ปรับค่าตามความกว้างรวมของคอลัมน์
   };
 
   const [curPage, setCurPage] = useState(1);
@@ -65,56 +66,27 @@ const PublicFolder = () => {
   const [FolderCurrent, setFolderCurrent] = useState<number>(0);
   const [folderDetail, setFolderDetail] = useState<DocumentDataType>();
   const [breadcrumb, setBreadcrumb] = useState<BreadcrumbType[]>([]);
+  const [isNewFolderOpen, setIsNewFolderOpen] = useState(false);
 
   const columns: ColumnsType<DocumentDataType> = [
-    {
-      title: "Delete",
-      dataIndex: "delete",
-      align: "center",
-      width: "1%",
-      render: (_, record) => (
-        <>
-          {record?.idFile ? (
-            <Button
-              value={record?.idFile}
-              type="text"
-              icon={<DeleteOutlined />}
-              onClick={showDeleteConfirm}
-              // disabled={!accessibility?.menu_document_form_management.allowEdit}
-            ></Button>
-          ) : null}
-        </>
-      ),
-    },
     {
       title: "Name",
       key: "name",
       align: "center",
-      width: "5%",
-      render: (_: any, record: DocumentDataType) => {
-        let name = record.fileName === "" ? record.folderName : record.fileName;
+      // width: "5%",
+      render: (_: any, record: DocumentDataType, index: number) => {
         return (
-          <div className="fileName" onClick={() => subFolderClick(record)}>
+          <div
+            className="fileName"
+            onClick={() => subFolderClick(record, index)}
+          >
             <div className="fileNameIcon">
-              {record.fileName === "" ? <FolderFilled /> : <FileFilled />}
+              {index < foldersLength ? <FolderOutlined /> : <FileOutlined />}
             </div>
-            <Text style={{ textAlign: "left" }}>{name}</Text>
+            <Text style={{ textAlign: "left" }}>
+              {record.name ?? record.fileName}
+            </Text>
           </div>
-        );
-      },
-    },
-    {
-      title: "Size",
-      dataIndex: "fileSize",
-      key: "fileSize",
-      align: "center",
-      width: "1%",
-      render: (fileSize: string) => {
-        const size = fileSize === "" ? "-" : fileSize;
-        return (
-          <>
-            <Text>{size}</Text>
-          </>
         );
       },
     },
@@ -123,7 +95,6 @@ const PublicFolder = () => {
       dataIndex: "createdAt",
       key: "createdAt",
       align: "center",
-      width: "2%",
       render: (createdAt: string) => {
         let date = dayjs(createdAt).format("DD/MM/YYYY").toString();
         return (
@@ -138,9 +109,8 @@ const PublicFolder = () => {
       dataIndex: "createdAt",
       key: "createdAt",
       align: "center",
-      width: "2%",
-      render: (startDate: string) => {
-        const time = ConvertDate(startDate); // add new
+      render: (createdAt: string) => {
+        const time = ConvertDate(createdAt); // add new
         return (
           <>
             <Text>{time.time}</Text>
@@ -152,7 +122,6 @@ const PublicFolder = () => {
       title: "Create by",
       key: "createBy",
       align: "center",
-      width: "2%",
       render: (_: any, record: DocumentDataType) => {
         const names = record.fullName === "" ? "-" : record.fullName;
         return (
@@ -162,49 +131,61 @@ const PublicFolder = () => {
         );
       },
     },
+    {
+      title: "Action",
+      dataIndex: "actions",
+      align: "center",
+      // fixed: "right",
+      // hidden: breadcrumb.length === 1,
+      render: (_, record, index: number) => (
+        <>
+          {index >= foldersLength ? (
+            <Button
+              value={record?.id}
+              type="text"
+              icon={<DeleteOutlined />}
+              onClick={() => showDeleteConfirm(record?.id)}
+            />
+          ) : null}
+        </>
+      ),
+    },
   ];
 
   // functions
   const fetchData = async () => {
-    let conditionsDefault: GetPublicDataPayloadType = {
-      curPage: curPage,
-      perPage: perPage,
-    };
-
     let conditions: GetPublicDataPayloadType = {
       curPage: curPage,
       perPage: perPage,
       folderId: FolderCurrent,
     };
-    if (FolderCurrent > 0) {
-      await dispatch.document.getFolderData(conditions);
-    } else {
+    if (FolderCurrent === 0) {
       setBreadcrumb([
         {
           title: (
             <Link onClick={homeBreadcrumbClick} className="breadcrumbTxt">
-              Public folder
+              Home documents
             </Link>
           ),
         },
       ]);
-      await dispatch.document.getPublicData(conditionsDefault);
     }
+    await dispatch.document.getPublicData(conditions);
   };
 
   const onPageChange = async (page: number) => {
     setCurPage(page);
   };
 
-  const subFolderClick = async (item: DocumentDataType) => {
-    if (!item.fileName) {
+  const subFolderClick = async (item: DocumentDataType, index: number) => {
+    if (index < foldersLength) {
+      setFolderCurrent(item.id);
       let conditions: GetPublicDataPayloadType = {
         curPage: curPage,
         perPage: perPage,
-        folderId: item.folderId,
+        folderId: item.id,
       };
-      setFolderCurrent(item.folderId);
-      await dispatch.document.getFolderData(conditions);
+      await dispatch.document.getPublicData(conditions);
       setBreadcrumb((prevState) => [
         ...prevState,
         {
@@ -215,7 +196,7 @@ const PublicFolder = () => {
               }}
               className="breadcrumbTxt"
             >
-              {item.folderName}
+              {item.name}
             </Link>
           ),
         },
@@ -227,37 +208,27 @@ const PublicFolder = () => {
   };
 
   const onSearch = async (text: string) => {
-    if (!text && FolderCurrent === 0) {
-      dispatch.document.updateTableDataState([
-        ...publicFolders,
-        ...publicFiles,
-      ]);
-      return;
-    }
     let conditions: GetPublicDataPayloadType = {
       curPage: curPage,
       perPage: perPage,
       search: text,
       folderId: FolderCurrent,
     };
-    if (FolderCurrent === 0) {
-      await dispatch.document.getSearchPublicData(conditions);
-      return;
-    }
-    await dispatch.document.getFolderData(conditions);
+    await dispatch.document.getPublicData(conditions);
   };
 
   const homeBreadcrumbClick = async () => {
-    await setFolderCurrent(0);
-    await setCurPage(1);
+    setFolderCurrent(0);
+    setCurPage(1);
     dispatch.document.updateRefreshState(!refresh);
+    setFolderDetail(undefined);
   };
 
   const onBreadCrumbClick = async (item: DocumentDataType) => {
     let conditions: GetPublicDataPayloadType = {
       curPage: curPage,
       perPage: perPage,
-      folderId: item.folderId,
+      folderId: item.id,
     };
 
     setBreadcrumb([
@@ -270,16 +241,16 @@ const PublicFolder = () => {
             }}
             className="breadcrumbTxt"
           >
-            {item.folderName}
+            {item.name}
           </Link>
         ),
       },
     ]);
 
-    await dispatch.document.getFolderData(conditions);
+    await dispatch.document.getPublicData(conditions);
   };
 
-  const showDeleteConfirm = ({ currentTarget }: any) => {
+  const showDeleteConfirm = (id: string | number) => {
     confirm({
       title: "Are you sure you want to delete this?",
       icon: null,
@@ -288,21 +259,23 @@ const PublicFolder = () => {
       cancelText: "No",
       centered: true,
       async onOk() {
-        const statusDeleted = await deleteDocumentById(currentTarget.value);
-        if (statusDeleted) {
-          callSuccessModal("Delete successfully", 1500);
-          let conditions: GetPublicDataPayloadType = {
-            curPage: curPage,
-            perPage: perPage,
-            folderId: FolderCurrent,
-          };
-          if (FolderCurrent === 0) {
-            await fetchData();
+        if (typeof id === "string") {
+          const statusDeleted = await deleteDocumentFileById(id);
+          if (statusDeleted) {
+            callSuccessModal("Delete successfully", 1500);
+            let conditions: GetPublicDataPayloadType = {
+              curPage: curPage,
+              perPage: perPage,
+              folderId: FolderCurrent,
+            };
+            if (FolderCurrent === 0) {
+              await fetchData();
+            } else {
+              await dispatch.document.getPublicData(conditions);
+            }
           } else {
-            await dispatch.document.getFolderData(conditions);
+            callFailedModal("Delete failed", 1500);
           }
-        } else {
-          callFailedModal("Delete failed", 1500);
         }
       },
       onCancel() {
@@ -317,7 +290,7 @@ const PublicFolder = () => {
 
   return (
     <>
-      <Header title="Document forms" />
+      <Header title="Documents" />
       <div className="document">
         <Breadcrumb className="breadcrumbPublicContainer" items={breadcrumb} />
       </div>
@@ -334,13 +307,24 @@ const PublicFolder = () => {
             allowClear
           />
         </Col>
-        <Col span={12} style={{ display: "flex", justifyContent: "flex-end" }}>
+        <Col
+          span={12}
+          style={{ display: "flex", justifyContent: "flex-end", gap: 12 }}
+        >
           <Button
             type="primary"
-            onClick={async () => {
+            onClick={() => {
+              setIsNewFolderOpen(true);
+            }}
+            icon={<PlusCircleOutlined />}
+          >
+            New folder
+          </Button>
+          <Button
+            type="primary"
+            onClick={() => {
               setIsModalUploadPublic(true);
             }}
-            // disabled={!accessibility?.menu_document_form_management.allowEdit}
             icon={<UploadOutlined />}
           >
             Upload
@@ -354,16 +338,20 @@ const PublicFolder = () => {
                   perPage: perPage,
                   folderId: FolderCurrent,
                 };
-                if (FolderCurrent === 0) {
-                  await fetchData();
-                } else {
-                  await dispatch.document.getFolderData(conditions);
-                }
+                await dispatch.document.getPublicData(conditions);
               }
             }}
             isOpen={isModalUploadPublic}
             FolderId={FolderCurrent}
             folderDetail={folderDetail}
+          />
+          <NewFolderModal
+            isOpen={isNewFolderOpen}
+            folderId={FolderCurrent}
+            folderDetail={folderDetail}
+            onCancel={() => {
+              setIsNewFolderOpen(false);
+            }}
           />
         </Col>
       </Row>

@@ -4,9 +4,13 @@ import {
   dataFilesPersonal,
 } from "../../../stores/interfaces/Document";
 
-const deleteDocumentById = async (id: string) => {
+const deleteDocumentFileById = async (id: string) => {
   try {
-    const resultDelete = await axios.delete(`document-form/delete/${id}`);
+    const resultDelete = await axios.delete(
+      `document-home/dashboard/file/?id=${id}`
+    );
+    // console.log(resultDelete);
+
     if (resultDelete.status < 400) {
       return {
         status: true,
@@ -24,11 +28,12 @@ const deleteDocumentById = async (id: string) => {
     };
   }
 };
-const uploadDocument = async (file: dataFiles, processFunc: Function) => {
+
+const uploadDocument = async (file: dataFiles) => {
   try {
     // console.log("FILE SENDING ", file);
     const resultUploadDocument = await axios.post(
-      "document-form/public/upload",
+      "/document-home/dashboard/file",
       file
     );
     // console.log("resultUploadDocument:", resultUploadDocument);
@@ -92,4 +97,4 @@ const uploadDocumentPersonal = async (
     };
   }
 };
-export { deleteDocumentById, uploadDocument, uploadDocumentPersonal };
+export { deleteDocumentFileById, uploadDocument, uploadDocumentPersonal };

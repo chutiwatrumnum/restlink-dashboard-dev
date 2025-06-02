@@ -152,13 +152,13 @@ const ServiceCenterLists = () => {
 
     const columns: ColumnsType<ServiceCenterDataType> = [
         {
-            title: "Name-Surname",
+            title: "Name",
             dataIndex: "fullname",
             key: "fullname",
             align: "center",
         },
         {
-            title: "Room-number",
+            title: "Room number",
             dataIndex: "roomAddress",
             key: "roomAddress",
             align: "center",
@@ -169,18 +169,18 @@ const ServiceCenterLists = () => {
             key: "serviceTypeName",
             align: "center",
         },
-        {
-            title: "Issue",
-            dataIndex: "issue",
-            key: "issue",
-            align: "center",
-        },
-        {
-            title: "Description",
-            dataIndex: "description",
-            key: "description",
-            align: "center",
-        },
+        // {
+        //     title: "Issue",
+        //     dataIndex: "issue",
+        //     key: "issue",
+        //     align: "center",
+        // },
+        // {
+        //     title: "Description",
+        //     dataIndex: "description",
+        //     key: "description",
+        //     align: "center",
+        // },
         {
             title: "Submission Date",
             dataIndex: "createdAt",
@@ -240,45 +240,98 @@ const ServiceCenterLists = () => {
         fetchData();
     }, [startMonth, endMonth, SelectTabsServiceCenterType, search, curPage, refresh, perPage, isSuccess, isSuccessIssue]);
     return (
-        <>
-            <Header title="Service Center Lists" />
-            <div className="serviceCenterListsTopActionGroup">
-                <div className="serviceCenterListsTopActionLeftGroup">
-                    <Select
-                        className="serviceCenterSelect"
-                        defaultValue={ServiceCenterIssueList[0]?.value}
-                        style={{ width: "48%", height: "100%" }}
-                        onChange={(value: string) => {
-                            setSelectServiceCenterIssueType(value);
-                        }}
-                        options={ServiceCenterIssueList}
-                    />
+      <>
+        <Header title="Service Center Lists" />
+        <Row style={{ marginTop: 15, marginBottom: 15 }}>
+          <Col
+            span={6}
+            style={{ display: "flex", justifyContent: "flex-start" }}>
+            <Select
+              className="serviceCenterSelect"
+              defaultValue={ServiceCenterIssueList[0]?.value}
+              onChange={(value: string) => {
+                setSelectServiceCenterIssueType(value);
+              }}
+              options={ServiceCenterIssueList}
+            />
+          </Col>
 
-                    <Select    className="serviceCenterSelect" showSearch allowClear placeholder="Select unit" optionFilterProp="label" onChange={onChangeUnit} options={unit} />
+          <Col
+            span={6}
+            style={{ display: "flex", justifyContent: "flex-start" }}>
+            <Select
+              className="serviceCenterSelect"
+              showSearch
+              allowClear
+              placeholder="Select unit"
+              optionFilterProp="label"
+              onChange={onChangeUnit}
+              options={unit}
+              style={{ width: "100%", height: "100%" }}
+            />
+          </Col>
+          <Col
+            span={6}
+            style={{ display: "flex", justifyContent: "flex-start" }}>
+            {/* <DatePicker
+              className="serviceCenterDatePicker"
+              onChange={onDateSelect}
+              picker="month"
+            /> */}
+          </Col>
+          <Col span={6} style={{ display: "flex", justifyContent: "flex-end" }}>
+            <MediumActionButton
+              disabled={true}
+              message="Export"
+              onClick={() => {}}
+              //   className="createServiceCenterBtn"
+            />
+          </Col>
+        </Row>
 
-                    <DatePicker className="serviceCenterDatePicker" onChange={onDateSelect} picker="month" />
-                    <SearchBox className="serviceCenterSearchBox" onSearch={onSearch} placeholderText="Search by Issue" />
-                </div>
-                <MediumActionButton disabled={true} message="Export" onClick={() => {}} className="createServiceCenterBtn" />
-            </div>
+        {selectList ? (
+          <Tabs
+            defaultActiveKey=""
+            items={ServiceCenterList}
+            onChange={async (key: string) => {
+              setSelectTabsServiceCenterType(key);
+            }}
+          />
+        ) : null}
 
-            {selectList ? (
-                <Tabs
-                    defaultActiveKey=""
-                    items={ServiceCenterList}
-                    onChange={async (key: string) => {
-                        setSelectTabsServiceCenterType(key);
-                    }}
-                />
-            ) : null}
+        <ServiceCenterTable
+          loading={isLoading}
+          columns={columns}
+          data={dataServiceCenterList?.data}
+        />
+        <Row
+          className="announceBottomActionContainer"
+          justify="end"
+          align="middle">
+          <Pagination
+            defaultCurrent={1}
+            pageSize={perPage}
+            onChange={onPageChange}
+            total={dataServiceCenterList?.total}
+            pageSizeOptions={[10, 20, 40, 80, 100]}
+            showSizeChanger={true}
+            onShowSizeChange={onShowSizeChange}
+          />
+        </Row>
 
-            <ServiceCenterTable loading={isLoading} columns={columns} data={dataServiceCenterList?.data} />
-            <Row className="announceBottomActionContainer" justify="end" align="middle">
-                <Pagination defaultCurrent={1} pageSize={perPage} onChange={onPageChange} total={dataServiceCenterList?.total} pageSizeOptions={[10, 20, 40, 80, 100]} showSizeChanger={true} onShowSizeChange={onShowSizeChange} />
-            </Row>
-
-            <ServiceCenterEditModal selectList={ServiceCenterStatusSelectionList ? ServiceCenterStatusSelectionList : []} isEditModalOpen={isEditModalOpen} onOk={onEditOk} onCancel={onEditCancel} data={editData} onRefresh={onRefresh} />
-        </>
+        <ServiceCenterEditModal
+          selectList={
+            ServiceCenterStatusSelectionList
+              ? ServiceCenterStatusSelectionList
+              : []
+          }
+          isEditModalOpen={isEditModalOpen}
+          onOk={onEditOk}
+          onCancel={onEditCancel}
+          data={editData}
+          onRefresh={onRefresh}
+        />
+      </>
     );
 };
 

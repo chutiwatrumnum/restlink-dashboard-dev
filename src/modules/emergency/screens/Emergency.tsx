@@ -3,7 +3,7 @@ import { Button, Row, Pagination } from "antd";
 import Header from "../../../components/templates/Header";
 import SearchBox from "../../../components/common/SearchBox";
 import MediumActionButton from "../../../components/common/MediumActionButton";
-import AnnounceTable from "../components/EmergencyTable";
+import EmergencyTable from "../components/EmergencyTable";
 import EmergencyCreateModal from "../components/EmergencyCreateModal";
 import EmergencyEditModal from "../components/EmergencyEditModal";
 import { EditIcon, TrashIcon } from "../../../assets/icons/Icons";
@@ -126,54 +126,55 @@ const Emergency = () => {
     };
 
     const columns: ColumnsType<DataEmergencyTableDataType> = [
-        {
-            title: "Delete",
-            key: "delete",
-            align: "center",
-            render: (_, record) => {
-                return (
-                    <>
-                        <Button onClick={() => showDeleteConfirm(record)} type="text" icon={<TrashIcon />} />
-                    </>
-                );
-            },
+      // {
+      //   title: "No.",
+      //   dataIndex: "id",
+      //   key: "id",
+      //   align: "center",
+      //   width: "5%",
+      // },
+      {
+        title: "Picture",
+        key: "image",
+        align: "center",
+        render: ({ image }) => <img src={image} height={100} />,
+      },
+      {
+        title: "Name",
+        dataIndex: "name",
+        key: "name",
+        align: "center"
+      },
+      {
+        title: "Tel",
+        dataIndex: "tel",
+        key: "tel",
+        align: "center",
+      },
+      {
+        title: "Action",
+        dataIndex: "action",
+        key: "action",
+        align: "center",
+        width: 120,
+        fixed: "right",
+        render: (_, record) => {
+          return (
+            <>
+              <Button
+                type="text"
+                icon={<EditIcon />}
+                onClick={() => onEdit(record)}
+              />
+              <Button
+                onClick={() => showDeleteConfirm(record)}
+                type="text"
+                icon={<TrashIcon />}
+              />
+            </>
+          );
         },
-        {
-            title: "No.",
-            dataIndex: "id",
-            key: "id",
-            align: "center",
-        },
-        {
-            title: "Picture",
-            key: "image",
-            align: "center",
-            render: ({ image }) => <img src={image} height={100} />,
-        },
-        {
-            title: "Name",
-            dataIndex: "name",
-            key: "name",
-            align: "center",
-        },
-        {
-            title: "Tel",
-            dataIndex: "tel",
-            key: "tel",
-            align: "center",
-        },
-        {
-            title: "Edit",
-            key: "edit",
-            align: "center",
-            render: (_, record) => {
-                return (
-                    <>
-                        <Button type="text" icon={<EditIcon />} onClick={() => onEdit(record)} />
-                    </>
-                );
-            },
-        },
+      },
     ];
 
     // Actions
@@ -182,22 +183,52 @@ const Emergency = () => {
     }, [startDate, endDate, search, curPage, refresh, perPage]);
 
     return (
-        <>
-            <Header title="Emergency call" />
-            <div className="announceTopActionGroup">
-                <div className="announceTopActionLeftGroup">
-                    <SearchBox className="announceSearchBox" onSearch={onSearch} placeholderText="Search by Name" />
-                </div>
-                <MediumActionButton message="Add Emergency call" onClick={onCreate} className="createAnnouncementBtn" />
-            </div>
-            <AnnounceTable columns={columns} data={tableData} />
-            <Row className="announceBottomActionContainer" justify="end" align="middle">
-                <Pagination defaultCurrent={1} pageSize={perPage} onChange={onPageChange} total={EmergencyMaxLength} pageSizeOptions={[10, 20, 40, 80, 100]} showSizeChanger={true} onShowSizeChange={onShowSizeChange} />
-            </Row>
+      <>
+        <Header title="Contact lists" />
+        <div className="announceTopActionGroup">
+          <div className="announceTopActionLeftGroup">
+            <SearchBox
+              className="announceSearchBox"
+              onSearch={onSearch}
+              placeholderText="Search by Name"
+            />
+          </div>
+          <MediumActionButton
+            message="Add Contact lists"
+            onClick={onCreate}
+            className="createAnnouncementBtn"
+          />
+        </div>
+        <EmergencyTable columns={columns} data={tableData} />
+        <Row
+          className="announceBottomActionContainer"
+          justify="end"
+          align="middle">
+          <Pagination
+            defaultCurrent={1}
+            pageSize={perPage}
+            onChange={onPageChange}
+            total={EmergencyMaxLength}
+            pageSizeOptions={[10, 20, 40, 80, 100]}
+            showSizeChanger={true}
+            onShowSizeChange={onShowSizeChange}
+          />
+        </Row>
 
-            <EmergencyCreateModal isCreateModalOpen={isCreateModalOpen} onOk={onCreateOk} onCancel={onCreateCancel} onRefresh={onRefresh} />
-            <EmergencyEditModal isEditModalOpen={isEditModalOpen} onOk={onEditOk} onCancel={onEditCancel} data={editData} onRefresh={onRefresh} />
-        </>
+        <EmergencyCreateModal
+          isCreateModalOpen={isCreateModalOpen}
+          onOk={onCreateOk}
+          onCancel={onCreateCancel}
+          onRefresh={onRefresh}
+        />
+        <EmergencyEditModal
+          isEditModalOpen={isEditModalOpen}
+          onOk={onEditOk}
+          onCancel={onEditCancel}
+          data={editData}
+          onRefresh={onRefresh}
+        />
+      </>
     );
 };
 

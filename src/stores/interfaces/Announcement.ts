@@ -18,10 +18,13 @@ export interface DataAnnouncementType {
   createBy: DataAnnouncementCreateByType;
 }
 export interface DataAnnouncementCreateByType {
-  id: string;
-  lastName: string;
-  firstName: string;
-  middleName: string;
+  familyName: string;
+  givenName: string;
+  sub: string;
+  // id?: string;
+  // lastName?: string;
+  // firstName?: string;
+  // middleName?: string;
 }
 export interface AnnouncePayloadType {
   search: string | null;
@@ -29,6 +32,7 @@ export interface AnnouncePayloadType {
   perPage: number;
   startDate: Date | null | undefined;
   endDate: Date | null | undefined;
+  fetchType: "all" | "projectNews" | "announcement" | "devNews";
 }
 
 export interface AddNewAnnouncementType {
@@ -43,6 +47,7 @@ export interface AddNewAnnouncementType {
   // unitList?: number[];
   imageUrl?: string;
   // all?: boolean;
+  type: "projectNews" | "announcement" | "devNews";
 }
 
 export interface AnnounceFormDataType {
@@ -59,4 +64,5 @@ export interface AnnounceFormDataType {
   link?: string;
   createdAt?: string;
   createBy?: DataAnnouncementCreateByType;
+  type?: "projectNews" | "announcement" | "devNews";
 }
