@@ -32,6 +32,9 @@ export const useServiceCenterServiceListQuery = (payloadQuery: ServiceCenterPayl
         queryKey: ["serviceCenterList", payloadQuery],
         queryFn: () => getServiceCenterServiceListQuery(payloadQuery),
         select(data) {
+            if (!data.data) {
+                return { data: [], total: data.total };
+            }
             const dataTableList = data.data.map((item: ServiceCenterDataType) => {
                 return {
                     ...item,
