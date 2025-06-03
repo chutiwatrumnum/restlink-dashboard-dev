@@ -47,7 +47,7 @@ const UploadPublic = (props: ComponentCreateProps) => {
   const [statusProcessBar, setStatusProcessBar] =
     useState<ProgressStatus>("active");
   const [isAllowAll, setIsAllowAll] = useState<"y" | "n">("y");
-  const [selectedAddress, setSelectedAddress] = useState<number[]>([]);
+  const [selectedAddress, setSelectedAddress] = useState<string[]>([]);
   const [disabled, setDisabled] = useState(false);
 
   const handleCancel = async () => {
@@ -84,7 +84,7 @@ const UploadPublic = (props: ComponentCreateProps) => {
         folderId: props?.FolderId,
         base64: database64,
         allowAll: isAllowAll,
-        unitId: selectedAddress,
+        unitId: selectedAddress.map(Number),
       };
 
       fileList.map((e: any, i: number) => {
@@ -131,9 +131,8 @@ const UploadPublic = (props: ComponentCreateProps) => {
   };
 
   const handleSelectAddressChange = (value: string[]) => {
-    let arrNumber = value.map(Number);
-    // console.log(arrNumber);
-    setSelectedAddress(arrNumber);
+    // console.log(value);
+    setSelectedAddress(value);
   };
 
   const onIsAllowAllChange = (e: RadioChangeEvent) => {
@@ -213,12 +212,14 @@ const UploadPublic = (props: ComponentCreateProps) => {
             mode="multiple"
             size="large"
             placeholder="Please select address no."
+            value={selectedAddress}
             onChange={handleSelectAddressChange}
             style={{ width: "100%" }}
             options={unitData}
             loading={isLoadingUnit}
             fieldNames={{ value: "unitId" }}
             disabled={isAllowAll === "y" || disabled}
+            allowClear
           />
         </div>
         <Dragger

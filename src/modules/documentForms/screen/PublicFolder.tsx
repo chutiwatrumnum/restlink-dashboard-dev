@@ -28,10 +28,10 @@ import UploadPublic from "../components/UploadPublic";
 import NewFolderModal from "../components/NewFolderModal";
 import { deleteDocumentFileById } from "../service/DocumentAPI";
 import {
-  callConfirmModal,
   callFailedModal,
   callSuccessModal,
 } from "../../../components/common/Modal";
+import { deleteFolderMutation } from "../../../utils/mutationsGroup/documentMutations";
 
 import type { ColumnsType } from "antd/es/table";
 import { BreadcrumbType } from "../interface/Public";
@@ -60,6 +60,7 @@ const PublicFolder = () => {
   const scroll: { x?: number | string } = {
     x: 1500, // ปรับค่าตามความกว้างรวมของคอลัมน์
   };
+  const deleteFolder = deleteFolderMutation();
 
   const [curPage, setCurPage] = useState(1);
   const [perPage, setPerPage] = useState(15);
@@ -139,14 +140,12 @@ const PublicFolder = () => {
       // hidden: breadcrumb.length === 1,
       render: (_, record, index: number) => (
         <>
-          {index >= foldersLength ? (
-            <Button
-              value={record?.id}
-              type="text"
-              icon={<DeleteOutlined />}
-              onClick={() => showDeleteConfirm(record?.id)}
-            />
-          ) : null}
+          <Button
+            value={record?.id}
+            type="text"
+            icon={<DeleteOutlined />}
+            onClick={() => showDeleteConfirm(record?.id)}
+          />
         </>
       ),
     },
@@ -276,6 +275,21 @@ const PublicFolder = () => {
           } else {
             callFailedModal("Delete failed", 1500);
           }
+        } else if (typeof id === "number") {
+          // console.log("Delete folder because id is not string");
+          deleteFolder
+            .mutateAsync(id)
+            .then(() => {
+              callSuccessModal("Delete successfully", 1500);
+            })
+            .catch(() => {
+              callFailedModal("Delete failed", 1500);
+            })
+            .finally(() => {
+              fetchData();
+            });
+        } else {
+          console.log("Something went wrong!");
         }
       },
       onCancel() {

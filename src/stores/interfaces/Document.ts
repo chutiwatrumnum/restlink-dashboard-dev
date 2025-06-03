@@ -52,3 +52,10 @@ export interface dataFilesPersonal {
   unitAll: boolean;
   base64: string;
 }
+
+export interface CreateFolderType {
+  allowAll: "y" | "n";
+  folderName: string;
+  unitId?: number[];
+  folderOwnerId?: number;
+}

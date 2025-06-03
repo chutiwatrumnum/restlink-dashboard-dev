@@ -1,13 +1,17 @@
 import { useState } from "react";
-import { Button, Modal, Select, Radio } from "antd";
+import { Button, Modal, Select, Radio, Input } from "antd";
 import {
   callFailedModal,
   callSuccessModal,
 } from "../../../components/common/Modal";
+import { postCreateFolderMutation } from "../../../utils/mutationsGroup/documentMutations";
 
 import { getUnitListQuery } from "../../../utils/queriesGroup/documentQueries";
 import type { RadioChangeEvent } from "antd";
-import { DocumentDataType } from "../../../stores/interfaces/Document";
+import {
+  DocumentDataType,
+  CreateFolderType,
+} from "../../../stores/interfaces/Document";
 
 interface ComponentCreateProps {
   isOpen: boolean;
@@ -20,36 +24,64 @@ const NewFolderModal = (props: ComponentCreateProps) => {
   // Variables
   const { isOpen, onCancel, folderId, folderDetail } = props;
   const { data: unitData, isLoading: isLoadingUnit } = getUnitListQuery();
+  const createFolderMutation = postCreateFolderMutation();
 
   // States
   const [buttonLoading, setButtonLoading] = useState<boolean>(false);
   const [isAllowAll, setIsAllowAll] = useState<"y" | "n">("y");
-  const [selectedAddress, setSelectedAddress] = useState<number[]>([]);
+  const [selectedAddress, setSelectedAddress] = useState<string[]>([]);
   const [disabled, setDisabled] = useState(false);
+  const [folderName, setFolderName] = useState("");
 
   const createFolder = async () => {
-    console.log("create");
+    setButtonLoading(true);
+    setDisabled(true);
+    let payload: CreateFolderType = {
+      allowAll: isAllowAll,
+      folderName: folderName,
+      unitId: selectedAddress.map(Number),
+      folderOwnerId: folderId,
+    };
+
+    // console.log(payload);
+    await createFolderMutation
+      .mutateAsync(payload)
+      .then((res: any) => {
+        console.log(res);
+        callSuccessModal("Create folder successfully", 1500);
+        handleCancel();
+      })
+      .catch((err: any) => {
+        console.log(err);
+        callFailedModal("Create folder failed", 1500);
+        setButtonLoading(false);
+        setDisabled(false);
+      });
   };
 
   const handleSelectAddressChange = (value: string[]) => {
-    let arrNumber = value.map(Number);
     // console.log(arrNumber);
-    setSelectedAddress(arrNumber);
+    setSelectedAddress(value);
   };
 
   const onIsAllowAllChange = (e: RadioChangeEvent) => {
-    // console.log(e.target.value);
     setIsAllowAll(e.target.value);
   };
 
   const handleCancel = () => {
     setIsAllowAll("y");
     setSelectedAddress([]);
+    setFolderName("");
     setDisabled(false);
     setButtonLoading(false);
     onCancel();
   };
 
+  const folderNameHandler = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    setFolderName(e.target.value);
+  };
   return (
     <>
       <Modal
@@ -65,8 +97,8 @@ const NewFolderModal = (props: ComponentCreateProps) => {
             loading={buttonLoading}
             style={{ paddingLeft: 30, paddingRight: 30 }}
             onClick={() => {
-              createFolder();
               setDisabled(true);
+              createFolder();
             }}
           >
             Upload
@@ -90,12 +122,21 @@ const NewFolderModal = (props: ComponentCreateProps) => {
             mode="multiple"
             size="large"
             placeholder="Please select address no."
+            value={selectedAddress}
             onChange={handleSelectAddressChange}
             style={{ width: "100%" }}
             options={unitData}
             loading={isLoadingUnit}
             fieldNames={{ value: "unitId" }}
             disabled={isAllowAll === "y" || disabled}
+            allowClear
+          />
+          <span>Folder name</span>
+          <Input
+            size="large"
+            placeholder="Please input folder name"
+            value={folderName}
+            onChange={folderNameHandler}
           />
         </div>
       </Modal>
