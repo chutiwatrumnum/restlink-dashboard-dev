@@ -217,6 +217,7 @@ const ServiceCenterLists = () => {
                         return <Tag color="green">{status}</Tag>;
                         break;
                     default:
+                        return <Tag color="default">{status}</Tag>;
                         break;
                 }
             },
