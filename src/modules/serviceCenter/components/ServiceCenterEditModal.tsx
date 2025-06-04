@@ -28,6 +28,7 @@ import type {
 import { editServiceCenterQuery } from "../hooks/serviceCenterMutation";
 import "../styles/serviceCenterEditModal.css";
 import NoImage from "../../../assets/images/noImg.jpeg";
+import { useServiceCenterStatusTypeQuery } from "../hooks";
 
 const { Step } = Steps;
 const { Panel } = Collapse;
@@ -61,11 +62,11 @@ const ServiceCenterEditModal = ({
 }: ServiceCenterEditModalType) => {
   const [serviceCenterForm] = Form.useForm();
   const [open, setOpen] = useState(false);
-
+  const { data: statusList, isSuccess } = useServiceCenterStatusTypeQuery();
   // State for current visual step and actual status ID
-  const [currentStepIndex, setCurrentStepIndex] = useState(0);
+  const [currentStepIndex, setCurrentStepIndex] = useState<number>(0);
   const [currentStatusId, setCurrentStatusId] = useState<string | undefined>(
-    STATUS_STEPS[0].id
+    statusList?.data[0].value
   );
 
   // State for managing collapse panel visibility
@@ -100,11 +101,11 @@ const ServiceCenterEditModal = ({
     if (isEditModalOpen && data) {
       const initialStatusId = data.statusId?.toString();
       setCurrentStatusId(initialStatusId);
-
-      const stepIndex = STATUS_STEPS.findIndex(
-        (step) => step.id === initialStatusId
+      
+      const stepIndex = statusList?.data.findIndex(
+        (step) => step.value === initialStatusId
       );
-      const newCurrentStepIndex = stepIndex >= 0 ? stepIndex : 0;
+      const newCurrentStepIndex = stepIndex ? stepIndex : 0;
       setCurrentStepIndex(newCurrentStepIndex);
 
       // Populate form fields with existing data
@@ -236,18 +237,18 @@ const ServiceCenterEditModal = ({
     // Determine the next status ID based on the current visual step index (currentStepIndex)
     // This logic is preserved from v30/v32 as per user preference.
     let nextStatusId = currentStatusId;
-    if (currentStepIndex === 0 && STATUS_STEPS[1]) {
+    if (currentStepIndex === 0 && statusList?.data[1]) {
       // Pending -> Waiting for confirmation
-      nextStatusId = STATUS_STEPS[1].id;
-    } else if (currentStepIndex === 1 && STATUS_STEPS[2]) {
+      nextStatusId = statusList?.data[1].value;
+    } else if (currentStepIndex === 1 && statusList?.data[2]) {
       // Waiting for confirmation -> Confirm appointment
-      nextStatusId = STATUS_STEPS[2].id;
-    } else if (currentStepIndex === 2 && STATUS_STEPS[3]) {
+      nextStatusId = statusList?.data[2].value;
+    } else if (currentStepIndex === 2 && statusList?.data[3]) {
       // Confirm appointment -> Repairing
-      nextStatusId = STATUS_STEPS[3].id;
-    } else if (currentStepIndex === 3 && STATUS_STEPS[4]) {
+      nextStatusId = statusList?.data[3].value;
+    } else if (currentStepIndex === 3 && statusList?.data[4]) {
       // Repairing -> Success
-      nextStatusId = STATUS_STEPS[4].id;
+      nextStatusId = statusList?.data[4].value;
     }
     // No automatic progression from Success or Closed via this main submit logic.
 
@@ -259,11 +260,13 @@ const ServiceCenterEditModal = ({
       okMessage: "Yes, Proceed",
       cancelMessage: "Cancel",
       onOk: async () => {
+        console.log("Form values:", formValues);
+        
         try {
           const payload: EditDataServiceCenter = {
             id: data.id,
-            statusId: Number(nextStatusId),
-            currentStatus: getStatusNameById(nextStatusId) || "",
+            statusId: Number(currentStatusId),
+            currentStatus: getStatusNameById(currentStatusId) || "",
             acknowledgeDate: formValues.acknowledgeDate
               ? dayjs(formValues.acknowledgeDate).toISOString()
               : data.acknowledgeDate,
@@ -280,19 +283,19 @@ const ServiceCenterEditModal = ({
                 ? formValues.solution
                 : data.solution,
             appointmentDate: formValues.appointmentDate
-              ? dayjs(formValues.appointmentDate).toISOString()
+              ? [dayjs(formValues.appointmentDate).format("YYYY-MM-DD")]
               : data.appointmentDate,
           };
           await mutationEditServiceCenter.mutateAsync(payload);
           onRefresh(); // Refresh data in the parent component.
 
           // The following direct state updates are preserved from v30/v32.
-          // Ideally, these would be solely managed by the useEffect hook reacting to `data` prop changes.
-          const nextVisualStepIndex = STATUS_STEPS.findIndex(
-            (step) => step.id === nextStatusId
+          // Ideally, these would be solely managed by the useEffect hook reacting to `data` prop changes.    
+          const nextVisualStepIndex = statusList?.data.findIndex(
+            (step) => step.value === nextStatusId
           );
           if (nextVisualStepIndex !== -1) {
-            setCurrentStepIndex(nextVisualStepIndex);
+            setCurrentStepIndex(nextVisualStepIndex?nextVisualStepIndex:currentStepIndex);
             setCurrentStatusId(nextStatusId);
           } else {
             // If nextStatusId is not in STATUS_STEPS (e.g., an invalid transition),
@@ -683,8 +686,8 @@ const ServiceCenterEditModal = ({
           current={currentStepIndex}
           size="small"
           labelPlacement="vertical">
-          {STATUS_STEPS.map((step) => (
-            <Step key={step.title} title={step.title} />
+          {statusList?.data.map((step) => (
+            <Step key={step.value} title={step.label} />
           ))}
         </Steps>
 

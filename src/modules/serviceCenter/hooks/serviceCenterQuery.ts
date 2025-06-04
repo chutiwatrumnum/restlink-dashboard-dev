@@ -93,7 +93,7 @@ export const useServiceCenterStatusTypeQuery = () => {
             const tabsList = data.map((item: any) => {
                 return {
                     ...item,
-                    key: item.label.toLowerCase(),
+                    key: item.value,
                 };
             });
             return { data: data, tabsList: tabsList };

@@ -9,10 +9,21 @@ export const editServiceCenterQuery = () => {
     const editServiceCenter = async (payload: EditDataServiceCenter) => {
         switch (payload.currentStatus) {
             case "Pending":
-                await axios.put("/service-center/pending", payload);
+                try {
+                    await axios.put("/service-center/pending", {
+                        id: payload.id,
+                        appointmentDate: payload.appointmentDate,
+                    });
+                } catch (error) {
+                    throw error;
+                }
                 break;
             case "Repairing":
-                await axios.put("/service-center/repairing", payload);
+                await axios.put("/service-center/repairing", {
+                    id: payload.id,
+                    cause: payload.cause,
+                    solution: payload.solution,
+                });
                 break;
             case "Success":
                 await axios.put("/service-center/success", payload);
@@ -27,6 +38,8 @@ export const editServiceCenterQuery = () => {
             queryClient.invalidateQueries({ queryKey: ["serviceCenterByServiceID"] });
         },
         onError(error: any) {
+            console.log("error", error);
+
             if (error?.response?.data?.message) {
                 FailedModal(error.response.data.message);
             }

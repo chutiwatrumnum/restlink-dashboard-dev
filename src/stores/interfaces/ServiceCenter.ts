@@ -68,6 +68,7 @@ export interface EditDataServiceCenter {
   completedDate: string;
   solution: string;
   currentStatus: string;
+  appointmentDate: string[];
 }
 export interface UploadImage {
   serviceId: number | null;

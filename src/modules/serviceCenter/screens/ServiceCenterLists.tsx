@@ -55,7 +55,7 @@ const ServiceCenterLists = () => {
         unitId: unitNo,
     };
     const { data: dataServiceCenterList, isLoading, refetch: refetchServiceCenterList } = useServiceCenterServiceListQuery(payload);
-    const { data: selectList, isSuccess } = useServiceCenterStatusTypeQuery();
+    const { data: selectList, isSuccess } = useServiceCenterStatusTypeQuery("tabs");
     const { data: selectIssueList, isSuccess: isSuccessIssue } = useServiceCenterIssueTypeQuery();
     const onSearch = (value: string) => {
         setSearch(value);
@@ -70,24 +70,27 @@ const ServiceCenterLists = () => {
         const editData: ServiceCenterDataType = {
             ...record,
         };
-        switch (record.statusName) {
-            case "Pending":
-                const dataRepair = selectList?.data.find((item: ServiceCenterSelectListType) => item.label === "Pending");
-                editData.statusId = Number(dataRepair?.value);
-                const result = selectList?.data.filter((item: ServiceCenterSelectListType) => item.label !== "Success");
+        // switch (record.statusName) {
+        //     case "Pending":
+        //         const dataRepair = selectList?.data.find((item: ServiceCenterSelectListType) => item.value ===editData.status.nameEn);
+        //         editData.statusId = Number(dataRepair?.value);
+        //         const result = selectList?.data.filter((item: ServiceCenterSelectListType) => item.label !== "Success");
 
-                setServiceCenterStatusSelectionList(result ? result : []);
-                break;
-            case "Repairing":
-                const dataSuccess = selectList?.data.find((item: ServiceCenterSelectListType) => item.label === "Repairing");
+        //         setServiceCenterStatusSelectionList(result ? result : []);
+        //         break;
+        //     case "Repairing":
+        //         const dataSuccess = selectList?.data.find((item: ServiceCenterSelectListType) => item.label === "Repairing");
+        //         editData.statusId = Number(dataSuccess?.value);
+        //         const resultRepairing = selectList?.data.filter((item: ServiceCenterSelectListType) => item.label !== "Pending");
+        //         setServiceCenterStatusSelectionList(resultRepairing ? resultRepairing : []);
+        //         break;
+        //     default:
+        //         break;
+        // }
+        // const resultRepairing = selectList?.data.filter((item: ServiceCenterSelectListType) => item.label !== "Pending");
+        const dataSuccess = selectList?.data.find((item: ServiceCenterSelectListType) => item.label ===editData.status.nameEn);
                 editData.statusId = Number(dataSuccess?.value);
-                const resultRepairing = selectList?.data.filter((item: ServiceCenterSelectListType) => item.label !== "Pending");
-                setServiceCenterStatusSelectionList(resultRepairing ? resultRepairing : []);
-                break;
-            default:
-                break;
-        }
-
+        setServiceCenterStatusSelectionList(selectList?.data!);
         setEditData(editData);
         setIsEditModalOpen(true);
     };
@@ -229,7 +232,7 @@ const ServiceCenterLists = () => {
             render: (_, record) => {
                 return (
                     <>
-                        <Button disabled={record.statusName !== "Success" ? false : true} type="text" icon={<EditIcon />} onClick={() => onEdit(record)} />
+                        <Button type="text" icon={<EditIcon />} onClick={() => onEdit(record)} />
                     </>
                 );
             },
@@ -294,9 +297,7 @@ const ServiceCenterLists = () => {
           <Tabs
             defaultActiveKey=""
             items={ServiceCenterList}
-            onChange={async (key: string) => {
-              setSelectTabsServiceCenterType(key);
-            }}
+            onChange={setSelectTabsServiceCenterType}
           />
         ) : null}
 
