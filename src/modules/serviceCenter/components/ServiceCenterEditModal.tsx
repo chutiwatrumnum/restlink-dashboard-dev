@@ -25,7 +25,7 @@ import type {
   ServiceCenterDataType,
   ServiceCenterSelectListType,
 } from "../../../stores/interfaces/ServiceCenter";
-import { editServiceCenterQuery } from "../hooks/serviceCenterMutation";
+import { editServiceCenterQuery, reshuduleServiceCenterQuery } from "../hooks/serviceCenterMutation";
 import "../styles/serviceCenterEditModal.css";
 import NoImage from "../../../assets/images/noImg.jpeg";
 import { useServiceCenterStatusTypeQuery } from "../hooks";
@@ -53,7 +53,7 @@ const ServiceCenterEditModal = ({
   const [serviceCenterForm] = Form.useForm();
   const [open, setOpen] = useState(false);
   const { data: statusList, isSuccess } = useServiceCenterStatusTypeQuery();
-  const [statusIdSuccess, setstatusIdSuccess] = useState<number>(30)
+  const [statusIdSuccess, setstatusIdSuccess] = useState<number>(-1)
   // State for current visual step and actual status ID
   const [currentStepIndex, setCurrentStepIndex] = useState<number>(0);
   const [currentStatusId, setCurrentStatusId] = useState<string | undefined>(
@@ -71,6 +71,7 @@ const ServiceCenterEditModal = ({
   const [successImages, setSuccessImages] = useState<UploadFile[]>([]);
 
   const mutationEditServiceCenter = editServiceCenterQuery();
+  const mutationreshuduleServiceCenter= reshuduleServiceCenterQuery()
 
   // Helper function to get status title by its ID
   const getStatusNameById = useCallback(
@@ -115,9 +116,11 @@ const ServiceCenterEditModal = ({
         cause: data.cause,
         solution: data.solution,
       });
-      if (data.status.nameCode=='"repairing"') {
-      //  const statusId= statusList?.data.find((item)=>item.label==='Success')?.value
-        // setstatusIdSuccess(statusId? statusId as Number:-1)
+      if (data.status.nameCode=="repairing") {
+       const statusId= statusList?.data.find((item)=>item.label==='Success')?.value
+       console.log("statusId:",statusId);
+       
+        setstatusIdSuccess(statusId? Number(statusId):-1)
       }
       // console.log("status:",data.status);
       
@@ -534,7 +537,8 @@ const ServiceCenterEditModal = ({
                 Close ticket{" "}
               </a>
               <Button
-                onClick={() => {
+                onClick={async() => {
+                 await mutationreshuduleServiceCenter.mutateAsync(data.id);
                   const pendingStatus = statusList?.data.find(
                     (s) => s.label === "Pending"
                   );

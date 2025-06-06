@@ -86,3 +86,22 @@ export const uploadImageServiceCenterQuery = () => {
     });
     return mutation;
 };
+
+export const reshuduleServiceCenterQuery = () => {
+    const reSheduleServiceCenter = async (id:number) => {
+        const { data } = await axios.put("/service-center/request-re-schedule", { id: id });
+        console.log("resp data:", data);
+    };
+    const mutation = useMutation({
+        mutationFn: (id: number) => reSheduleServiceCenter(id),
+        onSuccess: () => {
+            SuccessModal("reshedule Successfully");
+        },
+        onError(error: any) {
+            if (error?.response?.data?.message) {
+                FailedModal(error.response.data.message);
+            }
+        },
+    });
+    return mutation;
+};
