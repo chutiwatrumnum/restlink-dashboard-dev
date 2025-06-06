@@ -42,16 +42,6 @@ type ServiceCenterEditModalType = {
   selectList: ServiceCenterSelectListType[];
 };
 
-// Define the sequence and IDs of service steps
-const STATUS_STEPS = [
-  { title: "Pending", id: "1" }, // index 0
-  { title: "Waiting for confirmation", id: "6" }, // index 1
-  { title: "Confirm appointment", id: "7" }, // index 2
-  { title: "Repairing", id: "2" }, // index 3
-  { title: "Success", id: "3" }, // index 4
-  { title: "Closed", id: "5" }, // index 5
-];
-
 const ServiceCenterEditModal = ({
   isEditModalOpen,
   onOk,
@@ -63,6 +53,7 @@ const ServiceCenterEditModal = ({
   const [serviceCenterForm] = Form.useForm();
   const [open, setOpen] = useState(false);
   const { data: statusList, isSuccess } = useServiceCenterStatusTypeQuery();
+  const [statusIdSuccess, setstatusIdSuccess] = useState<number>(30)
   // State for current visual step and actual status ID
   const [currentStepIndex, setCurrentStepIndex] = useState<number>(0);
   const [currentStatusId, setCurrentStatusId] = useState<string | undefined>(
@@ -85,8 +76,8 @@ const ServiceCenterEditModal = ({
   const getStatusNameById = useCallback(
     (id: string | undefined): string | undefined => {
       if (!id) return undefined;
-      const foundStep = STATUS_STEPS.find((step) => step.id === id);
-      if (foundStep) return foundStep.title;
+      const foundStep = statusList?.data.find((step) => step.value === id);
+      if (foundStep) return foundStep.label;
       // Fallback to selectList if not in predefined steps (should ideally align)
       const foundInSelectList = selectList.find((s) => s.value === id);
       return foundInSelectList?.label;
@@ -124,6 +115,12 @@ const ServiceCenterEditModal = ({
         cause: data.cause,
         solution: data.solution,
       });
+      if (data.status.nameCode=='"repairing"') {
+      //  const statusId= statusList?.data.find((item)=>item.label==='Success')?.value
+        // setstatusIdSuccess(statusId? statusId as Number:-1)
+      }
+      // console.log("status:",data.status);
+      
 
       // Organize existing images into their respective status categories
       const pImages: UploadFile[] = [];
@@ -161,28 +158,28 @@ const ServiceCenterEditModal = ({
       const newActiveKeys = new Set<string>();
       newActiveKeys.add("pending"); // "Pending" summary is always relevant initially
 
-      const currentActualStepDefinition = STATUS_STEPS.find(
-        (step) => step.id === currentStatusId
+      const currentActualStepDefinition = statusList?.data.find(
+        (step) => step.value === currentStatusId
       );
       const currentOrder = currentActualStepDefinition
-        ? STATUS_STEPS.indexOf(currentActualStepDefinition)
+        ? statusList?.data.indexOf(currentActualStepDefinition)
         : -1;
 
-      const repairingStepDefinition = STATUS_STEPS.find(
-        (s) => s.title === "Repairing"
+      const repairingStepDefinition = statusList?.data.find(
+        (s) => s.label === "Repairing"
       );
       const repairingOrder = repairingStepDefinition
-        ? STATUS_STEPS.indexOf(repairingStepDefinition)
+        ? statusList?.data.indexOf(repairingStepDefinition)
         : -1;
 
-      const successStepDefinition = STATUS_STEPS.find(
-        (s) => s.title === "Success"
+      const successStepDefinition = statusList?.data.find(
+        (s) => s.label === "Success"
       );
       const successOrder = successStepDefinition
-        ? STATUS_STEPS.indexOf(successStepDefinition)
+        ? statusList?.data.indexOf(successStepDefinition)
         : -1;
 
-      const closedStepId = STATUS_STEPS.find((s) => s.title === "Closed")?.id;
+      const closedStepId = statusList?.data.find((s) => s.label === "Closed")?.value;
 
       // Show "Repairing" summary if current status is "Repairing" or beyond, or if there are repairing images
       if (
@@ -212,7 +209,7 @@ const ServiceCenterEditModal = ({
   const resetFormAndState = useCallback(() => {
     serviceCenterForm.resetFields();
     setCurrentStepIndex(0);
-    setCurrentStatusId(STATUS_STEPS[0].id);
+    setCurrentStatusId(statusList?.data.find((step) => step.label === "Pending")?.value);
     setPendingImages([]);
     setRepairingImages([]);
     setSuccessImages([]);
@@ -324,15 +321,15 @@ const ServiceCenterEditModal = ({
       cancelMessage: "Cancel",
       onOk: async () => {
         try {
-          const closedStatus = STATUS_STEPS.find((s) => s.title === "Closed");
+          const closedStatus = statusList?.data.find((s) => s.label === "Closed");
           if (!closedStatus) {
             console.error("Configuration error: 'Closed' status ID not found.");
             return;
           }
           const payload: EditDataServiceCenter = {
             id: data.id,
-            statusId: Number(closedStatus.id),
-            currentStatus: closedStatus.title,
+            statusId: Number(closedStatus.value),
+            currentStatus: closedStatus.label,
           };
           await mutationEditServiceCenter.mutateAsync(payload);
           onRefresh();
@@ -495,13 +492,13 @@ const ServiceCenterEditModal = ({
                 onClick={() => {
                   // This logic is preserved from v30.
                   // It sets a form field and then calls the generic submit handler.
-                  const confirmAppointmentStatus = STATUS_STEPS.find(
-                    (s) => s.title === "Confirm appointment"
+                  const confirmAppointmentStatus =statusList?.data.find(
+                    (s) => s.label === "Confirm appointment"
                   );
                   if (confirmAppointmentStatus) {
                     serviceCenterForm.setFieldValue(
                       "statusId",
-                      Number(confirmAppointmentStatus.id)
+                      Number(confirmAppointmentStatus.value)
                     ); // This field isn't directly used by payload but was in v30
                     handleFormSubmit({}); // Submit with current form values (if any)
                   }
@@ -538,13 +535,13 @@ const ServiceCenterEditModal = ({
               </a>
               <Button
                 onClick={() => {
-                  const pendingStatus = STATUS_STEPS.find(
-                    (s) => s.title === "Pending"
+                  const pendingStatus = statusList?.data.find(
+                    (s) => s.label === "Pending"
                   );
                   if (pendingStatus) {
-                    setCurrentStatusId(pendingStatus.id);
-                    const visualStepIndex = STATUS_STEPS.findIndex(
-                      (s) => s.id === pendingStatus.id
+                    setCurrentStatusId(pendingStatus.value);
+                    const visualStepIndex = statusList?.data.findIndex(
+                      (s) => s.value === pendingStatus.value
                     );
                     setCurrentStepIndex(
                       visualStepIndex >= 0 ? visualStepIndex : 0
@@ -610,7 +607,7 @@ const ServiceCenterEditModal = ({
                     maximum={3}
                     oldFileList={repairingImages}
                     setOldFileList={setRepairingImages}
-                    imageStatusId={2}
+                    imageStatusId={data.statusId!!}
                     serviceId={data.id}
                     disabledUpload={repairingImages.length >= 3}
                   />
@@ -622,7 +619,7 @@ const ServiceCenterEditModal = ({
                     maximum={3}
                     oldFileList={successImages}
                     setOldFileList={setSuccessImages}
-                    imageStatusId={3}
+                    imageStatusId={statusIdSuccess}
                     serviceId={data.id}
                     disabledUpload={successImages.length >= 3}
                   />
