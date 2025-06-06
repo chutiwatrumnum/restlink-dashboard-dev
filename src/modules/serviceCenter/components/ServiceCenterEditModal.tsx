@@ -263,6 +263,11 @@ const ServiceCenterEditModal = ({
         console.log("Form values:", formValues);
         
         try {
+        const formattedDate =  formValues.appointmentDate.map((date: any) => {
+            date = dayjs(date).format("YYYY-MM-DD")
+           return date
+            
+          })
           const payload: EditDataServiceCenter = {
             id: data.id,
             statusId: Number(currentStatusId),
@@ -283,9 +288,11 @@ const ServiceCenterEditModal = ({
                 ? formValues.solution
                 : data.solution,
             appointmentDate: formValues.appointmentDate
-              ? [dayjs(formValues.appointmentDate).format("YYYY-MM-DD")]
+              ? formattedDate
               : data.appointmentDate,
           };
+          // console.log("Payload:", payload,formattedDate);
+          
           await mutationEditServiceCenter.mutateAsync(payload);
           onRefresh(); // Refresh data in the parent component.
 
@@ -456,6 +463,10 @@ const ServiceCenterEditModal = ({
                 name="appointmentDate"
                 rules={requiredRule}>
                 <DatePicker
+                format={"YYYY-MM-DD"}
+                multiple
+                maxTagCount={3}
+                maxLength={3}
                   size="large"
                   placeholder="Select date"
                   style={{ width: "100%" }}
