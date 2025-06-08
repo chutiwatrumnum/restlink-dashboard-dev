@@ -9,7 +9,7 @@ import { EditIcon } from "../../../assets/icons/Icons";
 import type { ColumnsType } from "antd/es/table";
 import type { PaginationProps, TabsProps } from "antd";
 import type { RangePickerProps } from "antd/es/date-picker";
-import { useServiceCenterServiceListQuery, useServiceCenterStatusTypeQuery, useServiceCenterIssueTypeQuery } from "../hooks/index";
+import { useServiceCenterServiceListQuery, useServiceCenterStatusTypeQuery, useServiceCenterIssueTypeQuery, useServiceCenterByServiceIDQuery } from "../hooks/index";
 import { ServiceCenterDataType, ServiceCenterPayloadType, ServiceCenterSelectListType } from "../../../stores/interfaces/ServiceCenter";
 import MediumActionButton from "../../../components/common/MediumActionButton";
 import dayjs from "dayjs";
@@ -27,6 +27,7 @@ const ServiceCenterLists = () => {
     const [curPage, setCurPage] = useState(1);
     const [perPage, setPerPage] = useState(5);
     const [startMonth, setStartMonth] = useState();
+    const [statusConfrimServiceId, setStatusConfrimServiceId] = useState<number>(-1)
     const [endMonth, setEndMonth] = useState();
     const [SelectServiceCenterIssueType, setSelectServiceCenterIssueType] = useState<string | undefined>(undefined);
     const [SelectTabsServiceCenterType, setSelectTabsServiceCenterType] = useState<string | null>(null);
@@ -57,6 +58,10 @@ const ServiceCenterLists = () => {
     const { data: dataServiceCenterList, isLoading, refetch: refetchServiceCenterList } = useServiceCenterServiceListQuery(payload);
     const { data: selectList, isSuccess } = useServiceCenterStatusTypeQuery("tabs");
     const { data: selectIssueList, isSuccess: isSuccessIssue } = useServiceCenterIssueTypeQuery();
+    const {
+        data:ServiceCenterByServiceIDData,
+        refetch: isRefetchingServiceCenterByServiceID,
+      } = useServiceCenterByServiceIDQuery(statusConfrimServiceId);
     const onSearch = (value: string) => {
         setSearch(value);
         setCurPage(1);
@@ -66,7 +71,7 @@ const ServiceCenterLists = () => {
     const onPageChange = (page: number) => {
         setCurPage(page);
     };
-    const onEdit = (record: ServiceCenterDataType) => {
+    const onEdit = async(record: ServiceCenterDataType) => {
         const editData: ServiceCenterDataType = {
             ...record,
         };
@@ -91,6 +96,18 @@ const ServiceCenterLists = () => {
         const dataSuccess = selectList?.data.find((item: ServiceCenterSelectListType) => item.label ===editData.status.nameEn);
                 editData.statusId = Number(dataSuccess?.value);
         setServiceCenterStatusSelectionList(selectList?.data!);
+       
+        if (editData.status.nameCode==='confirm_appointment') {
+            
+            setStatusConfrimServiceId(editData.id)
+            await isRefetchingServiceCenterByServiceID()
+            // console.log('editData.id',ServiceCenterByServiceIDData);
+            editData.appointmentDate = ServiceCenterByServiceIDData?.appointmentDateSelected
+            editData.closedWithReject=ServiceCenterByServiceIDData?. closedWithReject
+            editData.requestNewAppointment=ServiceCenterByServiceIDData?.requestNewAppointment
+            
+        }else{
+        }
         setEditData(editData);
         setIsEditModalOpen(true);
     };

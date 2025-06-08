@@ -28,6 +28,17 @@ export const editServiceCenterQuery = () => {
             case "Success":
                 await axios.put("/service-center/success", payload);
                 break;
+            case "Confirm appointment":
+                await axios.put("/service-center/confirm-appointment", {
+                    id: payload.id,
+                    appointmentDateId: payload.appointmentDate,
+                });
+                break;
+            case "Closed":
+                await axios.put("/service-center/confirm-request-closed", {
+                    id: payload.id,
+                });
+                break;
         }
     };
     const mutation = useMutation({
@@ -88,7 +99,7 @@ export const uploadImageServiceCenterQuery = () => {
 };
 
 export const reshuduleServiceCenterQuery = () => {
-    const reSheduleServiceCenter = async (id:number) => {
+    const reSheduleServiceCenter = async (id: number) => {
         const { data } = await axios.put("/service-center/request-re-schedule", { id: id });
         console.log("resp data:", data);
     };

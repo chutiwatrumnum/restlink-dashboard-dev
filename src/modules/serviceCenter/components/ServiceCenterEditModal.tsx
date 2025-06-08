@@ -263,11 +263,11 @@ const ServiceCenterEditModal = ({
         console.log("Form values:", formValues);
         
         try {
-        const formattedDate =  formValues.appointmentDate.map((date: any) => {
+        const formattedDate = Array.isArray(formValues.appointmentDate)?formValues.appointmentDate.map((date: any) => {
             date = dayjs(date).format("YYYY-MM-DD")
            return date
             
-          })
+          }):null
           const payload: EditDataServiceCenter = {
             id: data.id,
             statusId: Number(currentStatusId),
@@ -531,23 +531,26 @@ const ServiceCenterEditModal = ({
               label={
                 <span>
                   {" "}
-                  Action date{" "}
+                  appointmentDate{" "}
                   <Tooltip title="Date the service action is scheduled.">
                     {" "}
                     <InfoCircleOutlined />{" "}
                   </Tooltip>{" "}
                 </span>
               }
-              name="actionDate"
+              name="appointmentDate"
               rules={requiredRule}>
               <DatePicker size="large" style={{ width: "100%" }} />
             </Form.Item>
             <div className="action-buttons">
-              <a onClick={handleCloseTicket} className="close-ticket-link">
+              <Button 
+              disabled={data.closedWithReject?false:true}
+               onClick={handleCloseTicket} className="close-ticket-link">
                 {" "}
                 Close ticket{" "}
-              </a>
+              </Button>
               <Button
+              disabled={data.requestNewAppointment}
                 onClick={async() => {
                  await mutationreshuduleServiceCenter.mutateAsync(data.id);
                   const pendingStatus = statusList?.data.find(
@@ -570,7 +573,10 @@ const ServiceCenterEditModal = ({
                 size="large">
                 Reschedule
               </Button>
-              <Button type="primary" htmlType="submit" size="large">
+              <Button
+                            disabled={data.closedWithReject ||data.requestNewAppointment?true:false}
+
+              type="primary" htmlType="submit" size="large">
                 {" "}
                 Send{" "}
               </Button>

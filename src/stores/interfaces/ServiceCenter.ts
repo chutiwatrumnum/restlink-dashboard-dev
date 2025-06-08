@@ -32,6 +32,9 @@ export interface ServiceCenterDataType {
   unit: Unit;
   serviceType: ServiceType;
   imageItems: ImageItem[];
+  closedWithReject:boolean
+  requestNewAppointment:boolean
+  appointmentDate:Date
 }
 
 export interface CreatedBy {
