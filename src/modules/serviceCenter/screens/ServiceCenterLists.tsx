@@ -103,7 +103,8 @@ const ServiceCenterLists = () => {
             await isRefetchingServiceCenterByServiceID()
             editData.appointmentDateConfirmAppointmentID=ServiceCenterByServiceIDData?.appointmentDate.find((item: any) => item.selected===true)?.id
             editData.appointmentDateConfirmAppointment = ServiceCenterByServiceIDData?.appointmentDateSelected
-            editData.closedWithReject=ServiceCenterByServiceIDData?. closedWithReject
+            editData.requestCloseCase =
+              ServiceCenterByServiceIDData?.requestCloseCase;
             editData.requestNewAppointment=ServiceCenterByServiceIDData?.requestNewAppointment
             // console.log('editData.id',ServiceCenterByServiceIDData);
             

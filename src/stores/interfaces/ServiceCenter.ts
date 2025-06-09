@@ -33,6 +33,7 @@ export interface ServiceCenterDataType {
   serviceType: ServiceType;
   imageItems: ImageItem[];
   closedWithReject:boolean
+  requestCloseCase:boolean
   requestNewAppointment:boolean
   appointmentDate:Date
   appointmentDateConfirmAppointment?:Date

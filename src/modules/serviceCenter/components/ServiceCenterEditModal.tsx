@@ -12,6 +12,7 @@ import {
   Alert,
   Tooltip,
   Image,
+  message
 } from "antd";
 import { InfoCircleOutlined } from "@ant-design/icons";
 import { requiredRule } from "../../../configs/inputRule";
@@ -70,6 +71,9 @@ const ServiceCenterEditModal = ({
     "pending",
   ]);
 
+  const [selectedDates, setSelectedDates] = useState([]);
+
+
   // State for images at different stages
   const [pendingImages, setPendingImages] = useState<UploadFile[]>([]);
   const [repairingImages, setRepairingImages] = useState<UploadFile[]>([]);
@@ -97,7 +101,7 @@ const ServiceCenterEditModal = ({
       // console.log("serviceCenterByid:", serviceCenterByid);
       
       data.appointmentDate = serviceCenterByid?.appointmentDateSelected
-      data.closedWithReject=serviceCenterByid?. closedWithReject
+      data.requestCloseCase = serviceCenterByid?.requestCloseCase;
       data.requestNewAppointment=serviceCenterByid?.requestNewAppointment
       return data
   }
@@ -347,7 +351,6 @@ const ServiceCenterEditModal = ({
   // Handles the action of closing a ticket
   const handleCloseTicket = () => {
     if (!data) return;
-
     ConfirmModal({
       title: "Close ticket?",
       content: "Are you sure you want to close this ticket?",
@@ -478,32 +481,64 @@ const ServiceCenterEditModal = ({
                   <span>
                     {" "}
                     Appointment date{" "}
-                    <Tooltip title="Select a date for the appointment.">
+                    <Tooltip title="Select a date for the appointment (maximum 3 dates).">
                       {" "}
                       <InfoCircleOutlined />{" "}
                     </Tooltip>{" "}
                   </span>
                 }
                 name="appointmentDate"
-                rules={requiredRule}>
+                rules={[
+                  ...requiredRule,
+                  {
+                    validator: (_, value) => {
+                      if (value && value.length > 3) {
+                        return Promise.reject(
+                          new Error("สามารถเลือกได้สูงสุด 3 วันเท่านั้น")
+                        );
+                      }
+                      return Promise.resolve();
+                    },
+                  },
+                ]}>
                 <DatePicker
-                format={"YYYY-MM-DD"}
-                multiple
-                maxTagCount={3}
-                maxLength={3}
+                  format={"YYYY-MM-DD"}
+                  multiple
+                  maxTagCount={3}
                   size="large"
-                  placeholder="Select date"
+                  placeholder="Select date (max 3 dates)"
                   style={{ width: "100%" }}
+                  onChange={(dates) => {
+                    if (dates && dates.length > 3) {
+                      message.warning("สามารถเลือกได้สูงสุด 3 วันเท่านั้น");
+                    }
+                  }}
                 />
               </Form.Item>
-              <Button
-                type="primary"
-                htmlType="submit"
-                size="large"
-                className="send-button-teal">
-                {" "}
-                Send{" "}
-              </Button>
+
+              <Form.Item dependencies={["appointmentDate"]} noStyle>
+                {({ getFieldValue, getFieldError }) => {
+                  const appointmentDate =
+                    getFieldValue("appointmentDate") || [];
+                  const hasError = getFieldError("appointmentDate").length > 0;
+                  const isDisabled =
+                    appointmentDate.length === 0 ||
+                    appointmentDate.length > 3 ||
+                    hasError;
+
+                  return (
+                    <Button
+                      type="primary"
+                      htmlType="submit"
+                      size="large"
+                      className="send-button-teal"
+                      disabled={isDisabled}>
+                      {" "}
+                      Send{" "}
+                    </Button>
+                  );
+                }}
+              </Form.Item>
             </div>
             {data.appointmentDeclined && (
               <Alert
@@ -527,22 +562,11 @@ const ServiceCenterEditModal = ({
             />
             <div className="action-buttons">
               <Button
-                onClick={() => {
-                  // This logic is preserved from v30.
-                  // It sets a form field and then calls the generic submit handler.
-                  const confirmAppointmentStatus =statusList?.data.find(
-                    (s) => s.label === "Confirm appointment"
-                  );
-                  if (confirmAppointmentStatus) {
-                    serviceCenterForm.setFieldValue(
-                      "statusId",
-                      Number(confirmAppointmentStatus.value)
-                    ); // This field isn't directly used by payload but was in v30
-                    handleFormSubmit({}); // Submit with current form values (if any)
-                  }
-                }}
-                size="large">
-                User Confirmed (Proceed)
+                disabled={data.requestCloseCase ? false : true}
+                onClick={handleCloseTicket}
+                className="close-ticket-link">
+                {" "}
+                Close ticket{" "}
               </Button>
             </div>
           </>
@@ -567,16 +591,17 @@ const ServiceCenterEditModal = ({
               <DatePicker size="large" style={{ width: "100%" }} />
             </Form.Item>
             <div className="action-buttons">
-              <Button 
-              disabled={data.closedWithReject?false:true}
-               onClick={handleCloseTicket} className="close-ticket-link">
+              <Button
+                disabled={data.requestCloseCase ? false : true}
+                onClick={handleCloseTicket}
+                className="close-ticket-link">
                 {" "}
                 Close ticket{" "}
               </Button>
               <Button
-              disabled={data.requestNewAppointment}
-                onClick={async() => {
-                 await mutationreshuduleServiceCenter.mutateAsync(data.id);
+                disabled={data.requestNewAppointment}
+                onClick={async () => {
+                  await mutationreshuduleServiceCenter.mutateAsync(data.id);
                   const pendingStatus = statusList?.data.find(
                     (s) => s.label === "Pending"
                   );
@@ -598,9 +623,14 @@ const ServiceCenterEditModal = ({
                 Reschedule
               </Button>
               <Button
-                            disabled={data.closedWithReject ||data.requestNewAppointment?true:false}
-
-              type="primary" htmlType="submit" size="large">
+                disabled={
+                  data.requestCloseCase || data.requestNewAppointment
+                    ? true
+                    : false
+                }
+                type="primary"
+                htmlType="submit"
+                size="large">
                 {" "}
                 Send{" "}
               </Button>
