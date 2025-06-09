@@ -31,7 +31,7 @@ export const editServiceCenterQuery = () => {
             case "Confirm appointment":
                 await axios.put("/service-center/confirm-appointment", {
                     id: payload.id,
-                    appointmentDateId: payload.appointmentDate,
+                    appointmentDateId: payload.appointmentDateConfirmAppointmentID,
                 });
                 break;
             case "Closed":

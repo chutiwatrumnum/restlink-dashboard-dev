@@ -101,13 +101,15 @@ const ServiceCenterLists = () => {
             
             setStatusConfrimServiceId(editData.id)
             await isRefetchingServiceCenterByServiceID()
-            // console.log('editData.id',ServiceCenterByServiceIDData);
-            editData.appointmentDate = ServiceCenterByServiceIDData?.appointmentDateSelected
+            editData.appointmentDateConfirmAppointmentID=ServiceCenterByServiceIDData?.appointmentDate.find((item: any) => item.selected===true)?.id
+            editData.appointmentDateConfirmAppointment = ServiceCenterByServiceIDData?.appointmentDateSelected
             editData.closedWithReject=ServiceCenterByServiceIDData?. closedWithReject
             editData.requestNewAppointment=ServiceCenterByServiceIDData?.requestNewAppointment
+            // console.log('editData.id',ServiceCenterByServiceIDData);
             
-        }else{
         }
+        // else{
+        // }
         setEditData(editData);
         setIsEditModalOpen(true);
     };

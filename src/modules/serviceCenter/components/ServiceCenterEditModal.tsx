@@ -28,7 +28,7 @@ import type {
 import { editServiceCenterQuery, reshuduleServiceCenterQuery } from "../hooks/serviceCenterMutation";
 import "../styles/serviceCenterEditModal.css";
 import NoImage from "../../../assets/images/noImg.jpeg";
-import { useServiceCenterStatusTypeQuery } from "../hooks";
+import { useServiceCenterByServiceIDQuery, useServiceCenterStatusTypeQuery } from "../hooks";
 
 const { Step } = Steps;
 const { Panel } = Collapse;
@@ -52,6 +52,11 @@ const ServiceCenterEditModal = ({
 }: ServiceCenterEditModalType) => {
   const [serviceCenterForm] = Form.useForm();
   const [open, setOpen] = useState(false);
+  const {
+    data:serviceCenterByid,
+    isLoading,
+    refetch: refetchServiceCenter,
+  } = useServiceCenterByServiceIDQuery(data?.id!);
   const { data: statusList, isSuccess } = useServiceCenterStatusTypeQuery();
   const [statusIdSuccess, setstatusIdSuccess] = useState<number>(-1)
   // State for current visual step and actual status ID
@@ -86,11 +91,26 @@ const ServiceCenterEditModal = ({
     [selectList]
   );
 
+  const getdataIsWairtFromAppointment= async(data:ServiceCenterDataType) => { 
+    if (data.status.nameCode==='confirm_appointment') {
+      await refetchServiceCenter()
+      // console.log("serviceCenterByid:", serviceCenterByid);
+      
+      data.appointmentDate = serviceCenterByid?.appointmentDateSelected
+      data.closedWithReject=serviceCenterByid?. closedWithReject
+      data.requestNewAppointment=serviceCenterByid?.requestNewAppointment
+      return data
+  }
+   }
   // Effect to initialize modal state when it opens or when 'data' (the service record) changes
-  useEffect(() => {
+  useEffect( () => {
     setOpen(isEditModalOpen);
-
     if (isEditModalOpen && data) {
+      // if (data.id&&data.id!==-1) {
+      //   getdataIsWairtFromAppointment(data)
+        
+      // }
+      // console.log("data:", data);
       const initialStatusId = data.statusId?.toString();
       setCurrentStatusId(initialStatusId);
       
@@ -106,6 +126,9 @@ const ServiceCenterEditModal = ({
         appointmentDate: data.appointmentDate
           ? dayjs(data.appointmentDate)
           : undefined,
+          appointmentDateConfirmAppointment: data.appointmentDateConfirmAppointment
+          ? dayjs(data.appointmentDateConfirmAppointment)
+          : undefined,
         acknowledgeDate: data.acknowledgeDate
           ? dayjs(data.acknowledgeDate)
           : undefined,
@@ -116,9 +139,9 @@ const ServiceCenterEditModal = ({
         cause: data.cause,
         solution: data.solution,
       });
+      
       if (data.status.nameCode=="repairing") {
        const statusId= statusList?.data.find((item)=>item.label==='Success')?.value
-       console.log("statusId:",statusId);
        
         setstatusIdSuccess(statusId? Number(statusId):-1)
       }
@@ -260,7 +283,7 @@ const ServiceCenterEditModal = ({
       okMessage: "Yes, Proceed",
       cancelMessage: "Cancel",
       onOk: async () => {
-        console.log("Form values:", formValues);
+        // console.log("Form values:", formValues);
         
         try {
         const formattedDate = Array.isArray(formValues.appointmentDate)?formValues.appointmentDate.map((date: any) => {
@@ -290,8 +313,9 @@ const ServiceCenterEditModal = ({
             appointmentDate: formValues.appointmentDate
               ? formattedDate
               : data.appointmentDate,
+              appointmentDateConfirmAppointmentID:data.appointmentDateConfirmAppointmentID?data.appointmentDateConfirmAppointmentID:undefined
           };
-          // console.log("Payload:", payload,formattedDate);
+          // console.log("Payload:", payload);
           
           await mutationEditServiceCenter.mutateAsync(payload);
           onRefresh(); // Refresh data in the parent component.
@@ -538,7 +562,7 @@ const ServiceCenterEditModal = ({
                   </Tooltip>{" "}
                 </span>
               }
-              name="appointmentDate"
+              name="appointmentDateConfirmAppointment"
               rules={requiredRule}>
               <DatePicker size="large" style={{ width: "100%" }} />
             </Form.Item>

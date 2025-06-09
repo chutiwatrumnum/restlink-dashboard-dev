@@ -35,6 +35,8 @@ export interface ServiceCenterDataType {
   closedWithReject:boolean
   requestNewAppointment:boolean
   appointmentDate:Date
+  appointmentDateConfirmAppointment?:Date
+  appointmentDateConfirmAppointmentID?:number
 }
 
 export interface CreatedBy {
@@ -72,6 +74,8 @@ export interface EditDataServiceCenter {
   solution: string;
   currentStatus: string;
   appointmentDate: string[];
+  appointmentDateConfirmAppointment?:string
+  appointmentDateConfirmAppointmentID?:number
 }
 export interface UploadImage {
   serviceId: number | null;
