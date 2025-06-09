@@ -4,33 +4,35 @@ import {
   callFailedModal,
   callSuccessModal,
 } from "../../../components/common/Modal";
+import SelectUnit from "../../../components/common/SelectUnit";
+
+// import { postCreateFolderMutation } from "../../../utils/mutationsGroup/maintenanceMutations";
 import {
   postCreateFolderMutation,
   putEditFolderMutation,
-} from "../../../utils/mutationsGroup/documentMutations";
-import SelectUnit from "../../../components/common/SelectUnit";
-import {
-  getFolderInfoQuery,
-  getUnitListQuery,
-} from "../../../utils/queriesGroup/documentQueries";
+} from "../../../utils/mutationsGroup/maintenanceMutations";
 
+import {
+  getUnitListQuery,
+  getFolderInfoQuery,
+} from "../../../utils/queriesGroup/maintenanceQueries";
 import type { RadioChangeEvent } from "antd";
 import {
-  DocumentDataType,
+  MaintenanceGuideDataType,
   CreateFolderType,
   ModalModeType,
   EditFolderType,
   ByUnitFolder,
-} from "../../../stores/interfaces/Document";
+} from "../../../stores/interfaces/MaintenanceGuide";
 
 interface ComponentCreateProps {
   isOpen: boolean;
   onCancel: () => void;
   folderId: number;
   fetchData: () => void;
-  folderDetail?: DocumentDataType;
+  folderDetail?: MaintenanceGuideDataType;
   mode?: ModalModeType;
-  editData?: DocumentDataType;
+  editData?: MaintenanceGuideDataType;
 }
 
 const NewFolderModal = (props: ComponentCreateProps) => {
@@ -61,7 +63,6 @@ const NewFolderModal = (props: ComponentCreateProps) => {
   const [disabled, setDisabled] = useState(false);
   const [folderName, setFolderName] = useState("");
 
-  // Functions
   const createFolder = async () => {
     setButtonLoading(true);
     setDisabled(true);
@@ -76,6 +77,7 @@ const NewFolderModal = (props: ComponentCreateProps) => {
     await createFolderMutation
       .mutateAsync(payload)
       .then(() => {
+        // console.log(res);
         callSuccessModal("Create folder successfully", 1500);
         handleCancel();
         fetchData();
@@ -168,7 +170,7 @@ const NewFolderModal = (props: ComponentCreateProps) => {
   return (
     <>
       <Modal
-        title={`Create folder to ${folderDetail?.name ?? "House Documents"}`}
+        title={`Create folder to ${folderDetail?.name ?? "Project info"}`}
         width={700}
         centered
         open={isOpen}

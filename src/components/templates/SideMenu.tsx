@@ -98,8 +98,7 @@ const SideMenu = () => {
               defaultSelectedKeys={[window.location.pathname]}
               mode="inline"
               onSelect={({ keyPath }) => {
-                console.log(keyPath);
-
+                // console.log(keyPath);
                 setKeyPath(keyPath.toString());
               }}
               onOpenChange={(keys) => {
@@ -272,15 +271,15 @@ const SideMenu = () => {
                 title="Documents"
               >
                 <Menu.Item
-                  key={`${main_link}/homeDocument`}
+                  key={`${main_link}/houseDocument`}
                   icon={
                     <PublicFolderIcon
-                      color={iconSubMenuColorSelector("homeDocument")}
+                      color={iconSubMenuColorSelector("houseDocument")}
                       className="sideMenuIcon"
                     />
                   }
                 >
-                  <Link to={`${main_link}/homeDocument`}>Home documents</Link>
+                  <Link to={`${main_link}/houseDocument`}>House documents</Link>
                 </Menu.Item>
 
                 <Menu.Item

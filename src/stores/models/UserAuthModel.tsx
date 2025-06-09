@@ -15,7 +15,7 @@ export const userAuth = createModel<RootModel>()({
     userId: null,
     userFirstName: "Den",
     userLastName: "Tao",
-    isAuth: false,
+    isAuth: true,
     userToken: null,
   } as UserType,
   reducers: {
@@ -97,51 +97,32 @@ export const userAuth = createModel<RootModel>()({
           console.error("No props : ", res.data.message);
           throw "access_token not found";
         }
-
-        const projectId = await encryptStorage.getItem("projectId");
+        await encryptStorage.getItem("projectId");
+        // const projectId = await encryptStorage.getItem("projectId");
         // console.log({ token: res.data.access_token, projId: projectId });
         encryptStorage.setItem("access_token", res.data.access_token);
         dispatch.userAuth.updateAuthState(true);
         return true;
       } catch (error) {
-        console.warn("FAILED");
-        dispatch.userAuth.updateAuthState(false);
-        await axios.post("/users/logout");
-        encryptStorage.removeItem("access_token");
-        encryptStorage.removeItem("refreshToken");
+        dispatch.userAuth.onLogout();
         return false;
       }
     },
 
     async onLogout() {
       try {
-        await axios.post("/users/logout");
+        // await axios.post("/users/logout");
         encryptStorage.removeItem("projectId");
         encryptStorage.removeItem("access_token");
         encryptStorage.removeItem("refreshToken");
         dispatch.userAuth.updateAuthState(false);
         return true;
       } catch (error) {
-        dispatch.userAuth.updateAuthState(false);
         encryptStorage.removeItem("projectId");
         encryptStorage.removeItem("access_token");
         encryptStorage.removeItem("refreshToken");
+        dispatch.userAuth.updateAuthState(false);
         return false;
-      }
-    },
-    async logoutEffects() {
-      try {
-        // const logout = await axios.post("/users/logout");
-        // if (logout.status >= 400) {
-        //   console.log("FAILED ", logout.statusText);
-        //   return;
-        // }
-        dispatch.userAuth.updateAuthState(false);
-        encryptStorage.removeItem("projectId");
-        encryptStorage.removeItem("access_token");
-        encryptStorage.removeItem("refreshToken");
-      } catch (error) {
-        console.error("ERROR", error);
       }
     },
   }),

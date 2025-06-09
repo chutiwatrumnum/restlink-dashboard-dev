@@ -1,8 +1,6 @@
 export interface DocumentFormType {
   isLoading: boolean;
   tableData: DocumentDataType[];
-  publicFolders: DocumentDataType[];
-  publicFiles: DocumentDataType[];
   currentFoldersMaxLength: number;
   foldersLength: number;
   refresh: boolean;
@@ -59,3 +57,59 @@ export interface CreateFolderType {
   unitId?: number[];
   folderOwnerId?: number;
 }
+
+export type ModalModeType = "create" | "edit";
+
+export interface FileDataType {
+  id: string;
+  fileName: string;
+  filePath: string;
+  fileType: string;
+  fileSize: number;
+  fileSizeDescription: string;
+  documentHomeFolderId: number;
+  projectId: string;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: string;
+  updatedBy: string;
+  byUnit: ByUnit[];
+}
+
+export interface ByUnit {
+  unitId: number;
+  unitInfo: UnitInfo;
+}
+
+export interface UnitInfo {
+  unitNo: string;
+  roomAddress: string;
+}
+
+export interface EditFileType {
+  fileID: string;
+  allowAll: "y" | "n";
+  fileName: string;
+  unitId: number[];
+}
+
+export interface EditFolderType {
+  folderId: number;
+  allowAll: "y" | "n";
+  folderName: string;
+  unitId: number[];
+}
+
+export interface FolderDataType {
+  id: number;
+  name: string;
+  projectId: string;
+  folderOwnerId: number;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: any;
+  updatedBy: any;
+  byUnit: ByUnitFolder[];
+}
+
+export interface ByUnitFolder extends ByUnit {}

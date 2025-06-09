@@ -1,65 +1,32 @@
-import { useEffect, useState } from "react";
-import { Navigate, useLocation, useOutlet } from "react-router-dom";
+import { useEffect } from "react";
+import { useOutlet, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { RootState } from "../stores";
 import { Col, Row } from "antd";
+import { encryptStorage } from "../utils/encryptStorage";
 
 // import COVER_IMAGE from "../assets/images/coverImage.png";
 
 // style
 import "./styles/unAuthorizedLayout.css";
 
-const from = window.location.pathname;
-
 const UnauthorizedLayout = () => {
-  const userAuth = useSelector((state: RootState) => state.userAuth);
-  const location = useLocation();
+  const access_token = encryptStorage.getItem("access_token");
+  const navigate = useNavigate();
+  const { isAuth } = useSelector((state: RootState) => state.userAuth);
   const outlet = useOutlet();
-  const { width } = useWindowDimensions();
+  const path = window.location.pathname;
 
-  if (userAuth.isAuth) {
-    return (
-      <Navigate
-        to={from.includes("dashboard") ? from : "/dashboard/profile"}
-        state={{ from: location }}
-        replace
-      />
-    );
-  }
-
-  //Responsive helper login views functions
-  function getWindowDimensions() {
-    const { innerWidth: width, innerHeight: height } = window;
-    return {
-      width,
-      height,
-    };
-  }
-
-  function useWindowDimensions() {
-    const [windowDimensions, setWindowDimensions] = useState(
-      getWindowDimensions()
-    );
-
-    useEffect(() => {
-      function handleResize() {
-        setWindowDimensions(getWindowDimensions());
-      }
-
-      window.addEventListener("resize", handleResize);
-      return () => window.removeEventListener("resize", handleResize);
-    }, []);
-
-    return windowDimensions;
-  }
+  useEffect(() => {
+    if (isAuth && access_token) {
+      navigate(path.includes("dashboard") ? path : "/dashboard/profile");
+    } else if (!isAuth && window.location.pathname !== "/auth") {
+      window.location.pathname = "/auth";
+    }
+  }, [isAuth]);
 
   return (
     <Row className="container">
-      {/* {width < 1024 ? null : (
-        <Col span={8} className="imageContainer">
-          <img src={COVER_IMAGE} alt="cover" className="coverImage" />
-        </Col>
-      )} */}
       <Col className="contentContainer">{outlet}</Col>
     </Row>
   );

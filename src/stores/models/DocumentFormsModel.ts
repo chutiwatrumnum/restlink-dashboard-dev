@@ -5,14 +5,11 @@ import {
 import { createModel } from "@rematch/core";
 import { RootModel } from "./index";
 import axios from "axios";
-import { message } from "antd";
 
 export const document = createModel<RootModel>()({
   state: {
     isLoading: true,
     tableData: [],
-    publicFolders: [],
-    publicFiles: [],
     currentFoldersMaxLength: 0,
     foldersLength: 0,
     refresh: false,
@@ -25,14 +22,6 @@ export const document = createModel<RootModel>()({
     updateTableDataState: (state, payload) => ({
       ...state,
       tableData: payload,
-    }),
-    updatePublicFoldersState: (state, payload) => ({
-      ...state,
-      publicFolders: payload,
-    }),
-    updatePublicFilesState: (state, payload) => ({
-      ...state,
-      publicFiles: payload,
     }),
     updateCurrentFolderState: (state, payload) => ({
       ...state,
@@ -60,6 +49,7 @@ export const document = createModel<RootModel>()({
       let folderId = `&folderId=${payload.folderId}`;
 
       try {
+        dispatch.document.updateIsLoadingState(true);
         const result = await axios.get(
           `/document-home/dashboard?curPage=${item.curPage}&perPage=${item.perPage}${search}${sort}${sortBy}${folderId}`
         );
@@ -69,8 +59,6 @@ export const document = createModel<RootModel>()({
           console.error(result.data.message);
           return;
         }
-        dispatch.document.updatePublicFoldersState(result.data.result.folder);
-        dispatch.document.updatePublicFilesState(result.data.result.files);
         dispatch.document.updateCurrentFolderMaxLengthState(
           result.data.result.totalFolder + result.data.result.totalFiles
         );

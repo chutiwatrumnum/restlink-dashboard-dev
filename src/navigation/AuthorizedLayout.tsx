@@ -1,5 +1,5 @@
-import { useLayoutEffect } from "react";
-import { useOutlet, useNavigate } from "react-router-dom";
+import { useEffect } from "react";
+import { useOutlet } from "react-router-dom";
 import { Layout } from "antd";
 import { useSelector } from "react-redux";
 import { RootState } from "../stores";
@@ -14,27 +14,15 @@ import "./styles/authorizedLayout.css";
 const { Sider, Content } = Layout;
 
 function AuthorizedLayout() {
-  const navigate = useNavigate();
-  //   const dispatch = useDispatch<Dispatch>();
-  const userAuth = useSelector((state: RootState) => state.userAuth);
+  const { isAuth } = useSelector((state: RootState) => state.userAuth);
   const outlet = useOutlet();
 
-  //   const refreshTokenHandle = async () => {
-  //     let token = { token: await encryptStorage.getItem("refreshToken") };
-  //     // let token = { token: "123" };
-  //     if (token) await dispatch.userAuth.refreshToken(token);
-  //   };
+  useEffect(() => {
+    if (!isAuth && window.location.pathname !== "/auth") {
+      window.location.pathname = "/auth";
+    }
+  }, [isAuth]);
 
-  useLayoutEffect(() => {
-    (() => {
-      if (!userAuth.isAuth) {
-        setTimeout(() => {
-          navigate("/auth", { replace: true });
-        }, 500);
-        return;
-      }
-    })();
-  }, []);
   return (
     <Layout>
       <Sider width={320} className="sideContainer">

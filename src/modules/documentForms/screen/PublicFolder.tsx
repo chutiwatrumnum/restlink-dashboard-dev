@@ -19,6 +19,7 @@ import {
   DeleteOutlined,
   UploadOutlined,
   PlusCircleOutlined,
+  EditOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { useDispatch, useSelector } from "react-redux";
@@ -38,6 +39,7 @@ import { BreadcrumbType } from "../interface/Public";
 import {
   GetPublicDataPayloadType,
   DocumentDataType,
+  ModalModeType,
 } from "../../../stores/interfaces/Document";
 
 import "../styles/document.css";
@@ -46,8 +48,13 @@ const { Text, Link } = Typography;
 const { Search } = Input;
 const { confirm } = Modal;
 const PublicFolder = () => {
+  // Variables
   const dispatch = useDispatch<Dispatch>();
-  const [isModalUploadPublic, setIsModalUploadPublic] = useState(false);
+  const scroll: { x?: number | string } = {
+    x: 1500, // ปรับค่าตามความกว้างรวมของคอลัมน์
+  };
+
+  // Queries & Mutations
   const {
     isLoading,
     tableData,
@@ -55,19 +62,19 @@ const PublicFolder = () => {
     refresh,
     foldersLength,
   } = useSelector((state: RootState) => state.document);
-  const { accessibility } = useSelector((state: RootState) => state.common);
-  const defaultURL = "public-folder";
-  const scroll: { x?: number | string } = {
-    x: 1500, // ปรับค่าตามความกว้างรวมของคอลัมน์
-  };
   const deleteFolder = deleteFolderMutation();
 
+  // States
+  const [isModalUploadPublic, setIsModalUploadPublic] = useState(false);
   const [curPage, setCurPage] = useState(1);
-  const [perPage, setPerPage] = useState(15);
+  const [perPage, setPerPage] = useState(10);
   const [FolderCurrent, setFolderCurrent] = useState<number>(0);
   const [folderDetail, setFolderDetail] = useState<DocumentDataType>();
   const [breadcrumb, setBreadcrumb] = useState<BreadcrumbType[]>([]);
   const [isNewFolderOpen, setIsNewFolderOpen] = useState(false);
+  const [mode, setMode] = useState<ModalModeType>("create");
+  const [editFolderData, setEditFolderData] = useState<DocumentDataType>();
+  const [editFileData, setEditFileData] = useState<DocumentDataType>();
 
   const columns: ColumnsType<DocumentDataType> = [
     {
@@ -136,10 +143,13 @@ const PublicFolder = () => {
       title: "Action",
       dataIndex: "actions",
       align: "center",
-      // fixed: "right",
-      // hidden: breadcrumb.length === 1,
-      render: (_, record, index: number) => (
+      render: (_, record, index) => (
         <>
+          <Button
+            type="text"
+            icon={<EditOutlined />}
+            onClick={() => onEdit(record, index)}
+          />
           <Button
             value={record?.id}
             type="text"
@@ -163,7 +173,7 @@ const PublicFolder = () => {
         {
           title: (
             <Link onClick={homeBreadcrumbClick} className="breadcrumbTxt">
-              Home documents
+              House Documents
             </Link>
           ),
         },
@@ -177,7 +187,7 @@ const PublicFolder = () => {
   };
 
   const subFolderClick = async (item: DocumentDataType, index: number) => {
-    if (index < foldersLength) {
+    if (index < foldersLength && typeof item.id === "number") {
       setFolderCurrent(item.id);
       let conditions: GetPublicDataPayloadType = {
         curPage: curPage,
@@ -219,17 +229,12 @@ const PublicFolder = () => {
   const homeBreadcrumbClick = async () => {
     setFolderCurrent(0);
     setCurPage(1);
-    dispatch.document.updateRefreshState(!refresh);
     setFolderDetail(undefined);
+    fetchData();
   };
 
   const onBreadCrumbClick = async (item: DocumentDataType) => {
-    let conditions: GetPublicDataPayloadType = {
-      curPage: curPage,
-      perPage: perPage,
-      folderId: item.id,
-    };
-
+    if (typeof item.id === "number") setFolderCurrent(item.id);
     setBreadcrumb([
       ...breadcrumb,
       {
@@ -245,8 +250,14 @@ const PublicFolder = () => {
         ),
       },
     ]);
-
-    await dispatch.document.getPublicData(conditions);
+    if (typeof item.id === "number") {
+      let conditions: GetPublicDataPayloadType = {
+        curPage: curPage,
+        perPage: perPage,
+        folderId: item.id,
+      };
+      await dispatch.document.getPublicData(conditions);
+    }
   };
 
   const showDeleteConfirm = (id: string | number) => {
@@ -298,6 +309,20 @@ const PublicFolder = () => {
     });
   };
 
+  const onEdit = (record: DocumentDataType, index: number) => {
+    if (index < foldersLength) {
+      // console.log("Folder edit!", record);
+      setIsNewFolderOpen(true);
+      setMode("edit");
+      setEditFolderData(record);
+    } else {
+      // console.log("File edit!", record);
+      setIsModalUploadPublic(true);
+      setMode("edit");
+      setEditFileData(record);
+    }
+  };
+
   useEffect(() => {
     fetchData();
   }, [curPage, refresh]);
@@ -331,6 +356,7 @@ const PublicFolder = () => {
               setIsNewFolderOpen(true);
             }}
             icon={<PlusCircleOutlined />}
+            disabled={isLoading}
           >
             New folder
           </Button>
@@ -340,12 +366,15 @@ const PublicFolder = () => {
               setIsModalUploadPublic(true);
             }}
             icon={<UploadOutlined />}
+            disabled={isLoading}
           >
             Upload
           </Button>
           <UploadPublic
             callBack={async (isOpen: boolean, created: boolean) => {
               setIsModalUploadPublic(isOpen);
+              setEditFileData(undefined);
+              setMode("create");
               if (created) {
                 let conditions: GetPublicDataPayloadType = {
                   curPage: curPage,
@@ -356,15 +385,22 @@ const PublicFolder = () => {
               }
             }}
             isOpen={isModalUploadPublic}
-            FolderId={FolderCurrent}
+            folderId={FolderCurrent}
             folderDetail={folderDetail}
+            mode={mode}
+            editData={editFileData}
           />
           <NewFolderModal
             isOpen={isNewFolderOpen}
             folderId={FolderCurrent}
             folderDetail={folderDetail}
+            fetchData={fetchData}
+            mode={mode}
+            editData={editFolderData}
             onCancel={() => {
+              setEditFolderData(undefined);
               setIsNewFolderOpen(false);
+              setMode("create");
             }}
           />
         </Col>

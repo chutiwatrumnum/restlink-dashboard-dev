@@ -6,7 +6,9 @@ import {
 
 const deleteMaintenanceGuideById = async (id: string) => {
   try {
-    const resultDelete = await axios.delete(`document-form/delete/${id}`);
+    const resultDelete = await axios.delete(
+      `/document-project/dashboard/file?id=${id}`
+    );
     if (resultDelete.status < 400) {
       return {
         status: true,
@@ -24,14 +26,11 @@ const deleteMaintenanceGuideById = async (id: string) => {
     };
   }
 };
-const uploadMaintenanceGuide = async (
-  file: dataFiles,
-  processFunc: Function
-) => {
+const uploadMaintenanceGuide = async (file: dataFiles) => {
   try {
     // console.log("FILE SENDING ", file);
     const resultUploadMaintenanceGuide = await axios.post(
-      "/maintenance-guide/upload",
+      "/document-project/dashboard/file",
       file
     );
     // console.log("resultUploadMaintenanceGuide:", resultUploadMaintenanceGuide);

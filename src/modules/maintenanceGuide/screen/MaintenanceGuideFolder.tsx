@@ -14,83 +14,87 @@ import {
   Modal,
 } from "antd";
 import {
-  FolderFilled,
-  FileFilled,
+  FolderOutlined,
+  FileOutlined,
   DeleteOutlined,
   UploadOutlined,
+  PlusCircleOutlined,
+  EditOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { useDispatch, useSelector } from "react-redux";
 import { Dispatch, RootState } from "../../../stores";
 import { ConvertDate } from "../../../utils/helper";
 import "../styles/maintenanceGuide.css";
+import {
+  callFailedModal,
+  callSuccessModal,
+} from "../../../components/common/Modal";
+import NewFolderModal from "../components/NewFolderModal";
 
 import {
   GetMaintenanceGuideDataPayloadType,
   MaintenanceGuideDataType,
+  ModalModeType,
 } from "../../../stores/interfaces/MaintenanceGuide";
 import { BreadcrumbType } from "../interface/MaintenanceGuide";
 import type { ColumnsType } from "antd/es/table";
 import UploadMaintenanceGuide from "../components/UploadMaintenanceGuide";
 import { deleteMaintenanceGuideById } from "../service/MaintenanceGuideAPI";
+import { deleteFolderMutation } from "../../../utils/mutationsGroup/maintenanceMutations";
 
 const { Text, Link } = Typography;
 const { Search } = Input;
 const { confirm } = Modal;
 const MaintenanceGuideFolder = () => {
+  // Variables
   const dispatch = useDispatch<Dispatch>();
-  const [isModalUploadMaintenanceGuide, setIsModalUploadMaintenanceGuide] =
-    useState(false);
-  const {
-    isLoading,
-    tableData,
-    currentFoldersMaxLength,
-    maintenanceGuideFiles,
-    maintenanceGuideFolders,
-    refresh,
-  } = useSelector((state: RootState) => state.maintenanceGuide);
-  const { accessibility } = useSelector((state: RootState) => state.common);
-  const defaultURL = "maintenanceGuide-folder";
   const scroll: { x?: number | string } = {
     x: "50vw",
   };
 
+  // Queries & Mutations
+  const {
+    isLoading,
+    tableData,
+    currentFoldersMaxLength,
+    refresh,
+    foldersLength,
+  } = useSelector((state: RootState) => state.maintenanceGuide);
+  const deleteFolder = deleteFolderMutation();
+
+  // States
   const [curPage, setCurPage] = useState(1);
-  const [perPage, setPerPage] = useState(15);
+  const [perPage, setPerPage] = useState(10);
   const [FolderCurrent, setFolderCurrent] = useState<number>(0);
   const [folderDetail, setFolderDetail] = useState<MaintenanceGuideDataType>();
   const [breadcrumb, setBreadcrumb] = useState<BreadcrumbType[]>([]);
+  const [isModalUploadOpen, setIsModalUploadOpen] = useState(false);
+  const [isNewFolderOpen, setIsNewFolderOpen] = useState(false);
+  const [mode, setMode] = useState<ModalModeType>("create");
+  const [editFolderData, setEditFolderData] =
+    useState<MaintenanceGuideDataType>();
+  const [editFileData, setEditFileData] = useState<MaintenanceGuideDataType>();
 
   const columns: ColumnsType<MaintenanceGuideDataType> = [
     {
       title: "Name",
       key: "name",
       align: "center",
-      width: "5%",
-      render: (_: any, record: MaintenanceGuideDataType) => {
-        let name = record.fileName === "" ? record.folderName : record.fileName;
+      // width: "5%",
+      render: (_: any, record: MaintenanceGuideDataType, index: number) => {
         return (
-          <div className="fileName" onClick={() => subFolderClick(record)}>
+          <div
+            className="fileName"
+            onClick={() => subFolderClick(record, index)}
+          >
             <div className="fileNameIcon">
-              {record.fileName === "" ? <FolderFilled /> : <FileFilled />}
+              {index < foldersLength ? <FolderOutlined /> : <FileOutlined />}
             </div>
-            <Text style={{ textAlign: "left" }}>{name}</Text>
+            <Text style={{ textAlign: "left" }}>
+              {record.name ?? record.fileName}
+            </Text>
           </div>
-        );
-      },
-    },
-    {
-      title: "Size",
-      dataIndex: "fileSize",
-      key: "fileSize",
-      align: "center",
-      width: "1%",
-      render: (fileSize: string) => {
-        const size = fileSize === "" ? "-" : fileSize;
-        return (
-          <>
-            <Text>{size}</Text>
-          </>
         );
       },
     },
@@ -99,7 +103,6 @@ const MaintenanceGuideFolder = () => {
       dataIndex: "createdAt",
       key: "createdAt",
       align: "center",
-      width: "2%",
       render: (createdAt: string) => {
         let date = dayjs(createdAt).format("DD/MM/YYYY").toString();
         return (
@@ -114,9 +117,8 @@ const MaintenanceGuideFolder = () => {
       dataIndex: "createdAt",
       key: "createdAt",
       align: "center",
-      width: "2%",
-      render: (startDate: string) => {
-        const time = ConvertDate(startDate); // add new
+      render: (createdAt: string) => {
+        const time = ConvertDate(createdAt); // add new
         return (
           <>
             <Text>{time.time}</Text>
@@ -128,7 +130,6 @@ const MaintenanceGuideFolder = () => {
       title: "Create by",
       key: "createBy",
       align: "center",
-      width: "2%",
       render: (_: any, record: MaintenanceGuideDataType) => {
         const names = record.fullName === "" ? "-" : record.fullName;
         return (
@@ -138,43 +139,38 @@ const MaintenanceGuideFolder = () => {
         );
       },
     },
-    // {
-    //   title: "Delete",
-    //   dataIndex: "delete",
-    //   align: "center",
-    //   width: "1%",
-    //   hidden: breadcrumb.length === 1,
-    //   render: (_, record) => (
-    //     <>
-    //       {record?.idFile ? (
-    //         <Button
-    //           value={record?.idFile}
-    //           type="text"
-    //           icon={<DeleteOutlined />}
-    //           onClick={showDeleteConfirm}
-    //           // disabled={!accessibility?.menu_maintenanceGuide_form_management.allowEdit}
-    //         ></Button>
-    //       ) : null}
-    //     </>
-    //   ),
-    // },
+    {
+      title: "Action",
+      dataIndex: "actions",
+      align: "center",
+      // fixed: "right",
+      // hidden: breadcrumb.length === 1,
+      render: (_, record, index: number) => (
+        <>
+          <Button
+            type="text"
+            icon={<EditOutlined />}
+            onClick={() => onEdit(record, index)}
+          />
+          <Button
+            value={record?.id}
+            type="text"
+            icon={<DeleteOutlined />}
+            onClick={() => showDeleteConfirm(record?.id)}
+          />
+        </>
+      ),
+    },
   ];
 
   // functions
   const fetchData = async () => {
-    let conditionsDefault: GetMaintenanceGuideDataPayloadType = {
-      curPage: curPage,
-      perPage: perPage,
-    };
-
     let conditions: GetMaintenanceGuideDataPayloadType = {
       curPage: curPage,
       perPage: perPage,
       folderId: FolderCurrent,
     };
-    if (FolderCurrent > 0) {
-      await dispatch.maintenanceGuide.getFolderData(conditions);
-    } else {
+    if (FolderCurrent === 0) {
       setBreadcrumb([
         {
           title: (
@@ -184,25 +180,26 @@ const MaintenanceGuideFolder = () => {
           ),
         },
       ]);
-      await dispatch.maintenanceGuide.getMaintenanceGuideData(
-        conditionsDefault
-      );
     }
+    await dispatch.maintenanceGuide.getMaintenanceGuideData(conditions);
   };
 
   const onPageChange = async (page: number) => {
     setCurPage(page);
   };
 
-  const subFolderClick = async (item: MaintenanceGuideDataType) => {
-    if (!item.fileName) {
+  const subFolderClick = async (
+    item: MaintenanceGuideDataType,
+    index: number
+  ) => {
+    if (index < foldersLength && typeof item.id === "number") {
+      setFolderCurrent(item.id);
       let conditions: GetMaintenanceGuideDataPayloadType = {
         curPage: curPage,
         perPage: perPage,
-        folderId: item.folderId,
+        folderId: item.id,
       };
-      setFolderCurrent(item.folderId);
-      await dispatch.maintenanceGuide.getFolderData(conditions);
+      await dispatch.maintenanceGuide.getMaintenanceGuideData(conditions);
       setBreadcrumb((prevState) => [
         ...prevState,
         {
@@ -213,7 +210,7 @@ const MaintenanceGuideFolder = () => {
               }}
               className="breadcrumbTxt"
             >
-              {item.folderName}
+              {item.name}
             </Link>
           ),
         },
@@ -225,39 +222,24 @@ const MaintenanceGuideFolder = () => {
   };
 
   const onSearch = async (text: string) => {
-    if (!text && FolderCurrent === 0) {
-      dispatch.maintenanceGuide.updateTableDataState([
-        ...maintenanceGuideFolders,
-        ...maintenanceGuideFiles,
-      ]);
-      return;
-    }
     let conditions: GetMaintenanceGuideDataPayloadType = {
       curPage: curPage,
       perPage: perPage,
       search: text,
       folderId: FolderCurrent,
     };
-    if (FolderCurrent === 0) {
-      await dispatch.maintenanceGuide.getSearchMaintenanceGuideData(conditions);
-      return;
-    }
-    await dispatch.maintenanceGuide.getFolderData(conditions);
+    await dispatch.maintenanceGuide.getMaintenanceGuideData(conditions);
   };
 
   const homeBreadcrumbClick = async () => {
-    await setFolderCurrent(0);
-    await setCurPage(1);
-    dispatch.maintenanceGuide.updateRefreshState(!refresh);
+    setFolderCurrent(0);
+    setCurPage(1);
+    setFolderDetail(undefined);
+    fetchData();
   };
 
   const onBreadCrumbClick = async (item: MaintenanceGuideDataType) => {
-    let conditions: GetMaintenanceGuideDataPayloadType = {
-      curPage: curPage,
-      perPage: perPage,
-      folderId: item.folderId,
-    };
-
+    if (typeof item.id === "number") setFolderCurrent(item.id);
     setBreadcrumb([
       ...breadcrumb,
       {
@@ -268,16 +250,23 @@ const MaintenanceGuideFolder = () => {
             }}
             className="breadcrumbTxt"
           >
-            {item.folderName}
+            {item.name}
           </Link>
         ),
       },
     ]);
 
-    await dispatch.maintenanceGuide.getFolderData(conditions);
+    if (typeof item.id === "number") {
+      let conditions: GetMaintenanceGuideDataPayloadType = {
+        curPage: curPage,
+        perPage: perPage,
+        folderId: item.id,
+      };
+      await dispatch.maintenanceGuide.getMaintenanceGuideData(conditions);
+    }
   };
 
-  const showDeleteConfirm = ({ currentTarget }: any) => {
+  const showDeleteConfirm = (id: string | number) => {
     confirm({
       title: "Are you sure you want to delete this?",
       icon: null,
@@ -286,25 +275,40 @@ const MaintenanceGuideFolder = () => {
       cancelText: "No",
       centered: true,
       async onOk() {
-        const statusDeleted = await deleteMaintenanceGuideById(
-          currentTarget.value
-        );
-        if (statusDeleted) {
-          Modal.success({ content: "Delete successfully", centered: true });
-          destroyModal();
+        if (typeof id === "string") {
+          const statusDeleted = await deleteMaintenanceGuideById(id);
+          if (statusDeleted) {
+            callSuccessModal("Delete successfully", 1500);
+            let conditions: GetMaintenanceGuideDataPayloadType = {
+              curPage: curPage,
+              perPage: perPage,
+              folderId: FolderCurrent,
+            };
+            if (FolderCurrent === 0) {
+              await fetchData();
+            } else {
+              await dispatch.maintenanceGuide.getMaintenanceGuideData(
+                conditions
+              );
+            }
+          } else {
+            callFailedModal("Delete failed", 1500);
+          }
+        } else if (typeof id === "number") {
+          // console.log("Delete folder because id is not string");
+          deleteFolder
+            .mutateAsync(id)
+            .then(() => {
+              callSuccessModal("Delete successfully", 1500);
+            })
+            .catch(() => {
+              callFailedModal("Delete failed", 1500);
+            })
+            .finally(() => {
+              fetchData();
+            });
         } else {
-          Modal.error({ content: "Delete failed", centered: true });
-          destroyModal();
-        }
-        let conditions: GetMaintenanceGuideDataPayloadType = {
-          curPage: curPage,
-          perPage: perPage,
-          folderId: FolderCurrent,
-        };
-        if (FolderCurrent === 0) {
-          await fetchData();
-        } else {
-          await dispatch.maintenanceGuide.getFolderData(conditions);
+          console.log("Something went wrong!");
         }
       },
       onCancel() {
@@ -313,12 +317,21 @@ const MaintenanceGuideFolder = () => {
     });
   };
 
-  const destroyModal = () => {
-    setTimeout(() => {
-      Modal.destroyAll();
-    }, 1500);
+  const onEdit = (record: MaintenanceGuideDataType, index: number) => {
+    if (index < foldersLength) {
+      console.log("Folder edit!", record);
+      setIsNewFolderOpen(true);
+      setMode("edit");
+      setEditFolderData(record);
+    } else {
+      // console.log("File edit!", record);
+      setIsModalUploadOpen(true);
+      setMode("edit");
+      setEditFileData(record);
+    }
   };
 
+  // Actions
   useEffect(() => {
     fetchData();
   }, [curPage, refresh]);
@@ -342,36 +355,64 @@ const MaintenanceGuideFolder = () => {
             allowClear
           />
         </Col>
-        <Col span={12} style={{ display: "flex", justifyContent: "flex-end" }}>
+        <Col
+          span={12}
+          style={{ display: "flex", justifyContent: "flex-end", gap: 12 }}
+        >
+          <Button
+            type="primary"
+            onClick={() => {
+              setIsNewFolderOpen(true);
+            }}
+            icon={<PlusCircleOutlined />}
+            disabled={isLoading}
+          >
+            New folder
+          </Button>
           <Button
             type="primary"
             onClick={async () => {
-              setIsModalUploadMaintenanceGuide(true);
+              setIsModalUploadOpen(true);
             }}
-            // disabled={!accessibility?.menu_maintenanceGuide_form_management.allowEdit}
             icon={<UploadOutlined />}
+            disabled={isLoading}
           >
             Upload
           </Button>
           <UploadMaintenanceGuide
             callBack={async (isOpen: boolean, created: boolean) => {
-              setIsModalUploadMaintenanceGuide(isOpen);
+              setIsModalUploadOpen(isOpen);
+              setEditFileData(undefined);
+              setMode("create");
               if (created) {
                 let conditions: GetMaintenanceGuideDataPayloadType = {
                   curPage: curPage,
                   perPage: perPage,
                   folderId: FolderCurrent,
                 };
-                if (FolderCurrent === 0) {
-                  await fetchData();
-                } else {
-                  await dispatch.maintenanceGuide.getFolderData(conditions);
-                }
+                await dispatch.maintenanceGuide.getMaintenanceGuideData(
+                  conditions
+                );
               }
             }}
-            isOpen={isModalUploadMaintenanceGuide}
-            FolderId={FolderCurrent}
+            isOpen={isModalUploadOpen}
+            folderId={FolderCurrent}
             folderDetail={folderDetail}
+            mode={mode}
+            editData={editFileData}
+          />
+          <NewFolderModal
+            isOpen={isNewFolderOpen}
+            folderId={FolderCurrent}
+            folderDetail={folderDetail}
+            fetchData={fetchData}
+            mode={mode}
+            editData={editFolderData}
+            onCancel={() => {
+              setEditFolderData(undefined);
+              setIsNewFolderOpen(false);
+              setMode("create");
+            }}
           />
         </Col>
       </Row>

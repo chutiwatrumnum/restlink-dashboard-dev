@@ -36,9 +36,7 @@ export const postAuthMutation = () => {
         FailedModal(
           "This user has not been registered. Please contact the appropriate authority."
         );
-        encryptStorage.removeItem("access_token");
-        encryptStorage.removeItem("refreshToken");
-        dispatch.userAuth.updateAuthState(false);
+        dispatch.userAuth.onLogout();
       }
     },
   });

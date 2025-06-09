@@ -1,37 +1,36 @@
 export interface MaintenanceGuideFormType {
   isLoading: boolean;
   tableData: MaintenanceGuideDataType[];
-  maintenanceGuideFolders: MaintenanceGuideDataType[];
-  maintenanceGuideFiles: MaintenanceGuideDataType[];
   currentFoldersMaxLength: number;
+  foldersLength: number;
   refresh: boolean;
 }
 
 export type updateStatus = "active" | "exception" | "success";
 
 export interface MaintenanceGuideDataType {
-  idFile?: string;
-  folderName: string;
-  fileName: string;
-  active: boolean;
-  folderId: number;
-  pathFile: string;
-  isMaintenanceGuide: boolean;
-  fileType: string;
-  fileSize: string;
-  createdAt: string;
-  updatedAt: string | null;
-  createdBy: string;
-  updatedBy: string | null;
+  id: number | string;
   fullName: string;
+  // Folder Type
+  name?: string;
+  folderOwnerId?: number;
+  createdAt?: string;
+  // File type
+  documentHomeFolderId?: number;
+  fileName?: string;
+  filePath?: string;
+  fileSize?: number;
+  fileSizeDescription?: string;
+  fileType?: "pdf";
+  projectId?: string;
 }
 export interface GetMaintenanceGuideDataPayloadType {
-  curPage?: number;
-  perPage?: number;
+  curPage: number;
+  perPage: number;
+  folderId: number;
   search?: string;
   sort?: string;
   sortBy?: string;
-  folderId?: number;
   unitId?: number;
 }
 export interface dataFiles {
@@ -40,6 +39,8 @@ export interface dataFiles {
   fileSize: string;
   folderId: number;
   base64: string;
+  allowAll: "y" | "n";
+  unitId: number[];
 }
 export interface dataFilesPersonal {
   fileName: string;
@@ -50,3 +51,66 @@ export interface dataFilesPersonal {
   unitAll: boolean;
   base64: string;
 }
+
+export interface CreateFolderType {
+  allowAll: "y" | "n";
+  folderName: string;
+  unitId?: number[];
+  folderOwnerId?: number;
+}
+
+export type ModalModeType = "create" | "edit";
+
+export interface FileDataType {
+  id: string;
+  fileName: string;
+  filePath: string;
+  fileType: string;
+  fileSize: number;
+  fileSizeDescription: string;
+  documentHomeFolderId: number;
+  projectId: string;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: string;
+  updatedBy: string;
+  byUnit: ByUnit[];
+}
+
+export interface ByUnit {
+  unitId: number;
+  unitInfo: UnitInfo;
+}
+
+export interface UnitInfo {
+  unitNo: string;
+  roomAddress: string;
+}
+
+export interface EditFileType {
+  fileID: string;
+  allowAll: "y" | "n";
+  fileName: string;
+  unitId: number[];
+}
+
+export interface EditFolderType {
+  folderId: number;
+  allowAll: "y" | "n";
+  folderName: string;
+  unitId: number[];
+}
+
+export interface FolderDataType {
+  id: number;
+  name: string;
+  projectId: string;
+  folderOwnerId: number;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: any;
+  updatedBy: any;
+  byUnit: ByUnitFolder[];
+}
+
+export interface ByUnitFolder extends ByUnit {}

@@ -703,6 +703,15 @@ const ServiceCenterEditModal = ({
             </div>
             <div className="action-buttons">
               <Button
+                disabled={data.requestCloseCase ? false : true}
+                onClick={handleCloseTicket}
+                className="close-ticket-link">
+                {" "}
+                Close ticket{" "}
+              </Button>
+            </div>
+            <div className="action-buttons">
+              <Button
                 type="primary"
                 htmlType="submit"
                 size="large"

@@ -60,31 +60,6 @@ function App() {
   const dispatch = useDispatch<Dispatch>();
   const { isAuth } = useSelector((state: RootState) => state.userAuth);
 
-  // API
-  // const { data: projectID, refetch: refetchProjectId } = getProjectIDQuery({
-  //   shouldFetch: isAuth,
-  // });
-
-  /*
-  const tokenCheck = async () => {
-    const access_token = await encryptStorage.getItem("access_token");
-    if (access_token) {
-      dispatch.userAuth.updateAuthState(true);
-    }
-  };
-  const roleaccess_tokenCheck = async () => {
-    await dispatch.common.getRoleaccess_token();
-  };
-  useEffect(() => {
-    tokenCheck();
-    dispatch.common.getUnitOptions();
-    dispatch.common.getMasterData();
-  }, []);
-
-  useEffect(() => {
-    roleaccess_tokenCheck();
-  }, [isAuth]);
-*/
   useLayoutEffect(() => {
     (async () => {
       try {
@@ -96,19 +71,18 @@ function App() {
           access_token === ""
         )
           throw "access_token not found";
+
         // Check Refresh token
         const resReToken = await dispatch.userAuth.refreshTokenNew();
         if (!resReToken) throw "access_token expired";
+
         // Token pass
         await dispatch.common.fetchUnitOptions();
-        // await dispatch.common.getMasterData();
-        // await dispatch.userAuth.refreshUserDataEffects();
-        // await dispatch.common.getRoleaccess_token();
         dispatch.userAuth.updateAuthState(true);
-        // await refetchProjectId();
+
         return true;
       } catch (e) {
-        dispatch.userAuth.updateAuthState(false);
+        dispatch.userAuth.onLogout();
         return false;
       }
     })();
@@ -153,7 +127,7 @@ function App() {
           <Route path="liveChat" element={<LiveChat />} />
           <Route path="smartMailbox" element={<SummaryDashboard />} />
           <Route path="securityCenter" element={<SummaryDashboard />} />
-          <Route path="contactLists" element={<Emergency/>} />
+          <Route path="contactLists" element={<Emergency />} />
           {/* User management */}
           <Route path="residentManagement" element={<SummaryDashboard />} />
           <Route path="registration" element={<SummaryDashboard />} />
@@ -166,7 +140,7 @@ function App() {
           <Route path="areaControl" element={<AreaControl />} />
           <Route path="deviceControl" element={<DeviceControl />} />
           {/* Document */}
-          <Route path="homeDocument" element={<PublicFolder />} />
+          <Route path="houseDocument" element={<PublicFolder />} />
           <Route path="projectInfo" element={<MaintenanceGuideFolder />} />
           {/* Delivery logs */}
           <Route path="delivery-logs" element={<DeliveryLogs />} />

@@ -9,11 +9,10 @@ export const postCreateFolderMutation = () => {
   return useMutation({
     retry: 2,
     scope: {
-      id: "createFolder",
+      id: "createFolderProject",
     },
     mutationFn: (payload: CreateFolderType) => {
-      // console.log(payload);
-      return axios.post(`/document-home/dashboard/folder`, payload);
+      return axios.post(`/document-project/dashboard/folder`, payload);
     },
   });
 };
@@ -22,11 +21,11 @@ export const putEditFileMutation = () => {
   return useMutation({
     retry: 2,
     scope: {
-      id: "editFile",
+      id: "editProjectFile",
     },
     mutationFn: (payload: EditFileType) => {
       // console.log(payload);
-      return axios.put(`/document-home/dashboard/file`, payload);
+      return axios.put(`/document-project/dashboard/file`, payload);
     },
   });
 };
@@ -35,11 +34,11 @@ export const putEditFolderMutation = () => {
   return useMutation({
     retry: 2,
     scope: {
-      id: "editFolder",
+      id: "editProjectFolder",
     },
     mutationFn: (payload: CreateFolderType) => {
       // console.log(payload);
-      return axios.put(`/document-home/dashboard/folder`, payload);
+      return axios.put(`/document-project/dashboard/folder`, payload);
     },
   });
 };
@@ -48,10 +47,10 @@ export const deleteFolderMutation = () => {
   return useMutation({
     retry: 2,
     scope: {
-      id: "deleteFolder",
+      id: "deleteFolderProject",
     },
     mutationFn: (payload: number) => {
-      return axios.delete(`/document-home/dashboard/folder/${payload}`);
+      return axios.delete(`/document-project/dashboard/folder/${payload}`);
     },
   });
 };

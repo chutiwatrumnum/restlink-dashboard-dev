@@ -1,44 +1,59 @@
 import { useState, useEffect } from "react";
-import {
-  Button,
-  Modal,
-  message,
-  Upload,
-  ProgressProps,
-  Select,
-  Radio,
-} from "antd";
+import { Button, Modal, message, Upload, ProgressProps, Input } from "antd";
 import { InboxOutlined } from "@ant-design/icons";
-import { useDispatch } from "react-redux";
-import { Dispatch } from "../../../stores";
 import { dataFiles } from "../../../stores/interfaces/Document";
 import { uploadDocument } from "../service/DocumentAPI";
 import {
   callFailedModal,
   callSuccessModal,
 } from "../../../components/common/Modal";
-import { getUnitListQuery } from "../../../utils/queriesGroup/documentQueries";
+import SelectUnit from "../../../components/common/SelectUnit";
+import {
+  getFileInfoQuery,
+  getUnitListQuery,
+} from "../../../utils/queriesGroup/documentQueries";
+import { putEditFileMutation } from "../../../utils/mutationsGroup/documentMutations";
 
 import type { RcFile, UploadFile } from "antd/es/upload/interface";
 import type { RadioChangeEvent } from "antd";
-import { DocumentDataType } from "../../../stores/interfaces/Document";
+import {
+  DocumentDataType,
+  ModalModeType,
+  ByUnit,
+  EditFileType,
+} from "../../../stores/interfaces/Document";
 type ProgressStatus = "normal" | "exception" | "active" | "success";
 
 const { Dragger } = Upload;
 interface ComponentCreateProps {
   isOpen: boolean;
   callBack: (isOpen: boolean, saved: boolean) => void;
-  FolderId: number;
+  folderId: number;
   folderDetail?: DocumentDataType;
-}
-interface IupdateFile {
-  [index: string]: UploadFile;
+  mode?: ModalModeType;
+  editData?: DocumentDataType;
 }
 const UploadPublic = (props: ComponentCreateProps) => {
-  const dispatch = useDispatch<Dispatch>();
+  // Variables
   const maxUploadFile: number = 10;
-  const { data: unitData, isLoading: isLoadingUnit } = getUnitListQuery();
+  const {
+    isOpen,
+    callBack,
+    folderId,
+    folderDetail,
+    mode = "create",
+    editData,
+  } = props;
 
+  // Queries & Mutations
+  const { data: fileData } = getFileInfoQuery({
+    id: editData?.id.toString() ?? "",
+    shouldFetch: !!editData,
+  });
+  const { data: unitData } = getUnitListQuery();
+  const editFile = putEditFileMutation();
+
+  // States
   const [draggerStatus, setDraggerStatus] = useState<boolean>(false);
   const [fileList, setFileList] = useState<UploadFile[]>([]);
   const [fileUpload, setFileUpload] = useState<UploadFile>();
@@ -49,10 +64,18 @@ const UploadPublic = (props: ComponentCreateProps) => {
   const [isAllowAll, setIsAllowAll] = useState<"y" | "n">("y");
   const [selectedAddress, setSelectedAddress] = useState<string[]>([]);
   const [disabled, setDisabled] = useState(false);
+  const [fileName, setFileName] = useState<string>("");
 
+  // Functions
   const handleCancel = async () => {
-    props.callBack(!props?.isOpen, false);
+    callBack(!isOpen, false);
+    setIsAllowAll("y");
+    setSelectedAddress([]);
     setFileList([]);
+    setButtonLoading(false);
+    setDraggerStatus(false);
+    setFileName("");
+    setDisabled(false);
   };
 
   const getBase64 = async (file: RcFile) => {
@@ -81,7 +104,7 @@ const UploadPublic = (props: ComponentCreateProps) => {
         fileName: file.originFileObj.name,
         fileType: "pdf",
         fileSize: `${(file.originFileObj.size / 1024 / 1024).toFixed(2)} MB`,
-        folderId: props?.FolderId,
+        folderId: folderId,
         base64: database64,
         allowAll: isAllowAll,
         unitId: selectedAddress.map(Number),
@@ -120,10 +143,8 @@ const UploadPublic = (props: ComponentCreateProps) => {
     }
     if (res?.status) {
       callSuccessModal("Upload successfully", 1500);
-      setButtonLoading(false);
-      setDraggerStatus(false);
-      props.callBack(!props?.isOpen, true);
-      setFileList([]);
+      callBack(!isOpen, true);
+      handleCancel();
     } else {
       callFailedModal("Upload failed", 1500);
     }
@@ -140,6 +161,44 @@ const UploadPublic = (props: ComponentCreateProps) => {
     setIsAllowAll(e.target.value);
   };
 
+  const fileNameHandler = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    setFileName(e.target.value);
+  };
+
+  const editFileHandler = () => {
+    const payload: EditFileType = {
+      fileID: fileData.id,
+      fileName: fileName,
+      allowAll: isAllowAll,
+      unitId: selectedAddress.map(Number),
+    };
+    editFile
+      .mutateAsync(payload)
+      .then(() => {
+        callSuccessModal("Edit successfully", 1500);
+        handleCancel();
+        callBack(!isOpen, true);
+      })
+      .catch((err) => {
+        callFailedModal("Edit failed", 1500);
+        console.warn("ERR => ", err);
+      });
+  };
+
+  const submitHandler = () => {
+    if (mode === "create") {
+      setDisabled(true);
+      UploadPublicFile();
+    } else if (mode === "edit") {
+      setDisabled(true);
+      editFileHandler();
+    } else {
+      console.log("Something went wrong!");
+    }
+  };
+
   const propProcess: ProgressProps = {
     strokeColor: {
       "0%": "#108ee9",
@@ -150,11 +209,24 @@ const UploadPublic = (props: ComponentCreateProps) => {
     format: (percent) => percent && `${parseFloat(processPercent.toFixed(2))}%`,
   };
 
+  // Actions
   useEffect(() => {
-    if (props?.isOpen) {
-      (async function () {})();
+    if (mode === "edit" && fileData) {
+      const dataAddress = fileData.byUnit.map((unit: ByUnit) => unit.unitId);
+      if (dataAddress.length === unitData.length) {
+        setIsAllowAll("y");
+        setSelectedAddress([]);
+      } else {
+        setIsAllowAll("n");
+        setSelectedAddress(dataAddress);
+      }
+      if (fileData.fileName.includes(".pdf")) {
+        setFileName(fileData.fileName.replace(/\.pdf$/, ""));
+      } else {
+        setFileName(fileData.fileName);
+      }
     }
-  }, [props?.isOpen]);
+  }, [isOpen, fileData]);
 
   useEffect(() => {
     if (processPercent) {
@@ -172,128 +244,121 @@ const UploadPublic = (props: ComponentCreateProps) => {
   return (
     <>
       <Modal
-        title={`Add new document to ${
-          props?.folderDetail?.name ?? "Home documents"
-        }`}
+        title={`Add new document to ${folderDetail?.name ?? "House Documents"}`}
         width={700}
         centered
-        open={props?.isOpen}
+        open={isOpen}
         onCancel={handleCancel}
         footer={[
           <Button
             key="submit"
             type="primary"
             loading={buttonLoading}
-            disabled={fileList.length > 0 ? false : true}
+            disabled={
+              mode === "create"
+                ? (fileList.length > 0 ? false : true) ||
+                  (selectedAddress.length === 0 && isAllowAll === "n")
+                : selectedAddress.length === 0 && isAllowAll === "n"
+            }
             style={{ paddingLeft: 30, paddingRight: 30 }}
-            onClick={() => {
-              UploadPublicFile();
-              setDisabled(true);
-            }}
+            onClick={submitHandler}
           >
-            Upload
+            {mode === "create" ? "Upload" : "Save"}
           </Button>,
         ]}
       >
-        <div className="flex flex-col mb-8 gap-4">
-          <span>Send to</span>
-          <Radio.Group
-            name="isAllowAllRadio"
-            value={isAllowAll}
-            onChange={onIsAllowAllChange}
-            disabled={disabled}
-            options={[
-              { value: "y", label: "Select all" },
-              { value: "n", label: "Custom select" },
-            ]}
-          />
-          <span>Select address no.</span>
-          <Select
-            mode="multiple"
+        <SelectUnit
+          disabled={disabled}
+          handleSelectChange={handleSelectAddressChange}
+          selectValue={selectedAddress}
+          isAllowAll={isAllowAll}
+          onIsAllowAllChange={onIsAllowAllChange}
+        />
+        <div style={{ display: mode === "create" ? "block" : "none" }}>
+          <Dragger
+            accept="application/pdf"
+            customRequest={({ file, onSuccess, onError }: any) => {
+              if (maxUploadFile === fileList.length) {
+                message.error(
+                  `maximum file ${maxUploadFile} unit to one count upload.`
+                );
+                setTimeout(() => {
+                  onError("error");
+                }, 0);
+                return false;
+              }
+              if (file.type !== "application/pdf") {
+                message.error("upload pdf file only.");
+                setTimeout(() => {
+                  onError("error");
+                }, 0);
+                return false;
+              } else if (file.size / 1024 / 1024 > 50) {
+                message.error("file limit maximum 50 MB.");
+                setTimeout(() => {
+                  onError("error");
+                }, 0);
+                return false;
+              } else if (file.size / 1024 / 1024 === 0) {
+                message.error("file minimum 1 KB.");
+                setTimeout(() => {
+                  onError("error");
+                }, 0);
+                return false;
+              } else {
+                setTimeout(() => {
+                  onSuccess("ok");
+                }, 0);
+              }
+            }}
+            fileList={fileList}
+            maxCount={maxUploadFile}
+            disabled={draggerStatus}
+            onChange={async (info: any) => {
+              let data: any = [];
+              const result = info?.fileList?.filter(
+                async (e: any, i: number) => {
+                  if (e.status !== "error") {
+                    e.status = "done";
+                    data.push(e);
+                    return e;
+                  }
+                }
+              );
+              await setFileList(data);
+            }}
+            onRemove={async (file: UploadFile) => {
+              const allFile = fileList.filter((items: any, i: any) => {
+                if (items.uid !== file.uid) {
+                  return items;
+                }
+              });
+              await setFileList(allFile);
+            }}
+            progress={{ ...propProcess }}
+            multiple={true}
+          >
+            <p className="ant-upload-drag-icon">
+              <InboxOutlined />
+            </p>
+            <p className="ant-upload-text">
+              Click or drag file to this area to upload
+            </p>
+            <p className="ant-upload-hint">
+              Support for a single or bulk upload. Strictly prohibited from
+              uploading company data or other banned files.
+            </p>
+          </Dragger>
+        </div>
+        <div style={{ display: mode === "edit" ? "block" : "none" }}>
+          <span>Folder name</span>
+          <Input
             size="large"
-            placeholder="Please select address no."
-            value={selectedAddress}
-            onChange={handleSelectAddressChange}
-            style={{ width: "100%" }}
-            options={unitData}
-            loading={isLoadingUnit}
-            fieldNames={{ value: "unitId" }}
-            disabled={isAllowAll === "y" || disabled}
-            allowClear
+            placeholder="Please input folder name"
+            value={fileName}
+            onChange={fileNameHandler}
           />
         </div>
-        <Dragger
-          accept="application/pdf"
-          customRequest={({ file, onSuccess, onError }: any) => {
-            if (maxUploadFile === fileList.length) {
-              message.error(
-                `maximum file ${maxUploadFile} unit to one count upload.`
-              );
-              setTimeout(() => {
-                onError("error");
-              }, 0);
-              return false;
-            }
-            if (file.type !== "application/pdf") {
-              message.error("upload pdf file only.");
-              setTimeout(() => {
-                onError("error");
-              }, 0);
-              return false;
-            } else if (file.size / 1024 / 1024 > 50) {
-              message.error("file limit maximum 50 MB.");
-              setTimeout(() => {
-                onError("error");
-              }, 0);
-              return false;
-            } else if (file.size / 1024 / 1024 === 0) {
-              message.error("file minimum 1 KB.");
-              setTimeout(() => {
-                onError("error");
-              }, 0);
-              return false;
-            } else {
-              setTimeout(() => {
-                onSuccess("ok");
-              }, 0);
-            }
-          }}
-          fileList={fileList}
-          maxCount={maxUploadFile}
-          disabled={draggerStatus}
-          onChange={async (info: any) => {
-            let data: any = [];
-            const result = info?.fileList?.filter(async (e: any, i: number) => {
-              if (e.status !== "error") {
-                e.status = "done";
-                data.push(e);
-                return e;
-              }
-            });
-            await setFileList(data);
-          }}
-          onRemove={async (file: UploadFile) => {
-            const allFile = fileList.filter((items: any, i: any) => {
-              if (items.uid !== file.uid) {
-                return items;
-              }
-            });
-            await setFileList(allFile);
-          }}
-          progress={{ ...propProcess }}
-          multiple={true}
-        >
-          <p className="ant-upload-drag-icon">
-            <InboxOutlined />
-          </p>
-          <p className="ant-upload-text">
-            Click or drag file to this area to upload
-          </p>
-          <p className="ant-upload-hint">
-            Support for a single or bulk upload. Strictly prohibited from
-            uploading company data or other banned files.
-          </p>
-        </Dragger>
       </Modal>
     </>
   );

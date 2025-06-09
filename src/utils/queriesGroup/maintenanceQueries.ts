@@ -3,9 +3,9 @@ import axios from "axios";
 
 // Functions section
 const getUnitList = async () => {
-  let url = `/document-home/dashboard/unit-list`;
+  let url = `/document-project/dashboard/unit-list`;
   const res = await axios.get(url);
-  // console.log("RES : ", res);
+  // console.log("RES project unit list : ", res);
 
   return res.data.result;
 };
@@ -14,7 +14,7 @@ const getFileInfo = async ({
   queryKey,
 }: QueryFunctionContext<[string, string]>) => {
   const [_key, id] = queryKey;
-  let url = `/document-home/dashboard/file-info?fileID=${id}`;
+  let url = `/document-project/dashboard/file-info?fileID=${id}`;
   const res = await axios.get(url);
   // console.log("RES : ", res);
 
@@ -25,9 +25,9 @@ const getFolderInfo = async ({
   queryKey,
 }: QueryFunctionContext<[string, string]>) => {
   const [_key, id] = queryKey;
-  let url = `/document-home/dashboard/folder-info?folderId=${id}`;
+  let url = `/document-project/dashboard/folder-info?folderId=${id}`;
   const res = await axios.get(url);
-  // console.log("RES : ", res);
+  console.log("RES : ", res);
 
   return res.data.result;
 };
@@ -35,7 +35,7 @@ const getFolderInfo = async ({
 // Queries section
 export const getUnitListQuery = () => {
   return useQuery({
-    queryKey: ["unitList"],
+    queryKey: ["unitListProject"],
     queryFn: getUnitList,
   });
 };
@@ -46,7 +46,7 @@ export const getFileInfoQuery = (payload: {
 }) => {
   const { id, shouldFetch } = payload;
   return useQuery({
-    queryKey: ["fileInfo", id],
+    queryKey: ["fileProjectInfo", id],
     queryFn: getFileInfo,
     enabled: shouldFetch,
   });
@@ -58,7 +58,7 @@ export const getFolderInfoQuery = (payload: {
 }) => {
   const { id, shouldFetch } = payload;
   return useQuery({
-    queryKey: ["folderInfo", id],
+    queryKey: ["folderProjectInfo", id],
     queryFn: getFolderInfo,
     enabled: shouldFetch,
   });

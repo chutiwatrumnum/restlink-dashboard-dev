@@ -8,7 +8,8 @@
     "build": "vite build",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
-    "deploy-dev": "firebase deploy -P realasset-dev"
+    "deploy-uat": "firebase deploy -P dashboard-restlink-demo",
+    "deploy-dev": "firebase deploy -P dashboard-restlink-dev"
   },
   "dependencies": {
     "@ant-design/plots": "^1.2.5",

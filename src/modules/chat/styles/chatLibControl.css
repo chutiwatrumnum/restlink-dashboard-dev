@@ -7,7 +7,7 @@ div {
 }
 
 .cs-message--outgoing .cs-message__content {
-  background-color: #b7ed9d;
+  background-color: var(--secondary-color);
 }
 
 .cs-message-separator {
@@ -26,7 +26,7 @@ div {
 }
 
 .cs-chat-container .cs-message-input {
-  background-color: #335f1f;
+  background-color: var(--primary-color);
 }
 
 .cs-message-input__content-editor-wrapper {
