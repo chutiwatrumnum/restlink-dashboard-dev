@@ -52,11 +52,7 @@ export const useServiceCenterServiceListQuery = (payloadQuery: ServiceCenterPayl
     return { ...query };
 };
 export const useServiceCenterByServiceIDQuery = (payloadQuery: number) => {
-    const getServiceCenterServiceListQuery = async (serviceId: number) => {
-        const { data } = await axios.get(`/service-center/dashboard/${serviceId}`);
 
-        return data.data;
-    };
     const query = useQuery({
         queryKey: ["serviceCenterByServiceID", payloadQuery],
         queryFn: () => getServiceCenterServiceListQuery(payloadQuery),
@@ -152,4 +148,9 @@ export const useServiceCenterIssueTypeQuery = () => {
     });
 
     return { ...query };
+};
+export const getServiceCenterServiceListQuery = async (serviceId: number) => {
+    const { data } = await axios.get(`/service-center/dashboard/${serviceId}`);
+
+    return data.data;
 };

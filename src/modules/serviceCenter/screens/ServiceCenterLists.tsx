@@ -1,21 +1,20 @@
 import { useState, useEffect } from "react";
 import { Button, Row, Pagination, Tag, Col, Tabs, Select } from "antd";
-import DatePicker from "../../../components/common/DatePicker";
 import Header from "../../../components/templates/Header";
-import SearchBox from "../../../components/common/SearchBox";
 import ServiceCenterTable from "../components/ServiceCenterTable";
 import ServiceCenterEditModal from "../components/ServiceCenterEditModal";
 import { EditIcon } from "../../../assets/icons/Icons";
 import type { ColumnsType } from "antd/es/table";
 import type { PaginationProps, TabsProps } from "antd";
 import type { RangePickerProps } from "antd/es/date-picker";
-import { useServiceCenterServiceListQuery, useServiceCenterStatusTypeQuery, useServiceCenterIssueTypeQuery, useServiceCenterByServiceIDQuery } from "../hooks/index";
+import { useServiceCenterServiceListQuery, useServiceCenterStatusTypeQuery, useServiceCenterIssueTypeQuery } from "../hooks/index";
 import { ServiceCenterDataType, ServiceCenterPayloadType, ServiceCenterSelectListType } from "../../../stores/interfaces/ServiceCenter";
 import MediumActionButton from "../../../components/common/MediumActionButton";
 import dayjs from "dayjs";
 import "../styles/ServiceCenterLists.css";
 import { getDataBlock } from "../../deliveryLogs/service/api/DeliveryLogsServiceAPI";
 import { unitDetail } from "../../../stores/interfaces/DeliveryLogs";
+import { getServiceCenterServiceListQuery } from "../hooks/serviceCenterQuery";
 
 const ServiceCenterLists = () => {
     // variables
@@ -27,7 +26,6 @@ const ServiceCenterLists = () => {
     const [curPage, setCurPage] = useState(1);
     const [perPage, setPerPage] = useState(5);
     const [startMonth, setStartMonth] = useState();
-    const [statusConfrimServiceId, setStatusConfrimServiceId] = useState<number>(-1)
     const [endMonth, setEndMonth] = useState();
     const [SelectServiceCenterIssueType, setSelectServiceCenterIssueType] = useState<string | undefined>(undefined);
     const [SelectTabsServiceCenterType, setSelectTabsServiceCenterType] = useState<string | null>(null);
@@ -58,10 +56,6 @@ const ServiceCenterLists = () => {
     const { data: dataServiceCenterList, isLoading, refetch: refetchServiceCenterList } = useServiceCenterServiceListQuery(payload);
     const { data: selectList, isSuccess } = useServiceCenterStatusTypeQuery("tabs");
     const { data: selectIssueList, isSuccess: isSuccessIssue } = useServiceCenterIssueTypeQuery();
-    const {
-        data:ServiceCenterByServiceIDData,
-        refetch: isRefetchingServiceCenterByServiceID,
-      } = useServiceCenterByServiceIDQuery(statusConfrimServiceId);
     const onSearch = (value: string) => {
         setSearch(value);
         setCurPage(1);
@@ -75,42 +69,23 @@ const ServiceCenterLists = () => {
         const editData: ServiceCenterDataType = {
             ...record,
         };
-        // switch (record.statusName) {
-        //     case "Pending":
-        //         const dataRepair = selectList?.data.find((item: ServiceCenterSelectListType) => item.value ===editData.status.nameEn);
-        //         editData.statusId = Number(dataRepair?.value);
-        //         const result = selectList?.data.filter((item: ServiceCenterSelectListType) => item.label !== "Success");
-
-        //         setServiceCenterStatusSelectionList(result ? result : []);
-        //         break;
-        //     case "Repairing":
-        //         const dataSuccess = selectList?.data.find((item: ServiceCenterSelectListType) => item.label === "Repairing");
-        //         editData.statusId = Number(dataSuccess?.value);
-        //         const resultRepairing = selectList?.data.filter((item: ServiceCenterSelectListType) => item.label !== "Pending");
-        //         setServiceCenterStatusSelectionList(resultRepairing ? resultRepairing : []);
-        //         break;
-        //     default:
-        //         break;
-        // }
-        // const resultRepairing = selectList?.data.filter((item: ServiceCenterSelectListType) => item.label !== "Pending");
         const dataSuccess = selectList?.data.find((item: ServiceCenterSelectListType) => item.label ===editData.status.nameEn);
                 editData.statusId = Number(dataSuccess?.value);
         setServiceCenterStatusSelectionList(selectList?.data!);
        
-        if (editData.status.nameCode==='confirm_appointment') {
-            
-            setStatusConfrimServiceId(editData.id)
-            await isRefetchingServiceCenterByServiceID()
-            editData.appointmentDateConfirmAppointmentID=ServiceCenterByServiceIDData?.appointmentDate.find((item: any) => item.selected===true)?.id
-            editData.appointmentDateConfirmAppointment = ServiceCenterByServiceIDData?.appointmentDateSelected
-            editData.requestCloseCase =
-              ServiceCenterByServiceIDData?.requestCloseCase;
-            editData.requestNewAppointment=ServiceCenterByServiceIDData?.requestNewAppointment
-            // console.log('editData.id',ServiceCenterByServiceIDData);
-            
+        if (editData.status.nameCode==='confirm_appointment') {   
+            try {
+             const data=   await getServiceCenterServiceListQuery(editData.id)
+                editData.appointmentDateConfirmAppointmentID=data?.appointmentDate.find((item: any) => item.selected===true)?.id
+                editData.appointmentDateConfirmAppointment = data?.appointmentDateSelected
+                editData.requestCloseCase =
+                  data?.requestCloseCase;
+                editData.requestNewAppointment=data?.requestNewAppointment
+            } catch (error) {
+                console.log(error);
+                alert("get service center by id error");
+            }
         }
-        // else{
-        // }
         setEditData(editData);
         setIsEditModalOpen(true);
     };

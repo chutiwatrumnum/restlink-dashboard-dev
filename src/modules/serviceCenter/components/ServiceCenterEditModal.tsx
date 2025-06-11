@@ -53,11 +53,6 @@ const ServiceCenterEditModal = ({
 }: ServiceCenterEditModalType) => {
   const [serviceCenterForm] = Form.useForm();
   const [open, setOpen] = useState(false);
-  const {
-    data:serviceCenterByid,
-    isLoading,
-    refetch: refetchServiceCenter,
-  } = useServiceCenterByServiceIDQuery(data?.id!);
   const { data: statusList, isSuccess } = useServiceCenterStatusTypeQuery();
   const [statusIdSuccess, setstatusIdSuccess] = useState<number>(-1)
   // State for current visual step and actual status ID
@@ -94,18 +89,6 @@ const ServiceCenterEditModal = ({
     },
     [selectList]
   );
-
-  const getdataIsWairtFromAppointment= async(data:ServiceCenterDataType) => { 
-    if (data.status.nameCode==='confirm_appointment') {
-      await refetchServiceCenter()
-      // console.log("serviceCenterByid:", serviceCenterByid);
-      
-      data.appointmentDate = serviceCenterByid?.appointmentDateSelected
-      data.requestCloseCase = serviceCenterByid?.requestCloseCase;
-      data.requestNewAppointment=serviceCenterByid?.requestNewAppointment
-      return data
-  }
-   }
   // Effect to initialize modal state when it opens or when 'data' (the service record) changes
   useEffect( () => {
     setOpen(isEditModalOpen);
