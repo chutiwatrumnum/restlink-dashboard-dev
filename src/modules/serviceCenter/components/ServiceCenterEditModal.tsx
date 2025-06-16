@@ -65,7 +65,7 @@ type ServiceCenterEditModalType = {
   isEditModalOpen: boolean;
   onOk: () => void;
   onCancel: () => void;
-  data: ServiceCenterDataType | null; // ✅ ใช้ ServiceCenterDataType ตรงๆ
+  data: ServiceCenterDataType | null;
   onRefresh: () => void;
   selectList: ServiceCenterSelectListType[];
 };
@@ -184,7 +184,7 @@ const ServiceCenterEditModal = ({
       console.log("🔍 [Modal] Data received:", {
         requestCloseCase: data.requestCloseCase,
         requestNewAppointment: data.requestNewAppointment,
-        requestReschedule: data.requestReschedule,
+        requestReschedule: data.requestReschedule, // ✅ เพิ่มบรรทัดนี้
         status: data.status?.nameCode,
       });
 
@@ -221,6 +221,7 @@ const ServiceCenterEditModal = ({
           : undefined,
         cause: data.cause,
         solution: data.solution,
+        requestReschedule: data.requestReschedule, // ✅ เพิ่มบรรทัดนี้
       });
 
       if (data.status.nameCode === "repairing") {
@@ -259,11 +260,18 @@ const ServiceCenterEditModal = ({
     }
   }, [isEditModalOpen, data, serviceCenterForm, selectList, statusList?.data]);
 
+  // ✅ เพิ่มฟังก์ชันสำหรับจัดการ collapse change
+  const handleCollapseChange = (keys: string | string[]) => {
+    const keyArray = Array.isArray(keys) ? keys : [keys];
+    console.log("🔄 Collapse keys changed:", keyArray);
+    setActiveCollapseKeys(keyArray);
+  };
+
   // Effect to manage which collapse panels are open based on the current status and data
   useEffect(() => {
     if (isEditModalOpen && data && currentStatusId && statusList?.data) {
       const newActiveKeys = new Set<string>();
-      newActiveKeys.add("pending");
+      newActiveKeys.add("pending"); // Pending จะเปิดเสมอ
 
       const currentActualStepDefinition = statusList.data.find(
         (step) => step.value === currentStatusId
@@ -290,6 +298,7 @@ const ServiceCenterEditModal = ({
         (s) => s.label === "Closed"
       )?.value;
 
+      // ✅ เมื่อเปิด Modal ครั้งแรก ให้เปิด panel ที่เกี่ยวข้องตามสถานะ
       if (
         repairingOrder !== -1 &&
         (currentOrder >= repairingOrder ||
@@ -306,6 +315,12 @@ const ServiceCenterEditModal = ({
       ) {
         newActiveKeys.add("success");
       }
+
+      // ✅ ตั้งค่าเฉพาะครั้งแรกที่เปิด Modal เท่านั้น
+      console.log(
+        "🔧 Setting initial collapse keys:",
+        Array.from(newActiveKeys)
+      );
       setActiveCollapseKeys(Array.from(newActiveKeys));
     } else if (isEditModalOpen) {
       setActiveCollapseKeys(["pending"]);
@@ -756,7 +771,15 @@ const ServiceCenterEditModal = ({
               <Button
                 disabled={!data.requestCloseCase}
                 onClick={handleCloseTicket}
-                className="close-ticket-link">
+                size="large"
+                danger
+                style={{
+                  backgroundColor: !data.requestCloseCase
+                    ? undefined
+                    : "#ff4d4f",
+                  borderColor: !data.requestCloseCase ? undefined : "#ff4d4f",
+                  color: !data.requestCloseCase ? undefined : "#fff",
+                }}>
                 Close ticket
               </Button>
             </div>
@@ -900,7 +923,22 @@ const ServiceCenterEditModal = ({
               <Button
                 disabled={!data.requestCloseCase || data.requestReschedule}
                 onClick={handleCloseTicket}
-                className="close-ticket-link">
+                size="large"
+                danger
+                style={{
+                  backgroundColor:
+                    !data.requestCloseCase || data.requestReschedule
+                      ? undefined
+                      : "#ff4d4f",
+                  borderColor:
+                    !data.requestCloseCase || data.requestReschedule
+                      ? undefined
+                      : "#ff4d4f",
+                  color:
+                    !data.requestCloseCase || data.requestReschedule
+                      ? undefined
+                      : "#fff",
+                }}>
                 Close ticket
               </Button>
               <Button
@@ -917,28 +955,15 @@ const ServiceCenterEditModal = ({
                     await mutationreshuduleServiceCenter.mutateAsync(data.id);
                     console.log("✅ Reschedule API call successful");
 
-                    // Refresh data
+                    // ✅ Refresh parent component data
                     onRefresh();
 
-                    // Reset to pending status
-                    const pendingStatus = statusList?.data.find(
-                      (s) => s.label === "Pending"
-                    );
-                    if (pendingStatus) {
-                      setCurrentStatusId(pendingStatus.value);
-                      const visualStepIndex = statusList?.data.findIndex(
-                        (s) => s.value === pendingStatus.value
-                      );
-                      setCurrentStepIndex(
-                        visualStepIndex >= 0 ? visualStepIndex : 0
-                      );
-                      serviceCenterForm.resetFields([
-                        "appointmentDate",
-                        "actionDate",
-                      ]);
-                    }
+                    // ✅ ปิด Modal และให้ parent component refresh ข้อมูลใหม่
+                    handleClose();
 
-                    console.log("🔄 Status reset to Pending");
+                    console.log(
+                      "✅ Reschedule completed - Modal closed, data will refresh"
+                    );
                   } catch (error) {
                     console.error("❌ Reschedule failed:", error);
                   }
@@ -1028,7 +1053,15 @@ const ServiceCenterEditModal = ({
               <Button
                 disabled={!data.requestCloseCase}
                 onClick={handleCloseTicket}
-                className="close-ticket-link">
+                size="large"
+                danger
+                style={{
+                  backgroundColor: !data.requestCloseCase
+                    ? undefined
+                    : "#ff4d4f",
+                  borderColor: !data.requestCloseCase ? undefined : "#ff4d4f",
+                  color: !data.requestCloseCase ? undefined : "#fff",
+                }}>
                 Close ticket
               </Button>
             </div>
@@ -1097,11 +1130,20 @@ const ServiceCenterEditModal = ({
         <Collapse
           className="report-summary-collapse"
           activeKey={activeCollapseKeys}
-          onChange={(keys) => setActiveCollapseKeys(keys as string[])}>
+          onChange={handleCollapseChange}>
           {renderReportSummaryPanel("Pending", "Pending")}
-          {activeCollapseKeys.includes("repairing") &&
+          {/* ✅ แสดง repairing panel เสมอถ้าควรแสดง */}
+          {(statusList?.data.findIndex((s) => s.value === currentStatusId) ??
+            -1) >=
+            (statusList?.data.findIndex((s) => s.label === "Repairing") ??
+              -1) &&
+            statusList?.data.findIndex((s) => s.label === "Repairing") !== -1 &&
             renderReportSummaryPanel("Repairing", "Repairing")}
-          {activeCollapseKeys.includes("success") &&
+          {/* ✅ แสดง success panel เสมอถ้าควรแสดง */}
+          {(statusList?.data.findIndex((s) => s.value === currentStatusId) ??
+            -1) >=
+            (statusList?.data.findIndex((s) => s.label === "Success") ?? -1) &&
+            statusList?.data.findIndex((s) => s.label === "Success") !== -1 &&
             renderReportSummaryPanel("Success", "Success")}
         </Collapse>
 

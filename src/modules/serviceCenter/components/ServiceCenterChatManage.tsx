@@ -16,12 +16,18 @@ const tagColorSelector = (status: string) => {
   switch (status) {
     case "Pending":
       return "red";
-    case "Repairing":
+    case "Waiting for confirmation":
       return "orange";
+    case "Confirm appointment":
+      return "blue";
+    case "Repairing":
+      return "purple";
     case "Success":
       return "green";
+    case "Closed":
+      return "gray";
     default:
-      return "black";
+      return "default";
   }
 };
 
@@ -31,7 +37,7 @@ const serviceCenterChatManage = ({
   chatData?: ServiceChatListDataType;
 }) => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [editData, setEditData] = useState<ServiceCenterDataType | null>(null); // ✅ ใช้ ServiceCenterDataType ตรงๆ
+  const [editData, setEditData] = useState<ServiceCenterDataType | null>(null);
   const [
     ServiceCenterStatusSelectionList,
     setServiceCenterStatusSelectionList,
@@ -44,28 +50,62 @@ const serviceCenterChatManage = ({
     isLoading,
     refetch: refetchServiceCenter,
   } = useServiceCenterByServiceIDQuery(chatData?.serviceId!);
+
   const onEditCancel = () => {
     setIsEditModalOpen(false);
     setEditData(null);
     refetchServiceCenter();
   };
+
   const onEditOk = () => {
     setIsEditModalOpen(false);
   };
+
   const onRefresh: VoidFunction = () => {
     setRefresh(!refresh);
   };
+
   const onEdit = () => {
     console.log("🔍 [ServiceCenterChatManage] Starting onEdit...");
     console.log("📋 [ServiceCenterChatManage] Raw data:", data);
 
-    // ✅ สร้าง data object พร้อมค่าเริ่มต้น
+    // ✅ เพิ่ม validation
+    if (!data) {
+      console.error("❌ No data available for editing");
+      return;
+    }
+
+    // ✅ สร้าง data object พร้อม validation และ Boolean conversion
     const editData: ServiceCenterDataType = {
       ...data,
-      requestCloseCase: data.requestCloseCase ?? false,
-      requestNewAppointment: data.requestNewAppointment ?? false,
-      requestReschedule: data.requestReschedule ?? false, // ✅ เพิ่มบรรทัดนี้
+      // ใช้ Boolean constructor เพื่อให้แน่ใจว่าเป็น boolean
+      requestCloseCase: Boolean(data.requestCloseCase),
+      requestNewAppointment: Boolean(data.requestNewAppointment),
+      requestReschedule: Boolean(data.requestReschedule), // ✅ เพิ่ม validation
     };
+
+    // ✅ เพิ่ม logging เพื่อ debug
+    console.log("🔍 [ServiceCenterChatManage] Validated editData:", {
+      id: editData.id,
+      statusName: editData.statusName,
+      requestCloseCase: editData.requestCloseCase,
+      requestNewAppointment: editData.requestNewAppointment,
+      requestReschedule: editData.requestReschedule,
+      types: {
+        requestCloseCase: typeof editData.requestCloseCase,
+        requestNewAppointment: typeof editData.requestNewAppointment,
+        requestReschedule: typeof editData.requestReschedule,
+      },
+    });
+
+    // ✅ เพิ่มการตรวจสอบค่าที่ไม่คาดคิด
+    if (
+      editData.requestReschedule === null ||
+      editData.requestReschedule === undefined
+    ) {
+      console.warn("⚠️ requestReschedule is null/undefined, setting to false");
+      editData.requestReschedule = false;
+    }
 
     switch (editData.statusName) {
       case "Pending":
@@ -99,7 +139,7 @@ const serviceCenterChatManage = ({
       id: editData.id,
       requestCloseCase: editData.requestCloseCase,
       requestNewAppointment: editData.requestNewAppointment,
-      requestReschedule: editData.requestReschedule, // ✅ เพิ่มบรรทัดนี้
+      requestReschedule: editData.requestReschedule,
     });
 
     setEditData(editData);
@@ -152,4 +192,5 @@ const serviceCenterChatManage = ({
     <p>loading.....</p>;
   }
 };
+
 export default serviceCenterChatManage;

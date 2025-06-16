@@ -26,7 +26,7 @@ import { getServiceCenterServiceListQuery } from "../hooks/serviceCenterQuery";
 
 // Extended interface เพื่อรองรับ requestReschedule
 interface ExtendedServiceCenterDataType extends ServiceCenterDataType {
-  requestReschedule?: boolean;
+  requestReschedule: boolean; // ✅ เปลี่ยนจาก optional เป็น required
 }
 
 const ServiceCenterLists = () => {
@@ -66,6 +66,7 @@ const ServiceCenterLists = () => {
     ServiceCenterStatusSelectionList,
     setServiceCenterStatusSelectionList,
   ] = useState<ServiceCenterSelectListType[]>([]);
+
   const payload: ServiceCenterPayloadType = {
     serviceTypeId: SelectServiceCenterIssueType,
     startMonth: startMonth,
@@ -76,13 +77,15 @@ const ServiceCenterLists = () => {
     status: SelectTabsServiceCenterType,
     unitId: unitNo,
   };
+
   const {
     data: dataServiceCenterList,
     isLoading,
     refetch: refetchServiceCenterList,
   } = useServiceCenterServiceListQuery(payload);
-  const { data: selectList, isSuccess } =
-    useServiceCenterStatusTypeQuery("tabs");
+
+  const { data: selectList, isSuccess } = useServiceCenterStatusTypeQuery();
+
   const { data: selectIssueList, isSuccess: isSuccessIssue } =
     useServiceCenterIssueTypeQuery();
 
@@ -97,10 +100,25 @@ const ServiceCenterLists = () => {
   };
 
   const onEdit = async (record: ServiceCenterDataType) => {
+    console.log("🔍 [onEdit] Starting edit process for record:", record.id);
+
+    // ✅ ปรับปรุงการตั้งค่าเริ่มต้นให้ชัดเจนขึ้น
     const editData: ExtendedServiceCenterDataType = {
       ...record,
-      requestReschedule: false, // เพิ่มค่าเริ่มต้น
+      // ตั้งค่าเริ่มต้นอย่างชัดเจนด้วย Boolean constructor
+      requestCloseCase: Boolean(record.requestCloseCase),
+      requestNewAppointment: Boolean(record.requestNewAppointment),
+      requestReschedule: Boolean(record.requestReschedule), // ✅ ใช้ Boolean constructor
     };
+
+    console.log("📋 [onEdit] Initial editData:", {
+      id: editData.id,
+      statusName: editData.statusName,
+      requestCloseCase: editData.requestCloseCase,
+      requestNewAppointment: editData.requestNewAppointment,
+      requestReschedule: editData.requestReschedule,
+    });
+
     const dataSuccess = selectList?.data.find(
       (item: ServiceCenterSelectListType) =>
         item.label === editData.status.nameEn
@@ -108,56 +126,74 @@ const ServiceCenterLists = () => {
     editData.statusId = Number(dataSuccess?.value);
     setServiceCenterStatusSelectionList(selectList?.data!);
 
-    if (editData.status.nameCode === "confirm_appointment") {
-      try {
-        const data = await getServiceCenterServiceListQuery(editData.id);
+    // ✅ ดึงข้อมูลจาก API เสมอเพื่อให้แน่ใจว่าได้ข้อมูลล่าสุด
+    try {
+      console.log("🔄 Fetching latest data from API...");
+      const apiData = await getServiceCenterServiceListQuery(editData.id);
 
-        // Handle appointment data with new format support
-        if (data?.appointmentDate && Array.isArray(data.appointmentDate)) {
-          // Find selected appointment from the new format
-          const selectedAppointment = data.appointmentDate.find(
-            (item: any) => item.selected === true
-          );
-          if (selectedAppointment) {
-            editData.appointmentDateConfirmAppointmentID =
-              selectedAppointment.id;
-            // Format the selected appointment data for display
-            if (selectedAppointment.startTime && selectedAppointment.endTime) {
-              editData.appointmentDateConfirmAppointment = `${selectedAppointment.date} ${selectedAppointment.startTime}-${selectedAppointment.endTime}`;
-            } else {
-              editData.appointmentDateConfirmAppointment =
-                selectedAppointment.date;
-            }
+      console.log("✅ API Response received:", {
+        requestCloseCase: apiData?.requestCloseCase,
+        requestNewAppointment: apiData?.requestNewAppointment,
+        requestReschedule: apiData?.requestReschedule,
+      });
+
+      // Handle appointment data with new format support
+      if (apiData?.appointmentDate && Array.isArray(apiData.appointmentDate)) {
+        // Find selected appointment from the new format
+        const selectedAppointment = apiData.appointmentDate.find(
+          (item: any) => item.selected === true
+        );
+        if (selectedAppointment) {
+          editData.appointmentDateConfirmAppointmentID = selectedAppointment.id;
+          // Format the selected appointment data for display
+          if (selectedAppointment.startTime && selectedAppointment.endTime) {
+            editData.appointmentDateConfirmAppointment = `${selectedAppointment.date} ${selectedAppointment.startTime}-${selectedAppointment.endTime}`;
+          } else {
+            editData.appointmentDateConfirmAppointment =
+              selectedAppointment.date;
           }
-
-          // Set the full appointment data array
-          editData.appointmentDate = data.appointmentDate;
-        } else if (data?.appointmentDateSelected) {
-          // Legacy format support
-          editData.appointmentDateConfirmAppointment =
-            data.appointmentDateSelected;
         }
 
-        // เพิ่มการดึงข้อมูลฟิลด์ใหม่แบบ explicit กับ default values
-        editData.requestCloseCase = data?.requestCloseCase ?? false;
-        editData.requestNewAppointment = data?.requestNewAppointment ?? false;
-        editData.requestReschedule = data?.requestReschedule ?? false;
-
-        console.log("📋 [onEdit] Final editData:", {
-          requestCloseCase: editData.requestCloseCase,
-          requestNewAppointment: editData.requestNewAppointment,
-          requestReschedule: editData.requestReschedule,
-        });
-      } catch (error) {
-        console.log(error);
-        alert("get service center by id error");
+        // Set the full appointment data array
+        editData.appointmentDate = apiData.appointmentDate;
+      } else if (apiData?.appointmentDateSelected) {
+        // Legacy format support
+        editData.appointmentDateConfirmAppointment =
+          apiData.appointmentDateSelected;
       }
-    } else {
-      // สำหรับ status อื่นๆ ที่ไม่ใช่ confirm_appointment ก็ต้องตั้งค่าเริ่มต้นด้วย
-      editData.requestCloseCase = false;
-      editData.requestNewAppointment = false;
+
+      // ✅ ปรับปรุงการดึงข้อมูลฟิลด์ใหม่แบบ explicit กับ Boolean conversion
+      editData.requestCloseCase = Boolean(apiData?.requestCloseCase);
+      editData.requestNewAppointment = Boolean(apiData?.requestNewAppointment);
+      editData.requestReschedule = Boolean(apiData?.requestReschedule);
+
+      console.log("📋 [onEdit] Final editData after API update:", {
+        id: editData.id,
+        requestCloseCase: editData.requestCloseCase,
+        requestNewAppointment: editData.requestNewAppointment,
+        requestReschedule: editData.requestReschedule,
+        types: {
+          requestCloseCase: typeof editData.requestCloseCase,
+          requestNewAppointment: typeof editData.requestNewAppointment,
+          requestReschedule: typeof editData.requestReschedule,
+        },
+      });
+    } catch (error) {
+      console.error("❌ Failed to fetch latest data from API:", error);
+      // ถ้า API ล้มเหลว ให้ใช้ค่าเริ่มต้นที่ตั้งไว้แล้ว
+      console.warn("⚠️ Using default values due to API failure");
+    }
+
+    // ✅ เพิ่มการ validate ข้อมูลก่อนส่งไปยัง Modal
+    if (
+      editData.requestReschedule === null ||
+      editData.requestReschedule === undefined
+    ) {
+      console.warn("⚠️ requestReschedule is null/undefined, forcing to false");
       editData.requestReschedule = false;
     }
+
+    console.log("🎯 [onEdit] Setting modal data and opening modal");
     setEditData(editData);
     setIsEditModalOpen(true);
   };
@@ -192,7 +228,6 @@ const ServiceCenterLists = () => {
           label: "All",
           key: "",
         },
-        ,
         ...(selectList.tabsList as any),
       ]);
     }
@@ -274,50 +309,19 @@ const ServiceCenterLists = () => {
         switch (status) {
           case "Pending":
             return <Tag color="red">{status}</Tag>;
-            break;
-          case "Repairing":
+          case "Waiting for confirmation":
             return <Tag color="orange">{status}</Tag>;
-            break;
+          case "Confirm appointment":
+            return <Tag color="blue">{status}</Tag>;
+          case "Repairing":
+            return <Tag color="purple">{status}</Tag>;
           case "Success":
             return <Tag color="green">{status}</Tag>;
-            break;
+          case "Closed":
+            return <Tag color="gray">{status}</Tag>;
           default:
             return <Tag color="default">{status}</Tag>;
-            break;
         }
-      },
-    },
-    {
-      title: "Appointment",
-      dataIndex: "appointmentDate",
-      key: "appointmentDate",
-      align: "center",
-      render: (appointmentDate) => {
-        if (!appointmentDate || !Array.isArray(appointmentDate)) {
-          return "N/A";
-        }
-
-        // Show first appointment slot with time if available
-        const firstSlot = appointmentDate[0];
-        if (typeof firstSlot === "object" && firstSlot.date) {
-          let displayText = dayjs(firstSlot.date).format("DD/MM/YYYY");
-          if (firstSlot.startTime && firstSlot.endTime) {
-            displayText += ` (${firstSlot.startTime}-${firstSlot.endTime})`;
-          }
-          if (appointmentDate.length > 1) {
-            displayText += ` +${appointmentDate.length - 1} more`;
-          }
-          return displayText;
-        } else if (typeof firstSlot === "string") {
-          // Legacy format
-          let displayText = dayjs(firstSlot).format("DD/MM/YYYY");
-          if (appointmentDate.length > 1) {
-            displayText += ` +${appointmentDate.length - 1} more`;
-          }
-          return displayText;
-        }
-
-        return "N/A";
       },
     },
     {
