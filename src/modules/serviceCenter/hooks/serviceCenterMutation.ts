@@ -10,10 +10,13 @@ export const editServiceCenterQuery = () => {
         switch (payload.currentStatus) {
             case "Pending":
                 try {
-                    await axios.put("/service-center/pending", {
+                    // Updated to support new appointment format with startTime and endTime
+                    const appointmentPayload = {
                         id: payload.id,
                         appointmentDate: payload.appointmentDate,
-                    });
+                    };
+
+                    await axios.put("/service-center/pending", appointmentPayload);
                 } catch (error) {
                     throw error;
                 }
@@ -58,6 +61,7 @@ export const editServiceCenterQuery = () => {
     });
     return mutation;
 };
+
 export const deleteImageServiceCenterQuery = () => {
     const deleteImageServiceCenter = async (payload: DeleteImage) => {
         const { data } = await axios.delete("/service-center/delete-image", { data: payload });
@@ -76,6 +80,7 @@ export const deleteImageServiceCenterQuery = () => {
     });
     return mutation;
 };
+
 export const uploadImageServiceCenterQuery = () => {
     const uploadImageServiceCenter = async (payload: UploadImage) => {
         const { data } = await axios.post("/service-center/upload-image", payload);

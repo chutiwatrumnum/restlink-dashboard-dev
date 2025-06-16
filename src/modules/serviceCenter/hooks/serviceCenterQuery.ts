@@ -10,7 +10,7 @@ export const useServiceCenterServiceListQuery = (payloadQuery: ServiceCenterPayl
         };
         if (payload.unitId) {
             params.unitId = payload.unitId;
-            
+
         }
         if (payload.startMonth || payload.endMonth) {
             params.startMonth = payload.startMonth;
@@ -51,12 +51,31 @@ export const useServiceCenterServiceListQuery = (payloadQuery: ServiceCenterPayl
     });
     return { ...query };
 };
-export const useServiceCenterByServiceIDQuery = (payloadQuery: number) => {
 
+export const useServiceCenterByServiceIDQuery = (payloadQuery: number) => {
     const query = useQuery({
         queryKey: ["serviceCenterByServiceID", payloadQuery],
         queryFn: () => getServiceCenterServiceListQuery(payloadQuery),
         select(data) {
+            // Process appointment data to handle both old and new formats
+            if (data.appointmentDate && Array.isArray(data.appointmentDate)) {
+                data.appointmentDate = data.appointmentDate.map((appointment: any) => {
+                    // If it's the new format with startTime and endTime, keep as is
+                    if (typeof appointment === "object" && appointment.startTime && appointment.endTime) {
+                        return appointment;
+                    }
+                    // If it's legacy format (just date string), convert to new format
+                    if (typeof appointment === "string") {
+                        return {
+                            date: appointment,
+                            startTime: null,
+                            endTime: null
+                        };
+                    }
+                    return appointment;
+                });
+            }
+
             data.serviceTypeName = data.serviceType.nameEn;
             data.statusName = data.status.nameEn;
             data.roomAddress = data.unit.roomAddress;
@@ -68,6 +87,7 @@ export const useServiceCenterByServiceIDQuery = (payloadQuery: number) => {
     });
     return { ...query };
 };
+
 export const useServiceCenterStatusTypeQuery = () => {
     const getServiceCenterStatusType = async () => {
         const result = await axios.get("/service-center/dashboard/status");
@@ -99,6 +119,7 @@ export const useServiceCenterStatusTypeQuery = () => {
 
     return { ...query };
 };
+
 export const useServiceCenterServiceChartQuery = (payloadQuery: ServiceCenterChartPayloadType) => {
     const getServiceCenterServiceChart = async (payload: ServiceCenterChartPayloadType) => {
         const { data } = await axios.get("/service-center/summary", { params: payload }); //payload as any);
@@ -127,6 +148,7 @@ export const useServiceCenterServiceChartQuery = (payloadQuery: ServiceCenterCha
 
     return { ...query };
 };
+
 export const useServiceCenterIssueTypeQuery = () => {
     const getServiceCenterIssueType = async () => {
         const result = await axios.get("/service-center/dashboard/type");
@@ -149,8 +171,28 @@ export const useServiceCenterIssueTypeQuery = () => {
 
     return { ...query };
 };
+
 export const getServiceCenterServiceListQuery = async (serviceId: number) => {
     const { data } = await axios.get(`/service-center/dashboard/${serviceId}`);
+
+    // Process appointment data to handle both old and new formats
+    if (data.data.appointmentDate && Array.isArray(data.data.appointmentDate)) {
+        data.data.appointmentDate = data.data.appointmentDate.map((appointment: any) => {
+            // If it's the new format with startTime and endTime, keep as is
+            if (typeof appointment === "object" && appointment.startTime && appointment.endTime) {
+                return appointment;
+            }
+            // If it's legacy format (just date string), convert to new format
+            if (typeof appointment === "string") {
+                return {
+                    date: appointment,
+                    startTime: null,
+                    endTime: null
+                };
+            }
+            return appointment;
+        });
+    }
 
     return data.data;
 };

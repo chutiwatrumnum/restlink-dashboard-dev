@@ -14,7 +14,7 @@ export interface ServiceCenterPayloadType {
   unitId?: string;
 }
 
-// New interface for appointment slots with date and time
+// Updated interface for appointment slots with date and time
 export interface AppointmentSlot {
   id: string;
   date: string | null; // ISO date string format
@@ -52,10 +52,16 @@ export interface ServiceCenterDataType {
   closedWithReject: boolean;
   requestCloseCase: boolean;
   requestNewAppointment: boolean;
-  appointmentDate: Date | AppointmentSlot[]; // Updated to support both formats
+  appointmentDate: Date | AppointmentSlot[] | AppointmentSlotLegacy[]; // Updated to support both formats
   appointmentDateConfirmAppointment?: Date;
   appointmentDateConfirmAppointmentID?: number;
   appointmentDeclined?: boolean; // Added for decline functionality
+}
+
+// Legacy format for backward compatibility
+export interface AppointmentSlotLegacy {
+  date: string;
+  // No startTime/endTime for legacy format
 }
 
 export interface CreatedBy {
@@ -95,7 +101,7 @@ export interface EditDataServiceCenter {
   completedDate?: string;
   solution?: string;
   currentStatus: string;
-  appointmentDate?: string[] | AppointmentSlot[]; // Updated to support appointment slots
+  appointmentDate?: string[] | AppointmentSlot[] | FormattedAppointmentData[]; // Updated to support new format
   appointmentDateConfirmAppointment?: string;
   appointmentDateConfirmAppointmentID?: number;
 }
@@ -138,7 +144,7 @@ export interface StatCardProps {
   color?: string;
 }
 
-// Additional interfaces for appointment slot validation and formatting
+// Updated interfaces for appointment slot validation and formatting
 export interface AppointmentValidationResult {
   isValid: boolean;
   message?: string;

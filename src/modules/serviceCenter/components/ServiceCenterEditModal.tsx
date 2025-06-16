@@ -23,6 +23,9 @@ import {
   InfoCircleOutlined,
   DeleteOutlined,
   PlusOutlined,
+  CalendarOutlined,
+  ClockCircleOutlined,
+  CheckCircleOutlined,
 } from "@ant-design/icons";
 import { requiredRule } from "../../../configs/inputRule";
 import dayjs from "dayjs";
@@ -47,6 +50,12 @@ import {
   useServiceCenterByServiceIDQuery,
   useServiceCenterStatusTypeQuery,
 } from "../hooks";
+import {
+  convertBackendToSlotState,
+  convertSlotStateToBackend,
+  validateAppointmentSlots as validateSlots,
+  isSlotComplete,
+} from "../../../utils/appointmentHelper";
 
 const { Step } = Steps;
 const { Panel } = Collapse;
@@ -60,12 +69,6 @@ type ServiceCenterEditModalType = {
   onRefresh: () => void;
   selectList: ServiceCenterSelectListType[];
 };
-
-interface AppointmentSlot {
-  id: string;
-  date: dayjs.Dayjs | null;
-  timeRange: [dayjs.Dayjs | null, dayjs.Dayjs | null] | null;
-}
 
 const ServiceCenterEditModal = ({
   isEditModalOpen,
@@ -91,7 +94,7 @@ const ServiceCenterEditModal = ({
     "pending",
   ]);
 
-  // State for appointment slots
+  // State for appointment slots (รองรับ startTime และ endTime)
   const [appointmentSlots, setAppointmentSlots] = useState<
     AppointmentSlotState[]
   >([{ id: "1", date: null, timeRange: null }]);
@@ -113,7 +116,7 @@ const ServiceCenterEditModal = ({
       const foundInSelectList = selectList.find((s) => s.value === id);
       return foundInSelectList?.label;
     },
-    [selectList]
+    [selectList, statusList?.data]
   );
 
   // Function to add new appointment slot
@@ -146,34 +149,32 @@ const ServiceCenterEditModal = ({
     );
   };
 
-  // Function to validate appointment slots
+  // Function to validate appointment slots (ใช้ utility function)
   const validateAppointmentSlots = () => {
-    const validSlots = appointmentSlots.filter(
-      (slot) => slot.date && slot.timeRange
-    );
-    if (validSlots.length === 0) {
-      return Promise.reject(new Error("กรุณาเลือกอย่างน้อย 1 วันพร้อมเวลา"));
+    console.log("🔍 Validating appointment slots...");
+    console.log("📅 Slots to validate:", appointmentSlots);
+
+    const validationResult = validateSlots(appointmentSlots);
+    console.log("📊 Validation result:", validationResult);
+
+    if (!validationResult.isValid) {
+      console.log("❌ Validation failed:", validationResult.message);
+      return Promise.reject(new Error(validationResult.message));
     }
 
-    // Check for duplicate dates
-    const dates = validSlots.map((slot) => slot.date?.format("YYYY-MM-DD"));
-    const uniqueDates = new Set(dates);
-    if (dates.length !== uniqueDates.size) {
-      return Promise.reject(new Error("ไม่สามารถเลือกวันที่เดียวกันได้"));
-    }
-
+    console.log("✅ Validation passed");
     return Promise.resolve();
   };
 
-  // Function to format appointment data for submission
+  // Function to format appointment data for submission (ใช้ utility function)
   const formatAppointmentData = (): FormattedAppointmentData[] => {
-    return appointmentSlots
-      .filter((slot) => slot.date && slot.timeRange)
-      .map((slot) => ({
-        date: slot.date!.format("YYYY-MM-DD"),
-        startTime: slot.timeRange![0]?.format("HH:mm") || "",
-        endTime: slot.timeRange![1]?.format("HH:mm") || "",
-      }));
+    console.log("🔄 Formatting appointment data...");
+    console.log("📅 Current appointment slots:", appointmentSlots);
+
+    const result = convertSlotStateToBackend(appointmentSlots);
+    console.log("📋 Converted appointment data:", result);
+
+    return result;
   };
 
   // Effect to initialize modal state when it opens or when 'data' changes
@@ -186,47 +187,13 @@ const ServiceCenterEditModal = ({
       const stepIndex = statusList?.data.findIndex(
         (step) => step.value === initialStatusId
       );
-      const newCurrentStepIndex = stepIndex ? stepIndex : 0;
+      const newCurrentStepIndex = stepIndex !== -1 ? stepIndex : 0;
       setCurrentStepIndex(newCurrentStepIndex);
 
-      // Initialize appointment slots from existing data
-      if (data.appointmentDate && Array.isArray(data.appointmentDate)) {
-        // Check if it's the new format with appointment slots
-        if (
-          data.appointmentDate.length > 0 &&
-          typeof data.appointmentDate[0] === "object" &&
-          "date" in data.appointmentDate[0]
-        ) {
-          const slots: AppointmentSlotState[] = (
-            data.appointmentDate as any[]
-          ).map((slot: any, index: number) => ({
-            id: (index + 1).toString(),
-            date: slot.date ? dayjs(slot.date) : null,
-            timeRange:
-              slot.startTime && slot.endTime
-                ? [dayjs(slot.startTime, "HH:mm"), dayjs(slot.endTime, "HH:mm")]
-                : null,
-          }));
-          setAppointmentSlots(
-            slots.length > 0
-              ? slots
-              : [{ id: "1", date: null, timeRange: null }]
-          );
-        } else {
-          // Legacy format - just dates
-          const slots: AppointmentSlotState[] = data.appointmentDate.map(
-            (dateStr: string, index: number) => ({
-              id: (index + 1).toString(),
-              date: dayjs(dateStr),
-              timeRange: null,
-            })
-          );
-          setAppointmentSlots(
-            slots.length > 0
-              ? slots
-              : [{ id: "1", date: null, timeRange: null }]
-          );
-        }
+      // Initialize appointment slots from existing data (ใช้ utility function)
+      if (data.appointmentDate) {
+        const slots = convertBackendToSlotState(data.appointmentDate as any[]);
+        setAppointmentSlots(slots);
       } else {
         setAppointmentSlots([{ id: "1", date: null, timeRange: null }]);
       }
@@ -283,36 +250,36 @@ const ServiceCenterEditModal = ({
     } else if (!isEditModalOpen) {
       resetFormAndState();
     }
-  }, [isEditModalOpen, data, serviceCenterForm, selectList]);
+  }, [isEditModalOpen, data, serviceCenterForm, selectList, statusList?.data]);
 
   // Effect to manage which collapse panels are open based on the current status and data
   useEffect(() => {
-    if (isEditModalOpen && data && currentStatusId) {
+    if (isEditModalOpen && data && currentStatusId && statusList?.data) {
       const newActiveKeys = new Set<string>();
       newActiveKeys.add("pending");
 
-      const currentActualStepDefinition = statusList?.data.find(
+      const currentActualStepDefinition = statusList.data.find(
         (step) => step.value === currentStatusId
       );
       const currentOrder = currentActualStepDefinition
-        ? statusList?.data.indexOf(currentActualStepDefinition)
+        ? statusList.data.indexOf(currentActualStepDefinition)
         : -1;
 
-      const repairingStepDefinition = statusList?.data.find(
+      const repairingStepDefinition = statusList.data.find(
         (s) => s.label === "Repairing"
       );
       const repairingOrder = repairingStepDefinition
-        ? statusList?.data.indexOf(repairingStepDefinition)
+        ? statusList.data.indexOf(repairingStepDefinition)
         : -1;
 
-      const successStepDefinition = statusList?.data.find(
+      const successStepDefinition = statusList.data.find(
         (s) => s.label === "Success"
       );
       const successOrder = successStepDefinition
-        ? statusList?.data.indexOf(successStepDefinition)
+        ? statusList.data.indexOf(successStepDefinition)
         : -1;
 
-      const closedStepId = statusList?.data.find(
+      const closedStepId = statusList.data.find(
         (s) => s.label === "Closed"
       )?.value;
 
@@ -336,7 +303,7 @@ const ServiceCenterEditModal = ({
     } else if (isEditModalOpen) {
       setActiveCollapseKeys(["pending"]);
     }
-  }, [currentStatusId, isEditModalOpen, data]);
+  }, [currentStatusId, isEditModalOpen, data, statusList?.data]);
 
   // Resets form fields and local component state
   const resetFormAndState = useCallback(() => {
@@ -350,7 +317,7 @@ const ServiceCenterEditModal = ({
     setSuccessImages([]);
     setActiveCollapseKeys(["pending"]);
     setAppointmentSlots([{ id: "1", date: null, timeRange: null }]);
-  }, [serviceCenterForm]);
+  }, [serviceCenterForm, statusList?.data]);
 
   // Handles closing of the modal
   const handleClose = useCallback(() => {
@@ -360,18 +327,30 @@ const ServiceCenterEditModal = ({
 
   // Handles form submission for status updates
   const handleFormSubmit = async (formValues: any) => {
+    console.log("🚀 [ServiceCenter] Form submission started");
+    console.log("📋 Form values received:", formValues);
+    console.log("📊 Current data:", data);
+    console.log("🔍 Current status ID:", currentStatusId);
+    console.log("📍 Current step index:", currentStepIndex);
+    console.log("🎯 Current status name:", getStatusNameById(currentStatusId));
+
     if (!data || !currentStatusId) {
       console.error(
-        "[FormSubmit] Critical data missing (data or currentStatusId). Aborting."
+        "❌ [FormSubmit] Critical data missing (data or currentStatusId). Aborting."
       );
       return;
     }
 
     // Validate appointment slots for pending status
     if (getStatusNameById(currentStatusId) === "Pending") {
+      console.log("⏰ Validating appointment slots for Pending status...");
+      console.log("📅 Current appointment slots:", appointmentSlots);
+
       try {
         await validateAppointmentSlots();
+        console.log("✅ Appointment slots validation passed");
       } catch (error: any) {
+        console.error("❌ Appointment slots validation failed:", error.message);
         message.error(error.message);
         return;
       }
@@ -379,34 +358,71 @@ const ServiceCenterEditModal = ({
 
     let nextStatusId = currentStatusId;
     if (currentStepIndex === 0 && statusList?.data[1]) {
-      nextStatusId = statusList?.data[1].value;
+      nextStatusId = statusList.data[1].value;
     } else if (currentStepIndex === 1 && statusList?.data[2]) {
-      nextStatusId = statusList?.data[2].value;
+      nextStatusId = statusList.data[2].value;
     } else if (currentStepIndex === 2 && statusList?.data[3]) {
-      nextStatusId = statusList?.data[3].value;
+      nextStatusId = statusList.data[3].value;
     } else if (currentStepIndex === 3 && statusList?.data[4]) {
-      nextStatusId = statusList?.data[4].value;
+      nextStatusId = statusList.data[4].value;
     }
+
+    console.log("⏭️ Next status ID:", nextStatusId);
+    console.log("⏭️ Next status name:", getStatusNameById(nextStatusId));
 
     ConfirmModal({
       title: `Confirm Action`,
-      content: `Are you sure you want to proceed? This may update the status to "${
+      message: `Are you sure you want to proceed? This may update the status to "${
         getStatusNameById(nextStatusId) || "next step"
       }".`,
       okMessage: "Yes, Proceed",
       cancelMessage: "Cancel",
       onOk: async () => {
         try {
-          // Format appointment data for submission
+          console.log("🔄 Processing form submission...");
+
+          // Format appointment data for submission (ปรับให้รองรับ API ใหม่)
           let formattedAppointmentData = null;
           if (getStatusNameById(currentStatusId) === "Pending") {
+            console.log("📅 Formatting appointment data for Pending status...");
             formattedAppointmentData = formatAppointmentData();
+            console.log(
+              "📋 Formatted appointment data:",
+              formattedAppointmentData
+            );
+          } else if (
+            getStatusNameById(currentStatusId) === "Confirm appointment"
+          ) {
+            console.log("📅 Processing Confirm appointment data...");
+            // For confirm appointment, send the selected appointment ID
+            const selectedAppointment = data.appointmentDate?.find(
+              (appointment: any) => appointment.selected === true
+            );
+            formattedAppointmentData = {
+              selectedAppointmentId:
+                selectedAppointment?.id ||
+                data.appointmentDateConfirmAppointmentID,
+              confirmedDate: selectedAppointment?.date || null,
+            };
+            console.log(
+              "📋 Confirm appointment data:",
+              formattedAppointmentData
+            );
+            console.log(
+              "📋 Selected appointment details:",
+              selectedAppointment
+            );
           } else if (formValues.appointmentDate) {
+            console.log("📅 Processing existing appointment date...");
             formattedAppointmentData = Array.isArray(formValues.appointmentDate)
               ? formValues.appointmentDate.map((date: any) =>
                   dayjs(date).format("YYYY-MM-DD")
                 )
               : null;
+            console.log(
+              "📋 Processed appointment data:",
+              formattedAppointmentData
+            );
           }
 
           const payload: EditDataServiceCenter = {
@@ -435,25 +451,37 @@ const ServiceCenterEditModal = ({
                 : undefined,
           };
 
+          console.log(
+            "📦 Final payload to be sent:",
+            JSON.stringify(payload, null, 2)
+          );
+          console.log(
+            "🎯 API endpoint will be determined by currentStatus:",
+            payload.currentStatus
+          );
+
           await mutationEditServiceCenter.mutateAsync(payload);
+          console.log("✅ API call successful");
+
           onRefresh();
 
           const nextVisualStepIndex = statusList?.data.findIndex(
             (step) => step.value === nextStatusId
           );
-          if (nextVisualStepIndex !== -1) {
-            setCurrentStepIndex(
-              nextVisualStepIndex ? nextVisualStepIndex : currentStepIndex
-            );
+          if (nextVisualStepIndex !== -1 && nextVisualStepIndex !== undefined) {
+            console.log("🔄 Moving to next step:", nextVisualStepIndex);
+            setCurrentStepIndex(nextVisualStepIndex);
             setCurrentStatusId(nextStatusId);
           } else {
+            console.log("🏁 Closing modal");
             handleClose();
           }
         } catch (error) {
           console.error(
-            "[ConfirmModal OK] Failed to update service center:",
+            "❌ [ConfirmModal OK] Failed to update service center:",
             error
           );
+          console.error("Error details:", error);
         }
       },
     });
@@ -464,7 +492,7 @@ const ServiceCenterEditModal = ({
     if (!data) return;
     ConfirmModal({
       title: "Close ticket?",
-      content: "Are you sure you want to close this ticket?",
+      message: "Are you sure you want to close this ticket?",
       okMessage: "Confirm",
       cancelMessage: "Cancel",
       onOk: async () => {
@@ -527,7 +555,7 @@ const ServiceCenterEditModal = ({
               <div className="summary-image-container">
                 <Image
                   width={150}
-                  src={NoImage || "/placeholder.svg"}
+                  src={NoImage}
                   alt={`No ${imageCategory} image`}
                 />
               </div>
@@ -576,11 +604,9 @@ const ServiceCenterEditModal = ({
     );
   };
 
-  // Renders the appointment slots UI
+  // Renders the appointment slots UI (ปรับใหม่ให้รองรับ startTime และ endTime)
   const renderAppointmentSlots = () => {
-    const validSlots = appointmentSlots.filter(
-      (slot) => slot.date && slot.timeRange
-    );
+    const validSlots = appointmentSlots.filter((slot) => isSlotComplete(slot));
     const isDisabled = validSlots.length === 0;
 
     return (
@@ -604,59 +630,75 @@ const ServiceCenterEditModal = ({
         </div>
 
         <Space direction="vertical" style={{ width: "100%" }} size="middle">
-          {appointmentSlots.map((slot, index) => (
-            <Card
-              key={slot.id}
-              size="small"
-              title={`Slot ${index + 1}`}
-              extra={
-                appointmentSlots.length > 1 && (
-                  <Button
-                    type="text"
-                    icon={<DeleteOutlined />}
-                    onClick={() => removeAppointmentSlot(slot.id)}
-                    size="small"
-                    danger
-                  />
-                )
-              }>
-              <Row gutter={16}>
-                <Col span={12}>
-                  <div className="slot-field">
-                    <label>Date</label>
-                    <DatePicker
-                      value={slot.date}
-                      onChange={(date) =>
-                        updateAppointmentSlot(slot.id, "date", date)
-                      }
-                      format="YYYY-MM-DD"
-                      style={{ width: "100%" }}
-                      placeholder="Select date"
-                      disabledDate={(current) =>
-                        current && current < dayjs().startOf("day")
-                      }
+          {appointmentSlots.map((slot, index) => {
+            const slotComplete = isSlotComplete(slot);
+            const slotClass = slotComplete ? "is-complete" : "";
+
+            return (
+              <Card
+                key={slot.id}
+                size="small"
+                title={`Slot ${index + 1}`}
+                className={slotClass}
+                extra={
+                  appointmentSlots.length > 1 && (
+                    <Button
+                      type="text"
+                      icon={<DeleteOutlined />}
+                      onClick={() => removeAppointmentSlot(slot.id)}
+                      size="small"
+                      danger
                     />
-                  </div>
-                </Col>
-                <Col span={12}>
-                  <div className="slot-field">
-                    <label>Time Range</label>
-                    <RangePicker
-                      value={slot.timeRange}
-                      onChange={(timeRange) =>
-                        updateAppointmentSlot(slot.id, "timeRange", timeRange)
-                      }
-                      format="HH:mm"
-                      style={{ width: "100%" }}
-                      placeholder={["Start time", "End time"]}
-                      minuteStep={30}
-                      disabled={!slot.date}
-                    />
-                  </div>
-                </Col>
-              </Row>
-            </Card>
-          ))}
+                  )
+                }>
+                <Row gutter={16}>
+                  <Col span={12}>
+                    <div className={`slot-field ${slotClass}`}>
+                      <label>
+                        <CalendarOutlined
+                          style={{ marginRight: 4, color: "#d46b08" }}
+                        />
+                        Date
+                      </label>
+                      <DatePicker
+                        value={slot.date}
+                        onChange={(date) =>
+                          updateAppointmentSlot(slot.id, "date", date)
+                        }
+                        format="YYYY-MM-DD"
+                        style={{ width: "100%" }}
+                        placeholder="Select date"
+                        disabledDate={(current) =>
+                          current && current < dayjs().startOf("day")
+                        }
+                      />
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <div className={`slot-field ${slotClass}`}>
+                      <label>
+                        <ClockCircleOutlined
+                          style={{ marginRight: 4, color: "#cf1322" }}
+                        />
+                        Time Range
+                      </label>
+                      <RangePicker
+                        value={slot.timeRange}
+                        onChange={(timeRange) =>
+                          updateAppointmentSlot(slot.id, "timeRange", timeRange)
+                        }
+                        format="HH:mm"
+                        style={{ width: "100%" }}
+                        placeholder={["Start time", "End time"]}
+                        minuteStep={30}
+                        disabled={!slot.date}
+                      />
+                    </div>
+                  </Col>
+                </Row>
+              </Card>
+            );
+          })}
         </Space>
 
         <div className="appointment-submit-section">
@@ -705,7 +747,7 @@ const ServiceCenterEditModal = ({
             />
             <div className="action-buttons">
               <Button
-                disabled={data.requestCloseCase ? false : true}
+                disabled={!data.requestCloseCase}
                 onClick={handleCloseTicket}
                 className="close-ticket-link">
                 Close ticket
@@ -717,22 +759,115 @@ const ServiceCenterEditModal = ({
       case "Confirm appointment":
         return (
           <>
-            <Form.Item
-              label={
-                <span>
-                  appointmentDate
-                  <Tooltip title="Date the service action is scheduled.">
-                    <InfoCircleOutlined />
-                  </Tooltip>
-                </span>
-              }
-              name="appointmentDateConfirmAppointment"
-              rules={requiredRule}>
-              <DatePicker size="large" style={{ width: "100%" }} />
-            </Form.Item>
+            {/* แสดงเฉพาะ appointment ที่ selected จาก API */}
+            {data.appointmentDate &&
+              Array.isArray(data.appointmentDate) &&
+              data.appointmentDate.length > 0 && (
+                <div className="appointment-confirmation-container">
+                  <div className="appointment-slots-header">
+                    <span>
+                      Selected Appointment
+                      <Tooltip title="This is the appointment slot selected by the user">
+                        <InfoCircleOutlined style={{ marginLeft: 8 }} />
+                      </Tooltip>
+                    </span>
+                  </div>
+
+                  <Space
+                    direction="vertical"
+                    style={{ width: "100%" }}
+                    size="middle">
+                    {data.appointmentDate
+                      .filter(
+                        (appointment: any) => appointment.selected === true
+                      ) // แสดงเฉพาะที่ selected
+                      .map((appointment: any, index: number) => {
+                        const appointmentDisplay =
+                          typeof appointment === "object" && appointment.date
+                            ? {
+                                date: dayjs(appointment.date).format(
+                                  "DD/MM/YYYY"
+                                ),
+                                time:
+                                  appointment.startTime && appointment.endTime
+                                    ? `${appointment.startTime} - ${appointment.endTime}`
+                                    : "All day",
+                              }
+                            : {
+                                date: dayjs(appointment).format("DD/MM/YYYY"),
+                                time: "All day",
+                              };
+
+                        return (
+                          <Card
+                            key={appointment.id || index}
+                            size="small"
+                            title="Confirmed Appointment"
+                            className="appointment-selected"
+                            style={{
+                              border: "2px solid #52c41a",
+                              backgroundColor: "#f6ffed",
+                            }}>
+                            <Row gutter={16}>
+                              <Col span={12}>
+                                <div className="appointment-info">
+                                  <label>
+                                    <CalendarOutlined
+                                      style={{
+                                        marginRight: 4,
+                                        color: "#d46b08",
+                                      }}
+                                    />
+                                    Date
+                                  </label>
+                                  <div className="appointment-value">
+                                    {appointmentDisplay.date}
+                                  </div>
+                                </div>
+                              </Col>
+                              <Col span={12}>
+                                <div className="appointment-info">
+                                  <label>
+                                    <ClockCircleOutlined
+                                      style={{
+                                        marginRight: 4,
+                                        color: "#cf1322",
+                                      }}
+                                    />
+                                    Time
+                                  </label>
+                                  <div className="appointment-value">
+                                    {appointmentDisplay.time}
+                                  </div>
+                                </div>
+                              </Col>
+                            </Row>
+                            <div className="selected-indicator">
+                              <CheckCircleOutlined style={{ marginRight: 4 }} />
+                              User Selected
+                            </div>
+                          </Card>
+                        );
+                      })}
+                  </Space>
+
+                  {/* แสดงข้อความถ้าไม่มี appointment ที่ selected */}
+                  {!data.appointmentDate.some(
+                    (appointment: any) => appointment.selected === true
+                  ) && (
+                    <Alert
+                      message="No appointment has been selected by the user yet."
+                      type="info"
+                      showIcon
+                      className="info-alert"
+                    />
+                  )}
+                </div>
+              )}
+
             <div className="action-buttons">
               <Button
-                disabled={data.requestCloseCase ? false : true}
+                disabled={!data.requestCloseCase}
                 onClick={handleCloseTicket}
                 className="close-ticket-link">
                 Close ticket
@@ -763,14 +898,16 @@ const ServiceCenterEditModal = ({
               </Button>
               <Button
                 disabled={
-                  data.requestCloseCase || data.requestNewAppointment
-                    ? true
-                    : false
+                  data.requestCloseCase ||
+                  data.requestNewAppointment ||
+                  !data.appointmentDate?.some(
+                    (appointment: any) => appointment.selected === true
+                  )
                 }
                 type="primary"
                 htmlType="submit"
                 size="large">
-                Send
+                Confirm Appointment
               </Button>
             </div>
           </>
@@ -784,7 +921,7 @@ const ServiceCenterEditModal = ({
                 <span>
                   Action date
                   <Tooltip title="Date the service action was performed.">
-                    <InfoCircleOutlined />
+                    <InfoCircleOutlined style={{ marginLeft: 8 }} />
                   </Tooltip>
                 </span>
               }
@@ -817,7 +954,7 @@ const ServiceCenterEditModal = ({
                     maximum={3}
                     oldFileList={repairingImages}
                     setOldFileList={setRepairingImages}
-                    imageStatusId={data.statusId!!}
+                    imageStatusId={data.statusId!}
                     serviceId={data.id}
                     disabledUpload={repairingImages.length >= 3}
                   />
@@ -838,7 +975,7 @@ const ServiceCenterEditModal = ({
             </div>
             <div className="action-buttons">
               <Button
-                disabled={data.requestCloseCase ? false : true}
+                disabled={!data.requestCloseCase}
                 onClick={handleCloseTicket}
                 className="close-ticket-link">
                 Close ticket
@@ -932,7 +1069,6 @@ const ServiceCenterEditModal = ({
       content={<ModalContent />}
       onCancel={handleClose}
       className="service-center-edit-modal"
-      width={1200}
       footer={null}
     />
   );
