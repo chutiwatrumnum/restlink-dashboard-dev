@@ -5,12 +5,12 @@
   left: 0;
   top: 0;
   bottom: 0;
-  overflow: scroll;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
   z-index: 2;
 }
 
 .authorizeBG {
-  /* background-image: url("../../assets/images/BG.png"); */
   background: var(--BG-color) !important;
   width: 100%;
   height: 100vh;
@@ -18,7 +18,7 @@
   background-repeat: no-repeat;
   background-size: cover;
   position: fixed;
-  left: 320px;
+  transition: left 0.3s;
   z-index: 1;
 }
 
@@ -27,4 +27,24 @@
   overflow: initial;
   height: 100%;
   z-index: 2;
+}
+
+/* Scrollbar styles */
+.sideContainer::-webkit-scrollbar {
+  width: 0px;
+  background: transparent;
+}
+
+/* Ensure smooth transitions */
+.ant-layout {
+  transition: all 0.3s ease;
+}
+
+/* Fix Ant Design Sider background */
+.ant-layout-sider {
+  background: var(--menuBg-color) !important;
+}
+
+.ant-layout-sider-children {
+  height: 100%;
 }
