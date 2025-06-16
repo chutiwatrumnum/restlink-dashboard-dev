@@ -52,6 +52,7 @@ export interface ServiceCenterDataType {
   closedWithReject: boolean;
   requestCloseCase: boolean;
   requestNewAppointment: boolean;
+  requestReschedule: boolean; // เพิ่มฟิลด์ใหม่
   appointmentDate: Date | AppointmentSlot[] | AppointmentSlotLegacy[]; // Updated to support both formats
   appointmentDateConfirmAppointment?: Date;
   appointmentDateConfirmAppointmentID?: number;

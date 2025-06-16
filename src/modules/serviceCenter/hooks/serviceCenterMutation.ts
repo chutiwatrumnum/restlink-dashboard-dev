@@ -47,7 +47,7 @@ export const editServiceCenterQuery = () => {
     const mutation = useMutation({
         mutationFn: (payloadQuery: EditDataServiceCenter) => editServiceCenter(payloadQuery),
         onSuccess: () => {
-            SuccessModal("Successfully upload");
+            SuccessModal("Successfully updated");
             queryClient.invalidateQueries({ queryKey: ["serviceCenterList"] });
             queryClient.invalidateQueries({ queryKey: ["serviceCenterByServiceID"] });
         },
@@ -91,7 +91,7 @@ export const uploadImageServiceCenterQuery = () => {
     const mutation = useMutation({
         mutationFn: (payloadQuery: UploadImage) => uploadImageServiceCenter(payloadQuery),
         onSuccess: (data) => {
-            SuccessModal("Successfully upload");
+            SuccessModal("Successfully uploaded");
             return data;
         },
         onError(error: any) {
@@ -104,18 +104,41 @@ export const uploadImageServiceCenterQuery = () => {
 };
 
 export const reshuduleServiceCenterQuery = () => {
+    const queryClient = useQueryClient();
     const reSheduleServiceCenter = async (id: number) => {
-        const { data } = await axios.put("/service-center/request-re-schedule", { id: id });
-        console.log("resp data:", data);
+        console.log("🔄 [API] Calling reschedule endpoint...");
+        console.log("📋 [API] Service ID:", id);
+
+        try {
+            const { data } = await axios.put("/service-center/request-re-schedule", { id: id });
+            console.log("✅ [API] Reschedule response:", data);
+            return data;
+        } catch (error) {
+            console.error("❌ [API] Reschedule error:", error);
+            throw error;
+        }
     };
+
     const mutation = useMutation({
         mutationFn: (id: number) => reSheduleServiceCenter(id),
-        onSuccess: () => {
-            SuccessModal("reshedule Successfully");
+        onSuccess: (data) => {
+            console.log("✅ [Mutation] Reschedule successful:", data);
+            SuccessModal("Reschedule request sent successfully");
+
+            // Invalidate related queries to refresh data
+            queryClient.invalidateQueries({ queryKey: ["serviceCenterList"] });
+            queryClient.invalidateQueries({ queryKey: ["serviceCenterByServiceID"] });
+            queryClient.invalidateQueries({ queryKey: ["serviceChatLists"] });
         },
         onError(error: any) {
+            console.error("❌ [Mutation] Reschedule error:", error);
+
             if (error?.response?.data?.message) {
                 FailedModal(error.response.data.message);
+            } else if (error?.message) {
+                FailedModal(error.message);
+            } else {
+                FailedModal("Failed to reschedule appointment");
             }
         },
     });

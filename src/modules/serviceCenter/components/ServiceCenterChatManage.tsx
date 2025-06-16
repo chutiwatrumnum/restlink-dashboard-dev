@@ -11,6 +11,7 @@ import {
   ServiceCenterDataType,
   ServiceCenterSelectListType,
 } from "../../../stores/interfaces/ServiceCenter";
+
 const tagColorSelector = (status: string) => {
   switch (status) {
     case "Pending":
@@ -30,7 +31,7 @@ const serviceCenterChatManage = ({
   chatData?: ServiceChatListDataType;
 }) => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [editData, setEditData] = useState<ServiceCenterDataType | null>(null);
+  const [editData, setEditData] = useState<ServiceCenterDataType | null>(null); // ✅ ใช้ ServiceCenterDataType ตรงๆ
   const [
     ServiceCenterStatusSelectionList,
     setServiceCenterStatusSelectionList,
@@ -55,12 +56,23 @@ const serviceCenterChatManage = ({
     setRefresh(!refresh);
   };
   const onEdit = () => {
-    switch (data.statusName) {
+    console.log("🔍 [ServiceCenterChatManage] Starting onEdit...");
+    console.log("📋 [ServiceCenterChatManage] Raw data:", data);
+
+    // ✅ สร้าง data object พร้อมค่าเริ่มต้น
+    const editData: ServiceCenterDataType = {
+      ...data,
+      requestCloseCase: data.requestCloseCase ?? false,
+      requestNewAppointment: data.requestNewAppointment ?? false,
+      requestReschedule: data.requestReschedule ?? false, // ✅ เพิ่มบรรทัดนี้
+    };
+
+    switch (editData.statusName) {
       case "Pending":
         const dataRepair = selectList?.data.find(
           (item: ServiceCenterSelectListType) => item.label === "Pending"
         );
-        data.statusId = Number(dataRepair?.value);
+        editData.statusId = Number(dataRepair?.value);
         const result = selectList?.data.filter(
           (item: ServiceCenterSelectListType) => item.label !== "Success"
         );
@@ -71,7 +83,7 @@ const serviceCenterChatManage = ({
         const dataSuccess = selectList?.data.find(
           (item: ServiceCenterSelectListType) => item.label === "Repairing"
         );
-        data.statusId = Number(dataSuccess?.value);
+        editData.statusId = Number(dataSuccess?.value);
         const resultRepairing = selectList?.data.filter(
           (item: ServiceCenterSelectListType) => item.label !== "Pending"
         );
@@ -82,9 +94,18 @@ const serviceCenterChatManage = ({
       default:
         break;
     }
-    setEditData(data);
+
+    console.log("📋 [ServiceCenterChatManage] Final editData:", {
+      id: editData.id,
+      requestCloseCase: editData.requestCloseCase,
+      requestNewAppointment: editData.requestNewAppointment,
+      requestReschedule: editData.requestReschedule, // ✅ เพิ่มบรรทัดนี้
+    });
+
+    setEditData(editData);
     setIsEditModalOpen(true);
   };
+
   if (data) {
     return (
       <>
@@ -106,8 +127,7 @@ const serviceCenterChatManage = ({
             disabled={data.statusName === "Success" ? true : false}
             onClick={() => onEdit()}
             size="large"
-            shape="round"
-          >
+            shape="round">
             <b>Manage</b>
           </Button>
         </div>

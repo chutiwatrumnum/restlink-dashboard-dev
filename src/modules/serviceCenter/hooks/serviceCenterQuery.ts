@@ -43,6 +43,10 @@ export const useServiceCenterServiceListQuery = (payloadQuery: ServiceCenterPayl
                     roomAddress: item.unit.roomAddress,
                     issue: item.cause != null ? item.cause : "",
                     fullname: item.createdBy.givenName + " " + item.createdBy.familyName,
+                    // เพิ่มการตั้งค่าเริ่มต้นสำหรับฟิลด์ใหม่
+                    requestCloseCase: item.requestCloseCase || false,
+                    requestNewAppointment: item.requestNewAppointment || false,
+                    requestReschedule: item.requestReschedule || false,
                 };
             });
             return { data: dataTableList, total: data.total };
@@ -81,6 +85,12 @@ export const useServiceCenterByServiceIDQuery = (payloadQuery: number) => {
             data.roomAddress = data.unit.roomAddress;
             data.issue = data.cause != null ? data.cause : "";
             data.fullname = data.createdBy.firstName + " " + data.createdBy.lastName;
+
+            // เพิ่มการตั้งค่าเริ่มต้นสำหรับฟิลด์ใหม่
+            data.requestCloseCase = data.requestCloseCase || false;
+            data.requestNewAppointment = data.requestNewAppointment || false;
+            data.requestReschedule = data.requestReschedule || false;
+
             return data;
         },
         retry: false,
@@ -173,26 +183,45 @@ export const useServiceCenterIssueTypeQuery = () => {
 };
 
 export const getServiceCenterServiceListQuery = async (serviceId: number) => {
-    const { data } = await axios.get(`/service-center/dashboard/${serviceId}`);
+    console.log("🔍 [API] Fetching service center data for ID:", serviceId);
 
-    // Process appointment data to handle both old and new formats
-    if (data.data.appointmentDate && Array.isArray(data.data.appointmentDate)) {
-        data.data.appointmentDate = data.data.appointmentDate.map((appointment: any) => {
-            // If it's the new format with startTime and endTime, keep as is
-            if (typeof appointment === "object" && appointment.startTime && appointment.endTime) {
+    try {
+        const { data } = await axios.get(`/service-center/dashboard/${serviceId}`);
+        console.log("✅ [API] Service center data received:", data);
+
+        // Process appointment data to handle both old and new formats
+        if (data.data.appointmentDate && Array.isArray(data.data.appointmentDate)) {
+            data.data.appointmentDate = data.data.appointmentDate.map((appointment: any) => {
+                // If it's the new format with startTime and endTime, keep as is
+                if (typeof appointment === "object" && appointment.startTime && appointment.endTime) {
+                    return appointment;
+                }
+                // If it's legacy format (just date string), convert to new format
+                if (typeof appointment === "string") {
+                    return {
+                        date: appointment,
+                        startTime: null,
+                        endTime: null
+                    };
+                }
                 return appointment;
-            }
-            // If it's legacy format (just date string), convert to new format
-            if (typeof appointment === "string") {
-                return {
-                    date: appointment,
-                    startTime: null,
-                    endTime: null
-                };
-            }
-            return appointment;
-        });
-    }
+            });
+        }
 
-    return data.data;
+        // เพิ่มการตั้งค่าเริ่มต้นสำหรับฟิลด์ใหม่หากไม่มีจาก API (ตั้งค่าแบบ explicit)
+        data.data.requestCloseCase = data.data.requestCloseCase ?? false;
+        data.data.requestNewAppointment = data.data.requestNewAppointment ?? false;
+        data.data.requestReschedule = data.data.requestReschedule ?? false; // ใช้ ?? เพื่อจัดการ undefined
+
+        console.log("📋 [API] Processed data with defaults:", {
+            requestCloseCase: data.data.requestCloseCase,
+            requestNewAppointment: data.data.requestNewAppointment,
+            requestReschedule: data.data.requestReschedule,
+        });
+
+        return data.data;
+    } catch (error) {
+        console.error("❌ [API] Failed to fetch service center data:", error);
+        throw error;
+    }
 };

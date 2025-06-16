@@ -24,10 +24,16 @@ import { getDataBlock } from "../../deliveryLogs/service/api/DeliveryLogsService
 import { unitDetail } from "../../../stores/interfaces/DeliveryLogs";
 import { getServiceCenterServiceListQuery } from "../hooks/serviceCenterQuery";
 
+// Extended interface เพื่อรองรับ requestReschedule
+interface ExtendedServiceCenterDataType extends ServiceCenterDataType {
+  requestReschedule?: boolean;
+}
+
 const ServiceCenterLists = () => {
   // variables
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [editData, setEditData] = useState<ServiceCenterDataType | null>(null);
+  const [editData, setEditData] =
+    useState<ExtendedServiceCenterDataType | null>(null);
   const [search, setSearch] = useState("");
   const [unitNo, setUnitNo] = useState("");
   const [unit, setunitDetail] = useState<unitDetail[]>([]);
@@ -91,8 +97,9 @@ const ServiceCenterLists = () => {
   };
 
   const onEdit = async (record: ServiceCenterDataType) => {
-    const editData: ServiceCenterDataType = {
+    const editData: ExtendedServiceCenterDataType = {
       ...record,
+      requestReschedule: false, // เพิ่มค่าเริ่มต้น
     };
     const dataSuccess = selectList?.data.find(
       (item: ServiceCenterSelectListType) =>
@@ -131,12 +138,25 @@ const ServiceCenterLists = () => {
             data.appointmentDateSelected;
         }
 
-        editData.requestCloseCase = data?.requestCloseCase;
-        editData.requestNewAppointment = data?.requestNewAppointment;
+        // เพิ่มการดึงข้อมูลฟิลด์ใหม่แบบ explicit กับ default values
+        editData.requestCloseCase = data?.requestCloseCase ?? false;
+        editData.requestNewAppointment = data?.requestNewAppointment ?? false;
+        editData.requestReschedule = data?.requestReschedule ?? false;
+
+        console.log("📋 [onEdit] Final editData:", {
+          requestCloseCase: editData.requestCloseCase,
+          requestNewAppointment: editData.requestNewAppointment,
+          requestReschedule: editData.requestReschedule,
+        });
       } catch (error) {
         console.log(error);
         alert("get service center by id error");
       }
+    } else {
+      // สำหรับ status อื่นๆ ที่ไม่ใช่ confirm_appointment ก็ต้องตั้งค่าเริ่มต้นด้วย
+      editData.requestCloseCase = false;
+      editData.requestNewAppointment = false;
+      editData.requestReschedule = false;
     }
     setEditData(editData);
     setIsEditModalOpen(true);

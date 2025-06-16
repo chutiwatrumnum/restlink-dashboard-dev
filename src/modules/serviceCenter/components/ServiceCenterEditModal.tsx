@@ -65,7 +65,7 @@ type ServiceCenterEditModalType = {
   isEditModalOpen: boolean;
   onOk: () => void;
   onCancel: () => void;
-  data: ServiceCenterDataType | null;
+  data: ServiceCenterDataType | null; // ✅ ใช้ ServiceCenterDataType ตรงๆ
   onRefresh: () => void;
   selectList: ServiceCenterSelectListType[];
 };
@@ -181,6 +181,13 @@ const ServiceCenterEditModal = ({
   useEffect(() => {
     setOpen(isEditModalOpen);
     if (isEditModalOpen && data) {
+      console.log("🔍 [Modal] Data received:", {
+        requestCloseCase: data.requestCloseCase,
+        requestNewAppointment: data.requestNewAppointment,
+        requestReschedule: data.requestReschedule,
+        status: data.status?.nameCode,
+      });
+
       const initialStatusId = data.statusId?.toString();
       setCurrentStatusId(initialStatusId);
 
@@ -865,32 +872,75 @@ const ServiceCenterEditModal = ({
                 </div>
               )}
 
+            {/* Remark สำหรับ requestReschedule */}
+            {data.requestReschedule && (
+              <Alert
+                message="กรุณารอการยืนยันจากลูกบ้าน"
+                description="ขณะนี้มีการร้องขอการเปลี่ยนแปลงนัดหมายจากลูกบ้าน กรุณารอการยืนยันก่อนดำเนินการต่อ"
+                type="warning"
+                showIcon
+                className="info-alert"
+                style={{ marginTop: 16 }}
+              />
+            )}
+
+            {/* Remark สำหรับ requestCloseCase */}
+            {data.requestCloseCase && !data.requestReschedule && (
+              <Alert
+                message="ลูกบ้านร้องขอปิดเคส"
+                description="ลูกบ้านได้ส่งคำขอปิดเคสแล้ว ทางนิติบุคคลสามารถกดปุ่ม Close ticket เพื่อปิดเคสได้"
+                type="info"
+                showIcon
+                className="info-alert"
+                style={{ marginTop: 16 }}
+              />
+            )}
+
             <div className="action-buttons">
               <Button
-                disabled={!data.requestCloseCase}
+                disabled={!data.requestCloseCase || data.requestReschedule}
                 onClick={handleCloseTicket}
                 className="close-ticket-link">
                 Close ticket
               </Button>
               <Button
-                disabled={data.requestNewAppointment}
+                disabled={
+                  data.requestNewAppointment ||
+                  data.requestCloseCase ||
+                  data.requestReschedule
+                }
                 onClick={async () => {
-                  await mutationreshuduleServiceCenter.mutateAsync(data.id);
-                  const pendingStatus = statusList?.data.find(
-                    (s) => s.label === "Pending"
-                  );
-                  if (pendingStatus) {
-                    setCurrentStatusId(pendingStatus.value);
-                    const visualStepIndex = statusList?.data.findIndex(
-                      (s) => s.value === pendingStatus.value
+                  try {
+                    console.log("🔄 Starting reschedule process...");
+                    console.log("📋 Service ID:", data.id);
+
+                    await mutationreshuduleServiceCenter.mutateAsync(data.id);
+                    console.log("✅ Reschedule API call successful");
+
+                    // Refresh data
+                    onRefresh();
+
+                    // Reset to pending status
+                    const pendingStatus = statusList?.data.find(
+                      (s) => s.label === "Pending"
                     );
-                    setCurrentStepIndex(
-                      visualStepIndex >= 0 ? visualStepIndex : 0
-                    );
-                    serviceCenterForm.resetFields([
-                      "appointmentDate",
-                      "actionDate",
-                    ]);
+                    if (pendingStatus) {
+                      setCurrentStatusId(pendingStatus.value);
+                      const visualStepIndex = statusList?.data.findIndex(
+                        (s) => s.value === pendingStatus.value
+                      );
+                      setCurrentStepIndex(
+                        visualStepIndex >= 0 ? visualStepIndex : 0
+                      );
+                      serviceCenterForm.resetFields([
+                        "appointmentDate",
+                        "actionDate",
+                      ]);
+                    }
+
+                    console.log("🔄 Status reset to Pending");
+                  } catch (error) {
+                    console.error("❌ Reschedule failed:", error);
                   }
                 }}
                 size="large">
@@ -900,6 +950,7 @@ const ServiceCenterEditModal = ({
                 disabled={
                   data.requestCloseCase ||
                   data.requestNewAppointment ||
+                  data.requestReschedule ||
                   !data.appointmentDate?.some(
                     (appointment: any) => appointment.selected === true
                   )
