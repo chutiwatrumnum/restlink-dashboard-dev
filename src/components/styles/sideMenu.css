@@ -1,80 +1,198 @@
-.sideMenuContainer .ant-menu {
-  border-inline-end: none !important;
+/* Side Menu Container */
+.sideMenuContainer {
+  height: 100vh;
+  background: var(--menuBg-color) !important;
+  display: flex;
+  flex-direction: column;
+  position: relative;
 }
 
-.sideMenuContainer {
-  height: 100%;
-  box-sizing: border-box;
-  padding: 20px 0;
+.sideMenuContainer .ant-menu {
+  border-inline-end: none !important;
+  background: var(--menuBg-color) !important;
+}
+
+/* Header Section */
+.sideMenuHeader {
+  padding: 20px;
+  text-align: center;
 }
 
 .sideMenuLogo {
+  margin-bottom: 20px;
+  min-height: 40px;
   display: flex;
-  flex-direction: column;
-  justify-content: center;
   align-items: center;
-  margin-bottom: 10px;
-  box-sizing: border-box;
+  justify-content: center;
 }
 
+.sideMenuLogo img {
+  width: 30%;
+  height: auto;
+}
+
+.collapsedLogo {
+  width: 40px;
+  height: 40px;
+  margin: 0 auto;
+  background: var(--primary-color);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: bold;
+  border-radius: 8px;
+}
+
+.collapseToggle {
+  background: none;
+  border: none;
+  color: var(--menuText-color);
+  cursor: pointer;
+  padding: 8px;
+  font-size: 20px;
+  transition: all 0.3s;
+}
+
+.collapseToggle:hover {
+  color: var(--primary-color);
+}
+
+/* Menu Wrapper */
+.menuWrapper {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.menuWrapper::-webkit-scrollbar {
+  width: 0px;
+}
+
+/* Icon Styles */
 .sideMenuIcon {
   width: 24px;
   margin-right: 15px;
 }
 
-.menuContainer {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  height: 100%;
+.sideMenuContainer.collapsed .sideMenuIcon {
+  margin-right: 0;
 }
 
-/* set menu */
-.sideMenuContainer .ant-menu-item {
-  color: var(--menuText-color);
-}
-
-/* set menu selected */
-.sideMenuContainer .ant-menu-item-selected {
-  color: var(--menuTextActive-color);
-  background-color: var(--menuBgActive-color);
-  font-weight: normal;
-}
-
-/* set sub menu parent */
-.sideMenuContainer .ant-menu-submenu-title {
-  background-color: var(--menuBg-color);
-  color: var(--menuText-color);
-}
-
-/* set sub menu parent selected */
-.sideMenuContainer .ant-menu-submenu-selected .ant-menu-submenu-title {
-  color: var(--menuTextActive-color);
-  background-color: var(--tertiary-color);
-}
-
-.sideMenuContainer .ant-menu {
-  background: var(--menuBg-color) !important;
-}
-
-/* set sub menu bg */
-.sideMenuContainer .ant-menu-sub {
-  background: var(--subMenuBg-color) !important;
-}
-
-/* set sub menu child */
-.sideMenuContainer .ant-menu-submenu .ant-menu-item {
-  color: var(--subMenuText-color);
-}
-
-/* set sub menu child selected */
-.sideMenuContainer .ant-menu-submenu-selected .ant-menu-item-selected {
-  color: var(--subMenuTextActive-color);
-  background-color: var(--subMenuBgActive-color);
+/* Footer Section */
+.sideMenuFooter {
+  margin-top: auto;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .textVersion {
   padding: 15px;
-  margin-top: 10px;
   text-align: right;
+  color: var(--menuText-color);
+  font-size: 12px;
+  opacity: 0.6;
+}
+
+/* Menu Items */
+.sideMenuContainer .ant-menu-item {
+  color: var(--menuText-color) !important;
+  background: transparent;
+  margin: 0 !important;
+  height: 48px !important;
+  line-height: 48px !important;
+}
+
+.sideMenuContainer .ant-menu-item:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.sideMenuContainer .ant-menu-item-selected {
+  color: var(--menuTextActive-color) !important;
+  background-color: var(--menuBgActive-color) !important;
+  font-weight: normal;
+}
+
+.sideMenuContainer .ant-menu-item-selected::after {
+  display: none;
+}
+
+/* Submenu Styles */
+.sideMenuContainer .ant-menu-submenu-title {
+  background-color: var(--menuBg-color) !important;
+  color: var(--menuText-color) !important;
+  margin: 0 !important;
+  height: 48px !important;
+  line-height: 48px !important;
+}
+
+.sideMenuContainer .ant-menu-submenu-title:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.sideMenuContainer .ant-menu-submenu-selected > .ant-menu-submenu-title {
+  color: var(--menuTextActive-color) !important;
+  background-color: var(--tertiary-color) !important;
+}
+
+.sideMenuContainer .ant-menu-sub {
+  background: var(--subMenuBg-color) !important;
+}
+
+.sideMenuContainer .ant-menu-submenu .ant-menu-item {
+  color: var(--subMenuText-color) !important;
+  padding-left: 48px !important;
+}
+
+.sideMenuContainer .ant-menu-submenu .ant-menu-item-selected {
+  color: var(--subMenuTextActive-color) !important;
+  background-color: var(--subMenuBgActive-color) !important;
+}
+
+/* Collapsed State */
+.sideMenuContainer.collapsed .ant-menu-item,
+.sideMenuContainer.collapsed .ant-menu-submenu-title {
+  padding: 0 calc(50% - 12px) !important;
+}
+
+.sideMenuContainer .ant-menu-inline-collapsed > .ant-menu-item,
+.sideMenuContainer .ant-menu-inline-collapsed > .ant-menu-submenu > .ant-menu-submenu-title {
+  padding: 0 calc(50% - 12px) !important;
+}
+
+/* Links */
+.sideMenuContainer a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Transition Effects */
+.sideMenuContainer,
+.sideMenuContainer .ant-menu,
+.sideMenuContainer .ant-menu-item,
+.sideMenuContainer .ant-menu-submenu-title {
+  transition: all 0.3s ease;
+}
+
+/* Tooltip for collapsed menu */
+.ant-tooltip-inner {
+  background-color: rgba(0, 0, 0, 0.85);
+  color: #fff;
+  font-size: 14px;
+  padding: 6px 12px;
+}
+
+/* Remove default Ant Design blue colors */
+.sideMenuContainer .ant-menu-item:active,
+.sideMenuContainer .ant-menu-submenu-title:active {
+  background: transparent;
+}
+
+.sideMenuContainer .ant-menu:not(.ant-menu-horizontal) .ant-menu-item-selected {
+  background-color: var(--menuBgActive-color) !important;
+}
+
+.sideMenuContainer .ant-menu-item a:hover {
+  color: inherit;
 }
