@@ -6,7 +6,6 @@ import {
   Input,
   DatePicker,
   TimePicker,
-  type UploadFile,
   Steps,
   Collapse,
   Button,
@@ -46,10 +45,7 @@ import {
 } from "../hooks/serviceCenterMutation";
 import "../styles/serviceCenterEditModal.css";
 import NoImage from "../../../assets/images/noImg.jpeg";
-import {
-  useServiceCenterByServiceIDQuery,
-  useServiceCenterStatusTypeQuery,
-} from "../hooks";
+import { useServiceCenterStatusTypeQuery } from "../hooks";
 import {
   convertBackendToSlotState,
   convertSlotStateToBackend,
@@ -61,7 +57,11 @@ const { Step } = Steps;
 const { Panel } = Collapse;
 const { RangePicker } = TimePicker;
 
-type ServiceCenterEditModalType = {
+// ============================================================================
+// TYPES & INTERFACES
+// ============================================================================
+
+type ServiceCenterEditModalProps = {
   isEditModalOpen: boolean;
   onOk: () => void;
   onCancel: () => void;
@@ -70,6 +70,10 @@ type ServiceCenterEditModalType = {
   selectList: ServiceCenterSelectListType[];
 };
 
+// ============================================================================
+// MAIN COMPONENT
+// ============================================================================
+
 const ServiceCenterEditModal = ({
   isEditModalOpen,
   onOk,
@@ -77,37 +81,45 @@ const ServiceCenterEditModal = ({
   data,
   onRefresh,
   selectList,
-}: ServiceCenterEditModalType) => {
+}: ServiceCenterEditModalProps) => {
+  // ============================================================================
+  // STATE MANAGEMENT
+  // ============================================================================
+
   const [serviceCenterForm] = Form.useForm();
   const [open, setOpen] = useState(false);
-  const { data: statusList, isSuccess } = useServiceCenterStatusTypeQuery();
-  const [statusIdSuccess, setstatusIdSuccess] = useState<number>(-1);
+  const { data: statusList } = useServiceCenterStatusTypeQuery();
+  const [statusIdSuccess, setStatusIdSuccess] = useState<number>(-1);
 
-  // State for current visual step and actual status ID
+  // Current status tracking
   const [currentStepIndex, setCurrentStepIndex] = useState<number>(0);
   const [currentStatusId, setCurrentStatusId] = useState<string | undefined>(
     statusList?.data[0].value
   );
 
-  // State for managing collapse panel visibility
+  // UI state
   const [activeCollapseKeys, setActiveCollapseKeys] = useState<string[]>([
     "pending",
   ]);
 
-  // State for appointment slots (รองรับ startTime และ endTime)
+  // Appointment slots
   const [appointmentSlots, setAppointmentSlots] = useState<
     AppointmentSlotState[]
   >([{ id: "1", date: null, timeRange: null }]);
 
-  // State for images at different stages
-  const [pendingImages, setPendingImages] = useState<UploadFile[]>([]);
-  const [repairingImages, setRepairingImages] = useState<UploadFile[]>([]);
-  const [successImages, setSuccessImages] = useState<UploadFile[]>([]);
+  // Images for different stages
+  const [pendingImages, setPendingImages] = useState<any[]>([]);
+  const [repairingImages, setRepairingImages] = useState<any[]>([]);
+  const [successImages, setSuccessImages] = useState<any[]>([]);
 
+  // Mutations
   const mutationEditServiceCenter = editServiceCenterQuery();
-  const mutationreshuduleServiceCenter = reshuduleServiceCenterQuery();
+  const mutationRescheduleServiceCenter = reshuduleServiceCenterQuery();
 
-  // Helper function to get status title by its ID
+  // ============================================================================
+  // UTILITY FUNCTIONS
+  // ============================================================================
+
   const getStatusNameById = useCallback(
     (id: string | undefined): string | undefined => {
       if (!id) return undefined;
@@ -119,7 +131,28 @@ const ServiceCenterEditModal = ({
     [selectList, statusList?.data]
   );
 
-  // Function to add new appointment slot
+  const resetFormAndState = useCallback(() => {
+    serviceCenterForm.resetFields();
+    setCurrentStepIndex(0);
+    setCurrentStatusId(
+      statusList?.data.find((step) => step.label === "Pending")?.value
+    );
+    setPendingImages([]);
+    setRepairingImages([]);
+    setSuccessImages([]);
+    setActiveCollapseKeys(["pending"]);
+    setAppointmentSlots([{ id: "1", date: null, timeRange: null }]);
+  }, [serviceCenterForm, statusList?.data]);
+
+  const handleClose = useCallback(() => {
+    resetFormAndState();
+    onCancel();
+  }, [resetFormAndState, onCancel]);
+
+  // ============================================================================
+  // APPOINTMENT SLOT MANAGEMENT
+  // ============================================================================
+
   const addAppointmentSlot = () => {
     if (appointmentSlots.length < 3) {
       const newSlot: AppointmentSlotState = {
@@ -131,14 +164,12 @@ const ServiceCenterEditModal = ({
     }
   };
 
-  // Function to remove appointment slot
   const removeAppointmentSlot = (id: string) => {
     if (appointmentSlots.length > 1) {
       setAppointmentSlots(appointmentSlots.filter((slot) => slot.id !== id));
     }
   };
 
-  // Function to update appointment slot
   const updateAppointmentSlot = (
     id: string,
     field: "date" | "timeRange",
@@ -149,13 +180,9 @@ const ServiceCenterEditModal = ({
     );
   };
 
-  // Function to validate appointment slots (ใช้ utility function)
   const validateAppointmentSlots = () => {
     console.log("🔍 Validating appointment slots...");
-    console.log("📅 Slots to validate:", appointmentSlots);
-
     const validationResult = validateSlots(appointmentSlots);
-    console.log("📊 Validation result:", validationResult);
 
     if (!validationResult.isValid) {
       console.log("❌ Validation failed:", validationResult.message);
@@ -166,27 +193,22 @@ const ServiceCenterEditModal = ({
     return Promise.resolve();
   };
 
-  // Function to format appointment data for submission (ใช้ utility function)
   const formatAppointmentData = (): FormattedAppointmentData[] => {
     console.log("🔄 Formatting appointment data...");
-    console.log("📅 Current appointment slots:", appointmentSlots);
-
     const result = convertSlotStateToBackend(appointmentSlots);
     console.log("📋 Converted appointment data:", result);
-
     return result;
   };
 
-  // Effect to initialize modal state when it opens or when 'data' changes
+  // ============================================================================
+  // INITIALIZATION & EFFECTS
+  // ============================================================================
+
   useEffect(() => {
     setOpen(isEditModalOpen);
+
     if (isEditModalOpen && data) {
-      console.log("🔍 [Modal] Data received:", {
-        requestCloseCase: data.requestCloseCase,
-        requestNewAppointment: data.requestNewAppointment,
-        requestReschedule: data.requestReschedule, // ✅ เพิ่มบรรทัดนี้
-        status: data.status?.nameCode,
-      });
+      console.log("🔍 [Modal] Initializing with data:", data.id);
 
       const initialStatusId = data.statusId?.toString();
       setCurrentStatusId(initialStatusId);
@@ -197,7 +219,7 @@ const ServiceCenterEditModal = ({
       const newCurrentStepIndex = stepIndex !== -1 ? stepIndex : 0;
       setCurrentStepIndex(newCurrentStepIndex);
 
-      // Initialize appointment slots from existing data (ใช้ utility function)
+      // Initialize appointment slots
       if (data.appointmentDate) {
         const slots = convertBackendToSlotState(data.appointmentDate as any[]);
         setAppointmentSlots(slots);
@@ -205,7 +227,7 @@ const ServiceCenterEditModal = ({
         setAppointmentSlots([{ id: "1", date: null, timeRange: null }]);
       }
 
-      // Populate form fields with existing data
+      // Populate form fields
       serviceCenterForm.setFieldsValue({
         ...data,
         appointmentDateConfirmAppointment:
@@ -221,84 +243,46 @@ const ServiceCenterEditModal = ({
           : undefined,
         cause: data.cause,
         solution: data.solution,
-        requestReschedule: data.requestReschedule, // ✅ เพิ่มบรรทัดนี้
+        requestReschedule: data.requestReschedule,
       });
 
+      // Set success status ID for repairing status
       if (data.status.nameCode === "repairing") {
         const statusId = statusList?.data.find(
           (item) => item.label === "Success"
         )?.value;
-        setstatusIdSuccess(statusId ? Number(statusId) : -1);
+        setStatusIdSuccess(statusId ? Number(statusId) : -1);
       }
 
-      // Organize existing images into their respective status categories
-      const pImages: UploadFile[] = [];
-      const rImages: UploadFile[] = [];
-      const sImages: UploadFile[] = [];
-      data.imageItems?.forEach((item: ImageItem) => {
-        const imgFile: UploadFile = {
-          uid: item.id.toString(),
-          name: item.imageUrl || "image.png",
-          status: "done",
-          url: item.imageUrl,
-        };
-        if (item.imageStatus?.nameEn === "Pending" || item.imageStatusId === 1)
-          pImages.push(imgFile);
-        if (
-          item.imageStatus?.nameEn === "Repairing" ||
-          item.imageStatusId === 2
-        )
-          rImages.push(imgFile);
-        if (item.imageStatus?.nameEn === "Success" || item.imageStatusId === 3)
-          sImages.push(imgFile);
-      });
-      setPendingImages(pImages);
-      setRepairingImages(rImages);
-      setSuccessImages(sImages);
+      // Organize images by status
+      organizeImages(data.imageItems);
     } else if (!isEditModalOpen) {
       resetFormAndState();
     }
   }, [isEditModalOpen, data, serviceCenterForm, selectList, statusList?.data]);
 
-  // ✅ เพิ่มฟังก์ชันสำหรับจัดการ collapse change
-  const handleCollapseChange = (keys: string | string[]) => {
-    const keyArray = Array.isArray(keys) ? keys : [keys];
-    console.log("🔄 Collapse keys changed:", keyArray);
-    setActiveCollapseKeys(keyArray);
-  };
-
-  // Effect to manage which collapse panels are open based on the current status and data
+  // Manage collapse panels based on current status
   useEffect(() => {
     if (isEditModalOpen && data && currentStatusId && statusList?.data) {
       const newActiveKeys = new Set<string>();
-      newActiveKeys.add("pending"); // Pending จะเปิดเสมอ
+      newActiveKeys.add("pending");
 
-      const currentActualStepDefinition = statusList.data.find(
+      const currentOrder = statusList.data.findIndex(
         (step) => step.value === currentStatusId
       );
-      const currentOrder = currentActualStepDefinition
-        ? statusList.data.indexOf(currentActualStepDefinition)
-        : -1;
 
-      const repairingStepDefinition = statusList.data.find(
+      const repairingOrder = statusList.data.findIndex(
         (s) => s.label === "Repairing"
       );
-      const repairingOrder = repairingStepDefinition
-        ? statusList.data.indexOf(repairingStepDefinition)
-        : -1;
 
-      const successStepDefinition = statusList.data.find(
+      const successOrder = statusList.data.findIndex(
         (s) => s.label === "Success"
       );
-      const successOrder = successStepDefinition
-        ? statusList.data.indexOf(successStepDefinition)
-        : -1;
 
       const closedStepId = statusList.data.find(
         (s) => s.label === "Closed"
       )?.value;
 
-      // ✅ เมื่อเปิด Modal ครั้งแรก ให้เปิด panel ที่เกี่ยวข้องตามสถานะ
       if (
         repairingOrder !== -1 &&
         (currentOrder >= repairingOrder ||
@@ -316,7 +300,6 @@ const ServiceCenterEditModal = ({
         newActiveKeys.add("success");
       }
 
-      // ✅ ตั้งค่าเฉพาะครั้งแรกที่เปิด Modal เท่านั้น
       console.log(
         "🔧 Setting initial collapse keys:",
         Array.from(newActiveKeys)
@@ -327,57 +310,65 @@ const ServiceCenterEditModal = ({
     }
   }, [currentStatusId, isEditModalOpen, data, statusList?.data]);
 
-  // Resets form fields and local component state
-  const resetFormAndState = useCallback(() => {
-    serviceCenterForm.resetFields();
-    setCurrentStepIndex(0);
-    setCurrentStatusId(
-      statusList?.data.find((step) => step.label === "Pending")?.value
-    );
-    setPendingImages([]);
-    setRepairingImages([]);
-    setSuccessImages([]);
-    setActiveCollapseKeys(["pending"]);
-    setAppointmentSlots([{ id: "1", date: null, timeRange: null }]);
-  }, [serviceCenterForm, statusList?.data]);
+  // ============================================================================
+  // IMAGE MANAGEMENT
+  // ============================================================================
 
-  // Handles closing of the modal
-  const handleClose = useCallback(() => {
-    resetFormAndState();
-    onCancel();
-  }, [resetFormAndState, onCancel]);
+  const organizeImages = (imageItems?: ImageItem[]) => {
+    const pImages: any[] = [];
+    const rImages: any[] = [];
+    const sImages: any[] = [];
 
-  // Handles form submission for status updates
+    imageItems?.forEach((item: ImageItem) => {
+      const imgFile = {
+        uid: item.id.toString(),
+        name: item.imageUrl || "image.png",
+        status: "done",
+        url: item.imageUrl,
+      };
+
+      if (item.imageStatus?.nameEn === "Pending" || item.imageStatusId === 1) {
+        pImages.push(imgFile);
+      }
+      if (
+        item.imageStatus?.nameEn === "Repairing" ||
+        item.imageStatusId === 2
+      ) {
+        rImages.push(imgFile);
+      }
+      if (item.imageStatus?.nameEn === "Success" || item.imageStatusId === 3) {
+        sImages.push(imgFile);
+      }
+    });
+
+    setPendingImages(pImages);
+    setRepairingImages(rImages);
+    setSuccessImages(sImages);
+  };
+
+  // ============================================================================
+  // FORM SUBMISSION
+  // ============================================================================
+
   const handleFormSubmit = async (formValues: any) => {
     console.log("🚀 [ServiceCenter] Form submission started");
-    console.log("📋 Form values received:", formValues);
-    console.log("📊 Current data:", data);
-    console.log("🔍 Current status ID:", currentStatusId);
-    console.log("📍 Current step index:", currentStepIndex);
-    console.log("🎯 Current status name:", getStatusNameById(currentStatusId));
 
     if (!data || !currentStatusId) {
-      console.error(
-        "❌ [FormSubmit] Critical data missing (data or currentStatusId). Aborting."
-      );
+      console.error("❌ Critical data missing. Aborting.");
       return;
     }
 
     // Validate appointment slots for pending status
     if (getStatusNameById(currentStatusId) === "Pending") {
-      console.log("⏰ Validating appointment slots for Pending status...");
-      console.log("📅 Current appointment slots:", appointmentSlots);
-
       try {
         await validateAppointmentSlots();
-        console.log("✅ Appointment slots validation passed");
       } catch (error: any) {
-        console.error("❌ Appointment slots validation failed:", error.message);
         message.error(error.message);
         return;
       }
     }
 
+    // Determine next status
     let nextStatusId = currentStatusId;
     if (currentStepIndex === 0 && statusList?.data[1]) {
       nextStatusId = statusList.data[1].value;
@@ -389,9 +380,6 @@ const ServiceCenterEditModal = ({
       nextStatusId = statusList.data[4].value;
     }
 
-    console.log("⏭️ Next status ID:", nextStatusId);
-    console.log("⏭️ Next status name:", getStatusNameById(nextStatusId));
-
     ConfirmModal({
       title: `Confirm Action`,
       message: `Are you sure you want to proceed? This may update the status to "${
@@ -401,22 +389,13 @@ const ServiceCenterEditModal = ({
       cancelMessage: "Cancel",
       onOk: async () => {
         try {
-          console.log("🔄 Processing form submission...");
-
-          // Format appointment data for submission (ปรับให้รองรับ API ใหม่)
+          // Format appointment data
           let formattedAppointmentData = null;
-          if (getStatusNameById(currentStatusId) === "Pending") {
-            console.log("📅 Formatting appointment data for Pending status...");
+          const currentStatusName = getStatusNameById(currentStatusId);
+
+          if (currentStatusName === "Pending") {
             formattedAppointmentData = formatAppointmentData();
-            console.log(
-              "📋 Formatted appointment data:",
-              formattedAppointmentData
-            );
-          } else if (
-            getStatusNameById(currentStatusId) === "Confirm appointment"
-          ) {
-            console.log("📅 Processing Confirm appointment data...");
-            // For confirm appointment, send the selected appointment ID
+          } else if (currentStatusName === "Confirm appointment") {
             const selectedAppointment = data.appointmentDate?.find(
               (appointment: any) => appointment.selected === true
             );
@@ -426,31 +405,18 @@ const ServiceCenterEditModal = ({
                 data.appointmentDateConfirmAppointmentID,
               confirmedDate: selectedAppointment?.date || null,
             };
-            console.log(
-              "📋 Confirm appointment data:",
-              formattedAppointmentData
-            );
-            console.log(
-              "📋 Selected appointment details:",
-              selectedAppointment
-            );
           } else if (formValues.appointmentDate) {
-            console.log("📅 Processing existing appointment date...");
             formattedAppointmentData = Array.isArray(formValues.appointmentDate)
               ? formValues.appointmentDate.map((date: any) =>
                   dayjs(date).format("YYYY-MM-DD")
                 )
               : null;
-            console.log(
-              "📋 Processed appointment data:",
-              formattedAppointmentData
-            );
           }
 
           const payload: EditDataServiceCenter = {
             id: data.id,
             statusId: Number(currentStatusId),
-            currentStatus: getStatusNameById(currentStatusId) || "",
+            currentStatus: currentStatusName || "",
             acknowledgeDate: formValues.acknowledgeDate
               ? dayjs(formValues.acknowledgeDate).toISOString()
               : data.acknowledgeDate,
@@ -468,50 +434,38 @@ const ServiceCenterEditModal = ({
                 : data.solution,
             appointmentDate: formattedAppointmentData || data.appointmentDate,
             appointmentDateConfirmAppointmentID:
-              data.appointmentDateConfirmAppointmentID
-                ? data.appointmentDateConfirmAppointmentID
-                : undefined,
+              data.appointmentDateConfirmAppointmentID || undefined,
           };
 
-          console.log(
-            "📦 Final payload to be sent:",
-            JSON.stringify(payload, null, 2)
-          );
-          console.log(
-            "🎯 API endpoint will be determined by currentStatus:",
-            payload.currentStatus
-          );
+          console.log("📦 Final payload:", payload);
 
           await mutationEditServiceCenter.mutateAsync(payload);
-          console.log("✅ API call successful");
-
           onRefresh();
 
           const nextVisualStepIndex = statusList?.data.findIndex(
             (step) => step.value === nextStatusId
           );
+
           if (nextVisualStepIndex !== -1 && nextVisualStepIndex !== undefined) {
-            console.log("🔄 Moving to next step:", nextVisualStepIndex);
             setCurrentStepIndex(nextVisualStepIndex);
             setCurrentStatusId(nextStatusId);
           } else {
-            console.log("🏁 Closing modal");
             handleClose();
           }
         } catch (error) {
-          console.error(
-            "❌ [ConfirmModal OK] Failed to update service center:",
-            error
-          );
-          console.error("Error details:", error);
+          console.error("❌ Failed to update service center:", error);
         }
       },
     });
   };
 
-  // Handles the action of closing a ticket
+  // ============================================================================
+  // ACTION HANDLERS
+  // ============================================================================
+
   const handleCloseTicket = () => {
     if (!data) return;
+
     ConfirmModal({
       title: "Close ticket?",
       message: "Are you sure you want to close this ticket?",
@@ -526,11 +480,13 @@ const ServiceCenterEditModal = ({
             console.error("Configuration error: 'Closed' status ID not found.");
             return;
           }
+
           const payload: EditDataServiceCenter = {
             id: data.id,
             statusId: Number(closedStatus.value),
             currentStatus: closedStatus.label,
           };
+
           await mutationEditServiceCenter.mutateAsync(payload);
           onRefresh();
           handleClose();
@@ -541,92 +497,27 @@ const ServiceCenterEditModal = ({
     });
   };
 
-  // Renders a summary panel for a specific stage
-  const renderReportSummaryPanel = (
-    title: string,
-    imageCategory?: "Pending" | "Repairing" | "Success"
-  ) => {
-    const panelKey = title.toLowerCase().replace(/\s+/g, "-");
-    const relevantImages =
-      imageCategory === "Pending"
-        ? pendingImages
-        : imageCategory === "Repairing"
-        ? repairingImages
-        : imageCategory === "Success"
-        ? successImages
-        : [];
-
-    return (
-      <Panel header={title} key={panelKey}>
-        <div className="summary-content">
-          {relevantImages.length > 0 ? (
-            <div className="summary-image-container">
-              <Image.PreviewGroup>
-                {relevantImages.map((img, idx) => (
-                  <Image
-                    key={idx}
-                    width={150}
-                    src={img.url || NoImage}
-                    alt={`${imageCategory || title} image ${idx + 1}`}
-                  />
-                ))}
-              </Image.PreviewGroup>
-            </div>
-          ) : (
-            imageCategory && (
-              <div className="summary-image-container">
-                <Image
-                  width={150}
-                  src={NoImage}
-                  alt={`No ${imageCategory} image`}
-                />
-              </div>
-            )
-          )}
-          <dl className="summary-details">
-            <dt>Owner</dt>
-            <dd>{data?.fullname || "N/A"}</dd>
-            <dt>Submission date</dt>
-            <dd>
-              {data?.createdAt
-                ? dayjs(data.createdAt).format("YYYY-MM-DD")
-                : "N/A"}
-            </dd>
-            <dt>Problem</dt>
-            <dd>{data?.serviceTypeName || "N/A"}</dd>
-            <dt>Description</dt>
-            <dd>{data?.description || "N/A"}</dd>
-            {data?.cause && (
-              <>
-                <dt>Cause</dt>
-                <dd>{data.cause}</dd>
-              </>
-            )}
-            {data?.solution && (
-              <>
-                <dt>Solution</dt>
-                <dd>{data.solution}</dd>
-              </>
-            )}
-            {data?.actionDate && (
-              <>
-                <dt>Action Date</dt>
-                <dd>{dayjs(data.actionDate).format("YYYY-MM-DD")}</dd>
-              </>
-            )}
-            {data?.completedDate && (
-              <>
-                <dt>Completed Date</dt>
-                <dd>{dayjs(data.completedDate).format("YYYY-MM-DD")}</dd>
-              </>
-            )}
-          </dl>
-        </div>
-      </Panel>
-    );
+  const handleReschedule = async () => {
+    try {
+      console.log("🔄 Starting reschedule process...");
+      await mutationRescheduleServiceCenter.mutateAsync(data!.id);
+      onRefresh();
+      handleClose();
+      console.log("✅ Reschedule completed");
+    } catch (error) {
+      console.error("❌ Reschedule failed:", error);
+    }
   };
 
-  // Renders the appointment slots UI (ปรับใหม่ให้รองรับ startTime และ endTime)
+  const handleCollapseChange = (keys: string | string[]) => {
+    const keyArray = Array.isArray(keys) ? keys : [keys];
+    setActiveCollapseKeys(keyArray);
+  };
+
+  // ============================================================================
+  // RENDER FUNCTIONS
+  // ============================================================================
+
   const renderAppointmentSlots = () => {
     const validSlots = appointmentSlots.filter((slot) => isSlotComplete(slot));
     const isDisabled = validSlots.length === 0;
@@ -737,9 +628,93 @@ const ServiceCenterEditModal = ({
     );
   };
 
-  // Renders the appropriate form fields and actions based on the current status
+  const renderReportSummaryPanel = (
+    title: string,
+    imageCategory?: "Pending" | "Repairing" | "Success"
+  ) => {
+    const panelKey = title.toLowerCase().replace(/\s+/g, "-");
+    const relevantImages =
+      imageCategory === "Pending"
+        ? pendingImages
+        : imageCategory === "Repairing"
+        ? repairingImages
+        : imageCategory === "Success"
+        ? successImages
+        : [];
+
+    return (
+      <Panel header={title} key={panelKey}>
+        <div className="summary-content">
+          {relevantImages.length > 0 ? (
+            <div className="summary-image-container">
+              <Image.PreviewGroup>
+                {relevantImages.map((img, idx) => (
+                  <Image
+                    key={idx}
+                    width={150}
+                    src={img.url || NoImage}
+                    alt={`${imageCategory || title} image ${idx + 1}`}
+                  />
+                ))}
+              </Image.PreviewGroup>
+            </div>
+          ) : (
+            imageCategory && (
+              <div className="summary-image-container">
+                <Image
+                  width={150}
+                  src={NoImage}
+                  alt={`No ${imageCategory} image`}
+                />
+              </div>
+            )
+          )}
+          <dl className="summary-details">
+            <dt>Owner</dt>
+            <dd>{data?.fullname || "N/A"}</dd>
+            <dt>Submission date</dt>
+            <dd>
+              {data?.createdAt
+                ? dayjs(data.createdAt).format("YYYY-MM-DD")
+                : "N/A"}
+            </dd>
+            <dt>Problem</dt>
+            <dd>{data?.serviceTypeName || "N/A"}</dd>
+            <dt>Description</dt>
+            <dd>{data?.description || "N/A"}</dd>
+            {data?.cause && (
+              <>
+                <dt>Cause</dt>
+                <dd>{data.cause}</dd>
+              </>
+            )}
+            {data?.solution && (
+              <>
+                <dt>Solution</dt>
+                <dd>{data.solution}</dd>
+              </>
+            )}
+            {data?.actionDate && (
+              <>
+                <dt>Action Date</dt>
+                <dd>{dayjs(data.actionDate).format("YYYY-MM-DD")}</dd>
+              </>
+            )}
+            {data?.completedDate && (
+              <>
+                <dt>Completed Date</dt>
+                <dd>{dayjs(data.completedDate).format("YYYY-MM-DD")}</dd>
+              </>
+            )}
+          </dl>
+        </div>
+      </Panel>
+    );
+  };
+
   const renderStatusUpdateSection = () => {
     if (!data) return null;
+
     const currentStatusName = getStatusNameById(currentStatusId);
 
     switch (currentStatusName) {
@@ -769,17 +744,10 @@ const ServiceCenterEditModal = ({
             />
             <div className="action-buttons">
               <Button
-                disabled={!data.requestCloseCase}
+                disabled={!data.requestCloseCase || data.requestReschedule}
                 onClick={handleCloseTicket}
                 size="large"
-                danger
-                style={{
-                  backgroundColor: !data.requestCloseCase
-                    ? undefined
-                    : "#ff4d4f",
-                  borderColor: !data.requestCloseCase ? undefined : "#ff4d4f",
-                  color: !data.requestCloseCase ? undefined : "#fff",
-                }}>
+                danger>
                 Close ticket
               </Button>
             </div>
@@ -789,7 +757,7 @@ const ServiceCenterEditModal = ({
       case "Confirm appointment":
         return (
           <>
-            {/* แสดงเฉพาะ appointment ที่ selected จาก API */}
+            {/* Show selected appointment */}
             {data.appointmentDate &&
               Array.isArray(data.appointmentDate) &&
               data.appointmentDate.length > 0 && (
@@ -810,7 +778,7 @@ const ServiceCenterEditModal = ({
                     {data.appointmentDate
                       .filter(
                         (appointment: any) => appointment.selected === true
-                      ) // แสดงเฉพาะที่ selected
+                      )
                       .map((appointment: any, index: number) => {
                         const appointmentDisplay =
                           typeof appointment === "object" && appointment.date
@@ -881,7 +849,6 @@ const ServiceCenterEditModal = ({
                       })}
                   </Space>
 
-                  {/* แสดงข้อความถ้าไม่มี appointment ที่ selected */}
                   {!data.appointmentDate.some(
                     (appointment: any) => appointment.selected === true
                   ) && (
@@ -895,7 +862,7 @@ const ServiceCenterEditModal = ({
                 </div>
               )}
 
-            {/* Remark สำหรับ requestReschedule */}
+            {/* Request status alerts */}
             {data.requestReschedule && (
               <Alert
                 message="กรุณารอการยืนยันจากลูกบ้าน"
@@ -907,7 +874,6 @@ const ServiceCenterEditModal = ({
               />
             )}
 
-            {/* Remark สำหรับ requestCloseCase */}
             {data.requestCloseCase && !data.requestReschedule && (
               <Alert
                 message="ลูกบ้านร้องขอปิดเคส"
@@ -924,21 +890,7 @@ const ServiceCenterEditModal = ({
                 disabled={!data.requestCloseCase || data.requestReschedule}
                 onClick={handleCloseTicket}
                 size="large"
-                danger
-                style={{
-                  backgroundColor:
-                    !data.requestCloseCase || data.requestReschedule
-                      ? undefined
-                      : "#ff4d4f",
-                  borderColor:
-                    !data.requestCloseCase || data.requestReschedule
-                      ? undefined
-                      : "#ff4d4f",
-                  color:
-                    !data.requestCloseCase || data.requestReschedule
-                      ? undefined
-                      : "#fff",
-                }}>
+                danger>
                 Close ticket
               </Button>
               <Button
@@ -947,27 +899,7 @@ const ServiceCenterEditModal = ({
                   data.requestCloseCase ||
                   data.requestReschedule
                 }
-                onClick={async () => {
-                  try {
-                    console.log("🔄 Starting reschedule process...");
-                    console.log("📋 Service ID:", data.id);
-
-                    await mutationreshuduleServiceCenter.mutateAsync(data.id);
-                    console.log("✅ Reschedule API call successful");
-
-                    // ✅ Refresh parent component data
-                    onRefresh();
-
-                    // ✅ ปิด Modal และให้ parent component refresh ข้อมูลใหม่
-                    handleClose();
-
-                    console.log(
-                      "✅ Reschedule completed - Modal closed, data will refresh"
-                    );
-                  } catch (error) {
-                    console.error("❌ Reschedule failed:", error);
-                  }
-                }}
+                onClick={handleReschedule}
                 size="large">
                 Reschedule
               </Button>
@@ -992,18 +924,112 @@ const ServiceCenterEditModal = ({
       case "Repairing":
         return (
           <>
-            <Form.Item
-              label={
-                <span>
-                  Action date
-                  <Tooltip title="Date the service action was performed.">
-                    <InfoCircleOutlined style={{ marginLeft: 8 }} />
-                  </Tooltip>
-                </span>
-              }
-              name="actionDate">
-              <DatePicker size="large" disabled style={{ width: "100%" }} />
-            </Form.Item>
+            {/* Show selected appointment for Repairing status */}
+            {data.appointmentDate &&
+              Array.isArray(data.appointmentDate) &&
+              data.appointmentDate.length > 0 && (
+                <div className="appointment-confirmation-container">
+                  <div className="appointment-slots-header">
+                    <span>
+                      Selected Appointment
+                      <Tooltip title="This is the confirmed appointment slot">
+                        <InfoCircleOutlined style={{ marginLeft: 8 }} />
+                      </Tooltip>
+                    </span>
+                  </div>
+
+                  <Space
+                    direction="vertical"
+                    style={{ width: "100%" }}
+                    size="middle">
+                    {data.appointmentDate
+                      .filter(
+                        (appointment: any) => appointment.selected === true
+                      )
+                      .map((appointment: any, index: number) => {
+                        const appointmentDisplay =
+                          typeof appointment === "object" && appointment.date
+                            ? {
+                                date: dayjs(appointment.date).format(
+                                  "DD/MM/YYYY"
+                                ),
+                                time:
+                                  appointment.startTime && appointment.endTime
+                                    ? `${appointment.startTime} - ${appointment.endTime}`
+                                    : "All day",
+                              }
+                            : {
+                                date: dayjs(appointment).format("DD/MM/YYYY"),
+                                time: "All day",
+                              };
+
+                        return (
+                          <Card
+                            key={appointment.id || index}
+                            size="small"
+                            title="Confirmed Appointment"
+                            className="appointment-selected"
+                            style={{
+                              border: "2px solid #52c41a",
+                              backgroundColor: "#f6ffed",
+                            }}>
+                            <Row gutter={16}>
+                              <Col span={12}>
+                                <div className="appointment-info">
+                                  <label>
+                                    <CalendarOutlined
+                                      style={{
+                                        marginRight: 4,
+                                        color: "#d46b08",
+                                      }}
+                                    />
+                                    Date
+                                  </label>
+                                  <div className="appointment-value">
+                                    {appointmentDisplay.date}
+                                  </div>
+                                </div>
+                              </Col>
+                              <Col span={12}>
+                                <div className="appointment-info">
+                                  <label>
+                                    <ClockCircleOutlined
+                                      style={{
+                                        marginRight: 4,
+                                        color: "#cf1322",
+                                      }}
+                                    />
+                                    Time
+                                  </label>
+                                  <div className="appointment-value">
+                                    {appointmentDisplay.time}
+                                  </div>
+                                </div>
+                              </Col>
+                            </Row>
+                            <div className="selected-indicator">
+                              <CheckCircleOutlined style={{ marginRight: 4 }} />
+                              User Selected
+                            </div>
+                          </Card>
+                        );
+                      })}
+                  </Space>
+
+                  {!data.appointmentDate.some(
+                    (appointment: any) => appointment.selected === true
+                  ) && (
+                    <Alert
+                      message="No appointment has been confirmed yet."
+                      type="info"
+                      showIcon
+                      className="info-alert"
+                      style={{ marginTop: 16 }}
+                    />
+                  )}
+                </div>
+              )}
+
             <div className="repairing-step-layout">
               <div className="repairing-step-left-column">
                 <Form.Item label="Cause" name="cause" rules={requiredRule}>
@@ -1049,23 +1075,16 @@ const ServiceCenterEditModal = ({
                 </div>
               </div>
             </div>
+
             <div className="action-buttons">
               <Button
-                disabled={!data.requestCloseCase}
+                disabled={!data.requestCloseCase || data.requestReschedule}
                 onClick={handleCloseTicket}
                 size="large"
-                danger
-                style={{
-                  backgroundColor: !data.requestCloseCase
-                    ? undefined
-                    : "#ff4d4f",
-                  borderColor: !data.requestCloseCase ? undefined : "#ff4d4f",
-                  color: !data.requestCloseCase ? undefined : "#fff",
-                }}>
+                danger>
                 Close ticket
               </Button>
-            </div>
-            <div className="action-buttons">
+
               <Button
                 type="primary"
                 htmlType="submit"
@@ -1107,7 +1126,10 @@ const ServiceCenterEditModal = ({
     }
   };
 
-  // Main content of the modal
+  // ============================================================================
+  // MAIN RENDER
+  // ============================================================================
+
   const ModalContent = () => {
     if (!data) return null;
 
@@ -1132,14 +1154,14 @@ const ServiceCenterEditModal = ({
           activeKey={activeCollapseKeys}
           onChange={handleCollapseChange}>
           {renderReportSummaryPanel("Pending", "Pending")}
-          {/* ✅ แสดง repairing panel เสมอถ้าควรแสดง */}
+          {/* Show repairing panel if status reached repairing */}
           {(statusList?.data.findIndex((s) => s.value === currentStatusId) ??
             -1) >=
             (statusList?.data.findIndex((s) => s.label === "Repairing") ??
               -1) &&
             statusList?.data.findIndex((s) => s.label === "Repairing") !== -1 &&
             renderReportSummaryPanel("Repairing", "Repairing")}
-          {/* ✅ แสดง success panel เสมอถ้าควรแสดง */}
+          {/* Show success panel if status reached success */}
           {(statusList?.data.findIndex((s) => s.value === currentStatusId) ??
             -1) >=
             (statusList?.data.findIndex((s) => s.label === "Success") ?? -1) &&
@@ -1148,7 +1170,6 @@ const ServiceCenterEditModal = ({
         </Collapse>
 
         <div className="status-update-section">
-          <h4>Status update</h4>
           {renderStatusUpdateSection()}
         </div>
       </Form>
