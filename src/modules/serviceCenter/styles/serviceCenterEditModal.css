@@ -20,6 +20,19 @@
   padding: 24px;
 }
 
+/* Loading state styling */
+.service-center-edit-modal .loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+  padding: 40px;
+}
+
+.service-center-edit-modal .loading-container .ant-spin {
+  color: var(--primary-color);
+}
+
 /* Steps styling */
 .service-center-edit-modal .ant-steps {
   margin-bottom: 24px;

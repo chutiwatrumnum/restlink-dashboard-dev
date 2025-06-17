@@ -803,7 +803,7 @@ const ServiceCenterEditModal = ({
                             title="Confirmed Appointment"
                             className="appointment-selected"
                             style={{
-                              border: "2px solid #52c41a",
+                              border: "1px solid #52c41a",
                               backgroundColor: "#f6ffed",
                             }}>
                             <Row gutter={16}>

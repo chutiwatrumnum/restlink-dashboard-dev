@@ -1,11 +1,10 @@
 import { Button, Empty, Tag } from "antd";
-// import { ChatListDataType } from "../../../stores/interfaces/Chat";
 import { ServiceChatListDataType } from "../../../stores/interfaces/Service";
 import {
   useServiceCenterByServiceIDQuery,
   useServiceCenterStatusTypeQuery,
 } from "../hooks";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import ServiceCenterEditModal from "./ServiceCenterEditModal";
 import {
   ServiceCenterDataType,
@@ -21,7 +20,7 @@ const tagColorSelector = (status: string) => {
     case "Confirm appointment":
       return "blue";
     case "Repairing":
-      return "purple";
+      return "red";
     case "Success":
       return "green";
     case "Closed":
@@ -51,19 +50,19 @@ const serviceCenterChatManage = ({
     refetch: refetchServiceCenter,
   } = useServiceCenterByServiceIDQuery(chatData?.serviceId!);
 
-  const onEditCancel = () => {
+  const onEditCancel = useCallback(() => {
     setIsEditModalOpen(false);
     setEditData(null);
     refetchServiceCenter();
-  };
+  }, [refetchServiceCenter]);
 
-  const onEditOk = () => {
+  const onEditOk = useCallback(() => {
     setIsEditModalOpen(false);
-  };
+  }, []);
 
-  const onRefresh: VoidFunction = () => {
+  const onRefresh = useCallback(() => {
     setRefresh(!refresh);
-  };
+  }, [refresh]);
 
   const onEdit = () => {
     console.log("🔍 [ServiceCenterChatManage] Starting onEdit...");
