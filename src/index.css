@@ -30,13 +30,13 @@
   --font-size-base: 16px;
 
   /* Colors */
-  --primary-color: #36cccc;
-  --secondary-color: #e7f5f5;
-  --tertiary-color: #36cccc;
-  --header-color: #aceade;
+  --primary-color: #002c55;
+  --secondary-color: #a6cbff;
+  --tertiary-color: #1E40AF;
+  --header-color: #a6cbff;
   --BG-color: rgba(172, 234, 222, 0.2);
   --login-color: #36cccc;
-  --BG-Table-color: rgba(233, 248, 245, 255);
+  --BG-Table-color: #fbfcfe;
   --white-color: #ffffff;
   --whiteTrans-color: rgba(255, 255, 255, 0.8);
   --black-color: #403d38;

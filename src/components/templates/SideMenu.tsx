@@ -59,7 +59,8 @@ const SideMenu = () => {
 
   // Update selected keys when location changes
   useEffect(() => {
-    setSelectedKeys([location.pathname]);
+    const currentPath = location.pathname;
+    setSelectedKeys([currentPath]);
 
     // Find parent menu keys
     const findParentKeys = (pathname: string): string[] => {
@@ -99,8 +100,10 @@ const SideMenu = () => {
     };
 
     if (!collapsed) {
-      const parentKeys = findParentKeys(location.pathname);
+      const parentKeys = findParentKeys(currentPath);
       setOpenKeys(parentKeys);
+    } else {
+      setOpenKeys([]);
     }
   }, [location.pathname, collapsed]);
 
@@ -130,15 +133,13 @@ const SideMenu = () => {
     });
   };
 
+  // ฟังก์ชันเลือกสี icon
   const iconMenuColorSelector = (key: string) => {
-    if (selectedKeys.some((k) => k.includes(key))) return whiteLabel.whiteColor;
-    return whiteLabel.mainTextColor;
+    return "#3B82F6"; // สีฟ้าสำหรับ icons ทั่วไป
   };
 
   const iconSubMenuColorSelector = (key: string) => {
-    if (selectedKeys.some((k) => k.includes(key)))
-      return whiteLabel.primaryColor;
-    return whiteLabel.subMenuTextColor;
+    return "#3B82F6"; // สีฟ้าสำหรับ submenu icons
   };
 
   return (
@@ -181,7 +182,7 @@ const SideMenu = () => {
             key="userManagement"
             icon={
               <UserManagementIcon
-                color={iconMenuColorSelector("userManagement")}
+                color="#3B82F6" // สีฟ้าสำหรับ parent menu icon default
                 className="sideMenuIcon"
               />
             }
@@ -238,7 +239,7 @@ const SideMenu = () => {
             key="documents"
             icon={
               <DocumentIcon
-                color={iconMenuColorSelector("documents")}
+                color="#3B82F6" // สีฟ้าสำหรับ parent menu icon default
                 className="sideMenuIcon"
               />
             }
@@ -291,7 +292,7 @@ const SideMenu = () => {
             key="serviceCenter"
             icon={
               <ServiceCenterIcon
-                color={iconMenuColorSelector("serviceDashboard")}
+                color="#3B82F6" // สีฟ้าสำหรับ parent menu icon default
                 className="sideMenuIcon"
               />
             }
@@ -305,19 +306,19 @@ const SideMenu = () => {
                 />
               }>
               <Link to={`${main_link}/serviceDashboard`}>
-                Service Center Dashboard
+                Fixing Report Dashboard
               </Link>
             </Menu.Item>
             <Menu.Item
               key={`${main_link}/serviceCenterLists`}
               icon={
                 <ServiceCenterListIcon
-                  color={iconSubMenuColorSelector("ServiceCenterLists")}
+                  color={iconSubMenuColorSelector("serviceCenterLists")}
                   className="sideMenuIcon"
                 />
               }>
               <Link to={`${main_link}/serviceCenterLists`}>
-                Service Center Lists
+                Fixing Report Lists
               </Link>
             </Menu.Item>
             <Menu.Item
@@ -336,7 +337,7 @@ const SideMenu = () => {
             key="event"
             icon={
               <EventIcon
-                color={iconMenuColorSelector("event")}
+                color="#3B82F6" // สีฟ้าสำหรับ parent menu icon default
                 className="sideMenuIcon"
               />
             }
@@ -381,7 +382,7 @@ const SideMenu = () => {
             key="powerManagement"
             icon={
               <PowerManagementIcon
-                color={iconMenuColorSelector("powerManagement")}
+                color="#3B82F6" // สีฟ้าสำหรับ parent menu icon default
                 className="sideMenuIcon"
               />
             }
@@ -416,12 +417,12 @@ const SideMenu = () => {
             key="logout"
             icon={
               <LogOutIcon
-                color={whiteLabel.logoutColor}
+                color="#9CA3AF" // สีเทาสำหรับ logout
                 className="sideMenuIcon"
               />
             }
             onClick={logoutHandler}>
-            <span style={{ color: whiteLabel.logoutColor }}>Logout</span>
+            <span style={{ color: "#9CA3AF" }}>Logout</span>
           </Menu.Item>
         </Menu>
         {!collapsed && <div className="textVersion">version {APP_VERSION}</div>}

@@ -209,7 +209,7 @@
 }
 
 .ant-table-tbody > tr.ant-table-row:hover > td {
-  background-color: var(--secondary-color) !important;
+  background-color: var(--BG-Table-color) !important;
 }
 
 .ant-btn-primary:hover {

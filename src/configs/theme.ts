@@ -50,7 +50,7 @@ interface WhiteLabelType {
 
 export const theme: object = {
   token: {
-    colorPrimary: "#36CCCC",
+    colorPrimary: "#56a0d9",
     colorText: "#3F3F3F",
     colorInfo: "#3F3F3F",
     colorLink: "#3F3F3F",
