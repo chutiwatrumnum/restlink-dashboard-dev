@@ -18,6 +18,7 @@ import { AccessTokenType } from "../../stores/interfaces/Auth";
 import "./styles/signIn.css";
 import { encryptStorage } from "../../utils/encryptStorage";
 import { getAuthCode, startGoogleLogin } from "../../utils/googleAuth";
+import {GoogleIcon} from "../../assets/icons/Icons";
 
 const { Text } = Typography;
 
@@ -26,6 +27,7 @@ const SignInScreen = () => {
   const [form] = Form.useForm();
   const [rememberChecked, setRememberChecked] = useState<boolean>(false);
   const [authCode, setAuthCode] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   // API
   const postAuth = postAuthMutation();
@@ -45,7 +47,14 @@ const SignInScreen = () => {
   }, []);
 
   const handleLogin = async () => {
-    startGoogleLogin();
+    setIsLoading(true);
+    try {
+      startGoogleLogin();
+    } catch (error) {
+      console.error("Login error:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleGetaccess_token = async () => {
@@ -69,28 +78,27 @@ const SignInScreen = () => {
 
   return (
     <Col className="containerSignIn">
-      <Space
-        direction="vertical"
-        size={0}
-        style={{ alignItems: "center", paddingBottom: 60 }}
-      >
+      <Space direction="vertical" size={0} className="logo-container">
         <img src={LOGO} alt="logo" className="logo" />
         {/* <Text className="text-title">Powered By ARTANI</Text> */}
       </Space>
-      <div style={{ textAlign: "center", marginTop: "100px" }}>
+
+      <div className="login-button-container">
         <button
           onClick={handleLogin}
-          style={{
-            padding: "12px 20px",
-            backgroundColor: "#4285F4",
-            color: "white",
-            border: "none",
-            borderRadius: "4px",
-            fontSize: "16px",
-            cursor: "pointer",
-          }}
-        >
-          Login with Google
+          disabled={isLoading}
+          className={`google-login-btn ${isLoading ? "loading" : ""}`}>
+          {isLoading ? (
+            <>
+              <div className="spinner" />
+              <span>กำลังเชื่อมต่อ...</span>
+            </>
+          ) : (
+            <>
+              <GoogleIcon />
+              <span>เข้าสู่ระบบด้วย Google</span>
+            </>
+          )}
         </button>
       </div>
     </Col>

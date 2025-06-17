@@ -19,11 +19,11 @@
   margin-top: 40px;
   box-shadow: none;
   line-height: normal;
-  background-color: var(--login-color);
+  background-color: var(--primary-color);
 }
 
 .loginBtn:hover {
-  background-color: var(--login-color) !important;
+  background-color: var(--primary-color) !important;
   opacity: 0.9;
 }
 
@@ -46,4 +46,71 @@
 .txtCenter {
   align-items: center;
   text-align: center;
+}
+
+/* New CSS Classes */
+.logo-container {
+  align-items: center;
+  padding-bottom: 60px;
+}
+
+.login-button-container {
+  text-align: center;
+  margin-top: 100px;
+}
+
+/* Google Login Button Styles */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.google-login-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 12px 24px;
+  background-color: #fff;
+  color: #1f1f1f;
+  border: 1px solid #dadce0;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  min-width: 240px;
+  height: 48px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.google-login-btn:hover:not(.loading) {
+  background-color: #f8f9fa;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  transform: translateY(-1px);
+}
+
+.google-login-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.3);
+}
+
+.google-login-btn:active:not(.loading) {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.google-login-btn.loading {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #f3f3f3;
+  border-top: 2px solid var(--primary-color) !important;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
 }

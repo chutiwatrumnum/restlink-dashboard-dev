@@ -119,8 +119,8 @@
   width: 48px !important;
   height: 48px !important;
   margin: 0 auto !important;
-  background: #F9FAFB !important;
-  color: #9CA3AF !important;
+  background: #FFFFFF !important;
+  color: #FFFFFF !important;
 }
 
 .sideMenuContainer.collapsed .sideMenuFooter .ant-menu-item:hover {
@@ -138,7 +138,7 @@
 /* เมนูปกติ (สีอ่อน) */
 .sideMenuContainer .ant-menu-item {
   color: #4B5563 !important; /* สีเทาเข้มขึ้น */
-  background: #F9FAFB !important; /* สีเทาอ่อม */
+  background: #FFFFFF !important; /* สีเทาอ่อม */
   margin: 0 0 6px 0 !important;
   height: 48px !important;
   line-height: 48px !important;
@@ -155,14 +155,14 @@
 
 .sideMenuContainer .ant-menu-item:hover {
   background: #E5E7EB !important;
-  color: #374151 !important;
+  color: #FFFFFF !important;
   transform: translateY(-1px) !important;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12) !important;
 }
 
 /* Hover สำหรับ main menu item ที่ selected (สีน้ำเงินเข้ม) */
 .sideMenuContainer .ant-menu-item-selected:hover {
-  background: #1E40AF !important; /* สีน้ำเงินเข้มขึ้นเมื่อ hover */
+  background: var(--secondary-color) !important; /* สีน้ำเงินเข้มขึ้นเมื่อ hover */
   color: #FFFFFF !important; /* text สีขาวเมื่อ hover */
   transform: translateY(-1px) !important;
   box-shadow: 0 4px 12px rgba(30, 58, 138, 0.4) !important;
@@ -187,7 +187,7 @@
 
 /* Parent Menu (สีอ่อม - default) */
 .sideMenuContainer .ant-menu-submenu-title {
-  background: #F3F4F6 !important; /* สีเทาอ่อม */
+  background: #FFFFFF !important; /* สีเทาอ่อม */
   color: #4B5563 !important; /* สีเทาเข้ม */
   margin: 0 0 6px 0 !important;
   height: 48px !important;
@@ -211,7 +211,7 @@
 
 .sideMenuContainer .ant-menu-submenu-title:hover {
   background: #E5E7EB !important; /* hover สีเทาเข้มขึ้น */
-  color: #374151 !important;
+  color: #FFFFFF !important;
   transform: translateY(-1px) !important;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1) !important;
 }
@@ -219,7 +219,7 @@
 /* Hover สำหรับ parent menu ที่ active - Override */
 .sideMenuContainer .ant-menu-submenu-selected > .ant-menu-submenu-title:hover,
 .sideMenuContainer .ant-menu-submenu-open > .ant-menu-submenu-title:hover {
-  background: #1E40AF !important; /* สีน้ำเงินเข้มขึ้นเมื่อ hover */
+  background: var(--secondary-color) !important; /* สีน้ำเงินเข้มขึ้นเมื่อ hover */
   color: #FFFFFF !important; /* text สีขาวเมื่อ hover */
   transform: translateY(-1px) !important;
   box-shadow: 0 4px 12px rgba(30, 58, 138, 0.4) !important;
@@ -246,7 +246,7 @@
 /* Submenu Items (สีอ่อน) */
 .sideMenuContainer .ant-menu-submenu .ant-menu-item {
   color: #4B5563 !important; /* สีเทาเข้มขึ้น */
-  background: #F3F4F6 !important; /* สีเทาอ่อม */
+  background: #FFFFFF !important; /* สีเทาอ่อม */
   margin: 0 0 4px 0 !important;
   height: 44px !important;
   line-height: 44px !important;
@@ -261,14 +261,14 @@
 
 .sideMenuContainer .ant-menu-submenu .ant-menu-item:hover {
   background: #E5E7EB !important;
-  color: #374151 !important;
+  color: #FFFFFF !important;
   transform: translateX(3px) !important;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1) !important;
 }
 
 /* Submenu Item ที่เลือก (สีฟ้าอ่อม - เก็บสีเดิม) */
 .sideMenuContainer .ant-menu-submenu .ant-menu-item-selected {
-  color: #1E40AF !important; /* สีน้ำเงินเข้ม */
+  color: var(--primary-color) !important; /* สีน้ำเงินเข้ม */
   background: #BFDBFE !important; /* สีฟ้าอ่อม - เก็บสีเดิม */
   font-weight: 500 !important;
   box-shadow: 0 1px 4px rgba(59, 130, 246, 0.2) !important;
@@ -304,7 +304,7 @@
 
 /* Icon สำหรับ submenu ที่ selected (สีน้ำเงินเข้ม) */
 .sideMenuContainer .ant-menu-submenu .ant-menu-item-selected .sideMenuIcon {
-  color: #1E40AF !important; /* สีน้ำเงินเข้มสำหรับ selected icons ใน submenu */
+  color: var(--secondary-color) !important; /* สีน้ำเงินเข้มสำหรับ selected icons ใน submenu */
 }
 
 /* Collapsed State */
@@ -355,13 +355,13 @@
 /* Collapsed menu items สีและรูปแบบปกติ */
 .sideMenuContainer.collapsed .ant-menu-item {
   color: #4B5563 !important;
-  background: #F9FAFB !important;
+  background: #FFFFFF !important;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
 }
 
 .sideMenuContainer.collapsed .ant-menu-item:hover {
   background: #E5E7EB !important;
-  color: #374151 !important;
+  color: #FFFFFF !important;
   transform: scale(1.05) !important;
 }
 
@@ -378,7 +378,7 @@
 
 /* Collapsed selected main menu item hover */
 .sideMenuContainer.collapsed .ant-menu-item-selected:hover {
-  background: #1E40AF !important; /* สีน้ำเงินเข้มขึ้นเมื่อ hover */
+  background: var(--secondary-color) !important; /* สีน้ำเงินเข้มขึ้นเมื่อ hover */
   color: #FFFFFF !important;
   transform: scale(1.05) !important;
   box-shadow: 0 4px 12px rgba(30, 58, 138, 0.4) !important;
@@ -391,13 +391,13 @@
 /* Collapsed parent menu */
 .sideMenuContainer.collapsed .ant-menu-submenu-title {
   color: #4B5563 !important;
-  background: #F3F4F6 !important;
+  background: #FFFFFF !important;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
 }
 
 .sideMenuContainer.collapsed .ant-menu-submenu-title:hover {
   background: #E5E7EB !important;
-  color: #374151 !important;
+  color: #FFFFFF !important;
   transform: scale(1.05) !important;
 }
 
@@ -417,7 +417,7 @@
 /* Collapsed active parent menu hover */
 .sideMenuContainer.collapsed .ant-menu-submenu-selected > .ant-menu-submenu-title:hover,
 .sideMenuContainer.collapsed .ant-menu-submenu-open > .ant-menu-submenu-title:hover {
-  background: #1E40AF !important; /* สีน้ำเงินเข้มขึ้นเมื่อ hover */
+  background: var(--secondary-color) !important; /* สีน้ำเงินเข้มขึ้นเมื่อ hover */
   color: #FFFFFF !important;
   transform: scale(1.05) !important;
   box-shadow: 0 4px 12px rgba(30, 58, 138, 0.4) !important;
