@@ -80,7 +80,7 @@ const serviceCenterChatManage = ({
       // ใช้ Boolean constructor เพื่อให้แน่ใจว่าเป็น boolean
       requestCloseCase: Boolean(data.requestCloseCase),
       requestNewAppointment: Boolean(data.requestNewAppointment),
-      requestReschedule: Boolean(data.requestReschedule), // ✅ เพิ่ม validation
+      requestReSchedule: Boolean(data.requestReSchedule), // ✅ เปลี่ยนจาก requestReschedule
     };
 
     // ✅ เพิ่ม logging เพื่อ debug
@@ -89,21 +89,21 @@ const serviceCenterChatManage = ({
       statusName: editData.statusName,
       requestCloseCase: editData.requestCloseCase,
       requestNewAppointment: editData.requestNewAppointment,
-      requestReschedule: editData.requestReschedule,
+      requestReSchedule: editData.requestReSchedule,
       types: {
         requestCloseCase: typeof editData.requestCloseCase,
         requestNewAppointment: typeof editData.requestNewAppointment,
-        requestReschedule: typeof editData.requestReschedule,
+        requestReSchedule: typeof editData.requestReSchedule,
       },
     });
 
     // ✅ เพิ่มการตรวจสอบค่าที่ไม่คาดคิด
     if (
-      editData.requestReschedule === null ||
-      editData.requestReschedule === undefined
+      editData.requestReSchedule === null ||
+      editData.requestReSchedule === undefined
     ) {
-      console.warn("⚠️ requestReschedule is null/undefined, setting to false");
-      editData.requestReschedule = false;
+      console.warn("⚠️ requestReSchedule is null/undefined, setting to false");
+      editData.requestReSchedule = false;
     }
 
     switch (editData.statusName) {
@@ -138,7 +138,7 @@ const serviceCenterChatManage = ({
       id: editData.id,
       requestCloseCase: editData.requestCloseCase,
       requestNewAppointment: editData.requestNewAppointment,
-      requestReschedule: editData.requestReschedule,
+      requestReSchedule: editData.requestReSchedule,
     });
 
     setEditData(editData);

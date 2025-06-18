@@ -50,10 +50,9 @@ export interface ServiceCenterDataType {
   serviceType: ServiceType;
   imageItems: ImageItem[];
   closedWithReject: boolean;
-  // ✅ เปลี่ยนจาก optional เป็น required พร้อม default value
   requestCloseCase: boolean;
   requestNewAppointment: boolean;
-  requestReschedule: boolean; // ✅ ลบ ? ออกเพื่อให้เป็น required
+  requestReSchedule: boolean;
   appointmentDate: Date | AppointmentSlot[] | AppointmentSlotLegacy[]; // Updated to support both formats
   appointmentDateConfirmAppointment?: Date;
   appointmentDateConfirmAppointmentID?: number;

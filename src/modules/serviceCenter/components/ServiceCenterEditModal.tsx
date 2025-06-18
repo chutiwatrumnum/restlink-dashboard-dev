@@ -243,7 +243,7 @@ const ServiceCenterEditModal = ({
           : undefined,
         cause: data.cause,
         solution: data.solution,
-        requestReschedule: data.requestReschedule,
+        requestReSchedule: data.requestReSchedule,
       });
 
       // Set success status ID for repairing status
@@ -744,7 +744,7 @@ const ServiceCenterEditModal = ({
             />
             <div className="action-buttons">
               <Button
-                disabled={!data.requestCloseCase || data.requestReschedule}
+                disabled={!data.requestCloseCase || data.requestReSchedule}
                 onClick={handleCloseTicket}
                 size="large"
                 danger>
@@ -754,172 +754,194 @@ const ServiceCenterEditModal = ({
           </>
         );
 
-      case "Confirm appointment":
-        return (
-          <>
-            {/* Show selected appointment */}
-            {data.appointmentDate &&
-              Array.isArray(data.appointmentDate) &&
-              data.appointmentDate.length > 0 && (
-                <div className="appointment-confirmation-container">
-                  <div className="appointment-slots-header">
-                    <span>
-                      Selected Appointment
-                      <Tooltip title="This is the appointment slot selected by the user">
-                        <InfoCircleOutlined style={{ marginLeft: 8 }} />
-                      </Tooltip>
-                    </span>
+        case "Confirm appointment":
+          return (
+            <>
+              {/* Show selected appointment */}
+              {data.appointmentDate &&
+                Array.isArray(data.appointmentDate) &&
+                data.appointmentDate.length > 0 && (
+                  <div className="appointment-confirmation-container">
+                    <div className="appointment-slots-header">
+                      <span>
+                        Selected Appointment
+                        <Tooltip title="This is the appointment slot selected by the user">
+                          <InfoCircleOutlined style={{ marginLeft: 8 }} />
+                        </Tooltip>
+                      </span>
+                    </div>
+  
+                    <Space
+                      direction="vertical"
+                      style={{ width: "100%" }}
+                      size="middle">
+                      {data.appointmentDate
+                        .filter(
+                          (appointment: any) => appointment.selected === true
+                        )
+                        .map((appointment: any, index: number) => {
+                          const appointmentDisplay =
+                            typeof appointment === "object" && appointment.date
+                              ? {
+                                  date: dayjs(appointment.date).format(
+                                    "DD/MM/YYYY"
+                                  ),
+                                  time:
+                                    appointment.startTime && appointment.endTime
+                                      ? `${appointment.startTime} - ${appointment.endTime}`
+                                      : "All day",
+                                }
+                              : {
+                                  date: dayjs(appointment).format("DD/MM/YYYY"),
+                                  time: "All day",
+                                };
+  
+                          return (
+                            <Card
+                              key={appointment.id || index}
+                              size="small"
+                              title="Confirmed Appointment"
+                              className="appointment-selected"
+                              style={{
+                                border: "1px solid #52c41a",
+                                backgroundColor: "#f6ffed",
+                              }}>
+                              <Row gutter={16}>
+                                <Col span={12}>
+                                  <div className="appointment-info">
+                                    <label>
+                                      <CalendarOutlined
+                                        style={{
+                                          marginRight: 4,
+                                          color: "#d46b08",
+                                        }}
+                                      />
+                                      Date
+                                    </label>
+                                    <div className="appointment-value">
+                                      {appointmentDisplay.date}
+                                    </div>
+                                  </div>
+                                </Col>
+                                <Col span={12}>
+                                  <div className="appointment-info">
+                                    <label>
+                                      <ClockCircleOutlined
+                                        style={{
+                                          marginRight: 4,
+                                          color: "#cf1322",
+                                        }}
+                                      />
+                                      Time
+                                    </label>
+                                    <div className="appointment-value">
+                                      {appointmentDisplay.time}
+                                    </div>
+                                  </div>
+                                </Col>
+                              </Row>
+                              <div className="selected-indicator">
+                                <CheckCircleOutlined style={{ marginRight: 4 }} />
+                                User Selected
+                              </div>
+                            </Card>
+                          );
+                        })}
+                    </Space>
+  
+                    {!data.appointmentDate.some(
+                      (appointment: any) => appointment.selected === true
+                    ) && (
+                      <Alert
+                        message="No appointment has been selected by the user yet."
+                        type="info"
+                        showIcon
+                        className="info-alert"
+                      />
+                    )}
                   </div>
-
-                  <Space
-                    direction="vertical"
-                    style={{ width: "100%" }}
-                    size="middle">
-                    {data.appointmentDate
-                      .filter(
-                        (appointment: any) => appointment.selected === true
-                      )
-                      .map((appointment: any, index: number) => {
-                        const appointmentDisplay =
-                          typeof appointment === "object" && appointment.date
-                            ? {
-                                date: dayjs(appointment.date).format(
-                                  "DD/MM/YYYY"
-                                ),
-                                time:
-                                  appointment.startTime && appointment.endTime
-                                    ? `${appointment.startTime} - ${appointment.endTime}`
-                                    : "All day",
-                              }
-                            : {
-                                date: dayjs(appointment).format("DD/MM/YYYY"),
-                                time: "All day",
-                              };
-
-                        return (
-                          <Card
-                            key={appointment.id || index}
-                            size="small"
-                            title="Confirmed Appointment"
-                            className="appointment-selected"
-                            style={{
-                              border: "1px solid #52c41a",
-                              backgroundColor: "#f6ffed",
-                            }}>
-                            <Row gutter={16}>
-                              <Col span={12}>
-                                <div className="appointment-info">
-                                  <label>
-                                    <CalendarOutlined
-                                      style={{
-                                        marginRight: 4,
-                                        color: "#d46b08",
-                                      }}
-                                    />
-                                    Date
-                                  </label>
-                                  <div className="appointment-value">
-                                    {appointmentDisplay.date}
-                                  </div>
-                                </div>
-                              </Col>
-                              <Col span={12}>
-                                <div className="appointment-info">
-                                  <label>
-                                    <ClockCircleOutlined
-                                      style={{
-                                        marginRight: 4,
-                                        color: "#cf1322",
-                                      }}
-                                    />
-                                    Time
-                                  </label>
-                                  <div className="appointment-value">
-                                    {appointmentDisplay.time}
-                                  </div>
-                                </div>
-                              </Col>
-                            </Row>
-                            <div className="selected-indicator">
-                              <CheckCircleOutlined style={{ marginRight: 4 }} />
-                              User Selected
-                            </div>
-                          </Card>
-                        );
-                      })}
-                  </Space>
-
-                  {!data.appointmentDate.some(
-                    (appointment: any) => appointment.selected === true
-                  ) && (
-                    <Alert
-                      message="No appointment has been selected by the user yet."
-                      type="info"
-                      showIcon
-                      className="info-alert"
-                    />
-                  )}
-                </div>
+                )}
+  
+              {/* Request status alerts - เช็คเงื่อนไขตามที่ต้องการ */}
+              {data.requestReSchedule && (
+                <Alert
+                  message="กรุณารอการยืนยันจากลูกบ้าน"
+                  description="ขณะนี้มีการร้องขอการเปลี่ยนแปลงนัดหมายจากลูกบ้าน กรุณารอการยืนยันก่อนดำเนินการต่อ"
+                  type="warning"
+                  showIcon
+                  className="info-alert"
+                  style={{ marginTop: 16 }}
+                />
               )}
-
-            {/* Request status alerts */}
-            {data.requestReschedule && (
-              <Alert
-                message="กรุณารอการยืนยันจากลูกบ้าน"
-                description="ขณะนี้มีการร้องขอการเปลี่ยนแปลงนัดหมายจากลูกบ้าน กรุณารอการยืนยันก่อนดำเนินการต่อ"
-                type="warning"
-                showIcon
-                className="info-alert"
-                style={{ marginTop: 16 }}
-              />
-            )}
-
-            {data.requestCloseCase && !data.requestReschedule && (
-              <Alert
-                message="ลูกบ้านร้องขอปิดเคส"
-                description="ลูกบ้านได้ส่งคำขอปิดเคสแล้ว ทางนิติบุคคลสามารถกดปุ่ม Close ticket เพื่อปิดเคสได้"
-                type="info"
-                showIcon
-                className="info-alert"
-                style={{ marginTop: 16 }}
-              />
-            )}
-
-            <div className="action-buttons">
-              <Button
-                disabled={!data.requestCloseCase || data.requestReschedule}
-                onClick={handleCloseTicket}
-                size="large"
-                danger>
-                Close ticket
-              </Button>
-              <Button
-                disabled={
-                  data.requestNewAppointment ||
-                  data.requestCloseCase ||
-                  data.requestReschedule
-                }
-                onClick={handleReschedule}
-                size="large">
-                Reschedule
-              </Button>
-              <Button
-                disabled={
-                  data.requestCloseCase ||
-                  data.requestNewAppointment ||
-                  data.requestReschedule ||
-                  !data.appointmentDate?.some(
-                    (appointment: any) => appointment.selected === true
-                  )
-                }
-                type="primary"
-                htmlType="submit"
-                size="large">
-                Confirm Appointment
-              </Button>
-            </div>
-          </>
-        );
+  
+              {data.requestCloseCase && !data.requestReSchedule && (
+                <Alert
+                  message="ลูกบ้านร้องขอปิดเคส"
+                  description="ลูกบ้านได้ส่งคำขอปิดเคสแล้ว ทางนิติบุคคลสามารถกดปุ่ม Close ticket เพื่อปิดเคสได้"
+                  type="info"
+                  showIcon
+                  className="info-alert"
+                  style={{ marginTop: 16 }}
+                />
+              )}
+  
+              {data.requestNewAppointment && !data.requestReSchedule && (
+                <Alert
+                  message="ลูกบ้านร้องขอนัดหมายใหม่"
+                  description="ลูกบ้านได้ส่งคำขอนัดหมายใหม่ กรุณาดำเนินการจัดนัดหมายใหม่"
+                  type="info"
+                  showIcon
+                  className="info-alert"
+                  style={{ marginTop: 16 }}
+                />
+              )}
+  
+              <div className="action-buttons">
+                <Button
+                  disabled={
+                    // ปิดปุ่ม Close ticket เมื่อ requestReSchedule เป็น true
+                    // หรือเมื่อ requestCloseCase เป็น false
+                    data.requestReSchedule || !data.requestCloseCase
+                  }
+                  onClick={handleCloseTicket}
+                  size="large"
+                  danger>
+                  Close ticket
+                </Button>
+                
+                <Button
+                  disabled={
+                    // ปิดปุ่ม Reschedule เมื่อ requestReSchedule เป็น true
+                    // หรือเมื่อมีการร้องขออื่นๆ
+                    data.requestReSchedule ||
+                    data.requestNewAppointment ||
+                    data.requestCloseCase
+                  }
+                  onClick={handleReschedule}
+                  size="large">
+                  Reschedule
+                </Button>
+                
+                <Button
+                  disabled={
+                    // ปิดปุ่ม Confirm Appointment เมื่อ requestReSchedule เป็น true
+                    // หรือเมื่อมีการร้องขออื่นๆ
+                    // หรือเมื่อยังไม่มีการเลือกนัดหมาย
+                    data.requestReSchedule ||
+                    data.requestCloseCase ||
+                    data.requestNewAppointment ||
+                    !data.appointmentDate?.some(
+                      (appointment: any) => appointment.selected === true
+                    )
+                  }
+                  type="primary"
+                  htmlType="submit"
+                  size="large">
+                  Confirm Appointment
+                </Button>
+              </div>
+            </>
+          );
 
       case "Repairing":
         return (
@@ -931,7 +953,7 @@ const ServiceCenterEditModal = ({
                 <div className="appointment-confirmation-container">
                   <div className="appointment-slots-header">
                     <span>
-                      Selected Appointment
+                      Date Appointment
                       <Tooltip title="This is the confirmed appointment slot">
                         <InfoCircleOutlined style={{ marginLeft: 8 }} />
                       </Tooltip>
@@ -1078,7 +1100,7 @@ const ServiceCenterEditModal = ({
 
             <div className="action-buttons">
               <Button
-                disabled={!data.requestCloseCase || data.requestReschedule}
+                disabled={!data.requestCloseCase || data.requestReSchedule}
                 onClick={handleCloseTicket}
                 size="large"
                 danger>
@@ -1099,7 +1121,7 @@ const ServiceCenterEditModal = ({
       case "Success":
         return (
           <Alert
-            message="The fixing process is now complete. We're currently waiting for the user to confirm the case before we can officially close it."
+            message="ขณะนี้ซ่อมแก้ไขเสร็จสมบูรณ์แล้ว กำลังรอให้ผู้ใช้ยืนยันก่อนจึงจะสามารถปิดปัญหาได้อย่างสมบูรณ์"
             type="info"
             showIcon
             className="info-alert"

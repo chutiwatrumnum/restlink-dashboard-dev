@@ -43,10 +43,10 @@ export const useServiceCenterServiceListQuery = (payloadQuery: ServiceCenterPayl
                     roomAddress: item.unit.roomAddress,
                     issue: item.cause != null ? item.cause : "",
                     fullname: item.createdBy.givenName + " " + item.createdBy.familyName,
-                    // เพิ่มการตั้งค่าเริ่มต้นสำหรับฟิลด์ใหม่
+                    // ✅ เปลี่ยนเป็น requestReSchedule
                     requestCloseCase: item.requestCloseCase || false,
                     requestNewAppointment: item.requestNewAppointment || false,
-                    requestReschedule: item.requestReschedule || false,
+                    requestReSchedule: item.requestReSchedule || false,
                 };
             });
             return { data: dataTableList, total: data.total };
@@ -86,10 +86,10 @@ export const useServiceCenterByServiceIDQuery = (payloadQuery: number) => {
             data.issue = data.cause != null ? data.cause : "";
             data.fullname = data.createdBy.firstName + " " + data.createdBy.lastName;
 
-            // เพิ่มการตั้งค่าเริ่มต้นสำหรับฟิลด์ใหม่
+            // ✅ เปลี่ยนเป็น requestReSchedule
             data.requestCloseCase = data.requestCloseCase || false;
             data.requestNewAppointment = data.requestNewAppointment || false;
-            data.requestReschedule = data.requestReschedule || false;
+            data.requestReSchedule = data.requestReSchedule || false;
 
             return data;
         },
@@ -208,15 +208,15 @@ export const getServiceCenterServiceListQuery = async (serviceId: number) => {
             });
         }
 
-        // เพิ่มการตั้งค่าเริ่มต้นสำหรับฟิลด์ใหม่หากไม่มีจาก API (ตั้งค่าแบบ explicit)
+        // ✅ เปลี่ยนเป็น requestReSchedule
         data.data.requestCloseCase = data.data.requestCloseCase ?? false;
         data.data.requestNewAppointment = data.data.requestNewAppointment ?? false;
-        data.data.requestReschedule = data.data.requestReschedule ?? false; // ใช้ ?? เพื่อจัดการ undefined
+        data.data.requestReSchedule = data.data.requestReSchedule ?? false;
 
         console.log("📋 [API] Processed data with defaults:", {
             requestCloseCase: data.data.requestCloseCase,
             requestNewAppointment: data.data.requestNewAppointment,
-            requestReschedule: data.data.requestReschedule,
+            requestReSchedule: data.data.requestReSchedule,
         });
 
         return data.data;

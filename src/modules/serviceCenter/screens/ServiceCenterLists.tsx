@@ -24,9 +24,9 @@ import { getDataBlock } from "../../deliveryLogs/service/api/DeliveryLogsService
 import { unitDetail } from "../../../stores/interfaces/DeliveryLogs";
 import { getServiceCenterServiceListQuery } from "../hooks/serviceCenterQuery";
 
-// Extended interface เพื่อรองรับ requestReschedule
+// ✅ Extended interface เพื่อรองรับ requestReSchedule
 interface ExtendedServiceCenterDataType extends ServiceCenterDataType {
-  requestReschedule: boolean; // ✅ เปลี่ยนจาก optional เป็น required
+  requestReSchedule: boolean;
 }
 
 const ServiceCenterLists = () => {
@@ -110,7 +110,7 @@ const ServiceCenterLists = () => {
         // ตั้งค่าเริ่มต้นอย่างชัดเจนด้วย Boolean constructor
         requestCloseCase: Boolean(record.requestCloseCase),
         requestNewAppointment: Boolean(record.requestNewAppointment),
-        requestReschedule: Boolean(record.requestReschedule),
+        requestReSchedule: Boolean(record.requestReSchedule),
       };
 
       console.log("📋 [onEdit] Initial editData:", {
@@ -118,7 +118,7 @@ const ServiceCenterLists = () => {
         statusName: editData.statusName,
         requestCloseCase: editData.requestCloseCase,
         requestNewAppointment: editData.requestNewAppointment,
-        requestReschedule: editData.requestReschedule,
+        requestReSchedule: editData.requestReSchedule,
       });
 
       const dataSuccess = selectList?.data.find(
@@ -140,7 +140,7 @@ const ServiceCenterLists = () => {
         console.log("✅ API Response received:", {
           requestCloseCase: apiData?.requestCloseCase,
           requestNewAppointment: apiData?.requestNewAppointment,
-          requestReschedule: apiData?.requestReschedule,
+          requestReSchedule: apiData?.requestReSchedule,
         });
 
         // Handle appointment data with new format support
@@ -177,17 +177,17 @@ const ServiceCenterLists = () => {
         editData.requestNewAppointment = Boolean(
           apiData?.requestNewAppointment
         );
-        editData.requestReschedule = Boolean(apiData?.requestReschedule);
+        editData.requestReSchedule = Boolean(apiData?.requestReSchedule);
 
         console.log("📋 [onEdit] Final editData after API update:", {
           id: editData.id,
           requestCloseCase: editData.requestCloseCase,
           requestNewAppointment: editData.requestNewAppointment,
-          requestReschedule: editData.requestReschedule,
+          requestReSchedule: editData.requestReSchedule,
           types: {
             requestCloseCase: typeof editData.requestCloseCase,
             requestNewAppointment: typeof editData.requestNewAppointment,
-            requestReschedule: typeof editData.requestReschedule,
+            requestReSchedule: typeof editData.requestReSchedule,
           },
         });
 
@@ -201,13 +201,13 @@ const ServiceCenterLists = () => {
 
       // ✅ เพิ่มการ validate ข้อมูลก่อนส่งไปยัง Modal
       if (
-        editData.requestReschedule === null ||
-        editData.requestReschedule === undefined
+        editData.requestReSchedule === null ||
+        editData.requestReSchedule === undefined
       ) {
         console.warn(
-          "⚠️ requestReschedule is null/undefined, forcing to false"
+          "⚠️ requestReSchedule is null/undefined, forcing to false"
         );
-        editData.requestReschedule = false;
+        editData.requestReSchedule = false;
       }
 
       console.log("🎯 [onEdit] Modal opened with data");
