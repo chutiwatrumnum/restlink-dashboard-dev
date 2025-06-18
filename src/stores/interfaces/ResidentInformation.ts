@@ -34,17 +34,20 @@ export interface ResidentInformationDataType {
   id: string;
   familyName: string;
   givenName: string;
-  nickName?: string;
   email: string;
-  birthDate?: string;
+  role: Role;
+  unit: Unit;
   active: boolean;
+
+  middleName?: string;
+  nickName?: string;
+  tel?: string;
+  birthDate?: string;
   imageProfile?: string;
   contact?: string;
   createdAt: string;
   updatedBy?: string;
   updatedAt?: string;
-  role: Role;
-  unit: Unit;
 }
 
 export interface Role {
@@ -64,8 +67,23 @@ export interface Block {
 }
 
 export interface ResidentInformationFormDataType {
-  roleId: number;
-  unitId: string;
+  id: string;
+  familyName: string;
+  givenName: string;
+  email: string;
+  role: Role;
+  unit: Unit;
+  active: boolean;
+
+  middleName?: string;
+  nickName?: string;
+  tel?: string;
+  birthDate?: string;
+  imageProfile?: string;
+  contact?: string;
+  createdAt: string;
+  updatedBy?: string;
+  updatedAt?: string;
 }
 // From obv88
 export interface ResidentAddNew {
@@ -217,4 +235,9 @@ export interface InvitationsUnit {
 export interface CreatedBy {
   familyName: string;
   givenName: string;
+}
+
+export interface UserRoomListType {
+  unit: InvitationsUnit;
+  role: InvitationsRole;
 }

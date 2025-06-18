@@ -146,11 +146,13 @@ const PublicFolder = () => {
       render: (_, record, index) => (
         <>
           <Button
+            className="iconButton"
             type="text"
             icon={<EditOutlined />}
             onClick={() => onEdit(record, index)}
           />
           <Button
+            className="iconButton"
             value={record?.id}
             type="text"
             icon={<DeleteOutlined />}

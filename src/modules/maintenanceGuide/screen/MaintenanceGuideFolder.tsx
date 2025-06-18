@@ -148,11 +148,13 @@ const MaintenanceGuideFolder = () => {
       render: (_, record, index: number) => (
         <>
           <Button
+            className="iconButton"
             type="text"
             icon={<EditOutlined />}
             onClick={() => onEdit(record, index)}
           />
           <Button
+            className="iconButton"
             value={record?.id}
             type="text"
             icon={<DeleteOutlined />}

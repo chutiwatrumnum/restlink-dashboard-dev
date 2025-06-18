@@ -14,6 +14,8 @@ import { message } from "antd";
 const getdataresidentlist = async (params: conditionPage) => {
   let url: string = `/users/list?`;
   const resultparams = await paramsdata(params);
+  // console.log(resultparams);
+
   if (resultparams.status) {
     url = url + resultparams.paramsstr;
     console.log("url:", url);
@@ -25,37 +27,6 @@ const getdataresidentlist = async (params: conditionPage) => {
 
       if (result.status < 400) {
         const AllDataResident = result.data.result.rows;
-        // console.log("API DATA =>", AllDataResident);
-
-        // const data: ResidentInformationDataType[] = [];
-
-        // AllDataResident.map((e: any, i: number) => {
-        //   const userdata: ResidentInformationDataType = {
-        //     key: e.id,
-        //     firstName: e.firstName,
-        //     lastName: e.lastName,
-        //     roomAddress: e?.unit?.roomAddress ? e?.unit.roomAddress : "-",
-        //     email: e.email,
-        //     hobby: e.hobby ? e?.hobby : "-",
-        //     role: e?.role?.name ? e?.role.name : "-",
-        //     moveInDate: e?.moveInDate ?? null,
-        //     moveOutDate: e?.moveOutDate ?? null,
-        //     birthDate: e?.birthDate ? e?.birthDate : null,
-        //     contact: e.contact,
-        //     reSendStatus: e.usersVerify?.expireToken,
-        //     nickName: e?.nickName ? e?.nickName : null,
-        //     createdAt: e.createdAt,
-        //     rejectAt: e.rejectAt ? e.rejectAt : "",
-        //     rejectReason: e.rejectReason ? e.rejectReason : "",
-        //     rejectUser: e.rejectUser ? e.rejectUser : "",
-        //     channel: e.channel,
-        //     lockerCode: e.lockerCode ? e.lockerCode : "",
-        //     updatedAt: e.updatedAt ? e.updatedAt : null,
-        //     updatedBy: e.updatedBy ? e.upDatedBy : null,
-        //   };
-        //   data.push(userdata);
-        // });
-
         return {
           total: result.data.result.total,
           status: true,

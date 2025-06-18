@@ -1,34 +1,30 @@
 import { useState, useEffect } from "react";
-import { Row, Button, Modal, Col, QRCode, Flex, Input, message } from "antd";
+import { Button } from "antd";
 import Header from "../../../components/templates/Header";
 import DatePicker from "../../../components/common/DatePicker";
 import SearchBox from "../../../components/common/SearchBox";
-import MediumActionButton from "../../../components/common/MediumActionButton";
 import ResidentInformationTable from "../components/residentInformation/ResidentInformationTable";
-import ResidentInformationCreateModal from "../components/residentInformation/ResidentInformationCreateModal";
-// import ResidentInformationEditModal from "../components/residentInformation/ResidentInformationEditModal";
+import ResidentInformationEditModal from "../components/residentInformation/ResidentInformationEditModal";
 import dayjs from "dayjs";
 import { conditionPage } from "../../../stores/interfaces/ResidentInformation";
-import { EditIcon, TrashIcon } from "../../../assets/icons/Icons";
 import { useDispatch, useSelector } from "react-redux";
 import { Dispatch, RootState } from "../../../stores";
 import type { ColumnsType, TableProps } from "antd/es/table";
 import { ResidentInformationDataType } from "../../../stores/interfaces/ResidentInformation";
-import { InfoCircleOutlined } from "@ant-design/icons";
+import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import "../styles/userManagement.css";
 import SuccessModal from "../../../components/common/SuccessModal";
 import FailedModal from "../../../components/common/FailedModal";
 import { deleteResidentId } from "../service/api/ResidentServiceAPI";
-import InfoResidentInformation from "../components/residentInformation/InfoResidentInformation";
 import ConfirmModal from "../../../components/common/ConfirmModal";
-import QrCodeModal from "../components/residentInformation/QrCodeModal";
+import UserRoomListModal from "../components/residentInformation/UserRoomListModal";
+
 const ResidentInformationMain = () => {
   // variables
   const dispatch = useDispatch<Dispatch>();
   const { loading, tableData, total } = useSelector(
     (state: RootState) => state.resident
   );
-  const { accessibility } = useSelector((state: RootState) => state.common);
 
   // States
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -49,89 +45,74 @@ const ResidentInformationMain = () => {
     isActive: true,
   };
   const [rerender, setRerender] = useState<boolean>(true);
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editData, setEditData] = useState<ResidentInformationDataType | null>(
     null
   );
   const [paramsData, setParamsData] = useState<conditionPage>(params);
-  const [isModalOpenInfo, setIsModalOpenInfo] = useState(false);
-  const [dataInfo, setDataInfo] = useState<any>(null);
+  const [isUserRoomListModalOpen, setIsUserRoomListModalOpen] = useState(false);
+  const [roomListData, setRoomListData] =
+    useState<ResidentInformationDataType>();
 
   const columns: ColumnsType<ResidentInformationDataType> = [
     {
-      title: "First name",
+      title: "Name-Surname",
+      key: "name",
       width: "7%",
-      dataIndex: "givenName",
       align: "center",
       sorter: {
         compare: (a, b) => a.givenName.localeCompare(b.givenName),
       },
+      render: (_, record) => {
+        return (
+          <div>{`${record?.givenName} ${record?.familyName ?? ""} ${
+            record?.familyName
+          }`}</div>
+        );
+      },
     },
     {
-      title: "Last name",
-      dataIndex: "familyName",
+      title: "Phone number",
+      key: "tel",
       align: "center",
       width: "7%",
       sorter: {
         compare: (a, b) => a.familyName.localeCompare(b.familyName),
       },
+      render: (_, record) => {
+        return <div>{`${record?.tel ?? "-"}`}</div>;
+      },
     },
     {
-      title: "Room address",
+      title: "Email",
+      key: "email",
       align: "center",
       width: "5%",
       sorter: {
         compare: (a, b) => a.unit.roomAddress.localeCompare(b.unit.roomAddress),
       },
       render: (_, record) => {
-        return <div>{record.unit.roomAddress}</div>;
+        return <div>{record.email ?? "Something went wrong!"}</div>;
       },
     },
     {
-      title: "Role",
-      dataIndex: "role",
+      title: "Create at",
+      key: "createdAt",
       align: "center",
       width: "5%",
-      sorter: {
-        compare: (a, b) => a.role.name.localeCompare(b.role.name),
-      },
       render: (_, record) => {
-        return <div>{record.role.name}</div>;
+        return (
+          <div>
+            {record?.createdAt
+              ? dayjs(record.createdAt).format("DD/MM/YYYY")
+              : "Something went wrong!"}
+          </div>
+        );
       },
     },
-    // {
-    //   title: "Move-in-date",
-    //   dataIndex: "moveInDate",
-    //   align: "center",
-    //   width: "5%",
-    //   render: (_, record) => {
-    //     return (
-    //       <div>
-    //         {record.moveInDate
-    //           ? dayjs(record.moveInDate).format("DD/MM/YYYY")
-    //           : "-"}
-    //       </div>
-    //     );
-    //   },
-    // },
-    // {
-    //   title: "Move-out-date",
-    //   dataIndex: "moveOutDate",
-    //   align: "center",
-    //   width: "5%",
-    //   render: (_, record) => {
-    //     return (
-    //       <div>
-    //         {record.moveOutDate
-    //           ? dayjs(record.moveOutDate).format("DD/MM/YYYY")
-    //           : "-"}
-    //       </div>
-    //     );
-    //   },
-    // },
     {
       title: "Last Update",
+      key: "updatedAt",
       dataIndex: "updatedAt",
       align: "center",
       width: "5%",
@@ -142,12 +123,25 @@ const ResidentInformationMain = () => {
       },
     },
     {
-      title: "Update by",
-      dataIndex: "updatedBy",
+      title: "Room list",
+      key: "unitList",
       align: "center",
       width: "5%",
       render: (_, record) => {
-        return <div>{record?.updatedBy ?? "-"}</div>;
+        return (
+          <>
+            <Button
+              color="primary"
+              variant="outlined"
+              onClick={() => {
+                setRoomListData(record);
+                setIsUserRoomListModalOpen(true);
+              }}
+            >
+              Room list
+            </Button>
+          </>
+        );
       },
     },
     {
@@ -158,45 +152,20 @@ const ResidentInformationMain = () => {
       render: (_, record) => {
         return (
           <>
-            <Row gutter={[8, 8]}>
-              <Col xs={24} sm={24} lg={24}>
-                <Button
-                  type="text"
-                  // disabled={
-                  //   accessibility?.team_user_management.allowView ? false : true
-                  // }
-                  onClick={() => onGetDetail(record)}
-                  icon={
-                    <InfoCircleOutlined
-                      style={{ fontSize: 20, color: "#403d38" }}
-                    />
-                  }
-                />
-              </Col>
-              {/* <Col xs={8} sm={8} lg={8}>
-                <Button
-                  disabled={
-                    accessibility?.team_user_management.allowEdit ? false : true
-                  }
-                  type="link"
-                  icon={<EditIcon />}
-                  onClick={() => onEdit(record)}
-                />
-              </Col> */}
-              {/* <Col xs={8} sm={8} lg={8}>
-                <Button
-                  disabled={
-                    accessibility?.team_user_management.allowDelete
-                      ? false
-                      : true
-                  }
-                  value={record.id}
-                  type="text"
-                  onClick={showDeleteConfirm}
-                  icon={<TrashIcon />}
-                />
-              </Col> */}
-            </Row>
+            <Button
+              className="iconButton"
+              type="text"
+              size="large"
+              icon={<EditOutlined />}
+              onClick={() => onEdit(record)}
+            />
+            <Button
+              className="iconButton"
+              value={record.id}
+              type="text"
+              onClick={showDeleteConfirm}
+              icon={<DeleteOutlined />}
+            />
           </>
         );
       },
@@ -219,23 +188,14 @@ const ResidentInformationMain = () => {
   const onSearch = async (value: string) => {
     params = paramsData;
     params.search = value;
-    await setParamsData(params);
+    setParamsData(params);
     await dispatch.resident.getTableData(paramsData);
-  };
-
-  const onCreate = async () => {
-    setIsCreateModalOpen(true);
-  };
-
-  const onGetDetail = async (data: ResidentInformationDataType) => {
-    await setDataInfo(data);
-    await setIsModalOpenInfo(true);
   };
 
   const onEdit = async (data: ResidentInformationDataType) => {
     // console.log(data);
-    await setEditData(data);
-    await setIsEditModalOpen(true);
+    setEditData(data);
+    setIsEditModalOpen(true);
   };
 
   const onChangeTable: TableProps<ResidentInformationDataType>["onChange"] =
@@ -249,8 +209,8 @@ const ResidentInformationMain = () => {
       params.perPage = pagination?.pageSize
         ? pagination?.pageSize
         : PaginationConfig.defaultPageSize;
-      await setParamsData(params);
-      await setCurrentPage(params.curPage);
+      setParamsData(params);
+      setCurrentPage(params.curPage);
       await dispatch.resident.getTableData(paramsData);
     };
 
@@ -277,7 +237,7 @@ const ResidentInformationMain = () => {
   // Actions
   useEffect(() => {
     (async function () {
-      await setParamsData(params);
+      setParamsData(params);
       await dispatch.resident.getTableData(paramsData);
     })();
     // console.log(tableData);
@@ -294,23 +254,12 @@ const ResidentInformationMain = () => {
             picker="month"
           />
           <SearchBox
-            placeholderText="Search by first name, mobile no. and Room address"
+            placeholderText="Search by name and phone number"
             className="userManagementSearchBox"
             onSearch={onSearch}
           />
         </div>
-        <MediumActionButton
-          // disabled={accessibility?.team_user_management.allowAdd ? false : true}
-          className="userManagementExportBtn"
-          message="Add new"
-          onClick={onCreate}
-        />
       </div>
-      <InfoResidentInformation
-        callBack={async (isOpen: boolean) => await setIsModalOpenInfo(isOpen)}
-        isOpen={isModalOpenInfo}
-        resident={dataInfo}
-      />
       <ResidentInformationTable
         columns={columns}
         data={tableData}
@@ -319,23 +268,23 @@ const ResidentInformationMain = () => {
         loading={loading}
         onchangeTable={onChangeTable}
       />
-      <ResidentInformationCreateModal
-        isCreateModalOpen={isCreateModalOpen}
-        onCancel={() => {
-          setIsCreateModalOpen(false);
-        }}
-      />
-      {/* <ResidentInformationEditModal
+      <ResidentInformationEditModal
         isEditModalOpen={isEditModalOpen}
         data={editData}
         callBack={async (isOpen: boolean, saved: boolean) => {
-          await setIsEditModalOpen(isOpen);
+          setIsEditModalOpen(isOpen);
           if (saved) {
-            await setRerender(!rerender);
+            setRerender(!rerender);
           }
         }}
-      /> */}
-      <QrCodeModal />
+      />
+      <UserRoomListModal
+        isUserRoomListModalOpen={isUserRoomListModalOpen}
+        data={roomListData}
+        onCancel={() => {
+          setIsUserRoomListModalOpen(false);
+        }}
+      />
     </>
   );
 };

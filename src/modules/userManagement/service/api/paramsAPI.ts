@@ -1,15 +1,8 @@
 import { conditionPage } from "../../../../stores/interfaces/ResidentInformation";
 export const paramsdata = async (condition: conditionPage) => {
-  // let datastr: string = `perPage=${condition.perPage}&curPage=${condition.curPage}&verifyByJuristic=${condition.verifyByJuristic}`;
-  // console.log("CONDITION : ", condition);
+  // console.log(condition);
 
   let datastr: string = `perPage=${condition.perPage}&curPage=${condition.curPage}`;
-  // if (condition.reject !== undefined) {
-  //   datastr = datastr + "&reject=" + condition.reject;
-  // }
-  // if (condition.isActive !== undefined) {
-  //   datastr = datastr + "&isActive=" + condition.isActive;
-  // }
   if (condition.startDate) {
     datastr = datastr + "&startDate=" + condition.startDate;
   }

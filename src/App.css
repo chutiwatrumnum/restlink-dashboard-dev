@@ -218,18 +218,6 @@
   transition: 0.3s;
 }
 
-/* Scrollbar Control */
-/* *::-webkit-scrollbar-track {
-  border-radius: 10px;
-  background-color:  var(--menuBg-color);
+.iconButton {
+  font-size: 20px;
 }
-
-*::-webkit-scrollbar {
-  width: 2px;
-  background-color:  var(--menuBg-color);
-}
-
-*::-webkit-scrollbar-thumb {
-  border-radius: 10px;
-  background-color: #99999990;
-} */

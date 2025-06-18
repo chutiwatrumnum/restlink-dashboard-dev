@@ -1,9 +1,5 @@
 import { createModel } from "@rematch/core";
-import {
-  residentType,
-  conditionPage,
-  rejectRequest,
-} from "../interfaces/ResidentInformation";
+import { residentType, conditionPage } from "../interfaces/ResidentInformation";
 import { RootModel } from "./index";
 import { getdataresidentlist } from "../../modules/userManagement/service/api/ResidentServiceAPI";
 const filterDataInit: conditionPage = {
