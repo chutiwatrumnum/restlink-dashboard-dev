@@ -8,10 +8,7 @@ import {
   callSuccessModal,
 } from "../../../components/common/Modal";
 import SelectUnit from "../../../components/common/SelectUnit";
-import {
-  getFileInfoQuery,
-  getUnitListQuery,
-} from "../../../utils/queriesGroup/documentQueries";
+import { getFileInfoQuery } from "../../../utils/queriesGroup/documentQueries";
 import { putEditFileMutation } from "../../../utils/mutationsGroup/documentMutations";
 
 import type { RcFile, UploadFile } from "antd/es/upload/interface";
@@ -50,7 +47,6 @@ const UploadPublic = (props: ComponentCreateProps) => {
     id: editData?.id.toString() ?? "",
     shouldFetch: !!editData,
   });
-  const { data: unitData } = getUnitListQuery();
   const editFile = putEditFileMutation();
 
   // States
@@ -62,7 +58,7 @@ const UploadPublic = (props: ComponentCreateProps) => {
   const [statusProcessBar, setStatusProcessBar] =
     useState<ProgressStatus>("active");
   const [isAllowAll, setIsAllowAll] = useState<"y" | "n">("y");
-  const [selectedAddress, setSelectedAddress] = useState<string[]>([]);
+  const [selectedAddress, setSelectedAddress] = useState<number[]>([]);
   const [disabled, setDisabled] = useState(false);
   const [fileName, setFileName] = useState<string>("");
 
@@ -151,7 +147,7 @@ const UploadPublic = (props: ComponentCreateProps) => {
     setDisabled(false);
   };
 
-  const handleSelectAddressChange = (value: string[]) => {
+  const handleSelectAddressChange = (value: number[]) => {
     // console.log(value);
     setSelectedAddress(value);
   };
@@ -169,7 +165,7 @@ const UploadPublic = (props: ComponentCreateProps) => {
 
   const editFileHandler = () => {
     const payload: EditFileType = {
-      fileID: fileData.id,
+      fileID: fileData?.id ?? "",
       fileName: fileName,
       allowAll: isAllowAll,
       unitId: selectedAddress.map(Number),
@@ -213,7 +209,7 @@ const UploadPublic = (props: ComponentCreateProps) => {
   useEffect(() => {
     if (mode === "edit" && fileData) {
       const dataAddress = fileData.byUnit.map((unit: ByUnit) => unit.unitId);
-      if (dataAddress.length === unitData.length) {
+      if (fileData.allowUnitAll) {
         setIsAllowAll("y");
         setSelectedAddress([]);
       } else {

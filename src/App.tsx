@@ -34,6 +34,11 @@ import AdminManagement from "./modules/setting/screens/AdminManagement";
 import AreaControl from "./modules/powerManagement/screens/AreaControl";
 import DeviceControl from "./modules/powerManagement/screens/DeviceControl";
 
+import WarrantyTracking from "./modules/warrantyTracking/screens/WarrantyTracking";
+
+import SOSWarning from "./modules/sosWarning/screens/sosWarning";
+import SOSBuildingPlan from "./modules/sosWarning/screens/sosBuildingPlan";
+
 import LiveChat from "./modules/chat/screens/ChatRoomScreen";
 
 import PublicFolder from "./modules/documentForms/screen/PublicFolder";
@@ -116,11 +121,8 @@ function App() {
           <Route path="serviceDashboard" element={<ServiceDashboard />} />
           <Route path="serviceCenterLists" element={<ServiceCenterLists />} />
           <Route path="serviceChat" element={<ServiceChat />} />
-          <Route
-            path="residentInformation"
-            element={<ResidentInformationMain />}
-          />
-          <Route path="residentActivation" element={<ResidentActivation />} />
+          <Route path="userManagement" element={<ResidentInformationMain />} />
+          <Route path="invitation" element={<ResidentActivation />} />
           <Route path="parcelAlert" element={<SummaryDashboard />} />
           <Route path="announcement" element={<Announcement />} />
           <Route path="payment" element={<SummaryDashboard />} />
@@ -144,7 +146,11 @@ function App() {
           <Route path="projectInfo" element={<MaintenanceGuideFolder />} />
           {/* Delivery logs */}
           <Route path="delivery-logs" element={<DeliveryLogs />} />
-
+          {/* Warranty tracking */}
+          <Route path="warranty-tracking" element={<WarrantyTracking />} />
+          {/* SOS warning */}
+          <Route path="sos-warning" element={<SOSWarning />} />
+          <Route path="sos-building-plan" element={<SOSBuildingPlan />} />
           <Route path="event-logs" element={<EventLogs />} />
           <Route path="event-joining-logs" element={<EventJoinLogs />} />
           <Route

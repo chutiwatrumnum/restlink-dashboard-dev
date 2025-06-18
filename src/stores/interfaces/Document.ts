@@ -73,6 +73,7 @@ export interface FileDataType {
   updatedAt: string;
   createdBy: string;
   updatedBy: string;
+  allowUnitAll: boolean;
   byUnit: ByUnit[];
 }
 
@@ -107,8 +108,9 @@ export interface FolderDataType {
   folderOwnerId: number;
   createdAt: string;
   updatedAt: string;
-  createdBy: any;
-  updatedBy: any;
+  createdBy: string;
+  updatedBy: string;
+  allowUnitAll: boolean;
   byUnit: ByUnitFolder[];
 }
 

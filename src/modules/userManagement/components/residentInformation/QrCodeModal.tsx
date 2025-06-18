@@ -1,7 +1,6 @@
 import { Button, Modal, QRCode, Flex, Input, message } from "antd";
 import { useDispatch, useSelector } from "react-redux";
 import { Dispatch, RootState } from "../../../../stores";
-import MediumActionButton from "../../../../components/common/MediumActionButton";
 
 const QrCodeModal = () => {
   // variables
@@ -55,48 +54,53 @@ const QrCodeModal = () => {
 
   return (
     <Modal
-      open={qrCode !== ""}
+      open={!!qrCode}
       onCancel={() => {
         dispatch.resident.updateQrCodeState("");
       }}
-      footer={() => {
-        return (
-          <Flex justify="center" align="center">
-            <MediumActionButton
-              key="close"
-              message="Close"
-              onClick={() => {
-                dispatch.resident.updateQrCodeState("");
-              }}
-            />
-          </Flex>
-        );
-      }}
+      width={340}
+      footer={null}
+      closable={false}
     >
-      <Flex justify="center" align="center" vertical>
-        <Flex justify="center" align="center">
-          <div id="myQrCode">
-            <QRCode
-              // id="myQrCode"
-              type="canvas"
-              value={qrCode}
-              bgColor="#fff"
-              style={{ marginRight: 16, marginBottom: 16 }}
-            />
+      <div className="flex flex-col items-center justify-center w-full">
+        <div className="w-[300px]">
+          <div className="flex flex-col items-center justify-center mb-8 w-fit">
+            <div id="myQrCode" className="mb-8">
+              <QRCode
+                size={300}
+                type="canvas"
+                value={qrCode}
+                bgColor="#fff"
+                color="#000"
+              />
+            </div>
+            <Button
+              type="primary"
+              onClick={downloadCanvasQRCode}
+              className="w-full"
+            >
+              Download
+            </Button>
           </div>
-          <Button type="primary" onClick={downloadCanvasQRCode}>
-            Download
+          <div className="flex flex-row items-center justify-center mb-8 w-full">
+            <Input
+              value={qrCode}
+              readOnly
+              style={{ width: "100%", marginRight: 16 }}
+            />
+            <Button onClick={copyToClipboard}>Copy</Button>
+          </div>
+          <Button
+            className="w-full"
+            onClick={() => {
+              dispatch.resident.updateQrCodeState("");
+            }}
+            danger
+          >
+            Close
           </Button>
-        </Flex>
-        <Flex justify="center" align="center" style={{ marginBottom: 16 }}>
-          <Input
-            value={qrCode}
-            readOnly
-            style={{ width: 200, marginRight: 16 }}
-          />
-          <Button onClick={copyToClipboard}>Copy</Button>
-        </Flex>
-      </Flex>
+        </div>
+      </div>
     </Modal>
   );
 };

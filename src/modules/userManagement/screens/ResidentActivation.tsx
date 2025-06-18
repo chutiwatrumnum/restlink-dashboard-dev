@@ -22,31 +22,34 @@ const ResidentActivation = () => {
   const dispatch = useDispatch<Dispatch>();
 
   // States
-  const [isActivated, setIsActivated] = useState(true);
+  const [isActivated, setIsActivated] = useState(false);
   const [curPage, setCurPage] = useState(1);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   // Data
-  const { data: invitationsData, isLoading: invitationsLoading } =
-    getResidentInvitationsQuery({
-      activate: isActivated,
-      curPage: curPage,
-    });
+  const {
+    data: invitationsData,
+    isLoading: invitationsLoading,
+    refetch: refetchInvitations,
+  } = getResidentInvitationsQuery({
+    activate: isActivated,
+    curPage: curPage,
+  });
 
   const items: TabsProps["items"] = [
-    {
-      key: "activated",
-      label: "Activated",
-    },
     {
       key: "inactivated",
       label: "Inactivated",
     },
+    {
+      key: "activated",
+      label: "Activated",
+    },
   ];
 
-  const columns: ColumnsType<InvitationsDataType> = [
+  const defaultColumns: ColumnsType<InvitationsDataType> = [
     {
-      title: "Activate by",
+      title: "Name-Surname",
       align: "center",
       render: (_, record) => {
         return (
@@ -59,7 +62,7 @@ const ResidentActivation = () => {
       },
     },
     {
-      title: "Room address",
+      title: "Room number",
       align: "center",
       render: (_, record) => {
         return <div>{`${record?.unit?.roomAddress}`}</div>;
@@ -72,6 +75,10 @@ const ResidentActivation = () => {
         return <div>{`${record?.role?.name}`}</div>;
       },
     },
+  ];
+
+  const inActivatedColumns: ColumnsType<InvitationsDataType> = [
+    ...defaultColumns,
     {
       title: "Create at",
       align: "center",
@@ -122,6 +129,37 @@ const ResidentActivation = () => {
     },
   ];
 
+  const activatedColumn: ColumnsType<InvitationsDataType> = [
+    ...defaultColumns,
+    {
+      title: "Phone No.",
+      align: "center",
+      render: (_, record) => {
+        return <div>{`${record?.phoneNumber ?? "-"}`}</div>;
+      },
+    },
+    {
+      title: "Activate at",
+      align: "center",
+      render: (_, record) => {
+        return (
+          <div>
+            {record?.activateAt
+              ? `${dayjs(record?.activateAt).format("DD/MM/YYYY")}`
+              : "-"}
+          </div>
+        );
+      },
+    },
+    {
+      title: "Create by",
+      align: "center",
+      render: (_, record) => {
+        return <div>{`${record?.createdBy?.givenName}`}</div>;
+      },
+    },
+  ];
+
   // Functions
   const onTabsChange = (key: string) => {
     // console.log(key);
@@ -140,7 +178,7 @@ const ResidentActivation = () => {
       <Header title="Resident’s invitations" />
       <Flex align="center" justify="space-between">
         <Tabs
-          defaultActiveKey="activated"
+          defaultActiveKey="inactivated"
           items={items}
           onChange={onTabsChange}
         />
@@ -152,9 +190,10 @@ const ResidentActivation = () => {
       </Flex>
 
       <Table
-        columns={columns}
+        columns={isActivated ? activatedColumn : inActivatedColumns}
         dataSource={invitationsData?.rows}
         loading={invitationsLoading}
+        scroll={{ x: "max-content" }}
         pagination={{
           pageSize: 10,
           current: curPage,
@@ -170,6 +209,7 @@ const ResidentActivation = () => {
         onCancel={() => {
           setIsCreateModalOpen(false);
         }}
+        refetch={refetchInvitations}
       />
       <QrCodeModal />
     </>

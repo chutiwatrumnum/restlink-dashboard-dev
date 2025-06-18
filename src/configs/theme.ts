@@ -59,7 +59,7 @@ export const theme: object = {
 };
 
 export const whiteLabel: WhiteLabelType = {
-  buttonShape: "round",
+  buttonShape: "default",
   primaryColor: "#36CCCC",
   secondaryColor: "#E7F5F5",
   loginColor: "#36CCCC",

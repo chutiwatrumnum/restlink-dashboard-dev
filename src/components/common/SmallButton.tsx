@@ -23,15 +23,15 @@ const SmallButton = ({
   const values = Form.useWatch([], form);
 
   useEffect(() => {
-    form?.validateFields({ validateOnly: true }).then(() => setSubmittable(false))
+    form
+      ?.validateFields({ validateOnly: true })
+      .then(() => setSubmittable(false))
       .catch((e) => {
         if (e?.errorFields?.length > 0) {
-          setSubmittable(true)
-
+          setSubmittable(true);
         } else {
-          setSubmittable(false)
+          setSubmittable(false);
         }
-
       });
   }, [values]);
   return (
@@ -41,7 +41,7 @@ const SmallButton = ({
       size="large"
       onClick={formSubmit ? formSubmit : undefined}
       shape={whiteLabel.buttonShape}
-      style={{ width: "25%", boxShadow: "none" }}
+      style={{ minWidth: "25%", boxShadow: "none" }}
       className={className}
       disabled={form ? submittable : false}
     >

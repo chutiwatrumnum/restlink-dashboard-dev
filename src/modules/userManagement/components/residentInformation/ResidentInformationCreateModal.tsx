@@ -1,5 +1,5 @@
 // import { useState, useEffect } from "react";
-import { Form, Col, Select } from "antd";
+import { Form, Col, Select, Modal } from "antd";
 import { requiredRule } from "../../../../configs/inputRule";
 import {
   getResidentRoleQuery,
@@ -18,12 +18,14 @@ import { Dispatch } from "../../../../stores";
 type ManagementCreateModalType = {
   isCreateModalOpen: boolean;
   onCancel: () => void;
+  refetch: () => void;
 };
 dayjs.extend(customParseFormat);
 
 const ResidentInformationCreateModal = ({
   isCreateModalOpen,
   onCancel,
+  refetch,
 }: ManagementCreateModalType) => {
   const dispatch = useDispatch<Dispatch>();
   const [residentForm] = Form.useForm();
@@ -52,6 +54,7 @@ const ResidentInformationCreateModal = ({
           .then((res) => {
             // console.log(res.data.data.qrCode);
             dispatch.resident.updateQrCodeState(res.data.data.qrCode);
+            refetch();
           })
           .catch((err) => {
             console.log(err);
@@ -120,14 +123,16 @@ const ResidentInformationCreateModal = ({
 
   return (
     <>
-      <FormModal
-        isOpen={isCreateModalOpen}
+      <Modal
+        open={isCreateModalOpen}
         title="Add new resident’s"
-        content={<ModalContent />}
+        centered={true}
+        width={"100%"}
+        style={{ maxWidth: 420 }}
         footer={[
           <div style={{}}>
             <SmallButton
-              className="saveButton"
+              className="saveButton w-full"
               form={residentForm}
               formSubmit={residentForm.submit}
               message="Register"
@@ -137,7 +142,9 @@ const ResidentInformationCreateModal = ({
         onOk={() => {}}
         onCancel={onCancelHandler}
         className="managementFormModal"
-      />
+      >
+        <ModalContent />
+      </Modal>
     </>
   );
 };

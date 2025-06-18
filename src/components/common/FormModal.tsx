@@ -14,6 +14,7 @@ interface CreateModalType {
   className?: string;
   destroyOnClose?: boolean;
   maskClosable?: boolean;
+  width?: string;
 }
 
 const CreateModal = ({
@@ -26,9 +27,11 @@ const CreateModal = ({
   className,
   destroyOnClose = false,
   maskClosable = true,
+  
+  width = "30%",
 }: CreateModalType) => {
   const [open, setOpen] = useState(isOpen);
-
+  const bodyStyle = { padding: 24, maxHeight: '80vh',  };
   useEffect(() => {
     setOpen(isOpen);
   }, [isOpen]);
@@ -36,6 +39,7 @@ const CreateModal = ({
   return (
     <>
       <Modal
+        width={width}
         className={"createModalController " + className}
         open={open}
         title={

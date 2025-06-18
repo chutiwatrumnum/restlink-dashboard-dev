@@ -9,10 +9,7 @@ import {
   putEditFolderMutation,
 } from "../../../utils/mutationsGroup/documentMutations";
 import SelectUnit from "../../../components/common/SelectUnit";
-import {
-  getFolderInfoQuery,
-  getUnitListQuery,
-} from "../../../utils/queriesGroup/documentQueries";
+import { getFolderInfoQuery } from "../../../utils/queriesGroup/documentQueries";
 
 import type { RadioChangeEvent } from "antd";
 import {
@@ -50,14 +47,13 @@ const NewFolderModal = (props: ComponentCreateProps) => {
     id: editData?.id.toString() ?? "",
     shouldFetch: !!editData,
   });
-  const { data: unitData } = getUnitListQuery();
   const editFolder = putEditFolderMutation();
   const createFolderMutation = postCreateFolderMutation();
 
   // States
   const [buttonLoading, setButtonLoading] = useState<boolean>(false);
   const [isAllowAll, setIsAllowAll] = useState<"y" | "n">("y");
-  const [selectedAddress, setSelectedAddress] = useState<string[]>([]);
+  const [selectedAddress, setSelectedAddress] = useState<number[]>([]);
   const [disabled, setDisabled] = useState(false);
   const [folderName, setFolderName] = useState("");
 
@@ -88,7 +84,7 @@ const NewFolderModal = (props: ComponentCreateProps) => {
       });
   };
 
-  const handleSelectAddressChange = (value: string[]) => {
+  const handleSelectAddressChange = (value: number[]) => {
     // console.log(arrNumber);
     setSelectedAddress(value);
   };
@@ -114,7 +110,7 @@ const NewFolderModal = (props: ComponentCreateProps) => {
 
   const editFolderHandler = () => {
     const payload: EditFolderType = {
-      folderId: folderData.id,
+      folderId: folderData?.id ?? -1,
       folderName: folderName,
       allowAll: isAllowAll,
       unitId: selectedAddress.map(Number),
@@ -150,7 +146,7 @@ const NewFolderModal = (props: ComponentCreateProps) => {
       const dataAddress = folderData.byUnit.map(
         (unit: ByUnitFolder) => unit.unitId
       );
-      if (dataAddress.length === unitData.length) {
+      if (folderData.allowUnitAll) {
         setIsAllowAll("y");
         setSelectedAddress([]);
       } else {

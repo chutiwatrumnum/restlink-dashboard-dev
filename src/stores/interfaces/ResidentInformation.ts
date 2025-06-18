@@ -175,16 +175,21 @@ export interface ResidentInvitationsPromiseType {
 }
 
 export interface InvitationsDataType {
+  // default values
   id: string;
-  code: string;
-  expireDate: string;
-  activate: boolean;
   activateBy: ActivateBy;
-  createdAt: string;
-  project: Project;
-  role: InvitationsRole;
   unit: InvitationsUnit;
+  role: InvitationsRole;
+  activate: boolean;
   createdBy: CreatedBy;
+  project: Project;
+  // Inactivated values
+  createdAt?: string;
+  expireDate?: string;
+  code?: string;
+  // Activated values
+  phoneNumber?: string;
+  activateAt?: string;
 }
 
 export interface ActivateBy {

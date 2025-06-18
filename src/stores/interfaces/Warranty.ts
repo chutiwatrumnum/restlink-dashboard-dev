@@ -1,13 +1,13 @@
 export interface WarrantyDataType {
   key: string;
+  total?: number;
   address?: string;
   owner?: string;
+  contact?: string;
   nationality?: string;
   type?: string;
   tel?: string;
   email?: string;
-  createdAt: string;
-  details?: WarrantyDetailsType[];
 }
 
 export interface WarrantyDetailsType {
@@ -28,4 +28,13 @@ export interface WarrantyFormDataType {
   purchaseDate?: string;
   expireDate?: string;
   createDate?: string;
+}
+export interface paginationWarranty {
+  perPage: number
+  curPage: number
+  search?: string
+  startDate?: string
+  endDate?: string
+  sort?: string
+  sortBy?: string
 }

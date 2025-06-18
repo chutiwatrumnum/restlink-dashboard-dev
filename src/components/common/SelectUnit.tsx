@@ -7,8 +7,8 @@ interface SelectUnitProps {
   isAllowAll: "y" | "n";
   onIsAllowAllChange: (e: RadioChangeEvent) => void;
   disabled: boolean;
-  selectValue: string[];
-  handleSelectChange: (value: string[]) => void;
+  selectValue: number[];
+  handleSelectChange: (value: number[]) => void;
 }
 
 const SelectUnit = (props: SelectUnitProps) => {

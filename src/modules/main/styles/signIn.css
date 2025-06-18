@@ -2,8 +2,15 @@
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
-  width: 50%;
-  padding: 0 10%;
+  width: 100vw; /* ใช้ viewport width เต็ม */
+  height: 100vh; /* ใช้ viewport height เต็ม */
+  margin: 0;
+  padding: 0;
+  position: fixed; /* ทำให้เป็น fixed position */
+  top: 0;
+  left: 0;
+  justify-content: center; /* จัดให้อยู่ตรงกลางแนวตั้ง */
+  align-items: center; /* จัดให้อยู่ตรงกลางแนวนอน */
 }
 
 .formSignIn {
@@ -51,12 +58,12 @@
 /* New CSS Classes */
 .logo-container {
   align-items: center;
-  padding-bottom: 60px;
+  padding-bottom: 40px;
+  text-align: center;
 }
 
 .login-button-container {
   text-align: center;
-  margin-top: 100px;
 }
 
 /* Google Login Button Styles */
@@ -113,4 +120,12 @@
   border-top: 2px solid var(--primary-color) !important;
   border-radius: 50%;
   animation: spin 1s linear infinite;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .google-login-btn {
+    min-width: 200px;
+    font-size: 14px;
+  }
 }

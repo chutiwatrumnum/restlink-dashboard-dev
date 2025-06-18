@@ -1,5 +1,6 @@
 import { useQuery, QueryFunctionContext } from "@tanstack/react-query";
 import axios from "axios";
+import { FileDataType, FolderDataType } from "../../stores/interfaces/Document";
 
 // Functions section
 const getUnitList = async () => {
@@ -12,7 +13,7 @@ const getUnitList = async () => {
 
 const getFileInfo = async ({
   queryKey,
-}: QueryFunctionContext<[string, string]>) => {
+}: QueryFunctionContext<[string, string]>): Promise<FileDataType> => {
   const [_key, id] = queryKey;
   let url = `/document-home/dashboard/file-info?fileID=${id}`;
   const res = await axios.get(url);
@@ -23,7 +24,7 @@ const getFileInfo = async ({
 
 const getFolderInfo = async ({
   queryKey,
-}: QueryFunctionContext<[string, string]>) => {
+}: QueryFunctionContext<[string, string]>): Promise<FolderDataType> => {
   const [_key, id] = queryKey;
   let url = `/document-home/dashboard/folder-info?folderId=${id}`;
   const res = await axios.get(url);
