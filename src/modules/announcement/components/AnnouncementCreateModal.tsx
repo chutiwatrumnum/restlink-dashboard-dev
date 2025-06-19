@@ -9,6 +9,7 @@ import UploadImageGroup from "../../../components/group/UploadImageGroup";
 import FormModal from "../../../components/common/FormModal";
 import SmallButton from "../../../components/common/SmallButton";
 import ConfirmModal from "../../../components/common/ConfirmModal";
+import TextEditor from "../../../components/common/TextEditor"; // นำเข้า TextEditor ใหม่
 
 import {
   AnnounceFormDataType,
@@ -48,7 +49,6 @@ const AnnouncementCreateModal = ({
       <Form
         form={form}
         name="announcementCreateModal"
-        // style={{ maxWidth: 600 }}
         initialValues={{ remember: true }}
         autoComplete="off"
         layout="vertical"
@@ -58,10 +58,9 @@ const AnnouncementCreateModal = ({
             okMessage: "Yes",
             cancelMessage: "Cancel",
             onOk: async () => {
-              // console.log(value);
               const payload: AddNewAnnouncementType = {
                 title: value.title,
-                description: value.description,
+                description: value.description, // นี่จะเป็น HTML content จาก text editor
                 url: value.link,
                 imageUrl: value.image,
                 startDate: ConvertDate(
@@ -76,7 +75,7 @@ const AnnouncementCreateModal = ({
                 ).dateTimeUTC,
                 type: value.type,
               };
-              // console.log(payload);
+
               const result = await dispatch.announcement.addNewAnnounce(
                 payload
               );
@@ -91,16 +90,14 @@ const AnnouncementCreateModal = ({
         }}
         onFinishFailed={() => {
           console.log("FINISHED FAILED");
-        }}
-      >
+        }}>
         <div className="announceModalColumn">
           <div className="announceModalContainer">
             <div className="announceModalColumn">
               <Form.Item<AnnounceFormDataType>
                 label="Title"
                 name="title"
-                rules={requiredRule}
-              >
+                rules={requiredRule}>
                 <Input
                   size="large"
                   placeholder="Please input title"
@@ -108,11 +105,11 @@ const AnnouncementCreateModal = ({
                   showCount
                 />
               </Form.Item>
+
               <Form.Item<AnnounceFormDataType>
                 label="Type"
                 name="type"
-                rules={requiredRule}
-              >
+                rules={requiredRule}>
                 <Select size="large" placeholder="Please select type">
                   <Select.Option value="projectNews">
                     Project news
@@ -123,11 +120,11 @@ const AnnouncementCreateModal = ({
                   <Select.Option value="devNews">Developer news</Select.Option>
                 </Select>
               </Form.Item>
+
               <Form.Item<AnnounceFormDataType>
                 label="Image"
                 name="image"
-                rules={requiredRule}
-              >
+                rules={requiredRule}>
                 <UploadImageGroup
                   onChange={(url) => {
                     setPreviewImage(url);
@@ -137,6 +134,7 @@ const AnnouncementCreateModal = ({
                 />
               </Form.Item>
             </div>
+
             <div className="announceModalColumn">
               {/* Start date/time */}
               <Row justify="space-between">
@@ -144,27 +142,25 @@ const AnnouncementCreateModal = ({
                   label="Start date"
                   name="startDate"
                   rules={requiredRule}
-                  style={{ width: "48%" }}
-                >
+                  style={{ width: "48%" }}>
                   <DatePicker style={{ width: "100%" }} size="large" />
                 </Form.Item>
                 <Form.Item<AnnounceFormDataType>
                   label="End date"
                   name="endDate"
                   rules={requiredRule}
-                  style={{ width: "48%" }}
-                >
+                  style={{ width: "48%" }}>
                   <DatePicker style={{ width: "100%" }} size="large" />
                 </Form.Item>
               </Row>
+
               {/* End date/time */}
               <Row justify="space-between">
                 <Form.Item<AnnounceFormDataType>
                   label="Start time"
                   name="startTime"
                   rules={requiredRule}
-                  style={{ width: "48%" }}
-                >
+                  style={{ width: "48%" }}>
                   <TimePicker
                     format="HH:mm"
                     style={{ width: "100%" }}
@@ -176,8 +172,7 @@ const AnnouncementCreateModal = ({
                   label="End time"
                   name="endTime"
                   rules={requiredRule}
-                  style={{ width: "48%" }}
-                >
+                  style={{ width: "48%" }}>
                   <TimePicker
                     format="HH:mm"
                     style={{ width: "100%" }}
@@ -185,18 +180,41 @@ const AnnouncementCreateModal = ({
                   />
                 </Form.Item>
               </Row>
+
+              {/* แทนที่ Input.TextArea ด้วย TextEditor */}
               <Form.Item<AnnounceFormDataType>
                 label="Announcement body"
                 name="description"
-                rules={requiredRule}
-              >
-                <Input.TextArea
-                  rows={7}
+                rules={[
+                  { required: true, message: "Please input announcement body" },
+                  {
+                    validator: (_, value) => {
+                      if (!value) return Promise.resolve();
+
+                      // Remove HTML tags to count actual text length
+                      const tempDiv = document.createElement("div");
+                      tempDiv.innerHTML = value;
+                      const textLength = (
+                        tempDiv.textContent ||
+                        tempDiv.innerText ||
+                        ""
+                      ).length;
+
+                      if (textLength > 1200) {
+                        return Promise.reject(
+                          new Error("Content exceeds 1200 characters")
+                        );
+                      }
+                      return Promise.resolve();
+                    },
+                  },
+                ]}>
+                <TextEditor
                   placeholder="Please input announcement body"
                   maxLength={1200}
-                  showCount
                 />
               </Form.Item>
+
               <Form.Item<AnnounceFormDataType> label="URL" name="link">
                 <Input size="large" placeholder="https://example.com" />
               </Form.Item>

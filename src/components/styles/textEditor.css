@@ -1,0 +1,94 @@
+/* Text Editor Styles */
+.text-editor-wrapper {
+    position: relative;
+  }
+  
+  .text-editor-wrapper .ql-editor {
+    min-height: 150px;
+    font-family: 'Kanit', sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  
+  .text-editor-wrapper .ql-toolbar {
+    border-top: 1px solid #d9d9d9;
+    border-left: 1px solid #d9d9d9;
+    border-right: 1px solid #d9d9d9;
+    border-radius: 6px 6px 0 0;
+  }
+  
+  .text-editor-wrapper .ql-container {
+    border-bottom: 1px solid #d9d9d9;
+    border-left: 1px solid #d9d9d9;
+    border-right: 1px solid #d9d9d9;
+    border-radius: 0 0 6px 6px;
+    font-family: 'Kanit', sans-serif;
+  }
+  
+  .text-editor-wrapper .ql-editor.ql-blank::before {
+    color: #bfbfbf;
+    font-style: normal;
+  }
+  
+  /* Focus state */
+  .text-editor-wrapper .ql-toolbar:hover,
+  .text-editor-wrapper .ql-container:hover {
+    border-color: #40a9ff;
+  }
+  
+  .text-editor-wrapper .ql-editor:focus {
+    border-color: #40a9ff;
+    box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+    outline: none;
+  }
+  
+  /* Error state */
+  .text-editor-wrapper.has-error .ql-toolbar,
+  .text-editor-wrapper.has-error .ql-container {
+    border-color: #ff4d4f;
+  }
+  
+  /* Disabled state */
+  .text-editor-wrapper .ql-toolbar.ql-disabled,
+  .text-editor-wrapper .ql-container.ql-disabled {
+    background-color: #f5f5f5;
+    border-color: #d9d9d9;
+    cursor: not-allowed;
+  }
+  
+  .text-editor-wrapper .ql-editor.ql-disabled {
+    color: rgba(0, 0, 0, 0.25);
+  }
+  
+  /* Custom toolbar button styles */
+  .text-editor-wrapper .ql-toolbar .ql-picker-label {
+    border: none;
+    background: transparent;
+  }
+  
+  .text-editor-wrapper .ql-toolbar .ql-picker-label:hover,
+  .text-editor-wrapper .ql-toolbar button:hover {
+    background-color: #f0f0f0;
+    border-radius: 4px;
+  }
+  
+  .text-editor-wrapper .ql-toolbar .ql-active {
+    background-color: #e6f7ff;
+    color: #1890ff;
+  }
+  
+  /* Character count styling */
+  .text-editor-character-count {
+    position: absolute;
+    bottom: 8px;
+    right: 12px;
+    font-size: 12px;
+    color: #999;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 2px 4px;
+    border-radius: 2px;
+  }
+  
+  .text-editor-character-count.over-limit {
+    color: #ff4d4f;
+  }

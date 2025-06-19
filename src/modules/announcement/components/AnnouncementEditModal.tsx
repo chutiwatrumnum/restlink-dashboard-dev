@@ -17,6 +17,8 @@ import {
   AddNewAnnouncementType,
 } from "../../../stores/interfaces/Announcement";
 
+import TextEditor from "../../../components/common/TextEditor";
+
 type AnnouncementEditModalType = {
   isEditModalOpen: boolean;
   onOk: () => void;
@@ -115,16 +117,14 @@ const AnnouncementEditModal = ({
         }}
         onFinishFailed={() => {
           console.log("FINISHED FAILED");
-        }}
-      >
+        }}>
         <div className="announceModalColumn">
           <div className="announceModalContainer">
             <div className="announceModalColumn">
               <Form.Item<AnnounceFormDataType>
                 label="Title"
                 name="title"
-                rules={requiredRule}
-              >
+                rules={requiredRule}>
                 <Input
                   size="large"
                   placeholder="Please input title"
@@ -135,8 +135,7 @@ const AnnouncementEditModal = ({
               <Form.Item<AnnounceFormDataType>
                 label="Type"
                 name="type"
-                rules={requiredRule}
-              >
+                rules={requiredRule}>
                 <Select size="large" placeholder="Please select type" disabled>
                   <Select.Option value="projectNews">
                     Project news
@@ -164,16 +163,14 @@ const AnnouncementEditModal = ({
                   label="Start date"
                   name="startDate"
                   rules={requiredRule}
-                  style={{ width: "48%" }}
-                >
+                  style={{ width: "48%" }}>
                   <DatePicker style={{ width: "100%" }} size="large" />
                 </Form.Item>
                 <Form.Item<AnnounceFormDataType>
                   label="End date"
                   name="endDate"
                   rules={requiredRule}
-                  style={{ width: "48%" }}
-                >
+                  style={{ width: "48%" }}>
                   <DatePicker style={{ width: "100%" }} size="large" />
                 </Form.Item>
               </Row>
@@ -183,8 +180,7 @@ const AnnouncementEditModal = ({
                   label="Start time"
                   name="startTime"
                   rules={requiredRule}
-                  style={{ width: "48%" }}
-                >
+                  style={{ width: "48%" }}>
                   <TimePicker
                     format="HH:mm"
                     style={{ width: "100%" }}
@@ -196,8 +192,7 @@ const AnnouncementEditModal = ({
                   label="End time"
                   name="endTime"
                   rules={requiredRule}
-                  style={{ width: "48%" }}
-                >
+                  style={{ width: "48%" }}>
                   <TimePicker
                     format="HH:mm"
                     style={{ width: "100%" }}
@@ -209,15 +204,33 @@ const AnnouncementEditModal = ({
               <Form.Item<AnnounceFormDataType>
                 label="Announcement body"
                 name="description"
-                rules={requiredRule}
-              >
-                <Input.TextArea
-                  rows={7}
+                rules={[
+                  { required: true, message: "Please input announcement body" },
+                  {
+                    validator: (_, value) => {
+                      if (!value) return Promise.resolve();
+                      const tempDiv = document.createElement("div");
+                      tempDiv.innerHTML = value;
+                      const textLength = (
+                        tempDiv.textContent ||
+                        tempDiv.innerText ||
+                        ""
+                      ).length;
+                      if (textLength > 1200) {
+                        return Promise.reject(
+                          new Error("Content exceeds 1200 characters")
+                        );
+                      }
+                      return Promise.resolve();
+                    },
+                  },
+                ]}>
+                <TextEditor
                   placeholder="Please input announcement body"
                   maxLength={1200}
-                  showCount
                 />
               </Form.Item>
+              
               <Form.Item<AnnounceFormDataType> label="URL" name="link">
                 <Input size="large" placeholder="https://example.com" />
               </Form.Item>
