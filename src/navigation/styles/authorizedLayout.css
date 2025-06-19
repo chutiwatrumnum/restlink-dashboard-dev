@@ -28,11 +28,11 @@
   overflow: initial;
   height: 100%;
   z-index: 2;
-  /* background: var(--white-color) !important;
+  background: var(--white-color) !important;
   border-radius: 20px;
   padding: 30px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  min-height: calc(100vh - 140px);  */
+  min-height: calc(100vh - 140px); 
 }
 
 /* Scrollbar styles */

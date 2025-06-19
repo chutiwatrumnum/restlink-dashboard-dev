@@ -194,7 +194,7 @@ const Emergency = () => {
             />
           </div>
           <MediumActionButton
-            message="Add Contact lists"
+            message="Add Contact list"
             onClick={onCreate}
             className="createAnnouncementBtn"
           />

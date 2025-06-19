@@ -78,10 +78,7 @@ const EmergencyCreateModal = ({
         onFinishFailed={handleFormFailed}
         className="emergency-form">
         <div className="form-container">
-          <Form.Item<DataEmergencyCreateByType>
-            label="Image"
-            name="image"
-            >
+          <Form.Item<DataEmergencyCreateByType> label="Image" name="image">
             <UploadImageGroup
               onChange={(url) => setPreviewImage(url)}
               image={previewImage}
@@ -114,7 +111,7 @@ const EmergencyCreateModal = ({
           </Form.Item>
 
           <div className="button-container">
-            <SmallButton className="saveButton" message="Save" form={form} />
+            <SmallButton className="saveButton" message="Add" form={form} />
           </div>
         </div>
       </Form>

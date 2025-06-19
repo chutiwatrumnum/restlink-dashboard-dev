@@ -86,16 +86,20 @@ const CreateAddEventLog = (props: ComponentCreateProps) => {
   // Custom validator for time validation
   const validateTimeRange = () => ({
     validator: async () => {
-      const startTime = form.getFieldValue('startTime');
-      const endTime = form.getFieldValue('endTime');
-      
+      const startTime = form.getFieldValue("startTime");
+      const endTime = form.getFieldValue("endTime");
+
       if (startTime && endTime) {
         const start = dayjs(startTime);
         const end = dayjs(endTime);
-        
+
         // Check if end time is after start time (same day)
         if (end.isBefore(start) || end.isSame(start)) {
-          return Promise.reject(new Error('End time must be greater than start time and cannot cross midnight'));
+          return Promise.reject(
+            new Error(
+              "End time must be greater than start time and cannot cross midnight"
+            )
+          );
         }
       }
       return Promise.resolve();
@@ -173,16 +177,13 @@ const CreateAddEventLog = (props: ComponentCreateProps) => {
     <>
       <Modal
         title={"Add new event"}
-        width={1200}
-        centered
+        width={"90vw"}
         open={props?.isOpen}
         onCancel={handleCancel}
+        style={{ maxWidth: 800 }}
         footer={false}
-        style={{
-          borderBottom: 20,
-          borderWidth: 200,
-          borderBlock: 10,
-        }}>
+        centered
+      >
         <Form
           form={form}
           layout="vertical"
@@ -192,7 +193,8 @@ const CreateAddEventLog = (props: ComponentCreateProps) => {
           initialValues={{ remember: true }}
           onFinish={onFinish}
           onFinishFailed={onFinishFailed}
-          autoComplete="off">
+          autoComplete="off"
+        >
           <Row>
             <Col span={8}>
               <Form.Item
@@ -207,7 +209,8 @@ const CreateAddEventLog = (props: ComponentCreateProps) => {
                     max: 99,
                     message: "Value should be less than 99 character",
                   },
-                ]}>
+                ]}
+              >
                 <Input placeholder="Input title" maxLength={100} />
               </Form.Item>
               <Form.Item
@@ -218,7 +221,8 @@ const CreateAddEventLog = (props: ComponentCreateProps) => {
                     required: true,
                     message: "This field is required !",
                   },
-                ]}>
+                ]}
+              >
                 <Input.TextArea
                   placeholder="Input description"
                   maxLength={1000}
@@ -238,7 +242,8 @@ const CreateAddEventLog = (props: ComponentCreateProps) => {
                         required: true,
                         message: "This field is required !",
                       },
-                    ]}>
+                    ]}
+                  >
                     <DatePicker
                       disabledDate={disabledDate}
                       className="fullWidth"
@@ -267,7 +272,8 @@ const CreateAddEventLog = (props: ComponentCreateProps) => {
                           }
                         },
                       },
-                    ]}>
+                    ]}
+                  >
                     <InputNumber
                       className="fullWidth"
                       placeholder="select maximum number"
@@ -283,7 +289,8 @@ const CreateAddEventLog = (props: ComponentCreateProps) => {
                       isMaxBookingPerUnit
                         ? { marginBottom: 8 }
                         : { marginBottom: 24 }
-                    }>
+                    }
+                  >
                     Maximum participant per unit
                   </Checkbox>
                   {isMaxBookingPerUnit ? (
@@ -306,7 +313,8 @@ const CreateAddEventLog = (props: ComponentCreateProps) => {
                             }
                           },
                         },
-                      ]}>
+                      ]}
+                    >
                       <InputNumber
                         className="fullWidth"
                         placeholder="input number"
@@ -326,13 +334,14 @@ const CreateAddEventLog = (props: ComponentCreateProps) => {
                             message: "This field is required !",
                           },
                           validateTimeRange(),
-                        ]}>
-                        <TimePicker 
-                          className="fullWidth" 
+                        ]}
+                      >
+                        <TimePicker
+                          className="fullWidth"
                           format="hh:mm a"
                           onChange={() => {
                             // Re-validate end time when start time changes
-                            form.validateFields(['endTime']);
+                            form.validateFields(["endTime"]);
                           }}
                         />
                       </Form.Item>
@@ -347,13 +356,14 @@ const CreateAddEventLog = (props: ComponentCreateProps) => {
                             message: "This field is required !",
                           },
                           validateTimeRange(),
-                        ]}>
-                        <TimePicker 
-                          className="fullWidth" 
+                        ]}
+                      >
+                        <TimePicker
+                          className="fullWidth"
                           format="hh:mm a"
                           onChange={() => {
                             // Re-validate start time when end time changes
-                            form.validateFields(['startTime']);
+                            form.validateFields(["startTime"]);
                           }}
                         />
                       </Form.Item>
@@ -369,7 +379,8 @@ const CreateAddEventLog = (props: ComponentCreateProps) => {
                     required: true,
                     message: "This field is required !",
                   },
-                ]}>
+                ]}
+              >
                 <Select
                   placeholder="Select receiver"
                   onSelect={onSendToChange}
@@ -395,7 +406,8 @@ const CreateAddEventLog = (props: ComponentCreateProps) => {
                     required: true,
                     message: "This field is required !",
                   },
-                ]}>
+                ]}
+              >
                 <UploadImageGroup
                   image={previewImage ? previewImage : ""}
                   onChange={handleImageChange}
@@ -411,7 +423,8 @@ const CreateAddEventLog = (props: ComponentCreateProps) => {
                     } else {
                       await setAllowvisitorregistration(true);
                     }
-                  }}>
+                  }}
+                >
                   Allow visitor registration
                 </Checkbox>
               </Col>
@@ -425,7 +438,8 @@ const CreateAddEventLog = (props: ComponentCreateProps) => {
                     } else {
                       await setPayable(true);
                     }
-                  }}>
+                  }}
+                >
                   Payable
                 </Checkbox>
               </Col>
@@ -451,7 +465,8 @@ const CreateAddEventLog = (props: ComponentCreateProps) => {
                           }
                         },
                       },
-                    ]}>
+                    ]}
+                  >
                     <InputNumber
                       className="fullWidth"
                       prefix="$"
@@ -465,12 +480,14 @@ const CreateAddEventLog = (props: ComponentCreateProps) => {
           <Form.Item
             className="noMargin"
             wrapperCol={{ span: 24 }}
-            style={{ textAlign: "right" }}>
+            style={{ textAlign: "right" }}
+          >
             <Button
               shape="round"
               type="primary"
               htmlType="submit"
-              style={{ minWidth: 140 }}>
+              style={{ minWidth: 140 }}
+            >
               Add
             </Button>
           </Form.Item>

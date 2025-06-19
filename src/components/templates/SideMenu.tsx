@@ -4,7 +4,6 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { Dispatch } from "../../stores";
 import { APP_VERSION } from "../../configs/configs";
-import { whiteLabel } from "../../configs/theme";
 import ConfirmModal from "../../components/common/ConfirmModal";
 import { MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons";
 import {
@@ -31,7 +30,7 @@ import {
   WarrantyTrackingIcon,
   SOSWarningIcon,
   DocumentIcon,
-  SOSBuildingPlanIcon
+  SOSBuildingPlanIcon,
 } from "../../assets/icons/Icons";
 
 import MENU_LOGO from "../../assets/images/Reslink-Logo.png";
@@ -101,12 +100,12 @@ const SideMenu = () => {
       ) {
         return ["sos"];
       }
-      if (
-        pathname.includes("/areaControl") ||
-        pathname.includes("/deviceControl")
-      ) {
-        return ["powerManagement"];
-      }
+      // if (
+      //   pathname.includes("/areaControl") ||
+      //   pathname.includes("/deviceControl")
+      // ) {
+      //   return ["powerManagement"];
+      // }
       return [];
     };
 
@@ -177,7 +176,8 @@ const SideMenu = () => {
           onSelect={({ key }) => {
             navigate(key);
           }}
-          onOpenChange={setOpenKeys}>
+          onOpenChange={setOpenKeys}
+        >
           <Menu.Item
             key={`${main_link}/profile`}
             icon={
@@ -185,7 +185,8 @@ const SideMenu = () => {
                 color={iconMenuColorSelector("profile")}
                 className="sideMenuIcon"
               />
-            }>
+            }
+          >
             <Link to={`${main_link}/profile`}>Profile</Link>
           </Menu.Item>
           <SubMenu
@@ -196,7 +197,8 @@ const SideMenu = () => {
                 className="sideMenuIcon"
               />
             }
-            title="Management">
+            title="Management"
+          >
             <Menu.Item
               key={`${main_link}/invitation`}
               icon={
@@ -204,7 +206,8 @@ const SideMenu = () => {
                   color={iconSubMenuColorSelector("invitation")}
                   className="sideMenuIcon"
                 />
-              }>
+              }
+            >
               <Link to={`${main_link}/invitation`}>Invitations</Link>
             </Menu.Item>
             <Menu.Item
@@ -214,7 +217,8 @@ const SideMenu = () => {
                   color={iconSubMenuColorSelector("userManagement")}
                   className="sideMenuIcon"
                 />
-              }>
+              }
+            >
               <Link to={`${main_link}/userManagement`}>User management</Link>
             </Menu.Item>
             {/* <Menu.Item
@@ -231,7 +235,7 @@ const SideMenu = () => {
                   </Link>
                 </Menu.Item> */}
           </SubMenu>
-          
+
           {/* <SubMenu
             key="userManagement"
             icon={
@@ -273,7 +277,8 @@ const SideMenu = () => {
                 color={iconMenuColorSelector("announcement")}
                 className="sideMenuIcon"
               />
-            }>
+            }
+          >
             <Link to={`${main_link}/announcement`}>Announcement</Link>
           </Menu.Item>
           <Menu.Item
@@ -283,7 +288,8 @@ const SideMenu = () => {
                 color={iconMenuColorSelector("liveChat")}
                 className="sideMenuIcon"
               />
-            }>
+            }
+          >
             <Link to={`${main_link}/liveChat`}>Live chat</Link>
           </Menu.Item>
           <SubMenu
@@ -294,7 +300,8 @@ const SideMenu = () => {
                 className="sideMenuIcon"
               />
             }
-            title="Documents">
+            title="Documents"
+          >
             <Menu.Item
               key={`${main_link}/houseDocument`}
               icon={
@@ -302,7 +309,8 @@ const SideMenu = () => {
                   color={iconSubMenuColorSelector("houseDocument")}
                   className="sideMenuIcon"
                 />
-              }>
+              }
+            >
               <Link to={`${main_link}/houseDocument`}>House documents</Link>
             </Menu.Item>
             <Menu.Item
@@ -312,7 +320,8 @@ const SideMenu = () => {
                   color={iconSubMenuColorSelector("projectInfo")}
                   className="sideMenuIcon"
                 />
-              }>
+              }
+            >
               <Link to={`${main_link}/projectInfo`}>Project info</Link>
             </Menu.Item>
           </SubMenu>
@@ -323,7 +332,8 @@ const SideMenu = () => {
                 color={iconMenuColorSelector("delivery-logs")}
                 className="sideMenuIcon"
               />
-            }>
+            }
+          >
             <Link to={`${main_link}/delivery-logs`}>Delivery logs</Link>
           </Menu.Item>
           <Menu.Item
@@ -333,7 +343,8 @@ const SideMenu = () => {
                 color={iconMenuColorSelector("contactLists")}
                 className="sideMenuIcon"
               />
-            }>
+            }
+          >
             <Link to={`${main_link}/contactLists`}>Contact Lists</Link>
           </Menu.Item>
           <SubMenu
@@ -344,7 +355,8 @@ const SideMenu = () => {
                 className="sideMenuIcon"
               />
             }
-            title="Fixing Report">
+            title="Fixing Report"
+          >
             <Menu.Item
               key={`${main_link}/serviceDashboard`}
               icon={
@@ -352,7 +364,8 @@ const SideMenu = () => {
                   color={iconSubMenuColorSelector("serviceDashboard")}
                   className="sideMenuIcon"
                 />
-              }>
+              }
+            >
               <Link to={`${main_link}/serviceDashboard`}>
                 Fixing Report Dashboard
               </Link>
@@ -364,7 +377,8 @@ const SideMenu = () => {
                   color={iconSubMenuColorSelector("serviceCenterLists")}
                   className="sideMenuIcon"
                 />
-              }>
+              }
+            >
               <Link to={`${main_link}/serviceCenterLists`}>
                 Fixing Report Lists
               </Link>
@@ -376,7 +390,8 @@ const SideMenu = () => {
                   color={iconSubMenuColorSelector("ServiceChat")}
                   className="sideMenuIcon"
                 />
-              }>
+              }
+            >
               <Link to={`${main_link}/ServiceChat`}>Messages</Link>
             </Menu.Item>
           </SubMenu>
@@ -388,7 +403,8 @@ const SideMenu = () => {
                 className="sideMenuIcon"
               />
             }
-            title="Event">
+            title="Event"
+          >
             <Menu.Item
               key={`${main_link}/event-logs`}
               icon={
@@ -396,7 +412,8 @@ const SideMenu = () => {
                   color={iconSubMenuColorSelector("event-logs")}
                   className="sideMenuIcon"
                 />
-              }>
+              }
+            >
               <Link to={`${main_link}/event-logs`}>Event logs</Link>
             </Menu.Item>
             <Menu.Item
@@ -406,7 +423,8 @@ const SideMenu = () => {
                   color={iconSubMenuColorSelector("event-joining-logs")}
                   className="sideMenuIcon"
                 />
-              }>
+              }
+            >
               <Link to={`${main_link}/event-joining-logs`}>
                 Event joining logs
               </Link>
@@ -418,13 +436,14 @@ const SideMenu = () => {
                   color={iconSubMenuColorSelector("visitor-management-log")}
                   className="sideMenuIcon"
                 />
-              }>
+              }
+            >
               <Link to={`${main_link}/visitor-management-log`}>
                 Visitor management log
               </Link>
             </Menu.Item>
           </SubMenu>
-          <SubMenu
+          {/* <SubMenu
             key="powerManagement"
             icon={
               <PowerManagementIcon
@@ -432,7 +451,8 @@ const SideMenu = () => {
                 className="sideMenuIcon"
               />
             }
-            title="Power management">
+            title="Power management"
+          >
             <Menu.Item
               key={`${main_link}/areaControl`}
               icon={
@@ -440,7 +460,8 @@ const SideMenu = () => {
                   color={iconMenuColorSelector("areaControl")}
                   className="sideMenuIcon"
                 />
-              }>
+              }
+            >
               <Link to={`${main_link}/areaControl`}>Area control</Link>
             </Menu.Item>
             <Menu.Item
@@ -450,10 +471,11 @@ const SideMenu = () => {
                   color={iconMenuColorSelector("deviceControl")}
                   className="sideMenuIcon"
                 />
-              }>
+              }
+            >
               <Link to={`${main_link}/deviceControl`}>Device control</Link>
             </Menu.Item>
-          </SubMenu>
+          </SubMenu> */}
 
           <SubMenu
             key="sos"
@@ -463,7 +485,8 @@ const SideMenu = () => {
                 className="sideMenuIcon"
               />
             }
-            title="SOS">
+            title="SOS"
+          >
             <Menu.Item
               key={`${main_link}/sos-warning`}
               icon={
@@ -471,7 +494,8 @@ const SideMenu = () => {
                   color={iconSubMenuColorSelector("sos-warning")}
                   className="sideMenuIcon"
                 />
-              }>
+              }
+            >
               <Link to={`${main_link}/sos-warning`}>Upload Plan</Link>
             </Menu.Item>
             <Menu.Item
@@ -481,7 +505,8 @@ const SideMenu = () => {
                   color={iconSubMenuColorSelector("sos-building-plan")}
                   className="sideMenuIcon"
                 />
-              }>
+              }
+            >
               <Link to={`${main_link}/sos-building-plan`}>
                 SOS Building Plan
               </Link>
@@ -494,7 +519,8 @@ const SideMenu = () => {
                 color={iconMenuColorSelector("warranty-tracking")}
                 className="sideMenuIcon"
               />
-            }>
+            }
+          >
             <Link to={`${main_link}/warranty-tracking`}>Warranty Tracking</Link>
           </Menu.Item>
         </Menu>
@@ -510,7 +536,8 @@ const SideMenu = () => {
                 className="sideMenuIcon"
               />
             }
-            onClick={logoutHandler}>
+            onClick={logoutHandler}
+          >
             <span style={{ color: "#9CA3AF" }}>Logout</span>
           </Menu.Item>
         </Menu>

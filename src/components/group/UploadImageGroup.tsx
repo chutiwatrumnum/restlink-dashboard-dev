@@ -88,6 +88,7 @@ const UploadImageGroup = ({
                   display: "flex",
                   flexDirection: "column",
                   justifyContent: "center",
+                  alignItems: "center",
                   borderRadius: 10,
                 }
               : {
@@ -96,6 +97,7 @@ const UploadImageGroup = ({
                   display: "flex",
                   flexDirection: "column",
                   justifyContent: "center",
+                  alignItems: "center",
                   borderRadius: 10,
                 }
           }
@@ -109,18 +111,14 @@ const UploadImageGroup = ({
           </p>
           <Text
             style={{
-              color: imageUrl
-                ? whiteLabel.blackColor
-                : whiteLabel.blackColor,
+              color: imageUrl ? whiteLabel.blackColor : whiteLabel.blackColor,
             }}
           >
             <p>Upload your photo</p>
           </Text>
           <Text
             style={{
-              color: imageUrl
-                ? whiteLabel.blackColor
-                : whiteLabel.blackColor
+              color: imageUrl ? whiteLabel.blackColor : whiteLabel.blackColor,
             }}
           >
             <p>{`*File size <1MB, ${ratio}, *JPGs`}</p>

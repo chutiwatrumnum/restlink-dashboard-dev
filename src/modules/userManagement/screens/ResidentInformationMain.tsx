@@ -65,9 +65,7 @@ const ResidentInformationMain = () => {
       },
       render: (_, record) => {
         return (
-          <div>{`${record?.givenName} ${record?.familyName ?? ""} ${
-            record?.familyName
-          }`}</div>
+          <div>{`${record?.givenName} ${record?.familyName ?? ""}`}</div>
         );
       },
     },
