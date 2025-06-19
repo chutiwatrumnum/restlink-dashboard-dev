@@ -38,7 +38,8 @@
         --whiteTrans-color: rgba(255, 255, 255, 0.8);
         --black-color: #403d38;
         --gray-color: #9f9c9b;
-        --cardBG-color: rgba(231, 245, 245, 1);
+        --cardBG-color: rgba(166, 203, 255, 0.2)
+        ;
 
         /* Semantic Colors */
         --danger-color: #ad1b20;

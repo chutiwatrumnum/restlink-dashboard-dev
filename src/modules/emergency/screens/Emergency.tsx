@@ -137,13 +137,25 @@ const Emergency = () => {
         title: "Picture",
         key: "image",
         align: "center",
-        render: ({ image }) => <img src={image} height={100} />,
+        width: 200, // กำหนดความกว้างของ column
+        render: ({ image }) => (
+          <img
+            src={image}
+            style={{
+              width: "200px",
+              height: "100px",
+              objectFit: "cover",
+              borderRadius: "2px",
+            }}
+            alt="Contact"
+          />
+        ),
       },
       {
         title: "Name",
         dataIndex: "name",
         key: "name",
-        align: "center"
+        align: "center",
       },
       {
         title: "Tel",
