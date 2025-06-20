@@ -500,7 +500,22 @@
 
 /* Submenu Arrow */
 .sideMenuContainer .ant-menu-submenu-arrow {
-  color: #FFFFFF !important;
+  color: var(--primary-color) !important;
+}
+
+/* สีลูกศรเมื่อ SubMenu ถูกเลือก */
+.sideMenuContainer .ant-menu-submenu-selected .ant-menu-submenu-arrow {
+  color: var(--white-color) !important;
+}
+
+/* สีลูกศรเมื่อ hover */
+.sideMenuContainer .ant-menu-submenu:hover .ant-menu-submenu-arrow {
+  color: var(--white-color) !important;
+}
+
+/* สีลูกศรเมื่อ SubMenu เปิดอยู่ */
+.sideMenuContainer .ant-menu-submenu-open .ant-menu-submenu-arrow {
+  color: var(--white-color) !important;
 }
 
 /* ลบ default styles */

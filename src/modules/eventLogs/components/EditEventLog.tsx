@@ -162,16 +162,12 @@ const EditEventLog = (props: EditEventLogProps) => {
     <>
       <Modal
         title={"Edit event"}
-        width={1200}
+        width={"90vw"}
         centered
         open={props?.isOpen}
         onCancel={handleCancel}
         footer={false}
-        style={{
-          borderBottom: 20,
-          borderWidth: 200,
-          borderBlock: 10,
-        }}>
+        >
         <Form
           form={form}
           layout="vertical"
