@@ -289,7 +289,7 @@ const SideMenu = () => {
                 className="sideMenuIcon"
               />
             }>
-            <Link to={`${main_link}/liveChat`}>Live chat</Link>
+            <Link to={`${main_link}/liveChat`}>Chat</Link>
           </Menu.Item>
           <SubMenu
             key="documents"
