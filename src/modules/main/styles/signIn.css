@@ -37,7 +37,7 @@
   text-align: center;
 }
 
-.central-pattana-logo {
+.logo-brand {
   height: 60px;
   width: auto;
   max-width: 100%;
@@ -293,7 +293,7 @@
 .shape-1 {
   width: 120px;
   height: 120px;
-  background: linear-gradient(135deg, #d4af37, #b8941f);
+  background: linear-gradient(135deg, var(--tertiary-color), var(--primary-color));
   top: 10%;
   left: 15%;
   animation-delay: 0s;
@@ -311,7 +311,7 @@
 .shape-3 {
   width: 150px;
   height: 150px;
-  background: linear-gradient(135deg, #d4af37, #f4d03f);
+  background: linear-gradient(135deg, var(--primary-color), var(--tertiary-color));
   bottom: 15%;
   left: 20%;
   animation-delay: 4s;
@@ -329,7 +329,7 @@
 .shape-5 {
   width: 80px;
   height: 80px;
-  background: linear-gradient(135deg, #b8941f, #d4af37);
+  background: linear-gradient(135deg, var(--secondary-color),var(--primary-color) );
   top: 50%;
   left: 10%;
   animation-delay: 8s;
@@ -430,7 +430,7 @@
     font-size: 2.5rem;
   }
   
-  .central-pattana-logo {
+  .logo-brand {
     height: 50px;
   }
 }
