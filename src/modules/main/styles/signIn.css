@@ -1,81 +1,64 @@
-.containerSignIn {
+/* Modern Minimalist SignIn Styles */
+.modern-signin-container {
+  min-height: 100vh;
+  font-family: var(--font-family);
+  background: #ffffff;
+}
+
+.modern-signin-row {
+  min-height: 100vh;
+  margin: 0 !important;
+}
+
+/* Left Side - Form Section */
+.signin-form-section {
+  background: #ffffff;
   display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
-  width: 100vw; /* ใช้ viewport width เต็ม */
-  height: 100vh; /* ใช้ viewport height เต็ม */
-  margin: 0;
-  padding: 0;
-  position: fixed; /* ทำให้เป็น fixed position */
-  top: 0;
-  left: 0;
-  justify-content: center; /* จัดให้อยู่ตรงกลางแนวตั้ง */
-  align-items: center; /* จัดให้อยู่ตรงกลางแนวนอน */
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 2rem;
+  min-height: 100vh;
 }
 
-.formSignIn {
-  display: flex;
-  flex-direction: column;
-}
-
-.forgotPassword {
-  color: var(--mainText-color);
-}
-
-.loginBtn {
-  margin-top: 40px;
-  box-shadow: none;
-  line-height: normal;
-  background-color: var(--primary-color);
-}
-
-.loginBtn:hover {
-  background-color: var(--primary-color) !important;
-  opacity: 0.9;
-}
-
-.textColor {
-  color: var(--mainText-color);
-}
-
-.forgotRememberContainer {
-  display: flex;
-  flex-direction: row;
-  flex: 1;
-  justify-content: space-between;
-}
-
-.logo {
+.modern-form-container {
   width: 100%;
   max-width: 400px;
+  margin: 0 auto;
 }
 
-.txtCenter {
-  align-items: center;
+/* Header Section */
+.signin-header {
   text-align: center;
+  margin-bottom: 3rem;
 }
 
-/* New CSS Classes */
 .logo-container {
-  align-items: center;
-  padding-bottom: 40px;
+  margin-bottom: 2rem;
   text-align: center;
 }
 
-.login-button-container {
+.central-pattana-logo {
+  height: 60px;
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+}
+
+.signin-title {
+  font-size: 2.5rem !important;
+  font-weight: 700 !important;
+  color: #1f2937 !important;
+  margin: 0 !important;
+  line-height: 1.2 !important;
   text-align: center;
 }
 
-/* Google Login Button Styles */
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
+/* Form Styling */
+.modern-signin-form {
+  width: 100%;
 }
 
+/* Google Sign In Button */
 .google-login-btn {
   display: inline-flex;
   align-items: center;
@@ -129,10 +112,346 @@
   animation: spin 1s linear infinite;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-  .google-login-btn {
-    min-width: 200px;
-    font-size: 14px;
+
+/* Divider */
+.signin-divider {
+  text-align: center;
+  margin: 1.5rem 0;
+  position: relative;
+}
+
+.signin-divider::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: #e5e7eb;
+}
+
+.signin-divider span {
+  background: white;
+  padding: 0 1rem;
+  color: #6b7280;
+  font-size: 0.875rem;
+  position: relative;
+  z-index: 1;
+}
+
+/* Input Styling */
+.modern-input {
+  border: 1px solid #e5e7eb !important;
+  border-radius: 12px !important;
+  padding: 1rem !important;
+  font-size: 0.875rem !important;
+  background: #f9fafb !important;
+  transition: all 0.2s ease !important;
+  height: 56px !important;
+}
+
+.modern-input:hover {
+  border-color: #d1d5db !important;
+  background: #ffffff !important;
+}
+
+.modern-input:focus,
+.modern-input.ant-input-focused {
+  border-color: var(--primary-color) !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+  background: #ffffff !important;
+  outline: none !important;
+}
+
+.modern-input.ant-input-affix-wrapper {
+  border: 1px solid #e5e7eb !important;
+  border-radius: 12px !important;
+  background: #f9fafb !important;
+  padding: 0.5rem 1rem !important;
+}
+
+.modern-input.ant-input-affix-wrapper:hover {
+  border-color: #d1d5db !important;
+  background: #ffffff !important;
+}
+
+.modern-input.ant-input-affix-wrapper-focused {
+  border-color: var(--primary-color) !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+  background: #ffffff !important;
+}
+
+/* Form Options */
+.signin-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 1.5rem 0;
+}
+
+.keep-logged-checkbox {
+  color: #374151;
+  font-size: 0.875rem;
+}
+
+.keep-logged-checkbox .ant-checkbox-checked .ant-checkbox-inner {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.forgot-link {
+  color: var(--primary-color);
+  font-size: 0.875rem;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.forgot-link:hover {
+  color: var(--secondary-color);
+  text-decoration: underline;
+}
+
+/* Login Button */
+.login-button {
+  background: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+  border-radius: 12px !important;
+  height: 56px !important;
+  font-weight: 600 !important;
+  font-size: 0.875rem !important;
+  box-shadow: 0 4px 12px rgba(201, 169, 110, 0.2) !important;
+  transition: all 0.2s ease !important;
+}
+
+.login-button:hover {
+  background: var(--secondary-color) !important;
+  border-color: var(--secondary-color) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 6px 16px rgba(201, 169, 110, 0.3)!important;
+}
+
+/* Sign Up Section */
+.signup-section {
+  text-align: center;
+  margin-top: 1.5rem;
+}
+
+.signup-text {
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+.signup-link {
+  color: var(--primary-color);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.signup-link:hover {
+  color: #2563eb;
+  text-decoration: underline;
+}
+
+/* Right Side - Modern Illustration */
+.modern-illustration-section {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  position: relative;
+  overflow: hidden;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.illustration-content {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+}
+
+/* Background Shapes */
+.bg-shapes {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+}
+
+.shape {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.8;
+  animation: floatShape 15s ease-in-out infinite;
+}
+
+.shape-1 {
+  width: 120px;
+  height: 120px;
+  background: linear-gradient(135deg, #d4af37, #b8941f);
+  top: 10%;
+  left: 15%;
+  animation-delay: 0s;
+}
+
+.shape-2 {
+  width: 200px;
+  height: 200px;
+  background: linear-gradient(135deg, #1f2937, #374151);
+  top: 5%;
+  right: 10%;
+  animation-delay: 2s;
+}
+
+.shape-3 {
+  width: 150px;
+  height: 150px;
+  background: linear-gradient(135deg, #d4af37, #f4d03f);
+  bottom: 15%;
+  left: 20%;
+  animation-delay: 4s;
+}
+
+.shape-4 {
+  width: 100px;
+  height: 100px;
+  background: linear-gradient(135deg, #6b7280, #9ca3af);
+  bottom: 25%;
+  right: 15%;
+  animation-delay: 6s;
+}
+
+.shape-5 {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, #b8941f, #d4af37);
+  top: 50%;
+  left: 10%;
+  animation-delay: 8s;
+}
+
+.shape-6 {
+  width: 180px;
+  height: 180px;
+  background: linear-gradient(135deg, #4b5563, #6b7280);
+  bottom: 10%;
+  right: 20%;
+  animation-delay: 10s;
+}
+
+@keyframes floatShape {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg) scale(1);
   }
+  33% {
+    transform: translateY(-20px) rotate(5deg) scale(1.05);
+  }
+  66% {
+    transform: translateY(-10px) rotate(-3deg) scale(0.95);
+  }
+}
+
+/* Main Text */
+.main-text {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  max-width: 500px;
+}
+
+.main-text h1 {
+  font-size: 3.5rem;
+  font-weight: 700;
+  color: #1f2937;
+  line-height: 1.1;
+  margin: 0;
+  background: linear-gradient(135deg, #1f2937, var(--primary-color));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Responsive Design */
+@media (max-width: 992px) {
+  .modern-illustration-section {
+    display: none;
+  }
+  
+  .signin-form-section {
+    padding: 2rem 1.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .signin-form-section {
+    padding: 2rem 1rem;
+  }
+  
+  .modern-form-container {
+    max-width: 100%;
+  }
+  
+  .signin-title {
+    font-size: 2rem !important;
+  }
+  
+  .signin-options {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .signin-form-section {
+    padding: 1.5rem 1rem;
+  }
+  
+  .signin-title {
+    font-size: 1.75rem !important;
+  }
+  
+  .modern-input,
+  .google-signin-button,
+  .login-button {
+    height: 48px !important;
+  }
+  
+  .modern-input {
+    padding: 0.75rem !important;
+  }
+  
+  .main-text h1 {
+    font-size: 2.5rem;
+  }
+  
+  .central-pattana-logo {
+    height: 50px;
+  }
+}
+
+/* Loading States */
+.login-button.ant-btn-loading {
+  position: relative;
+}
+
+.login-button.ant-btn-loading .ant-btn-loading-icon {
+  color: white;
+}
+
+/* Form Validation */
+.ant-form-item-has-error .modern-input {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
+}
+
+.ant-form-item-explain-error {
+  color: #ef4444;
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
 }
