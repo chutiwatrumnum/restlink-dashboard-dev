@@ -226,7 +226,7 @@ const Announcement = () => {
       key: "startDate",
       align: "center",
       render: ({ startDate }) => {
-        return <span>{dayjs(startDate).format("DD/MM/YYYY HH:mm")}</span>;
+        return <span>{dayjs(startDate).format("DD/MM/YYYY")}</span>;
       },
       sorter: (a, b) => dayjs(a.startDate).unix() - dayjs(b.startDate).unix(),
     },

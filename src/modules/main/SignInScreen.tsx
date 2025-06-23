@@ -1,7 +1,7 @@
 import { Col, Space } from "antd";
 import { useEffect, useState } from "react";
 import { postAuthMutation } from "../../utils/mutationsGroup/authMutations";
-import LOGO from "../../assets/images/Reslink-Logo.png";
+import LOGO from "../../assets/images/SignInLogo.png";
 import type { AccessTokenType } from "../../stores/interfaces/Auth";
 import "./styles/signIn.css";
 import { getAuthCode, startGoogleLogin } from "../../utils/googleAuth";

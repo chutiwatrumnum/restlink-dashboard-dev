@@ -9,14 +9,14 @@ import { whiteLabel } from "../../../configs/theme";
 
 interface ChatListType {
   item: ChatListDataType;
-  activeUserID: string;
+  activeChecker: [string, number];
   index: number;
   onUserListSelected: (item: ChatListDataType, index: number) => void;
 }
 
 const ChatList = ({
   item,
-  activeUserID,
+  activeChecker,
   index,
   onUserListSelected,
 }: ChatListType) => {
@@ -48,7 +48,10 @@ const ChatList = ({
       {item ? (
         <Col
           className={`userContainer ${
-            activeUserID === item.userId ? "active" : ""
+            activeChecker[1] === item.myHome.unitId &&
+            activeChecker[0] === item.userId
+              ? "active"
+              : ""
           }`}
           onClick={() => {
             onUserListSelected(item, index);

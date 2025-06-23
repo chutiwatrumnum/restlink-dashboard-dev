@@ -18,7 +18,7 @@ const getdataresidentlist = async (params: conditionPage) => {
 
   if (resultparams.status) {
     url = url + resultparams.paramsstr;
-    console.log("url:", url);
+    // console.log("url:", url);
   }
   const token = await encryptStorage.getItem("access_token");
   if (token) {
@@ -27,6 +27,8 @@ const getdataresidentlist = async (params: conditionPage) => {
 
       if (result.status < 400) {
         const AllDataResident = result.data.result.rows;
+        // console.log(AllDataResident);
+
         return {
           total: result.data.result.total,
           status: true,

@@ -31,7 +31,7 @@ import type { ColumnsType } from "antd/es/table";
 // }
 
 export interface ResidentInformationDataType {
-  id: string;
+  sub: string;
   familyName: string;
   givenName: string;
   email: string;
@@ -41,7 +41,6 @@ export interface ResidentInformationDataType {
 
   middleName?: string;
   nickName?: string;
-  tel?: string;
   birthDate?: string;
   imageProfile?: string;
   contact?: string;
@@ -206,14 +205,14 @@ export interface InvitationsDataType {
   expireDate?: string;
   code?: string;
   // Activated values
-  phoneNumber?: string;
-  activateAt?: string;
+  activateDate?: string;
 }
 
 export interface ActivateBy {
   sub: string;
   familyName: string;
   givenName: string;
+  contact: string;
 }
 
 export interface Project {
@@ -238,6 +237,9 @@ export interface CreatedBy {
 }
 
 export interface UserRoomListType {
-  unit: InvitationsUnit;
-  role: InvitationsRole;
+  blockNo: string;
+  floor: number;
+  roleName: string;
+  roomAddress: string;
+  unitNo: string;
 }

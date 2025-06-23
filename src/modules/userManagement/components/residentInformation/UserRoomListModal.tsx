@@ -1,11 +1,9 @@
 import { Modal, Card } from "antd";
 
-import {
-  ResidentInformationDataType,
-  UserRoomListType,
-} from "../../../../stores/interfaces/ResidentInformation";
+import { ResidentInformationDataType } from "../../../../stores/interfaces/ResidentInformation";
 
 import { roomListMockData } from "../../mockData";
+import { getResidentRoomListQuery } from "../../../../utils/queriesGroup/residentQueries";
 
 interface UserRoomListModalType {
   isUserRoomListModalOpen: boolean;
@@ -16,7 +14,12 @@ interface UserRoomListModalType {
 const UserRoomListModal = (props: UserRoomListModalType) => {
   // variables
   const { isUserRoomListModalOpen, data, onCancel } = props;
-  const roomListData: UserRoomListType[] = roomListMockData;
+  // console.log(data);
+
+  // Data
+  const { data: roomListData } = getResidentRoomListQuery({
+    sub: data?.sub ?? "123",
+  });
 
   // Functions
   const handleClose = () => {
@@ -42,17 +45,17 @@ const UserRoomListModal = (props: UserRoomListModalType) => {
           </p>
         </div>
         <div className="flex flex-col justify-center items-center w-full gap-4">
-          {roomListData.map((item, index) => {
+          {roomListData?.map((item, index) => {
             return (
               <Card
                 className="w-full"
                 style={{ backgroundColor: "var(--BG-Table-color)" }}
               >
                 <div className="flex flex-col w-full justify-center items-start gap-2">
-                  <span>Unit no. : {item?.unit?.unitNo}</span>
-                  <span>Room address : {item?.unit?.roomAddress}</span>
-                  <span>Floor : {item?.unit?.floor}</span>
-                  <span>Role : {item?.role?.name}</span>
+                  <span>Unit no. : {item?.unitNo}</span>
+                  <span>Room address : {item?.roomAddress}</span>
+                  <span>Floor : {item?.floor}</span>
+                  <span>Role : {item?.roleName}</span>
                 </div>
               </Card>
             );

@@ -25,27 +25,33 @@ const getChatList = async ({
     url += `?sortBy=${sortBy}&sort=ASC`;
   }
   const res = await axios.get(url);
-  // console.log("CHAT LIST : ", res.data.result);
+  console.log("CHAT LIST : ", res.data.result);
 
   return res.data.result;
 };
 
 const getChatDataByID = async ({
   queryKey,
-}: QueryFunctionContext<[string, string]>): Promise<ChatDataType | null> => {
-  const [_key, id] = queryKey;
+}: QueryFunctionContext<
+  [string, string, number]
+>): Promise<ChatDataType | null> => {
+  const [_key, id, unitId] = queryKey;
   if (!id) return null;
-  const res = await axios.get(`/chat/dashboard/chat-message/${id}`);
+  const res = await axios.get(
+    `/chat/dashboard/chat-message/${id}?unitId=${unitId}`
+  );
   return res.data.result;
 };
 
 const getMoreChatDataByID = async ({
   queryKey,
-}: QueryFunctionContext<[string, string, string]>): Promise<ChatDataType[]> => {
-  const [_key, curPage, id] = queryKey;
+}: QueryFunctionContext<[string, string, string, number]>): Promise<
+  ChatDataType[]
+> => {
+  const [_key, curPage, id, unitId] = queryKey;
   if (!id) return [];
   const res = await axios.get(
-    `/chat/dashboard/chat-message/${id}?curPage=${curPage}`
+    `/chat/dashboard/chat-message/${id}?curPage=${curPage}?unitId=${unitId}`
   );
   return res.data.result;
 };
@@ -78,10 +84,11 @@ export const getChatListQuery = (
 
 export const getChatDataByIDQuery = (payload: {
   id: string;
+  unitId: number;
 }): UseQueryResult<ChatDataType[] | null> => {
-  const { id } = payload;
+  const { id, unitId } = payload;
   return useQuery({
-    queryKey: ["chatDataByID", id],
+    queryKey: ["chatDataByID", id, unitId],
     queryFn: getChatDataByID,
   });
 };
@@ -89,11 +96,12 @@ export const getChatDataByIDQuery = (payload: {
 export const getMoreChatDataByIDQuery = (payload: {
   curPage: string;
   id: string;
+  unitId: number;
   shouldFetch: boolean;
 }): UseQueryResult<ChatDataType[] | null> => {
-  const { curPage, id, shouldFetch } = payload;
+  const { curPage, id, unitId, shouldFetch } = payload;
   return useQuery({
-    queryKey: ["moreChatDataByID", curPage, id],
+    queryKey: ["moreChatDataByID", curPage, id, unitId],
     queryFn: getMoreChatDataByID,
     enabled: shouldFetch,
   });

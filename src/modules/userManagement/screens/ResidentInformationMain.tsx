@@ -64,21 +64,19 @@ const ResidentInformationMain = () => {
         compare: (a, b) => a.givenName.localeCompare(b.givenName),
       },
       render: (_, record) => {
-        return (
-          <div>{`${record?.givenName} ${record?.familyName ?? ""}`}</div>
-        );
+        return <div>{`${record?.givenName} ${record?.familyName ?? ""}`}</div>;
       },
     },
     {
       title: "Phone number",
-      key: "tel",
+      key: "contact",
       align: "center",
       width: "7%",
       sorter: {
         compare: (a, b) => a.familyName.localeCompare(b.familyName),
       },
       render: (_, record) => {
-        return <div>{`${record?.tel ?? "-"}`}</div>;
+        return <div>{`${record?.contact ?? "-"}`}</div>;
       },
     },
     {
@@ -159,7 +157,7 @@ const ResidentInformationMain = () => {
             />
             <Button
               className="iconButton"
-              value={record.id}
+              value={record.sub}
               type="text"
               onClick={showDeleteConfirm}
               icon={<DeleteOutlined />}

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Dispatch, RootState } from "../../../stores";
 import {
@@ -14,7 +14,6 @@ import {
   getChatDataByIDQuery,
 } from "../../../utils/queries";
 import { useQueryClient } from "@tanstack/react-query";
-import { useLocation } from "react-router-dom";
 
 import Header from "../../../components/templates/Header";
 import ChatBoxContainer from "../components/ChatBoxContainer";
@@ -30,10 +29,12 @@ const ChatRoom = () => {
   const dispatch = useDispatch<Dispatch>();
   const queryClient = useQueryClient();
   const { chatListSortBy } = useSelector((state: RootState) => state.chat);
-  const [activeUserID, setActiveUserID] = useState("");
+  const [activeChecker, setActiveChecker] = useState<[string, number]>([
+    "",
+    -1,
+  ]);
   const [currentChat, setCurrentChat] = useState<ChatListDataType>();
   const [currentChatUserID, setCurrentChatUserID] = useState("");
-  // const [chatListSortBy, setChatListSortBy] = useState("time");
   const [unitID, setUnitID] = useState("");
   const [shouldFetch, setShouldFetch] = useState(false);
   const [roomAddressSelect, setRoomAddressSelect] = useState();
@@ -58,6 +59,7 @@ const ChatRoom = () => {
 
   const { refetch: updateChatData } = getChatDataByIDQuery({
     id: currentChat?.userId ?? "",
+    unitId: currentChat?.myHome?.unitId ?? -1,
   });
 
   // Functions
@@ -76,18 +78,13 @@ const ChatRoom = () => {
 
   const onUserSelectByUnit = (userId: string, option: any) => {
     // console.log(userId);
-    // console.log(option);
+    // console.log("option : ", option);
+    // console.log(roomAddressSelect);
 
-    let payload = {
-      userId: userId,
-      firstName: option.firstName,
-      lastName: option.lastName,
-      roomAddress: roomAddressSelect,
-    };
+    setCurrentChat(option);
     setCurrentChatUserID(userId);
     setUserSelectValue(userId);
-    onUserSelected(payload);
-    setActiveUserID(userId);
+    setActiveChecker([userId, option.unitId]);
   };
 
   const handleMenuClick = (e: any) => {
@@ -95,16 +92,12 @@ const ChatRoom = () => {
     // setChatListSortBy(e.key);
   };
 
-  const onUserSelected = (item: any) => {
-    setCurrentChat(item);
-  };
-
   const onUserListSelected = async (item: ChatListDataType, index: number) => {
     let seenData = chatListData;
     cleanSelectedMenu();
     setCurrentChatUserID(item.userId);
-    onUserSelected(item);
-    setActiveUserID(item.userId);
+    setCurrentChat(item);
+    setActiveChecker([item.userId, item.myHome.unitId]);
     if (seenData) seenData[index].juristicSeen = true;
   };
 
@@ -133,21 +126,24 @@ const ChatRoom = () => {
     socket.on("chat-list", () => {
       refetchChatList();
     });
-    socket.on(`chat-usr-${currentChatUserID}`, (cmd) => {
-      if (cmd.cmd === "new_message") {
-        onChatIncoming();
-      } else if (cmd.cmd === "seen") {
-        queryClient.setQueryData(
-          ["chatDataByID", currentChatUserID],
-          (oldData: ChatDataType[]) => {
-            const seenMessages = oldData.map((item) =>
-              item.seen === false ? { ...item, seen: true } : item
-            );
-            return seenMessages;
-          }
-        );
+    socket.on(
+      `chat-usr-${currentChatUserID}-${currentChat?.myHome?.unitId}`,
+      (cmd) => {
+        if (cmd.cmd === "new_message") {
+          onChatIncoming();
+        } else if (cmd.cmd === "seen") {
+          queryClient.setQueryData(
+            ["chatDataByID", currentChatUserID, currentChat?.myHome?.unitId],
+            (oldData: ChatDataType[]) => {
+              const seenMessages = oldData.map((item) =>
+                item.seen === false ? { ...item, seen: true } : item
+              );
+              return seenMessages;
+            }
+          );
+        }
       }
-    });
+    );
     socket.on("connect_error", (error) => {
       console.error("Connection Error:", error);
     });
@@ -222,7 +218,7 @@ const ChatRoom = () => {
                 return (
                   <ChatList
                     key={index}
-                    activeUserID={activeUserID}
+                    activeChecker={activeChecker}
                     index={index}
                     item={item}
                     onUserListSelected={onUserListSelected}

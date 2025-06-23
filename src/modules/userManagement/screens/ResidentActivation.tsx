@@ -135,7 +135,7 @@ const ResidentActivation = () => {
       title: "Phone No.",
       align: "center",
       render: (_, record) => {
-        return <div>{`${record?.phoneNumber ?? "-"}`}</div>;
+        return <div>{`${record?.activateBy?.contact ?? "-"}`}</div>;
       },
     },
     {
@@ -144,8 +144,8 @@ const ResidentActivation = () => {
       render: (_, record) => {
         return (
           <div>
-            {record?.activateAt
-              ? `${dayjs(record?.activateAt).format("DD/MM/YYYY")}`
+            {record?.activateDate
+              ? `${dayjs(record?.activateDate).format("DD/MM/YYYY HH:mm")}`
               : "-"}
           </div>
         );

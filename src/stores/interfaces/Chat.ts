@@ -24,6 +24,7 @@ export interface ChatListDataType {
   fullName?: string;
   lastName?: string;
   roomAddress?: string;
+  unitId?: number;
 }
 
 export interface MyHome {
@@ -57,5 +58,6 @@ export interface SendChatDataType {
   type: "text" | "image" | "file";
   value: string;
   userId: string;
+  unitId: number;
   fileName?: string;
 }

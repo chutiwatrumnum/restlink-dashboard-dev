@@ -52,11 +52,21 @@ const ChatBoxContainer = ({ chatData }: { chatData?: ChatListDataType }) => {
     data: chatDataById,
     isLoading: isChatDataByIDLoading,
     refetch: updateChatData,
-  } = getChatDataByIDQuery({ id: chatData?.userId ?? "" });
+  } = getChatDataByIDQuery({
+    id: chatData?.userId ?? "",
+    unitId:
+      (chatData?.myHome?.unitId
+        ? chatData?.myHome?.unitId
+        : chatData?.unitId) ?? -1,
+  });
   const { data: moreChatData, refetch: loadMoreChatData } =
     getMoreChatDataByIDQuery({
       id: chatData?.userId ?? "",
       curPage: curPageChatData.toString(),
+      unitId:
+        (chatData?.myHome?.unitId
+          ? chatData?.myHome?.unitId
+          : chatData?.unitId) ?? -1,
       shouldFetch: shouldFetch,
     });
   const postMessageMutation = postMessageByJuristicMutation();
@@ -195,7 +205,7 @@ const ChatBoxContainer = ({ chatData }: { chatData?: ChatListDataType }) => {
     }
   };
 
-  const onSendMessage = async (message: string) => {
+  const onSendMessage = async () => {
     let payload: SendChatDataType;
     setIsSending(true);
     let messagePayload = messageValue.replace(/&nbsp;/g, " ");
@@ -204,8 +214,12 @@ const ChatBoxContainer = ({ chatData }: { chatData?: ChatListDataType }) => {
         type: "text",
         value: messagePayload,
         userId: chatData.userId,
+        unitId:
+          (chatData?.myHome?.unitId
+            ? chatData?.myHome?.unitId
+            : chatData?.unitId) ?? -1,
       };
-      // console.log(payload);
+      // console.log("payload : ", payload);
 
       await postMessageMutation.mutateAsync(payload);
     }
@@ -215,6 +229,10 @@ const ChatBoxContainer = ({ chatData }: { chatData?: ChatListDataType }) => {
         type: fileType,
         value: base64,
         userId: chatData.userId,
+        unitId:
+          (chatData?.myHome?.unitId
+            ? chatData?.myHome?.unitId
+            : chatData?.unitId) ?? -1,
         fileName: file?.name,
       };
       // console.log(payload);
@@ -274,7 +292,7 @@ const ChatBoxContainer = ({ chatData }: { chatData?: ChatListDataType }) => {
       setMessageValue(" ");
     };
     reader.onerror = (error) => {
-      setError("Error converting file to base64.");
+      setError("Error converting file to base64. : " + error);
     };
   };
 
@@ -330,14 +348,8 @@ const ChatBoxContainer = ({ chatData }: { chatData?: ChatListDataType }) => {
     updateChatData();
     dispatch.chat.updateCurPageChatData(2);
     setIsFirstTime(true);
+    // console.log("chat Data : ", chatData);
   }, [chatData]);
-
-  // useImperativeHandle(ref, () => ({
-  //   async handleIncomingChat() {
-  //     console.log("Handle incoming chat in ChatBoxContainer");
-  //     await updateChatData();
-  //   },
-  // }));
 
   return (
     <>

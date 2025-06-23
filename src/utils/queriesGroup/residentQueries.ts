@@ -3,6 +3,7 @@ import axios from "axios";
 import {
   GetInvitationsType,
   ResidentInvitationsPromiseType,
+  UserRoomListType,
 } from "../../stores/interfaces/ResidentInformation";
 
 // Services Chat section
@@ -18,6 +19,17 @@ const getResidentUnit = async () => {
   let url = `/users/invitation/resident/unit`;
   const res = await axios.get(url);
   //   console.log("RES : ", res);
+
+  return res.data.data;
+};
+
+const getResidentRoomList = async ({
+  queryKey,
+}: QueryFunctionContext<[string, string]>): Promise<UserRoomListType[]> => {
+  const [_key, sub] = queryKey;
+  let url = `/users/room-list?sub=${sub}`;
+  const res = await axios.get(url);
+  // console.log("RES : ", res);
 
   return res.data.data;
 };
@@ -55,5 +67,13 @@ export const getResidentInvitationsQuery = (payload: GetInvitationsType) => {
   return useQuery({
     queryKey: ["residentInvitations", activate, curPage],
     queryFn: getResidentInvitations,
+  });
+};
+
+export const getResidentRoomListQuery = (payload: { sub: string }) => {
+  const { sub } = payload;
+  return useQuery({
+    queryKey: ["residentRoomList", sub],
+    queryFn: getResidentRoomList,
   });
 };
