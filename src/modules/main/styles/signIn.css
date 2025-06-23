@@ -35,6 +35,10 @@
 .logo-container {
   margin-bottom: 2rem;
   text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
 }
 
 .logo-brand {
@@ -42,6 +46,8 @@
   width: auto;
   max-width: 100%;
   object-fit: contain;
+  display: block;
+  margin: 0 auto;
 }
 
 .signin-title {
@@ -405,6 +411,14 @@
     align-items: flex-start;
     gap: 1rem;
   }
+  
+  .logo-container {
+    margin-bottom: 1.5rem;
+  }
+  
+  .logo-brand {
+    height: 50px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -432,6 +446,10 @@
   
   .logo-brand {
     height: 50px;
+  }
+  
+  .logo-container {
+    margin-bottom: 1rem;
   }
 }
 
