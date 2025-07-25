@@ -20,7 +20,7 @@ export interface DataAnnouncementType {
 export interface DataAnnouncementCreateByType {
   familyName: string;
   givenName: string;
-  sub: string;
+  userId: string;
   // id?: string;
   // lastName?: string;
   // firstName?: string;

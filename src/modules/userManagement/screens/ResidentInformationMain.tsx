@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Button } from "antd";
+import { Button, Row, Col } from "antd";
 import Header from "../../../components/templates/Header";
 import DatePicker from "../../../components/common/DatePicker";
 import SearchBox from "../../../components/common/SearchBox";
@@ -64,11 +64,27 @@ const ResidentInformationMain = () => {
         compare: (a, b) => a.givenName.localeCompare(b.givenName),
       },
       render: (_, record) => {
-        return <div>{`${record?.givenName} ${record?.familyName ?? ""}`}</div>;
+        return (
+          <div>{`${record?.givenName} ${record?.middleName ?? ""} ${
+            record?.familyName ?? ""
+          }`}</div>
+        );
       },
     },
     {
-      title: "Phone number",
+      title: "Room no.",
+      key: "unit",
+      align: "center",
+      width: "7%",
+      sorter: {
+        compare: (a, b) => a.unit.roomAddress.localeCompare(b.unit.roomAddress),
+      },
+      render: (_, record) => {
+        return <div>{record.unit.roomAddress ?? "-"}</div>;
+      },
+    },
+    {
+      title: "Phone no.",
       key: "contact",
       align: "center",
       width: "7%",
@@ -85,14 +101,14 @@ const ResidentInformationMain = () => {
       align: "center",
       width: "5%",
       sorter: {
-        compare: (a, b) => a.unit.roomAddress.localeCompare(b.unit.roomAddress),
+        compare: (a, b) => a.email.localeCompare(b.email),
       },
       render: (_, record) => {
         return <div>{record.email ?? "Something went wrong!"}</div>;
       },
     },
     {
-      title: "Create at",
+      title: "Create date",
       key: "createdAt",
       align: "center",
       width: "5%",
@@ -100,7 +116,7 @@ const ResidentInformationMain = () => {
         return (
           <div>
             {record?.createdAt
-              ? dayjs(record.createdAt).format("DD/MM/YYYY")
+              ? dayjs(record.createdAt).format("DD/MM/YYYY HH:mm")
               : "Something went wrong!"}
           </div>
         );
@@ -118,33 +134,35 @@ const ResidentInformationMain = () => {
         );
       },
     },
-    {
-      title: "Room list",
-      key: "unitList",
-      align: "center",
-      width: "5%",
-      render: (_, record) => {
-        return (
-          <>
-            <Button
-              color="primary"
-              variant="outlined"
-              onClick={() => {
-                setRoomListData(record);
-                setIsUserRoomListModalOpen(true);
-              }}
-            >
-              Room list
-            </Button>
-          </>
-        );
-      },
-    },
+    // {
+    //   title: "Room list",
+    //   key: "unitList",
+    //   align: "center",
+    //   width: "5%",
+    //   render: (_, record) => {
+    //     return (
+    //       <>
+    //         <Button
+    //           color="primary"
+    //           variant="outlined"
+    //           onClick={() => {
+    //             // console.log(record);
+    //             setRoomListData(record);
+    //             setIsUserRoomListModalOpen(true);
+    //           }}
+    //         >
+    //           Room list
+    //         </Button>
+    //       </>
+    //     );
+    //   },
+    // },
     {
       title: "Action",
       key: "delete",
       align: "center",
-      width: "5%",
+      width: "7%", // กำหนดความกว้างที่เหมาะสม
+      fixed: "right",
       render: (_, record) => {
         return (
           <>
@@ -157,7 +175,7 @@ const ResidentInformationMain = () => {
             />
             <Button
               className="iconButton"
-              value={record.sub}
+              value={record.userId}
               type="text"
               onClick={showDeleteConfirm}
               icon={<DeleteOutlined />}
@@ -239,10 +257,12 @@ const ResidentInformationMain = () => {
     // console.log(tableData);
   }, [rerender]);
 
+  const importExcel = ({ currentTarget }: any) => {};
+
   return (
     <>
-      <Header title="Resident’s information" />
-      <div className="userManagementTopActionGroup">
+      <Header title="User Management" />
+      {/* <div className="userManagementTopActionGroup">
         <div className="userManagementTopActionLeftGroup">
           <DatePicker
             className="userManagementDatePicker"
@@ -255,7 +275,41 @@ const ResidentInformationMain = () => {
             onSearch={onSearch}
           />
         </div>
-      </div>
+      </div> */}
+      <Row style={{ marginTop: 15, marginBottom: 15 }}>
+        <Col span={6} style={{ paddingRight: 8 }}>
+          <DatePicker
+            // className="userManagementDatePicker"
+            onChange={onChange}
+            picker="month"
+          />
+        </Col>
+        <Col
+          span={6}
+          style={{
+            paddingLeft: 8,
+            display: "flex",
+            justifyContent: "flex-start",
+          }}
+        >
+          <SearchBox
+            placeholderText="Search by name and phone number"
+            // className="userManagementSearchBox"
+            onSearch={onSearch}
+          />
+        </Col>
+        <Col span={6}></Col>
+        <Col span={6} style={{ display: "flex", justifyContent: "flex-end" }}>
+          <Button
+            type="text"
+            size="large"
+            style={{ border: "solid", borderColor: "#4995ff" }}
+            onClick={importExcel}
+          >
+            import
+          </Button>
+        </Col>
+      </Row>
       <ResidentInformationTable
         columns={columns}
         data={tableData}

@@ -69,19 +69,24 @@
 }
 
 .reservedCardContainer {
-  /* filter: drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.25)); */
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: var(--white-color);
+  border-radius: 20px;
+  box-shadow: rgba(149, 157, 165, 0.3) 0px 8px 12px;
+  min-height: 380px;
 }
 
 .reservedCardImage {
   object-fit: cover;
   width: 100%;
-  height: 260px;
+  height: 220px;
   border-radius: 20px 20px 0 0;
 }
 
 .reserveCardDetail {
   width: 100%;
-  background-color: var(--cardBG-color);
   padding: 15px;
   border-radius: 0 0 20px 20px;
 }
@@ -121,7 +126,7 @@
 
 .reservedQRCardContainer {
   height: 100%;
-  background-color: #f9f9f9;
+  background-color: var(--bg-table-color);
   /* filter: drop-shadow(0px 10px 20px rgba(0, 0, 0, 0.1)); */
   /* box-shadow: 0px 10px 20px 0px #0000001a; */
   padding-bottom: 25px;
@@ -140,7 +145,7 @@
 
 .reservedQRContainer {
   text-align: center;
-  background-color: #f9f9f9;
+  background-color: var(--bg-table-color);
   padding: 25px;
 }
 
@@ -163,7 +168,6 @@
   justify-content: space-between;
 }
 
-
 .reservedBottomActionContainer {
   margin-top: 20px;
   margin-bottom: 20px;
@@ -171,7 +175,7 @@
 
 .reservedDatePicker,
 .reservedSearchBox {
-   width: 48% !important;
+  width: 48% !important;
 }
 
 .createReserved {

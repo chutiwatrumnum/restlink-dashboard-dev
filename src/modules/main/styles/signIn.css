@@ -89,7 +89,7 @@
 }
 
 .google-login-btn:hover:not(.loading) {
-  background-color: var(--secondary-color);
+  filter: brightness(120);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   transform: translateY(-1px);
 }
@@ -118,7 +118,6 @@
   animation: spin 1s linear infinite;
 }
 
-
 /* Divider */
 .signin-divider {
   text-align: center;
@@ -127,7 +126,7 @@
 }
 
 .signin-divider::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 50%;
   left: 0;
@@ -233,7 +232,7 @@
   background: var(--secondary-color) !important;
   border-color: var(--secondary-color) !important;
   transform: translateY(-1px) !important;
-  box-shadow: 0 6px 16px rgba(201, 169, 110, 0.3)!important;
+  box-shadow: 0 6px 16px rgba(201, 169, 110, 0.3) !important;
 }
 
 /* Sign Up Section */
@@ -299,7 +298,11 @@
 .shape-1 {
   width: 120px;
   height: 120px;
-  background: linear-gradient(135deg, var(--tertiary-color), var(--primary-color));
+  background: linear-gradient(
+    135deg,
+    var(--tertiary-color),
+    var(--primary-color)
+  );
   top: 10%;
   left: 15%;
   animation-delay: 0s;
@@ -317,7 +320,11 @@
 .shape-3 {
   width: 150px;
   height: 150px;
-  background: linear-gradient(135deg, var(--primary-color), var(--tertiary-color));
+  background: linear-gradient(
+    135deg,
+    var(--primary-color),
+    var(--tertiary-color)
+  );
   bottom: 15%;
   left: 20%;
   animation-delay: 4s;
@@ -335,7 +342,11 @@
 .shape-5 {
   width: 80px;
   height: 80px;
-  background: linear-gradient(135deg, var(--secondary-color),var(--primary-color) );
+  background: linear-gradient(
+    135deg,
+    var(--secondary-color),
+    var(--primary-color)
+  );
   top: 50%;
   left: 10%;
   animation-delay: 8s;
@@ -351,7 +362,8 @@
 }
 
 @keyframes floatShape {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0px) rotate(0deg) scale(1);
   }
   33% {
@@ -387,7 +399,7 @@
   .modern-illustration-section {
     display: none;
   }
-  
+
   .signin-form-section {
     padding: 2rem 1.5rem;
   }
@@ -397,25 +409,25 @@
   .signin-form-section {
     padding: 2rem 1rem;
   }
-  
+
   .modern-form-container {
     max-width: 100%;
   }
-  
+
   .signin-title {
     font-size: 2rem !important;
   }
-  
+
   .signin-options {
     flex-direction: column;
     align-items: flex-start;
     gap: 1rem;
   }
-  
+
   .logo-container {
     margin-bottom: 1.5rem;
   }
-  
+
   .logo-brand {
     height: 50px;
   }
@@ -425,29 +437,29 @@
   .signin-form-section {
     padding: 1.5rem 1rem;
   }
-  
+
   .signin-title {
     font-size: 1.75rem !important;
   }
-  
+
   .modern-input,
   .google-signin-button,
   .login-button {
     height: 48px !important;
   }
-  
+
   .modern-input {
     padding: 0.75rem !important;
   }
-  
+
   .main-text h1 {
     font-size: 2.5rem;
   }
-  
+
   .logo-brand {
     height: 50px;
   }
-  
+
   .logo-container {
     margin-bottom: 1rem;
   }

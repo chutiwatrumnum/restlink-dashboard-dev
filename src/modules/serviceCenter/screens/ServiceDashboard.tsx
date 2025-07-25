@@ -20,17 +20,25 @@ import {
   ServiceCenterTotal,
   ServiceCenterRepairing,
 } from "../../../assets/icons/Icons";
-const colorCard:string[]=[
-  '#1890ff',
-  '#ff4d4f',
-  '#faad14',
-  '#52c41a'
-]
+import IconLoader from "../../../components/common/IconLoader";
+
+const colorCard: string[] = [
+  "#1890ff",
+  "#ff4d4f",
+  "#faad14",
+  "#3EC2AC",
+  "#FF9E36",
+  "#62C6EA",
+  "#52c41a",
+];
 const iconCard: React.ReactNode[] = [
   <ServiceCenterTotal />,
   <ServiceCenterPending />,
-  <ServiceCenterRepairing/>,
+  <ServiceCenterRepairing />,
   <CheckCircleOutlined style={{ fontSize: 24 }} />,
+  <IconLoader iconName="iconServiceCenterRepair" width={32} />,
+  <IconLoader iconName="iconServiceCenterSuccess" width={32} />,
+  <IconLoader iconName="iconServiceCenterTaskDone" width={32} />,
 ];
 const colorPieChartStatusMonth:string[]=[
   '#c50001' ,'#feb009','#00a526'
@@ -39,7 +47,6 @@ const colorPieChartStatusType:string[]=[
   '#047480','#e9a136','#8eb80e','#f23754','#32c7cd','#c97bfa','#ffdc61'
 ]
 const ServiceDashboard = () => {
-    // default automatic select month and year
   const { data } = useServiceCenterServiceChartQuery({
     startMonth: dayjs().format("YYYY-MM"),
     endMonth: dayjs().format("YYYY-MM"),

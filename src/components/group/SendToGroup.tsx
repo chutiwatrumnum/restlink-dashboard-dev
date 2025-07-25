@@ -50,7 +50,7 @@ const SendToGroup = ({
   return (
     <>
       <Modal
-        title="Select unit"
+        title="Select room address"
         open={isModalOpen}
         width={800}
         onCancel={handleCancelModal}

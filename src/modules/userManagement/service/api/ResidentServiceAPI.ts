@@ -1,6 +1,6 @@
 import axios from "axios";
 import {
-  ResidentInformationDataType,
+  ResidentEdit,
   ResidentAddNew,
   conditionPage,
   roleDetail,
@@ -230,12 +230,12 @@ const getdatahobby = async () => {
     };
   }
 };
-const editdataresident = async (id: string | any, data: ResidentAddNew) => {
+const editdataresident = async (userId: string, payload: ResidentEdit) => {
   try {
-    const result = await axios.put(`/users?userId=${id}`, data);
-    console.log("edit request:", data);
+    const result = await axios.put(`/users/${userId}`, payload);
+    // console.log("edit request:", payload);
 
-    console.log("result edit:", result);
+    // console.log("result edit:", result);
 
     if (result.status < 400) {
       return true;

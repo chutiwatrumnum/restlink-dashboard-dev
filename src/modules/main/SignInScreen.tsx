@@ -1,34 +1,37 @@
-import {
-  Button,
-  Checkbox,
-  Col,
-  Form,
-  Input,
-  Row,
-  Typography,
-} from "antd";
+import { Button, Checkbox, Col, Form, Input, Row, Typography } from "antd";
 import { useEffect, useState } from "react";
-import { postAuthMutation } from "../../utils/mutationsGroup/authMutations";
+import {
+  postAuthMutation,
+  postValidateCodeMutation,
+  postJoinMutation,
+} from "../../utils/mutationsGroup/authMutations";
 import LOGO from "../../assets/images/SignInLogo.png";
 import type { AccessTokenType } from "../../stores/interfaces/Auth";
 import "./styles/signIn.css";
 import { getAuthCode, startGoogleLogin } from "../../utils/googleAuth";
 import { GoogleIcon } from "../../assets/icons/Icons";
 import { Link } from "react-router-dom";
-const {Title } = Typography;
+import SignUpModal from "./components/SignUpModal";
+import ConfirmDetailModal from "./components/ConfirmDetailModal";
+import { JoinPayloadType } from "../../stores/interfaces/JuristicManage";
+import { callSuccessModal } from "../../components/common/Modal";
 
+const { Title } = Typography;
 
 const SignInScreen = () => {
   const [authCode, setAuthCode] = useState<string>("");
+  const [validateCode, setValidateCode] = useState<string>("");
 
   // API
   const postAuth = postAuthMutation();
+  const postValidateCode = postValidateCodeMutation();
+  const postJoin = postJoinMutation();
 
   const handleLogin = async () => {
     startGoogleLogin();
   };
 
-  const handleGetaccess_token = async () => {
+  const handleGetAccessToken = async () => {
     if (authCode) {
       const payload: AccessTokenType = {
         code: authCode,
@@ -38,28 +41,36 @@ const SignInScreen = () => {
     }
   };
 
+  const onSignUpOk = async (code: string) => {
+    // console.log(code);
+    setValidateCode(code);
+    postValidateCode.mutateAsync({ code: code });
+  };
+
+  const onJoinConfirm = async (payload: JoinPayloadType) => {
+    let newPayload: JoinPayloadType = {
+      code: validateCode,
+      firstName: payload.firstName,
+      middleName: payload.middleName,
+      lastName: payload.lastName,
+      contact: payload.contact,
+    };
+    // console.log(newPayload);
+    postJoin.mutateAsync(newPayload).then(() => {
+      callSuccessModal("Registration complete. Please sign in again.");
+    });
+  };
+
   useEffect(() => {
     // ดึง Auth Code เมื่อมีการ Redirect
     const code = getAuthCode();
     if (code && code !== authCode) {
       setAuthCode(code);
     }
-    handleGetaccess_token();
+    handleGetAccessToken();
   }, [authCode]);
 
   return (
-    // <Col className="containerSignIn">
-    //   <Space direction="vertical" size={0} className="logo-container">
-    //     <img src={LOGO} alt="logo" className="logo" />
-    //   </Space>
-
-    //   <div className="login-button-container">
-    //     <button onClick={handleLogin} className="google-login-btn">
-    //       <GoogleIcon />
-    //       <span>เข้าสู่ระบบด้วย Google</span>
-    //     </button>
-    //   </div>
-    // </Col>
     <div className="modern-signin-container">
       <Row className="modern-signin-row">
         {/* Left Side - Form */}
@@ -68,11 +79,7 @@ const SignInScreen = () => {
             {/* Logo and Title */}
             <div className="signin-header">
               <div className="logo-container">
-                <img
-                  src={LOGO}
-                  alt="Logo Brand"
-                  className="logo-brand"
-                />
+                <img src={LOGO} alt="Logo Brand" className="logo-brand" />
               </div>
 
               <Title level={2} className="signin-title">
@@ -88,7 +95,8 @@ const SignInScreen = () => {
               initialValues={{ remember: true }}
               // onFinish={onFinish}
               // onFinishFailed={onFinishFailed}
-              autoComplete="off">
+              autoComplete="off"
+            >
               {/* Google Sign In Button */}
               <Button
                 onClick={handleLogin}
@@ -96,7 +104,8 @@ const SignInScreen = () => {
                 htmlType="submit"
                 size="large"
                 block
-                className="login-button">
+                className="login-button"
+              >
                 <GoogleIcon />
                 <span>เข้าสู่ระบบด้วย Google</span>
               </Button>
@@ -131,7 +140,8 @@ const SignInScreen = () => {
                 <Checkbox
                   // checked={rememberChecked}
                   // onChange={onRememberChange}
-                  className="keep-logged-checkbox">
+                  className="keep-logged-checkbox"
+                >
                   Keep me logged in
                 </Checkbox>
 
@@ -147,20 +157,11 @@ const SignInScreen = () => {
                   htmlType="submit"
                   size="large"
                   block
-                  className="login-button">
+                  className="login-button"
+                >
                   Login
                 </Button>
               </Form.Item>
-
-              {/* Sign Up Link */}
-              {/* <div className="signup-section">
-              <Text className="signup-text">
-                Don't have an account?{" "}
-                <Link to="/signup" className="signup-link">
-                  Sign up
-                </Link>
-              </Text>
-            </div> */}
             </Form>
           </div>
         </Col>
@@ -180,15 +181,23 @@ const SignInScreen = () => {
 
             {/* Main Text */}
             <div className="main-text">
-              <img
-                src={LOGO}
-                alt="Logo Brand"
-                className="logo-brand"
-              />
+              <img src={LOGO} alt="Logo Brand" className="logo-brand" />
             </div>
           </div>
         </Col>
       </Row>
+      <SignUpModal
+        onOk={onSignUpOk}
+        onClose={() => {
+          console.log("cancel");
+        }}
+      />
+      <ConfirmDetailModal
+        onOk={onJoinConfirm}
+        onClose={() => {
+          console.log("cancel");
+        }}
+      />
     </div>
   );
 };

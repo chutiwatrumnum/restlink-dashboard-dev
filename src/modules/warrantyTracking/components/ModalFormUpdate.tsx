@@ -11,6 +11,7 @@ import {
   Form,
   Upload
 } from "antd";
+import IconImagePhoto from "../../../assets/images/IconImagePhoto.png";
 import { WarrantyDetailsType } from "../../../stores/interfaces/Warranty";
 import SuccessModal from "../../../components/common/SuccessModal";
 
@@ -135,8 +136,8 @@ export const ModalFormUpdate: React.FC<ModalFormUpdateProps> = ({
                 beforeUpload={handleImageUpload}
                 showUploadList={false}
               >
-                <p className="ant-upload-drag-icon">
-                  <PlusOutlined />
+                <p className="ant-upload-drag-icon flex justify-center items-center">
+                  <img src={IconImagePhoto} alt="upload"  />
                 </p>
                 <p>Click to upload picture</p>
                 <p style={{ color: "#888" }}>Upload your photo</p>

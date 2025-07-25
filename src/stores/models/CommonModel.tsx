@@ -39,16 +39,20 @@ export const common = createModel<RootModel>()({
     },
     async fetchUnitOptions() {
       try {
-        const response = await axios.get<{ data: { unitNo: string; id: number }[] }>("/events/dashboard/unit");
+        const response = await axios.get<{
+          data: { roomAddress: string; id: number }[];
+        }>("/events/dashboard/unit");
 
-        const formattedUnitOptions = response.data.data.map(({ unitNo, id }) => ({
-          label: unitNo,
-          value: id,
-        }));
+        const formattedUnitOptions = response.data.data.map(
+          ({ roomAddress, id }) => ({
+            label: roomAddress,
+            value: id,
+          })
+        );
 
         dispatch.common.updateUnitOptions(formattedUnitOptions);
       } catch (error) {
-        console.error("Failed to fetch unit options:", error);
+        console.error("Failed to fetch room address options:", error);
       }
     },
     async getRoleaccess_token() {

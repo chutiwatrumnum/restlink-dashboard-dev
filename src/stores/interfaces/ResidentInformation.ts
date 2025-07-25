@@ -31,7 +31,7 @@ import type { ColumnsType } from "antd/es/table";
 // }
 
 export interface ResidentInformationDataType {
-  sub: string;
+  userId: string;
   familyName: string;
   givenName: string;
   email: string;
@@ -86,21 +86,25 @@ export interface ResidentInformationFormDataType {
 }
 // From obv88
 export interface ResidentAddNew {
-  firstName: string;
-  lastName: string;
-  nickName: string;
-  email: string;
   roleId: number;
-  hobby: string;
   unitId: number;
-  iuNumber: string;
-  contact: string;
-  birthDate: string;
-  channel: string;
-  moveInDate: string;
-  moveOutDate: string;
-  imageProfile: string;
-  middleName: string;
+
+  givenName?: string;
+  familyName?: string;
+  middleName?: string;
+  nickName?: string;
+  contact?: string;
+  imageProfile?: string;
+}
+
+export interface ResidentEdit {
+  givenName: string;
+  familyName: string;
+
+  nickName?: string;
+  middleName?: string;
+  contact?: string;
+  email?: string;
 }
 export interface blockDetail {
   label: string;
@@ -209,7 +213,7 @@ export interface InvitationsDataType {
 }
 
 export interface ActivateBy {
-  sub: string;
+  userId: string;
   familyName: string;
   givenName: string;
   contact: string;

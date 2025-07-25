@@ -17,6 +17,8 @@ export const userAuth = createModel<RootModel>()({
     userLastName: "Tao",
     isAuth: true,
     userToken: null,
+    isSignUpModalOpen: false,
+    isConfirmDetailModalOpen: false,
   } as UserType,
   reducers: {
     updateUserIdState: (state, payload) => ({
@@ -34,6 +36,14 @@ export const userAuth = createModel<RootModel>()({
     updateAuthState: (state, payload) => ({
       ...state,
       isAuth: payload,
+    }),
+    updateIsSignUpModalOpenState: (state, payload) => ({
+      ...state,
+      isSignUpModalOpen: payload,
+    }),
+    updateIsConfirmDetailModalOpenState: (state, payload) => ({
+      ...state,
+      isConfirmDetailModalOpen: payload,
     }),
   },
   effects: (dispatch) => ({

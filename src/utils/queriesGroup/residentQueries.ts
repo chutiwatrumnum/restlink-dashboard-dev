@@ -26,8 +26,8 @@ const getResidentUnit = async () => {
 const getResidentRoomList = async ({
   queryKey,
 }: QueryFunctionContext<[string, string]>): Promise<UserRoomListType[]> => {
-  const [_key, sub] = queryKey;
-  let url = `/users/room-list?sub=${sub}`;
+  const [_key, userId] = queryKey;
+  let url = `/users/room-list?userId=${userId}`;
   const res = await axios.get(url);
   // console.log("RES : ", res);
 
@@ -42,7 +42,7 @@ const getResidentInvitations = async ({
   const [_key, activate, curPage] = queryKey;
   let url = `/users/invitation/resident/list?activate=${activate}&curPage=${curPage}`;
   const res = await axios.get(url);
-  console.log("RES : ", res.data.result);
+  // console.log("RES : ", res.data.result);
 
   return res.data.result;
 };
@@ -70,10 +70,10 @@ export const getResidentInvitationsQuery = (payload: GetInvitationsType) => {
   });
 };
 
-export const getResidentRoomListQuery = (payload: { sub: string }) => {
-  const { sub } = payload;
+export const getResidentRoomListQuery = (payload: { userId: string }) => {
+  const { userId } = payload;
   return useQuery({
-    queryKey: ["residentRoomList", sub],
+    queryKey: ["residentRoomList", userId],
     queryFn: getResidentRoomList,
   });
 };

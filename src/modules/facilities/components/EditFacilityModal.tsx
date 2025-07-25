@@ -33,7 +33,7 @@ const EditFacilityModal = (props: EditFacilityModalProps) => {
       description: formData.description,
       startTime: dayjs(formData.startTime, "HH:mm").format("HH:mm"),
       endTime: dayjs(formData.endTime, "HH:mm").format("HH:mm"),
-      limitPeople: parseInt(formData.limitPeople),
+      limitPeople: parseInt(formData.limitPeople.toString()),
       maximumHourBooking: dayjs(formData.maximumHourBooking, "HH:mm").format(
         "HH:mm"
       ),
@@ -77,7 +77,7 @@ const EditFacilityModal = (props: EditFacilityModalProps) => {
         accommodates: props?.data?.accommodates,
         facilitiesRules: props?.data?.facilitiesRules,
       });
-      setPreviewImage(props?.data?.imageUrl);
+      setPreviewImage(props?.data?.imageUrl ?? "");
     }
   }, [props?.visible]);
 
@@ -87,7 +87,7 @@ const EditFacilityModal = (props: EditFacilityModalProps) => {
       open={props?.visible}
       centered
       onCancel={clear}
-      title={"Edit Facility"}
+      title="Edit Facility"
       footer={[
         <SmallActionButton
           onClick={onFinish}
@@ -97,8 +97,8 @@ const EditFacilityModal = (props: EditFacilityModalProps) => {
         />,
       ]}
       okText="Save"
-      width="90%"
-      bodyStyle={{ display: "block", overflowY: "auto", maxHeight: "65vh" }}
+      width={"90%"}
+      style={{ maxWidth: 1200 }}
     >
       <Form onFinish={props.onSave} form={editFacilityForm} layout={"vertical"}>
         <div className="reserveModalColumn">

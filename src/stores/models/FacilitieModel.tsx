@@ -121,7 +121,7 @@ export const facilities = createModel<RootModel>()({
           console.error(result.data.message);
           return;
         }
-        // console.log(result.data.result);
+        // console.log("Facility result : ", result.data.result);
         dispatch.facilities.updateReservationListDataState(result.data.result);
       } catch (error) {
         console.error("ERROR", error);
@@ -151,6 +151,30 @@ export const facilities = createModel<RootModel>()({
         console.error("ERROR", error);
       }
     },
+    async createFacilities(payload) {
+      try {
+        const result = await axios.post(`/facilities`, payload);
+        if (result.data.statusCode >= 400) {
+          console.error(result.data);
+          return false;
+        }
+        return true;
+      } catch (error) {
+        console.error("ERROR", error);
+      }
+    },
+    async deleteFacilities(id: number) {
+      try {
+        const result = await axios.delete(`/facilities/${id}`);
+        if (result.data.statusCode >= 400) {
+          console.error(result.data);
+          return false;
+        }
+        return true;
+      } catch (error) {
+        console.error("ERROR", error);
+      }
+    },
     async getReservedList(payload) {
       const date = payload.date ? `&date=${payload.date}` : "";
       const searchWord = payload.search ? `&search=${payload.search}` : "";
@@ -163,10 +187,14 @@ export const facilities = createModel<RootModel>()({
           `/facilities/dashboard/reservation?curPage=${payload.curPage}&perPage=${payload.perPage}${searchWord}${date}${facilityID}`
         );
         if (result.data.statusCode >= 400) {
-          console.error(result.data.message);
+          console.error(
+            "PARAMS : ",
+            `curPage=${payload.curPage}&perPage=${payload.perPage}${searchWord}${date}${facilityID}`,
+            result
+          );
           return;
         }
-        console.log(result.data.result);
+        console.log("Booking list result: ", result.data.result);
         dispatch.facilities.updateReservedListDataState(result.data.result);
       } catch (error) {
         console.error("ERROR", error);
@@ -229,7 +257,7 @@ export const facilities = createModel<RootModel>()({
         );
 
         if (residentData.data.statusCode >= 400) {
-          console.error(residentData.data.message);
+          console.error("ERR", residentData);
           message.error(residentData.data.message);
           return residentData.data.statusCode;
         }

@@ -391,7 +391,7 @@ const CreateAddEventLog = (props: ComponentCreateProps) => {
                     },
                     {
                       value: false,
-                      label: "Select by unit",
+                      label: "Select by room",
                     },
                   ]}
                 />

@@ -307,7 +307,7 @@ const DeliveryLogs = () => {
 
     return (
       <>
-        <Header title="Delivery logs" />
+        <Header title="Parcel" />
         <Row style={{ marginTop: 15, marginBottom: 15 }}>
           <Col span={6}>
             <RangePicker
@@ -330,7 +330,7 @@ const DeliveryLogs = () => {
           </Col>
           <Col
             span={6}
-            style={{ display: "flex", justifyContent: "flex-start" }}>
+            style={{ display: "flex", justifyContent: "flex-start","paddingLeft":"10px" }}>
             <Select
               showSearch
               allowClear
@@ -342,13 +342,13 @@ const DeliveryLogs = () => {
           </Col>
 
           <Col span={6} style={{ display: "flex", justifyContent: "flex-end" }}>
-            <Button
+            {/* <Button
               type="primary"
               style={{ marginRight: 10 }}
               onClick={exportEventLogs}>
               <VerticalAlignBottomOutlined />
               Export
-            </Button>
+            </Button> */}
 
             <Button
               type="primary"

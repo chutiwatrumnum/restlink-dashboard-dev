@@ -51,11 +51,14 @@ const ChatRoom = () => {
 
   const { data: unitsData, isLoading: isUnitsLoading } = getUnitQuery();
 
-  const { data: nameByUnitData, refetch: loadNewNameWithUnitId } =
-    getNameByUnitIDQuery({
-      id: unitID,
-      shouldFetch: shouldFetch,
-    });
+  const {
+    data: nameByUnitData,
+    refetch: loadNewNameWithUnitId,
+    isLoading: isNameLoading,
+  } = getNameByUnitIDQuery({
+    id: unitID,
+    shouldFetch: shouldFetch,
+  });
 
   const { refetch: updateChatData } = getChatDataByIDQuery({
     id: currentChat?.userId ?? "",
@@ -84,7 +87,7 @@ const ChatRoom = () => {
     setCurrentChat(option);
     setCurrentChatUserID(userId);
     setUserSelectValue(userId);
-    setActiveChecker([userId, option.unitId]);
+    setActiveChecker([userId, option?.unitId]);
   };
 
   const handleMenuClick = (e: any) => {
@@ -94,10 +97,11 @@ const ChatRoom = () => {
 
   const onUserListSelected = async (item: ChatListDataType, index: number) => {
     let seenData = chatListData;
+    setUnitID("");
     cleanSelectedMenu();
     setCurrentChatUserID(item.userId);
     setCurrentChat(item);
-    setActiveChecker([item.userId, item.myHome.unitId]);
+    setActiveChecker([item.userId, item?.myHome?.unitId]);
     if (seenData) seenData[index].juristicSeen = true;
   };
 
@@ -188,7 +192,9 @@ const ChatRoom = () => {
                 />
                 <Select
                   size="large"
-                  value={userSelectValue}
+                  placeholder="Select a user"
+                  loading={isNameLoading}
+                  value={userSelectValue || undefined}
                   style={{ width: "49%" }}
                   onChange={onUserSelectByUnit}
                   options={nameByUnitData}

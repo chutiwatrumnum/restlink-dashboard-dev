@@ -4,6 +4,8 @@ export interface UserType {
   userLastName: string | null;
   isAuth: boolean;
   userToken: string | null;
+  isSignUpModalOpen: boolean;
+  isConfirmDetailModalOpen: boolean;
 }
 export interface LoginPayloadType {
   username: string;

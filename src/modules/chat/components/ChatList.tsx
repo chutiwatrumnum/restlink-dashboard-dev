@@ -48,7 +48,7 @@ const ChatList = ({
       {item ? (
         <Col
           className={`userContainer ${
-            activeChecker[1] === item.myHome.unitId &&
+            activeChecker[1] === item.myHome?.unitId &&
             activeChecker[0] === item.userId
               ? "active"
               : ""

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Form, Input, DatePicker, TimePicker, Select } from "antd";
+import { Form, Input, DatePicker, TimePicker, Select, Modal } from "antd";
 import { requiredRule } from "../../../configs/inputRule";
 import { useDispatch, useSelector } from "react-redux";
 import { Dispatch, RootState } from "../../../stores";
@@ -62,13 +62,11 @@ const ReservedCreateModal = ({
 
   const onFacilityChange = (id: number, val: ReservationListDataType) => {
     const options: FacilitiesItemsType[] | undefined = val.facilitiesItems;
-    // setFacilityId(id);
     options?.forEach((option, index) => {
       options[index].label = option.itemName + " " + option.description;
     });
     // console.log(options);
-    subOptionsActiveHandle(id);
-    setSubOptions(options);
+    // setSubOptions(options);
     const limitPeopleTemp: SelectOptionType[] = [];
     for (let index = 0; index < (val.limitPeople ?? 0); index++) {
       limitPeopleTemp.push({
@@ -84,21 +82,6 @@ const ReservedCreateModal = ({
     onCancel();
   };
 
-  const subOptionsActiveHandle = async (id: number) => {
-    switch (id) {
-      case 11:
-      case 12:
-      case 16:
-      case 17:
-        setIsSubOptions(true);
-        break;
-
-      default:
-        setIsSubOptions(false);
-        break;
-    }
-  };
-
   const handleFacilityOptions = () => {
     const temp: { label: string; value: number }[] = [];
     reservationListData.map((room) => {
@@ -112,7 +95,7 @@ const ReservedCreateModal = ({
     const temp: { label: string; value: string }[] = [];
     data.map((resident: ResidentDataType) => {
       temp.push({
-        label: `${resident.firstName} ${resident.lastName}`,
+        label: `${resident.fullName}`,
         value: resident.userId,
       });
     });
@@ -121,10 +104,6 @@ const ReservedCreateModal = ({
 
   useEffect(() => {
     setOpen(isCreateModalOpen);
-    form.setFieldValue(
-      "adminId",
-      `${userData?.firstName}  ${userData?.lastName}`
-    );
     handleFacilityOptions();
   }, [isCreateModalOpen, userData]);
 
@@ -145,6 +124,7 @@ const ReservedCreateModal = ({
             onOk: async () => {
               const payload = {
                 userId: values.userId,
+                unitId: values.unitId,
                 facilitiesId: values.facilitiesId,
                 topic: values.topic,
                 joinAt: dayjs(values.joinAt).format("YYYY-MM-DD"),
@@ -152,13 +132,8 @@ const ReservedCreateModal = ({
                 endTime: dayjs(values.endTime).format("HH:mm"),
                 note: values.note,
                 numberOfPeople: parseInt(values.numberOfPeople),
-                contactNo: "0999999999",
-                facilitiesItemId: 0,
               };
-              if (isSubOptions) {
-                payload.facilitiesItemId = parseInt(values.facilitiesItemId);
-              }
-              //   console.log(payload);
+              // console.log(payload);
               const post = await dispatch.facilities.createReservedFacility(
                 payload
               );
@@ -172,66 +147,114 @@ const ReservedCreateModal = ({
         }}
         onFinishFailed={() => {
           console.log("FINISHED FAILED");
-        }}>
+        }}
+      >
         <div className="reservedModalColumn">
           <div className="reservedModalContainer">
             <div className="reservedModalColumn">
               <Form.Item<ReservedFormDataType>
                 label="Facility"
                 name="facilitiesId"
-                rules={requiredRule}>
+                rules={requiredRule}
+              >
                 <Select
                   placeholder="Please select facility"
                   onChange={onFacilityChange}
                   options={facilityOptions}
                   size="large"
+                  showSearch
+                  filterOption={(input, option) =>
+                    (option?.label ?? "")
+                      .toLowerCase()
+                      .includes(input.toLowerCase())
+                  }
                 />
               </Form.Item>
 
               <Form.Item<ReservedFormDataType>
-                label="Select your options."
-                name="facilitiesItemId"
-                rules={isSubOptions ? requiredRule : []}>
+                label="Number of people"
+                name="numberOfPeople"
+                rules={requiredRule}
+              >
                 <Select
-                  placeholder="Please Select your options"
-                  fieldNames={{
-                    label: "label",
-                    value: "id",
-                  }}
-                  options={subOptions}
+                  placeholder="Select a number of people"
+                  options={limitPeopleOptions}
                   size="large"
-                  disabled={isSubOptions ? false : true}
                 />
               </Form.Item>
 
-              <Form.Item<ReservedFormDataType> label="Booked by" name="adminId">
-                <Input disabled={true} size="large" />
+              <Form.Item<ReservedFormDataType>
+                label="Booking Date"
+                name="joinAt"
+                rules={requiredRule}
+              >
+                <DatePicker style={{ width: "100%" }} size="large" />
               </Form.Item>
 
               <Form.Item<ReservedFormDataType>
                 label="Topic"
                 name="topic"
-                rules={requiredRule}>
+                rules={requiredRule}
+              >
                 <Input size="large" placeholder="Please input topic" />
               </Form.Item>
+
+              <div className="flex flex-row justify-between items-center gap-4">
+                <div className="w-[50%]">
+                  <Form.Item<ReservedFormDataType>
+                    label="Start time"
+                    name="startTime"
+                    rules={requiredRule}
+                  >
+                    <TimePicker
+                      style={{ width: "100%" }}
+                      size="large"
+                      format="HH:mm"
+                      minuteStep={5}
+                    />
+                  </Form.Item>
+                </div>
+                <div className="w-[50%]">
+                  <Form.Item<ReservedFormDataType>
+                    label="End time"
+                    name="endTime"
+                    rules={requiredRule}
+                  >
+                    <TimePicker
+                      style={{ width: "100%" }}
+                      size="large"
+                      format="HH:mm"
+                      minuteStep={5}
+                    />
+                  </Form.Item>
+                </div>
+              </div>
             </div>
             <div className="reservedModalColumn">
               <Form.Item<ReservedFormDataType>
-                label="Room address"
+                label="Resident room"
                 name="unitId"
-                rules={requiredRule}>
+                rules={requiredRule}
+              >
                 <Select
                   placeholder="Select a Room address"
                   onChange={onUnitChange}
                   fieldNames={{ label: "roomAddress", value: "id" }}
                   options={unitListData}
                   size="large"
+                  showSearch
+                  filterOption={(input, option) =>
+                    (option?.roomAddress ?? "")
+                      .toLowerCase()
+                      .includes(input.toLowerCase())
+                  }
                 />
               </Form.Item>
               <Form.Item<ReservedFormDataType>
                 label="Resident name"
                 name="userId"
-                rules={requiredRule}>
+                rules={requiredRule}
+              >
                 <Select
                   placeholder="Select a person"
                   options={residentOptions}
@@ -240,52 +263,13 @@ const ReservedCreateModal = ({
               </Form.Item>
               <Form.Item<ReservedFormDataType>
                 label="Comment (Optional)"
-                name="note">
+                name="note"
+              >
                 <Input.TextArea
-                  rows={6}
+                  rows={10}
                   placeholder="Please input comment"
                   maxLength={1200}
                   showCount
-                />
-              </Form.Item>
-            </div>
-            <div className="reservedModalColumn">
-              <Form.Item<ReservedFormDataType>
-                label="Reserve Date"
-                name="joinAt"
-                rules={requiredRule}>
-                <DatePicker style={{ width: "100%" }} size="large" />
-              </Form.Item>
-              <Form.Item<ReservedFormDataType>
-                label="Start time"
-                name="startTime"
-                rules={requiredRule}>
-                <TimePicker
-                  style={{ width: "100%" }}
-                  size="large"
-                  format="HH:mm"
-                  minuteStep={5}
-                />
-              </Form.Item>
-              <Form.Item<ReservedFormDataType>
-                label="End time"
-                name="endTime"
-                rules={requiredRule}>
-                <TimePicker
-                  style={{ width: "100%" }}
-                  size="large"
-                  format="HH:mm"
-                  minuteStep={5}
-                />
-              </Form.Item>
-              <Form.Item<ReservedFormDataType>
-                label="Number of people"
-                name="numberOfPeople"
-                rules={requiredRule}>
-                <Select
-                  placeholder="Select a number of people"
-                  options={limitPeopleOptions}
-                  size="large"
                 />
               </Form.Item>
             </div>
@@ -299,14 +283,16 @@ const ReservedCreateModal = ({
 
   return (
     <>
-      <FormModal
-        isOpen={open}
-        title="Create reservation"
-        content={<ModalContent />}
-        onOk={() => {}}
+      <Modal
+        open={open}
+        title="Create booking"
         onCancel={clear}
         className="reservedFormModal"
-      />
+        footer={null}
+        style={{ width: "90%", maxWidth: 1000 }}
+      >
+        <ModalContent />
+      </Modal>
     </>
   );
 };

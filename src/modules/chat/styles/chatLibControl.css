@@ -7,7 +7,7 @@ div {
 }
 
 .cs-message--outgoing .cs-message__content {
-  background-color: var(--secondary-color);
+  background-color: var(--bg-color);
 }
 
 .cs-message-separator {

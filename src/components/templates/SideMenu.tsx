@@ -9,7 +9,7 @@ import { MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons";
 import {
   LogOutIcon,
   AnnouncementIcon,
-  ManagementIcon,
+  RoomManagementIcon,
   UserManagementIcon,
   ResidentManagementIcon,
   InvitationIcon,
@@ -23,12 +23,7 @@ import {
   FixingReportDashboardIcon,
   FixingReportListIcon,
   FixingReportChatIcon,
-
-  RegistrationIcon,
   ProfileIcon,
-  PowerManagementIcon,
-  AreaControlIcon,
-  DeviceControlIcon,
   EventIcon,
   EventLogIcon,
   EventJoinLogIcon,
@@ -37,15 +32,66 @@ import {
   SOSWarningIcon,
   AddLocationIcon,
   SOSBuildingPlanIcon,
+  FacilityMenuIcon,
+  FacilityIcon,
+  FacilityBookingIcon,
+  ParcelDashboard,
+  Parcel,
+  ParcelDeliveryLogIcon,
 } from "../../assets/icons/Icons";
 
 import MENU_LOGO from "../../assets/images/Reslink-Logo.png";
 import "../styles/sideMenu.css";
 
+// Custom CSS สำหรับ badge animations
+const badgeAnimationStyles = `
+  @keyframes emergencyPulse {
+    0% { 
+      box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+    }
+    100% { 
+      box-shadow: 0 0 0 20px rgba(239, 68, 68, 0);
+    }
+  }
+  
+  @keyframes warningPulse {
+    0% { 
+      box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7);
+    }
+    100% { 
+      box-shadow: 0 0 0 20px rgba(245, 158, 11, 0);
+    }
+  }
+  
+  .emergency-badge {
+    animation: emergencyPulse 1.5s ease-in-out infinite;
+  }
+  
+  .warning-badge {
+    animation: warningPulse 1.5s ease-in-out infinite;
+  }
+`;
+
+// เพิ่ม styles ลงใน document head
+if (typeof document !== "undefined") {
+  const styleElement = document.createElement("style");
+  styleElement.textContent = badgeAnimationStyles;
+  if (!document.head.querySelector("[data-badge-animations]")) {
+    styleElement.setAttribute("data-badge-animations", "true");
+    document.head.appendChild(styleElement);
+  }
+}
+
 const { SubMenu } = Menu;
 const main_link = "/dashboard";
 
-const SideMenu = () => {
+const SideMenu = ({
+  onMenuChange,
+  dataEmergency,
+}: {
+  onMenuChange: () => void;
+  dataEmergency: any;
+}) => {
   const dispatch = useDispatch<Dispatch>();
   const navigate = useNavigate();
   const location = useLocation();
@@ -67,52 +113,51 @@ const SideMenu = () => {
 
     // Find parent menu keys
     const findParentKeys = (pathname: string): string[] => {
-      if (
-        pathname.includes("/residentInformation") ||
-        pathname.includes("/residentActivation")
-      ) {
-        return ["userManagement"];
+      switch (true) {
+        case pathname.includes("/residentInformation") ||
+          pathname.includes("/residentActivation"):
+          return ["userManagement"];
+
+        case pathname.includes("/juristicInvitation") ||
+          pathname.includes("/juristicManage"):
+          return ["managementTeam"];
+
+        case pathname.includes("/invitation") ||
+          pathname.includes("/userManagement") ||
+          pathname.includes("/roomManagement") ||
+          pathname.includes("/juristicInvitation") ||
+          pathname.includes("/juristicManage"):
+          return ["management"];
+
+        case pathname.includes("/houseDocument") ||
+          pathname.includes("/projectInfo"):
+          return ["documents"];
+
+        case pathname.includes("/serviceDashboard") ||
+          pathname.includes("/serviceCenterLists") ||
+          pathname.includes("/ServiceChat"):
+          return ["serviceCenter"];
+
+        case pathname.includes("/event-logs") ||
+          pathname.includes("/event-joining-logs") ||
+          pathname.includes("/visitor-management-log"):
+          return ["event"];
+
+        case pathname.includes("/sos-warning") ||
+          pathname.includes("/sos-building-plan"):
+          return ["sos"];
+
+        case pathname.includes("/facility") ||
+          pathname.includes("/bookingList"):
+          return ["facilityBooking"];
+
+        case pathname.includes("/parcel-dashboard") ||
+          pathname.includes("/parcel-delivery-logs"):
+          return ["parcel"];
+
+        default:
+          return [];
       }
-      if (
-        pathname.includes("/invitation") ||
-        pathname.includes("/userManagement") ||
-        pathname.includes("/roomManagement")
-      ) {
-        return ["management"];
-      }
-      if (
-        pathname.includes("/houseDocument") ||
-        pathname.includes("/projectInfo")
-      ) {
-        return ["documents"];
-      }
-      if (
-        pathname.includes("/serviceDashboard") ||
-        pathname.includes("/serviceCenterLists") ||
-        pathname.includes("/ServiceChat")
-      ) {
-        return ["serviceCenter"];
-      }
-      if (
-        pathname.includes("/event-logs") ||
-        pathname.includes("/event-joining-logs") ||
-        pathname.includes("/visitor-management-log")
-      ) {
-        return ["event"];
-      }
-      if (
-        pathname.includes("/sos-warning") ||
-        pathname.includes("/sos-building-plan")
-      ) {
-        return ["sos"];
-      }
-      // if (
-      //   pathname.includes("/areaControl") ||
-      //   pathname.includes("/deviceControl")
-      // ) {
-      //   return ["powerManagement"];
-      // }
-      return [];
     };
 
     if (!collapsed) {
@@ -140,7 +185,6 @@ const SideMenu = () => {
       cancelMessage: "Cancel",
       onOk: async () => {
         await dispatch.userAuth.onLogout();
-        dispatch.userAuth.updateAuthState(false);
         navigate("/auth", { replace: true });
       },
       onCancel: () => {
@@ -181,6 +225,7 @@ const SideMenu = () => {
           inlineCollapsed={collapsed}
           onSelect={({ key }) => {
             navigate(key);
+            onMenuChange();
           }}
           onOpenChange={setOpenKeys}>
           <Menu.Item
@@ -193,6 +238,41 @@ const SideMenu = () => {
             }>
             <Link to={`${main_link}/profile`}>Profile</Link>
           </Menu.Item>
+          <SubMenu
+            key="managementTeam"
+            icon={
+              <UserManagementIcon
+                color={iconMenuColorSelector("managementTeam")}
+                className="sideMenuIcon"
+              />
+            }
+            title="Management team">
+            <Menu.Item
+              key={`${main_link}/juristicInvitation`}
+              icon={
+                <ResidentManagementIcon
+                  color={iconSubMenuColorSelector("juristicInvitation")}
+                  className="sideMenuIcon"
+                />
+              }>
+              <Link to={`${main_link}/juristicInvitation`}>
+                Juristic invitations
+              </Link>
+            </Menu.Item>
+
+            <Menu.Item
+              key={`${main_link}/juristicManage`}
+              icon={
+                <ResidentManagementIcon
+                  color={iconSubMenuColorSelector("juristicManage")}
+                  className="sideMenuIcon"
+                />
+              }>
+              <Link to={`${main_link}/juristicManage`}>
+                Juristic management
+              </Link>
+            </Menu.Item>
+          </SubMenu>
           <SubMenu
             key="management"
             icon={
@@ -222,55 +302,17 @@ const SideMenu = () => {
               }>
               <Link to={`${main_link}/userManagement`}>User management</Link>
             </Menu.Item>
-            {/* <Menu.Item
-                  key={`${main_link}/roomManagement`}
-                  icon={
-                    <RegistrationIcon
-                      color={iconSubMenuColorSelector("roomManagement")}
-                      className="sideMenuIcon"
-                    />
-                  }
-                >
-                  <Link to={`${main_link}/roomManagement`}>
-                    Room management
-                  </Link>
-                </Menu.Item> */}
+            <Menu.Item
+              key={`${main_link}/roomManagement`}
+              icon={
+                <RoomManagementIcon
+                  color={iconSubMenuColorSelector("roomManagement")}
+                  className="sideMenuIcon"
+                />
+              }>
+              <Link to={`${main_link}/roomManagement`}>Room management</Link>
+            </Menu.Item>
           </SubMenu>
-
-          {/* <SubMenu
-            key="userManagement"
-            icon={
-              <UserManagementIcon
-                color="#3B82F6" // สีฟ้าสำหรับ parent menu icon default
-                className="sideMenuIcon"
-              />
-            }
-            title="User management">
-            <Menu.Item
-              key={`${main_link}/residentInformation`}
-              icon={
-                <ResidentManagementIcon
-                  color={iconSubMenuColorSelector("residentInformation")}
-                  className="sideMenuIcon"
-                />
-              }>
-              <Link to={`${main_link}/residentInformation`}>
-                Resident's information
-              </Link>
-            </Menu.Item>
-            <Menu.Item
-              key={`${main_link}/residentActivation`}
-              icon={
-                <RegistrationIcon
-                  color={iconSubMenuColorSelector("residentActivation")}
-                  className="sideMenuIcon"
-                />
-              }>
-              <Link to={`${main_link}/residentActivation`}>
-                Resident's invitations
-              </Link>
-            </Menu.Item>
-          </SubMenu> */}
           <Menu.Item
             key={`${main_link}/announcement`}
             icon={
@@ -321,6 +363,36 @@ const SideMenu = () => {
               <Link to={`${main_link}/projectInfo`}>Project info</Link>
             </Menu.Item>
           </SubMenu>
+          {/* <SubMenu
+            key="parcel"
+            icon={
+              <Parcel
+                color={iconMenuColorSelector("parcel")}
+                className="sideMenuIcon"
+              />
+            }
+            title="Parcel">
+            <Menu.Item
+              key={`${main_link}/parcel-dashboard`}
+              icon={
+                <ParcelDashboard
+                  color={iconMenuColorSelector("parcel-dashboard")}
+                  className="sideMenuIcon"
+                />
+              }>
+              <Link to={`${main_link}/parcel-dashboard`}>Parcel Dashboard</Link>
+            </Menu.Item>
+            <Menu.Item
+              key={`${main_link}/parcel-delivery-logs`}
+              icon={
+                <ParcelDeliveryLogIcon
+                  color={iconMenuColorSelector("parcel-delivery-logs")}
+                  className="sideMenuIcon"
+                />
+              }>
+              <Link to={`${main_link}/parcel-delivery-logs`}>Parcel</Link>
+            </Menu.Item>
+          </SubMenu> */}
           <Menu.Item
             key={`${main_link}/delivery-logs`}
             icon={
@@ -329,7 +401,7 @@ const SideMenu = () => {
                 className="sideMenuIcon"
               />
             }>
-            <Link to={`${main_link}/delivery-logs`}>Delivery logs</Link>
+            <Link to={`${main_link}/delivery-logs`}>Parcel</Link>
           </Menu.Item>
           <Menu.Item
             key={`${main_link}/contactLists`}
@@ -339,7 +411,7 @@ const SideMenu = () => {
                 className="sideMenuIcon"
               />
             }>
-            <Link to={`${main_link}/contactLists`}>Contact Lists</Link>
+            <Link to={`${main_link}/contactLists`}>Contact lists</Link>
           </Menu.Item>
           <SubMenu
             key="serviceCenter"
@@ -349,7 +421,7 @@ const SideMenu = () => {
                 className="sideMenuIcon"
               />
             }
-            title="Fixing Report">
+            title="Repair">
             <Menu.Item
               key={`${main_link}/serviceDashboard`}
               icon={
@@ -359,7 +431,7 @@ const SideMenu = () => {
                 />
               }>
               <Link to={`${main_link}/serviceDashboard`}>
-                Fixing Report Dashboard
+                Repair report dashboard
               </Link>
             </Menu.Item>
             <Menu.Item
@@ -371,7 +443,7 @@ const SideMenu = () => {
                 />
               }>
               <Link to={`${main_link}/serviceCenterLists`}>
-                Fixing Report Lists
+                Repair report lists
               </Link>
             </Menu.Item>
             <Menu.Item
@@ -464,6 +536,37 @@ const SideMenu = () => {
           </SubMenu> */}
 
           <SubMenu
+            key="facilityBooking"
+            icon={
+              <FacilityMenuIcon
+                color={iconMenuColorSelector("facilityBooking")}
+                className="sideMenuIcon"
+              />
+            }
+            title="Facility booking">
+            <Menu.Item
+              key={`${main_link}/facility`}
+              icon={
+                <FacilityIcon
+                  color={iconSubMenuColorSelector("facility")}
+                  className="sideMenuIcon"
+                />
+              }>
+              <Link to={`${main_link}/facility`}>Facility</Link>
+            </Menu.Item>
+            <Menu.Item
+              key={`${main_link}/bookingList`}
+              icon={
+                <FacilityBookingIcon
+                  color={iconSubMenuColorSelector("bookingList")}
+                  className="sideMenuIcon"
+                />
+              }>
+              <Link to={`${main_link}/bookingList`}>Booking list</Link>
+            </Menu.Item>
+          </SubMenu>
+
+          <SubMenu
             key="sos"
             icon={
               <SOSWarningIcon
@@ -471,28 +574,42 @@ const SideMenu = () => {
                 className="sideMenuIcon"
               />
             }
-            title="SOS">
+            title={
+              <div className="flex items-center justify-start w-full">
+                <span className="mr-auto">SOS</span>
+                <div className="flex  items-center space-x-1 mr-6">
+                  {dataEmergency?.emergency?.length > 0 && (
+                    <span className="bg-red-500 text-white rounded-full text-xs px-2 py-0.5 min-w-[20px] text-center font-medium emergency-badge">
+                      {dataEmergency.emergency.length}
+                    </span>
+                  )}
+                  {dataEmergency?.deviceWarning?.length > 0 && (
+                    <span className="bg-yellow-500 text-white rounded-full text-xs px-2 py-0.5 min-w-[20px] text-center font-medium ms-2 warning-badge">
+                      {dataEmergency.deviceWarning.length}
+                    </span>
+                  )}
+                </div>
+              </div>
+            }>
             <Menu.Item
-              key={`${main_link}/sos-warning`}
+              key={`${main_link}/add-location`}
               icon={
                 <AddLocationIcon
-                  color={iconSubMenuColorSelector("sos-warning")}
+                  color={iconSubMenuColorSelector("add-location")}
                   className="sideMenuIcon"
                 />
               }>
-              <Link to={`${main_link}/sos-warning`}>Upload Plan</Link>
+              <Link to={`${main_link}/add-location`}>Add location</Link>
             </Menu.Item>
             <Menu.Item
-              key={`${main_link}/sos-building-plan`}
+              key={`${main_link}/building-plan`}
               icon={
                 <SOSBuildingPlanIcon
-                  color={iconSubMenuColorSelector("sos-building-plan")}
+                  color={iconSubMenuColorSelector("building-plan")}
                   className="sideMenuIcon"
                 />
               }>
-              <Link to={`${main_link}/sos-building-plan`}>
-                SOS Building Plan
-              </Link>
+              <Link to={`${main_link}/building-plan`}>Building plan</Link>
             </Menu.Item>
           </SubMenu>
           <Menu.Item
@@ -503,7 +620,7 @@ const SideMenu = () => {
                 className="sideMenuIcon"
               />
             }>
-            <Link to={`${main_link}/warranty-tracking`}>Warranty Tracking</Link>
+            <Link to={`${main_link}/warranty-tracking`}>Warranty tracking</Link>
           </Menu.Item>
         </Menu>
       </div>

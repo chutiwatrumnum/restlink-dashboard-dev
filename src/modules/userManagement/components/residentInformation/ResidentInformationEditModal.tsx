@@ -1,12 +1,9 @@
 import { useEffect } from "react";
 import { Form, Input, Col, Row, Modal } from "antd";
 import { requiredRule } from "../../../../configs/inputRule";
-
-import FormModal from "../../../../components/common/FormModal";
 import SmallButton from "../../../../components/common/SmallButton";
-
 import {
-  ResidentAddNew,
+  ResidentEdit,
   ResidentInformationFormDataType,
 } from "../../../../stores/interfaces/ResidentInformation";
 import dayjs from "dayjs";
@@ -34,45 +31,25 @@ const ResidentInformationEditModal = ({
   };
 
   const onFinish = async (values: any) => {
-    values.moveInDate = dayjs(values.moveInDate).format("YYYY-MM-DD");
-    values.moveOutDate = dayjs(values.moveOutDate).format("YYYY-MM-DD");
-    values.birthDate = dayjs(values.birthDate).format("YYYY-MM-DD");
-    values.channel = "web";
-    values.imageProfile = data.imageProfile;
-    const request: ResidentAddNew = {
-      firstName: values.firstName,
-      lastName: values.lastName,
+    const payload: ResidentEdit = {
+      givenName: values.givenName,
       middleName: values.middleName,
-      nickName: values.nickName ? values.nickName : null,
-      email: values.email,
-      roleId: values.roleId,
-      hobby: values.hobby,
-      unitId: values.unitId,
-      iuNumber: values.iuNumber ? values.iuNumber : null,
-      contact: values.contact,
-      birthDate: values.birthDate !== "Invalid Date" ? values.birthDate : null,
-      channel: values.channel,
-      moveInDate:
-        values.moveInDate !== "Invalid Date" ? values.moveInDate : null,
-      moveOutDate:
-        values.moveOutDate !== "Invalid Date" ? values.moveOutDate : null,
-      lockerCode: values.lockerCode,
+      familyName: values.familyName,
     };
-    await showEditConfirm(data.key!, request);
+    showEditConfirm(data.userId, payload);
   };
 
-  const showEditConfirm = (key: string, request: ResidentAddNew) => {
+  const showEditConfirm = (userId: string, payload: ResidentEdit) => {
     ConfirmModal({
       title: "You confirm the information?",
       okMessage: "Yes",
       cancelMessage: "Cancel",
       onOk: async () => {
-        const resultedit = await editdataresident(key, request);
+        const resultedit = await editdataresident(userId, payload);
         if (resultedit) {
           SuccessModal("Successfully upload");
-          await residentInformationForm.resetFields();
-          await setOpen(!open);
-          await callBack(!open, true);
+          residentInformationForm.resetFields();
+          callBack(!open, true);
         } else {
           FailedModal("failed upload");
         }
@@ -89,7 +66,7 @@ const ResidentInformationEditModal = ({
       middleName: data?.middleName ?? "",
       familyName: data?.familyName,
       nickName: data?.nickName,
-      tel: data?.tel,
+      contact: data?.contact,
       email: data?.email,
     });
     return () => {
@@ -126,7 +103,7 @@ const ResidentInformationEditModal = ({
             </Form.Item>
             <Form.Item<ResidentInformationFormDataType>
               label="Middle name"
-              name="familyName"
+              name="middleName"
             >
               <Input
                 size="large"
@@ -158,18 +135,19 @@ const ResidentInformationEditModal = ({
                 placeholder="Please input nickname"
                 maxLength={120}
                 showCount
+                disabled
               />
             </Form.Item>
             <Form.Item<ResidentInformationFormDataType>
               label="Phone number"
-              name="tel"
-              rules={requiredRule}
+              name="contact"
             >
               <Input
                 size="large"
                 placeholder="Please input last name"
                 maxLength={120}
                 showCount
+                disabled
               />
             </Form.Item>
             <Form.Item<ResidentInformationFormDataType>
@@ -181,6 +159,7 @@ const ResidentInformationEditModal = ({
                 placeholder="Please input nickname"
                 maxLength={120}
                 showCount
+                disabled
               />
             </Form.Item>
           </Col>

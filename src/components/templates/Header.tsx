@@ -1,13 +1,14 @@
 import "../styles/common.css";
 interface HeaderPropsType {
   title: string;
+  className?: string;
 }
 
-const Header = ({ title }: HeaderPropsType) => {
+const Header = ({ title, className="" }: HeaderPropsType) => {
   return (
     <>
       <div>
-        <h1 className="titleHeader">{title}</h1>
+        <h1 className={`titleHeader ${className}`}>{title}</h1>
       </div>
     </>
   );

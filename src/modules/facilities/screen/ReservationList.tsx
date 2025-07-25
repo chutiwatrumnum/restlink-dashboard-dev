@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button, Row, Pagination, Tabs, DatePicker } from "antd";
+import { QrcodeOutlined } from "@ant-design/icons";
 import Header from "../../../components/templates/Header";
 import MediumActionButton from "../../../components/common/MediumActionButton";
 import ReservedFacilitiesTable from "../components/ReservedFacilitiesTable";
@@ -32,34 +33,15 @@ const ReservationList = () => {
   const { reservationListData, reservedListData } = useSelector(
     (state: RootState) => state.facilities
   );
-  const { accessibility } = useSelector((state: RootState) => state.common);
+  // const { accessibility } = useSelector((state: RootState) => state.common);
   const defaultColumns: TableColumnsType<ReservedRowListDataType> = [
     {
-      title: "Delete",
-      key: "delete",
+      title: "Booked by",
+      key: "createdUser",
       align: "center",
       render: (_, record) => {
-        return (
-          <>
-            <Button
-              disabled={
-                accessibility?.team_facility_management.allowDelete
-                  ? false
-                  : true
-              }
-              onClick={() => showDeleteConfirm(record)}
-              type="text"
-              icon={<TrashIcon />}
-            />
-          </>
-        );
+        return <span>{`${record?.createdByRole.roleCodeName}`}</span>;
       },
-    },
-    {
-      title: "Booked by",
-      dataIndex: "bookedBy",
-      key: "bookedBy",
-      align: "center",
     },
     {
       title: "Room address",
@@ -68,16 +50,25 @@ const ReservationList = () => {
       align: "center",
     },
     {
-      title: "Facility",
+      title: "Facility name",
       dataIndex: "facilityName",
       key: "facilityName",
       align: "center",
     },
+
     {
-      title: "Name Surname",
-      dataIndex: "fullName",
-      key: "fullName",
+      title: "Name-surname",
+      key: "bookingUser",
       align: "center",
+      render: (_, record) => {
+        return (
+          <span>
+            {`${record?.bookingUser?.givenName} ${
+              record?.bookingUser?.middleName ?? ""
+            } ${record?.bookingUser?.familyName ?? ""}`}
+          </span>
+        );
+      },
     },
     {
       title: "Reserve Date",
@@ -89,25 +80,11 @@ const ReservationList = () => {
       sorter: (a, b) => dayjs(a.joinAt).unix() - dayjs(b.joinAt).unix(),
     },
     {
-      title: "Start time",
-      dataIndex: "startTime",
+      title: "Start/End time",
       key: "startTime",
       align: "center",
-    },
-    {
-      title: "End time	",
-      dataIndex: "endTime",
-      key: "endTime",
-      align: "center",
-    },
-    {
-      title: "Create",
-      key: "createdAt",
-      align: "center",
       render: (_, record) => {
-        return (
-          <span>{`${dayjs(record.createdAt).format("DD/MM/YYYY hh:MM")}`}</span>
-        );
+        return <span>{`${record.startTime}/${record.endTime}`}</span>;
       },
     },
     {
@@ -116,16 +93,18 @@ const ReservationList = () => {
       align: "center",
       render: (_, record) => {
         return (
-          <>
+          <div className="flex flex-row justify-center items-center">
             <Button
-              disabled={
-                accessibility?.team_facility_management.allowView ? false : true
-              }
               type="text"
-              icon={<QRCodeIcon />}
+              icon={<QrcodeOutlined className="iconButton" />}
               onClick={() => onQRClick(record)}
             />
-          </>
+            <Button
+              onClick={() => showDeleteConfirm(record)}
+              type="text"
+              icon={<TrashIcon className="iconWidthButton" />}
+            />
+          </div>
         );
       },
     },
@@ -141,12 +120,12 @@ const ReservationList = () => {
   const [items, setItems] = useState<TabsProps["items"]>([]);
   const [qrData, setQrData] = useState<ReservedRowListDataType>();
   const [search, setSearch] = useState("");
-  const [columns, setColumns] =
-    useState<TableColumnsType<ReservedRowListDataType>>(defaultColumns);
+  // const [columns, setColumns] =
+  //   useState<TableColumnsType<ReservedRowListDataType>>(defaultColumns);
 
   // functions
   const onSearch = (value: string) => {
-    console.log(value);
+    // console.log(value);
     setSearch(value);
   };
 
@@ -173,7 +152,7 @@ const ReservationList = () => {
   };
 
   const onDateSelect: DatePickerProps["onChange"] = (date, dateString) => {
-    setDate(dateString);
+    if (typeof dateString === "string") setDate(dateString);
   };
 
   const fetchData: VoidFunction = async () => {
@@ -185,7 +164,6 @@ const ReservationList = () => {
       search: search,
     };
     await dispatch.facilities.getReservationList();
-    await createTabsMenu();
     await dispatch.facilities.getReservedList(payload);
     await dispatch.facilities.getReservedCreateDataList();
   };
@@ -230,71 +208,71 @@ const ReservationList = () => {
 
   const onTabsChange = (key: string) => {
     // console.log(key);
-    const newArr = defaultColumns;
-    if (key === "12") {
-      newArr.splice(4, 0, {
-        title: "Equipment",
-        key: "facilitiesItems",
-        align: "center",
-        render: (_, record) => {
-          return <span>{record.facilitiesItems?.itemName}</span>;
-        },
-        filters: [
-          {
-            text: "Excite run 1000",
-            value: "Excite run 1000",
-          },
-          {
-            text: "Excite synchro",
-            value: "Excite synchro",
-          },
-        ],
-        onFilter: (value, record) =>
-          record.facilitiesItems?.itemName
-            ? record.facilitiesItems?.itemName.includes(value.toString())
-            : false,
-      });
-    } else if (key === "11") {
-      newArr.splice(4, 0, {
-        title: "Zones",
-        key: "facilitiesItems",
-        align: "center",
-        render: (_, record) => {
-          return <span>{record.facilitiesItems?.description}</span>;
-        },
-        filters: [
-          {
-            text: "Zone 1",
-            value: "Zone 1",
-          },
-          {
-            text: "Zone 2",
-            value: "Zone 2",
-          },
-          {
-            text: "Zone 3",
-            value: "Zone 3",
-          },
-          {
-            text: "Zone 4",
-            value: "Zone 4",
-          },
-          {
-            text: "Zone 5",
-            value: "Zone 5",
-          },
-          {
-            text: "Zone 6",
-            value: "Zone 6",
-          },
-        ],
-        onFilter: (value, record) =>
-          record.facilitiesItems?.itemName
-            ? record.facilitiesItems?.itemName.includes(value.toString())
-            : false,
-      });
-    }
-    setColumns(newArr);
+    // const newArr = defaultColumns;
+    // if (key === "12") {
+    //   newArr.splice(4, 0, {
+    //     title: "Equipment",
+    //     key: "facilitiesItems",
+    //     align: "center",
+    //     render: (_, record) => {
+    //       return <span>{record.facilitiesItems?.itemName}</span>;
+    //     },
+    //     filters: [
+    //       {
+    //         text: "Excite run 1000",
+    //         value: "Excite run 1000",
+    //       },
+    //       {
+    //         text: "Excite synchro",
+    //         value: "Excite synchro",
+    //       },
+    //     ],
+    //     onFilter: (value, record) =>
+    //       record.facilitiesItems?.itemName
+    //         ? record.facilitiesItems?.itemName.includes(value.toString())
+    //         : false,
+    //   });
+    // } else if (key === "11") {
+    //   newArr.splice(4, 0, {
+    //     title: "Zones",
+    //     key: "facilitiesItems",
+    //     align: "center",
+    //     render: (_, record) => {
+    //       return <span>{record.facilitiesItems?.description}</span>;
+    //     },
+    //     filters: [
+    //       {
+    //         text: "Zone 1",
+    //         value: "Zone 1",
+    //       },
+    //       {
+    //         text: "Zone 2",
+    //         value: "Zone 2",
+    //       },
+    //       {
+    //         text: "Zone 3",
+    //         value: "Zone 3",
+    //       },
+    //       {
+    //         text: "Zone 4",
+    //         value: "Zone 4",
+    //       },
+    //       {
+    //         text: "Zone 5",
+    //         value: "Zone 5",
+    //       },
+    //       {
+    //         text: "Zone 6",
+    //         value: "Zone 6",
+    //       },
+    //     ],
+    //     onFilter: (value, record) =>
+    //       record.facilitiesItems?.itemName
+    //         ? record.facilitiesItems?.itemName.includes(value.toString())
+    //         : false,
+    //   });
+    // }
+    // setColumns(newArr);
     setFacilitiesId(parseInt(key));
   };
 
@@ -308,8 +286,12 @@ const ReservationList = () => {
 
   // Actions
   useEffect(() => {
+    createTabsMenu();
+  }, [reservationListData]);
+
+  useEffect(() => {
     fetchData();
-    console.log(accessibility);
+    // console.log(accessibility);
   }, [curPage, refresh, facilitiesId, search, date, perPage]);
 
   return (
@@ -323,29 +305,27 @@ const ReservationList = () => {
             picker="month"
           />
           <SearchBox
-            placeholderText="Search by first name, mobile no. and Room address"
+            placeholderText="Search by name or address"
             className="reservedSearchBox"
             onSearch={onSearch}
           />
         </div>
         <MediumActionButton
-          disabled={
-            accessibility?.team_facility_management.allowAdd ? false : true
-          }
-          message="+ Create reservation"
+          message="Create reservation"
           onClick={onCreate}
           className="createReserved"
         />
       </div>
       <Tabs defaultActiveKey="0" items={items} onChange={onTabsChange} />
       <ReservedFacilitiesTable
-        columns={columns}
+        columns={defaultColumns}
         data={reservedListData?.rows}
       />
       <Row
         className="reservedBottomActionContainer"
         justify="end"
-        align="middle">
+        align="middle"
+      >
         <Pagination
           defaultCurrent={1}
           pageSize={perPage}

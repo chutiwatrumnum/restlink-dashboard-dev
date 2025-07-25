@@ -251,7 +251,7 @@ const EventLogs = () => {
       async onOk() {
         const statusDeleted = await deleteEventLogsById(currentTarget.value);
         if (statusDeleted) {
-          SuccessModal("Successfully deleted");
+          SuccessModal("Event logs has been successfully deleted.");
           setRerender(!rerender);
         } else {
           FailedModal("Failed deleted");
@@ -364,12 +364,12 @@ const EventLogs = () => {
         </Col>
 
         <Col span={4} style={{ display: "flex", justifyContent: "flex-end" }}>
-          <Button
+          {/* <Button
             type="primary"
             style={{ marginRight: 10 }}
             onClick={exportEventLogs}>
             Export
-          </Button>
+          </Button> */}
 
           <Button
             type="primary"

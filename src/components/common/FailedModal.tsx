@@ -4,10 +4,10 @@ import { FailedIcon } from "../../assets/icons/Icons";
 import { whiteLabel } from "../../configs/theme";
 import "../styles/common.css";
 
-const FailedModal = (message: string) => {
+const FailedModal = (message: string,second: number = 3000) => {
   setTimeout(() => {
     Modal.destroyAll();
-  }, 3000);
+  }, second);
 
   return Modal.error({
     icon: null,

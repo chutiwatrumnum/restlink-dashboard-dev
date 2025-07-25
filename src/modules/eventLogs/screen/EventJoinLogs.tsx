@@ -173,9 +173,9 @@ const EventJoinLogs = () => {
       async onOk() {
         const statusDeleted = await deleteEventJoinById(currentTarget.value);
         if (statusDeleted) {
-        SuccessModal("Successfully create");
+          SuccessModal("Event joining logs has been successfully deleted.");
         } else {
-          FailedModal("Failed create");
+          FailedModal("Failed to delete");
         }
         setRerender(!rerender);
       },
@@ -253,12 +253,12 @@ const EventJoinLogs = () => {
           />
         </Col>
         <Col span={4} style={{ display: "flex", justifyContent: "flex-end" }}>
-          <Button
+          {/* <Button
             type="primary"
             style={{ marginRight: 10 }}
             onClick={exportEventJoinLogs}>
             Export
-          </Button>
+          </Button> */}
         </Col>
       </Row>
       <Row>

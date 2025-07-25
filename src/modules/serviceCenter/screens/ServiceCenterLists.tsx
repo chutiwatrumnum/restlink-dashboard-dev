@@ -99,15 +99,11 @@ const ServiceCenterLists = () => {
     setCurPage(page);
   };
 
-  // ✅ ใช้ useCallback เพื่อป้องกันการ re-render ที่ไม่จำเป็น
   const onEdit = useCallback(
     async (record: ServiceCenterDataType) => {
       console.log("🔍 [onEdit] Starting edit process for record:", record.id);
-
-      // ✅ ปรับปรุงการตั้งค่าเริ่มต้นให้ชัดเจนขึ้น
       const editData: ExtendedServiceCenterDataType = {
         ...record,
-        // ตั้งค่าเริ่มต้นอย่างชัดเจนด้วย Boolean constructor
         requestCloseCase: Boolean(record.requestCloseCase),
         requestNewAppointment: Boolean(record.requestNewAppointment),
         requestReSchedule: Boolean(record.requestReSchedule),
@@ -128,11 +124,9 @@ const ServiceCenterLists = () => {
       editData.statusId = Number(dataSuccess?.value);
       setServiceCenterStatusSelectionList(selectList?.data!);
 
-      // ✅ เปิด modal ทันทีด้วยข้อมูลพื้นฐาน
       setEditData(editData);
       setIsEditModalOpen(true);
 
-      // ✅ ดึงข้อมูลจาก API แบบ background เพื่อ update ข้อมูลล่าสุด
       try {
         console.log("🔄 Fetching latest data from API...");
         const apiData = await getServiceCenterServiceListQuery(editData.id);
@@ -142,20 +136,16 @@ const ServiceCenterLists = () => {
           requestNewAppointment: apiData?.requestNewAppointment,
           requestReSchedule: apiData?.requestReSchedule,
         });
-
-        // Handle appointment data with new format support
         if (
           apiData?.appointmentDate &&
           Array.isArray(apiData.appointmentDate)
         ) {
-          // Find selected appointment from the new format
           const selectedAppointment = apiData.appointmentDate.find(
             (item: any) => item.selected === true
           );
           if (selectedAppointment) {
             editData.appointmentDateConfirmAppointmentID =
-              selectedAppointment.id;
-            // Format the selected appointment data for display
+              selectedAppointment.id; 
             if (selectedAppointment.startTime && selectedAppointment.endTime) {
               editData.appointmentDateConfirmAppointment = `${selectedAppointment.date} ${selectedAppointment.startTime}-${selectedAppointment.endTime}`;
             } else {
@@ -163,16 +153,11 @@ const ServiceCenterLists = () => {
                 selectedAppointment.date;
             }
           }
-
-          // Set the full appointment data array
           editData.appointmentDate = apiData.appointmentDate;
         } else if (apiData?.appointmentDateSelected) {
-          // Legacy format support
           editData.appointmentDateConfirmAppointment =
             apiData.appointmentDateSelected;
         }
-
-        // ✅ ปรับปรุงการดึงข้อมูลฟิลด์ใหม่แบบ explicit กับ Boolean conversion
         editData.requestCloseCase = Boolean(apiData?.requestCloseCase);
         editData.requestNewAppointment = Boolean(
           apiData?.requestNewAppointment
@@ -189,17 +174,12 @@ const ServiceCenterLists = () => {
             requestNewAppointment: typeof editData.requestNewAppointment,
             requestReSchedule: typeof editData.requestReSchedule,
           },
-        });
-
-        // ✅ อัพเดท editData หลังจากได้ข้อมูลจาก API
+        })
         setEditData({ ...editData });
       } catch (error) {
         console.error("❌ Failed to fetch latest data from API:", error);
-        // ถ้า API ล้มเหลว ให้ใช้ค่าเริ่มต้นที่ตั้งไว้แล้ว
         console.warn("⚠️ Using default values due to API failure");
       }
-
-      // ✅ เพิ่มการ validate ข้อมูลก่อนส่งไปยัง Modal
       if (
         editData.requestReSchedule === null ||
         editData.requestReSchedule === undefined
@@ -279,7 +259,6 @@ const ServiceCenterLists = () => {
     setUnitNo(value);
   };
 
-  // ✅ ใช้ useMemo สำหรับ columns เพื่อป้องกัน re-render
   const columns: ColumnsType<ServiceCenterDataType> = useMemo(
     () => [
       {
@@ -363,7 +342,6 @@ const ServiceCenterLists = () => {
     [onEdit]
   );
 
-  // Actions
   useEffect(() => {
     fetchData();
   }, [
@@ -398,7 +376,7 @@ const ServiceCenterLists = () => {
             className="serviceCenterSelect"
             showSearch
             allowClear
-            placeholder="Select unit"
+            placeholder="Select room address"
             optionFilterProp="label"
             onChange={onChangeUnit}
             options={unit}

@@ -5,7 +5,7 @@ import {
   getResidentRoleQuery,
   getResidentUnitQuery,
 } from "../../../../utils/queriesGroup/residentQueries";
-import { ResidentInformationFormDataType } from "../../../../stores/interfaces/ResidentInformation";
+import { ResidentAddNew } from "../../../../stores/interfaces/ResidentInformation";
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import ConfirmModal from "../../../../components/common/ConfirmModal";
@@ -38,11 +38,11 @@ const ResidentInformationCreateModal = ({
     onCancel();
   };
 
-  const onFinish = async (values: ResidentInformationFormDataType) => {
+  const onFinish = async (values: ResidentAddNew) => {
     showAddConfirm(values);
   };
 
-  const showAddConfirm = (value: ResidentInformationFormDataType) => {
+  const showAddConfirm = (value: ResidentAddNew) => {
     ConfirmModal({
       title: "You confirm the information?",
       okMessage: "Yes",
@@ -86,7 +86,7 @@ const ResidentInformationCreateModal = ({
         }}
       >
         <Col span={24}>
-          <Form.Item<ResidentInformationFormDataType>
+          <Form.Item<ResidentAddNew>
             label="Role"
             name="roleId"
             rules={requiredRule}
@@ -98,7 +98,7 @@ const ResidentInformationCreateModal = ({
               fieldNames={{ label: "name", value: "id" }}
             />
           </Form.Item>
-          <Form.Item<ResidentInformationFormDataType>
+          <Form.Item<ResidentAddNew>
             label="Unit"
             name="unitId"
             rules={requiredRule}

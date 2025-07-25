@@ -3,15 +3,27 @@ import CreateModal from "../../../components/common/FormModal";
 import dayjs from 'dayjs';
 import { Form, message, Progress } from "antd";
 import { WarrantyDetailsType } from "../../../stores/interfaces/Warranty";
+import { dataAllMap } from "../../../stores/interfaces/SosWarning";
 import { FormUploadPlan } from "./FormUploadPlan";
+import { dataSelectPlan } from "../../../stores/interfaces/SosWarning";
+
+
+
 
 interface ModalFormUpdateProps {
+  dataSelectPlan: dataSelectPlan,
   isOpen: boolean;
-  onClose?: () => void;
   selectedWarranty?: WarrantyDetailsType | null;
-  onUploadSuccess: (base64: string) => void;
   isUploading: boolean;
-  onCondoPlanSubmit?: (condoType: string, floor: number, numberOfBuilding: number) => void;
+  onClose?: () => void;
+  onUploadSuccess: (base64: string) => void;
+  onCondoPlanSubmit?: (condoType: string, floor: number, numberOfBuilding: number, projectName: string) => void;
+  setProjectName: (projectName: string) => void;
+  setPlanType: (planType: string) => void;
+  loadFirst: ()=>void;
+  planType: string;
+  
+  dataMapAll: dataAllMap;
 }
 
 export const ModalFormUpdate: React.FC<ModalFormUpdateProps> = ({ 
@@ -19,7 +31,13 @@ export const ModalFormUpdate: React.FC<ModalFormUpdateProps> = ({
   onClose,
   onUploadSuccess,
   isUploading,
-  onCondoPlanSubmit
+  onCondoPlanSubmit,
+  setProjectName,
+  dataSelectPlan,
+  setPlanType,
+  planType,
+  loadFirst,// function
+  dataMapAll
 }) => {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(isOpen);
   const [imageBase64, setImageBase64] = useState<string | null>(null);
@@ -35,33 +53,32 @@ export const ModalFormUpdate: React.FC<ModalFormUpdateProps> = ({
     setIsModalOpen(isOpen);
   }, [isOpen]);
 
-  useEffect(() => {
-    let timer: NodeJS.Timeout;
-    if (showProgress) {
-      setProgress(0);
-      let percent = 0;
-      timer = setInterval(() => {
-        percent += 3;
-        setProgress(percent);
-        if (percent >= 100) {
-          clearInterval(timer);
-          setTimeout(() => {
-            setShowProgress(false);
-            onUploadSuccess(imageBase64!);
-          }, 200);
-        }
-      }, 105);
+  // ฟังก์ชันอัพเดท progress จาก axios
+  const handleProgressUpdate = (progressPercent: number) => {
+    setProgress(progressPercent);
+    if (progressPercent >= 100) {
+      setTimeout(() => {
+        loadFirst();
+        setShowProgress(false);
+        onUploadSuccess(imageBase64!);
+      }, 200);
     }
-    return () => clearInterval(timer);
-  }, [showProgress, imageBase64, onUploadSuccess]);
+  };
 
-  const handleNextVillage = () => {
+  const handleNextVillage = (projectName: string) => {
+    setProjectName(projectName);
+    // setShowProgress จะถูกเรียกจาก FormUploadPlan เมื่อเริ่มต้น upload
+  };
+
+  // ฟังก์ชันเรียกเมื่อเริ่มต้น upload
+  const handleUploadStart = () => {
+    setProgress(0);
     setShowProgress(true);
   };
 
-  const handleNextCondo = (condoType: string, floor: number, numberOfBuilding: number) => {
+  const handleNextCondo = (condoType: string, floor: number, numberOfBuilding: number, projectName: string) => {
     if (onCondoPlanSubmit) {
-      onCondoPlanSubmit(condoType, floor, numberOfBuilding);
+      onCondoPlanSubmit(condoType, floor, numberOfBuilding, projectName);
     }
     setIsModalOpen(false);
   };
@@ -104,7 +121,7 @@ export const ModalFormUpdate: React.FC<ModalFormUpdateProps> = ({
   return (
     <>
       <CreateModal
-        title={"อัปโหลดแผนภาพ"}
+        title={"Upload Plan"}
         content={
           showProgress ? (
             <div className="flex flex-col items-center justify-center min-h-[300px]">
@@ -113,11 +130,18 @@ export const ModalFormUpdate: React.FC<ModalFormUpdateProps> = ({
             </div>
           ) : (
             <FormUploadPlan
+              dataSelectPlan={dataSelectPlan}
               imageBase64={imageBase64}
               setImageBase64={setImageBase64}
               isUploading={isUploading}
               handleNextVillage={handleNextVillage}
               handleNextCondo={handleNextCondo}
+              setPlanType={setPlanType}
+              planType={planType}
+              onUploadStart={handleUploadStart}
+              onProgressUpdate={handleProgressUpdate}
+              dataMapAll={dataMapAll}
+              loadFirst={loadFirst}
             />
           )
         }

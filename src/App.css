@@ -205,11 +205,11 @@
 }
 
 .ant-table-tbody > tr > td {
-  background-color: var(--BG-Table-color) !important;
+  background-color: var(--bg-table-color) !important;
 }
 
 .ant-table-tbody > tr.ant-table-row:hover > td {
-  background-color: var(--BG-Table-color) !important;
+  background-color: var(--bg-table-color) !important;
 }
 
 .ant-btn-primary:hover {
@@ -219,5 +219,10 @@
 }
 
 .iconButton {
-  font-size: 20px;
+  font-size: 20px !important;
+}
+
+.iconWidthButton {
+  width: 20px;
+  height: 20px;
 }

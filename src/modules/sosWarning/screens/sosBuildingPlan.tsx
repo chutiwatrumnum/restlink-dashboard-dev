@@ -185,7 +185,7 @@ const SOSBuildingPlan = () => {
             }}
             selectedSosWarning={selectedSosWarning}
         />
-        <Header title="Building Plan" />
+        <Header title="Building plan" />
         <Row style={{ marginTop: 15, marginBottom: 15 }}>
 
         <Col
@@ -221,14 +221,8 @@ const SOSBuildingPlan = () => {
             pagination={PaginationConfig}
             onChange={onChangeTable}
           />
-
-
-
         </Col>
-      </Row>
-
-
-        
+      </Row>  
     </>
   );
 };

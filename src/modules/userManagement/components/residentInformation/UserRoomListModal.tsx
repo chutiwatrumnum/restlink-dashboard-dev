@@ -18,13 +18,15 @@ const UserRoomListModal = (props: UserRoomListModalType) => {
 
   // Data
   const { data: roomListData } = getResidentRoomListQuery({
-    sub: data?.sub ?? "123",
+    userId: data?.userId ?? "123",
   });
 
   // Functions
   const handleClose = () => {
     if (onCancel) onCancel();
   };
+
+  // console.log("ROOM LIST DATA : ", data);
 
   return (
     <Modal
@@ -49,7 +51,7 @@ const UserRoomListModal = (props: UserRoomListModalType) => {
             return (
               <Card
                 className="w-full"
-                style={{ backgroundColor: "var(--BG-Table-color)" }}
+                style={{ backgroundColor: "var(--bg-table-color)" }}
               >
                 <div className="flex flex-col w-full justify-center items-start gap-2">
                   <span>Unit no. : {item?.unitNo}</span>

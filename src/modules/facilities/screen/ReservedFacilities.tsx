@@ -7,15 +7,21 @@ import { whiteLabel } from "../../../configs/theme";
 import {
   LimitPeopleIcon,
   MaxTimeIcon,
-  EditIcon,
+  TrashIcon,
+  PlusIcon,
 } from "../../../assets/icons/Icons";
 import NoImg from "../../../assets/images/noImg.jpeg";
 import ConfirmModal from "../../../components/common/ConfirmModal";
 import EditFacilityModal from "../components/EditFacilityModal";
+import AddFacilityModal from "../components/AddFacilityModal";
 import SuccessModal from "../../../components/common/SuccessModal";
 import FailedModal from "../../../components/common/FailedModal";
+import { EditOutlined } from "@ant-design/icons";
 
-import { ReservationListDataType } from "../../../stores/interfaces/Facilities";
+import {
+  ReservationListDataType,
+  AddNewFacilityPayloadType,
+} from "../../../stores/interfaces/Facilities";
 
 import "../styles/ReserveFacility.css";
 
@@ -26,10 +32,11 @@ const ReservedFacilities = () => {
   const data = useSelector(
     (state: RootState) => state.facilities.reservationListData
   );
-  const { accessibility } = useSelector((state: RootState) => state.common);
+  // const { accessibility } = useSelector((state: RootState) => state.common);
   const [refresh, setRefresh] = useState(true);
   const [editData, setEditData] = useState<ReservationListDataType>();
   const [editModalOpen, setEditModalOpen] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   // functions
 
@@ -88,6 +95,41 @@ const ReservedFacilities = () => {
     setRefresh(!refresh);
   };
 
+  const onNewFacility = () => {
+    setIsCreateModalOpen(true);
+  };
+
+  const onCreateNewFacility = async (values: AddNewFacilityPayloadType) => {
+    const result = await dispatch.facilities.createFacilities(values);
+    if (result) {
+      SuccessModal("Successfully change information");
+    } else {
+      FailedModal("Something went wrong");
+    }
+    refreshHandler();
+  };
+
+  const onCreateCancel = () => {
+    setIsCreateModalOpen(false);
+  };
+
+  const onDeleteFacility = (id: number) => {
+    ConfirmModal({
+      title: "Are you sure you want to delete this facility?",
+      okMessage: "Delete",
+      cancelMessage: "Cancel",
+      onOk: async () => {
+        const result = await dispatch.facilities.deleteFacilities(id);
+        if (result) {
+          SuccessModal("Successfully delete");
+        } else {
+          FailedModal("Something went wrong");
+        }
+        refreshHandler();
+      },
+    });
+  };
+
   // components
 
   const RoomCard = ({ data }: { data: ReservationListDataType }) => {
@@ -101,11 +143,20 @@ const ReservedFacilities = () => {
                 <Title level={4} className="reserveCardDetailTitle">
                   {data?.name}
                 </Title>
-                <Button
-                  icon={<EditIcon color={whiteLabel.subMenuTextColor} />}
-                  type="text"
-                  onClick={() => onEdit(data)}
-                />
+                <Row justify="space-between" align="middle">
+                  <Button
+                    icon={<TrashIcon className="iconWidthButton" />}
+                    type="text"
+                    onClick={() => {
+                      onDeleteFacility(data.id);
+                    }}
+                  />
+                  <Button
+                    icon={<EditOutlined className="iconButton" />}
+                    type="text"
+                    onClick={() => onEdit(data)}
+                  />
+                </Row>
               </Row>
               <p className="reserveCardDetailSubName">{data?.subName}</p>
               <Row justify="space-between">
@@ -125,13 +176,8 @@ const ReservedFacilities = () => {
             </div>
             <div className="reserveCardDetailBottom">
               <Row justify="space-between" align="middle">
-                <Row>
+                <Row justify="space-between" align="middle">
                   <Switch
-                    disabled={
-                      accessibility?.team_facility_management.allowEdit
-                        ? false
-                        : true
-                    }
                     checked={data?.locked}
                     onChange={() => onSwitchChange(!data.locked, data.id)}
                   />
@@ -167,17 +213,32 @@ const ReservedFacilities = () => {
 
   return (
     <>
-      <Header title="Facilities" />
+      <Header title="Facility" />
       <Row gutter={[16, 16]}>
         {data.map((item) => {
           return <RoomCard key={item.id} data={item} />;
         })}
+        <Col md={12} xl={8}>
+          <div
+            onClick={onNewFacility}
+            className="reservedCardContainer flex flex-col justify-center items-center gap-4 hover:brightness-90 cursor-pointer"
+          >
+            <PlusIcon style={{ fill: "var(--bg-color)" }} />
+            <span className="text-[var(--bg-color)]">Add new facility</span>
+          </div>
+        </Col>
       </Row>
       <EditFacilityModal
         visible={editModalOpen}
         data={editData}
         onSave={onEditSave}
         onExit={onEditCancel}
+      />
+
+      <AddFacilityModal
+        visible={isCreateModalOpen}
+        onSave={onCreateNewFacility}
+        onExit={onCreateCancel}
       />
     </>
   );

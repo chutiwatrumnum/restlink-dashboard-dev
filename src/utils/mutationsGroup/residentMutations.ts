@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import { ResidentInformationFormDataType } from "../../stores/interfaces/ResidentInformation";
+import { ResidentAddNew } from "../../stores/interfaces/ResidentInformation";
 import axios from "axios";
 
 export const postCreateResidentMutation = () => {
@@ -8,7 +8,7 @@ export const postCreateResidentMutation = () => {
     scope: {
       id: "createResident",
     },
-    mutationFn: (payload: ResidentInformationFormDataType) => {
+    mutationFn: (payload: ResidentAddNew) => {
       return axios.post(`/users/invitation/resident/create`, payload);
     },
   });

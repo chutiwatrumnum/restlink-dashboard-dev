@@ -347,7 +347,7 @@ const EditEventLog = (props: EditEventLogProps) => {
                     },
                     {
                       value: false,
-                      label: "Select by unit",
+                      label: "Select by room",
                     },
                   ]}
                 />

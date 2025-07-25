@@ -3,10 +3,12 @@ export interface EmergencyTableDataType {
   EmergencyMaxLength: number;
 }
 export interface DataEmergencyTableDataType {
-  id:    number;
+  id: number;
   image: string;
-  name:  string;
-  tel:   string;
+  name: string;
+  tel: string;
+  lat: number;
+  long: number;
 }
 export interface EmergencyPayloadType {
   search: string | null;
@@ -16,12 +18,14 @@ export interface EmergencyPayloadType {
 
 export interface NearBySelectListType {
   label: string;
-  value: string|null;
+  value: string | null;
 }
 
 export interface DataEmergencyCreateByType {
-  id?:          number;
-  image?:       string|null;
-  name:  string;
-  tel:   string;
+  id?: number;
+  image?: string | null;
+  name: string;
+  tel: string;
+  lat: number;
+  long: number;
 }

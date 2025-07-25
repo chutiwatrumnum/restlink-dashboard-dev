@@ -19,7 +19,7 @@ interface EditFacilityModalProps {
 }
 
 export default function QrModal({
-  data = {},
+  data,
   visible = false,
   onExit,
 }: EditFacilityModalProps) {
@@ -36,12 +36,13 @@ export default function QrModal({
         open={visible}
         onCancel={() => onExit()}
         footer={null}
-        width={"30%"}>
+        width={"30%"}
+      >
         <div ref={qrRef} className="reservedQRCardContainer">
-          <div className="reservedCardHeader">
-            <img src={LOGO} alt="LOGO" height={40} style={{ margin: 15 }} />
+          <div className="flex flex-col justify-center items-center reservedCardHeader">
+            <img src={LOGO} alt="LOGO" style={{ height: 50, margin: 15 }} />
           </div>
-          <div className="reservedQRContainer">
+          <div className="flex flex-col justify-center items-center reservedQRContainer">
             <QRCode
               value={data?.qrCode ?? "Something went wrong"}
               size={200}
@@ -70,7 +71,12 @@ export default function QrModal({
               <Col span={12}>
                 <span className="reservedTxtSemiBold">Name Surname</span>
               </Col>
-              <Col span={12}>: {data?.fullName}</Col>
+              <Col span={12}>
+                :{" "}
+                {`${data?.bookingUser?.givenName} ${
+                  data?.bookingUser?.middleName ?? ""
+                } ${data?.bookingUser?.familyName}`}
+              </Col>
             </Row>
             <Row>
               <Col span={12}>
@@ -133,7 +139,8 @@ export default function QrModal({
               }).then(() => SuccessModal("Image saved successfully"))
             }
             style={{ width: 200, marginTop: 10 }}
-            icon={<DownloadOutlined />}>
+            icon={<DownloadOutlined />}
+          >
             Save Image
           </Button>
         </div>

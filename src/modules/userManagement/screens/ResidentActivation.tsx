@@ -91,7 +91,9 @@ const ResidentActivation = () => {
       title: "Expire at",
       align: "center",
       render: (_, record) => {
-        return <div>{`${dayjs(record?.createdAt).format("DD/MM/YYYY")}`}</div>;
+        return (
+          <div>{`${dayjs(record?.expireDate).format("DD/MM/YYYY HH:mm")}`}</div>
+        );
       },
     },
     {

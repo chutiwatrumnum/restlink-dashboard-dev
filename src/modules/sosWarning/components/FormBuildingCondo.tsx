@@ -1,36 +1,55 @@
 import { Form, Input, Select, Button } from "antd";
 
-interface FormVillageLocationProps {
+interface FormBuildingCondoProps {
     onCancel?: (e: React.MouseEvent<HTMLDivElement>) => void;
+    createdItem?: {
+        type: 'marker' | 'zone';
+        data: any;
+    } | null;
 }
 
-const FormVillageLocation = ({ onCancel }: FormVillageLocationProps) => {
+const FormVillageLocation = ({ onCancel, createdItem }: FormBuildingCondoProps) => {
+    const handleFormClick = (e: React.MouseEvent) => {
+        e.stopPropagation(); // ป้องกันการปิด form เมื่อกดที่ form
+    };
+
     return (
-        <div className=" mx-auto bg-[#F6F6F6] rounded-2xl p-6">
+        <div 
+            className="w-full bg-[#F6F6F6] min-h-screen p-6 mt-4 lg:mt-0"
+            onClick={handleFormClick}
+        >
             <div className="font-semibold text-xl text-center mb-6">
-                Pin the village location on the map
+                Pin the condo location on the map
             </div>
+            {createdItem && (
+                <div className="mb-4 p-3 bg-green-100 border border-green-300 rounded-md">
+                    <div className="text-sm text-green-800">
+                        ✅ {createdItem.data.id ? 
+                            `กำลังแก้ไข ${createdItem.type === 'marker' ? 'Marker' : 'Zone'} "${createdItem.data.name}"` :
+                            `สร้าง ${createdItem.type === 'marker' ? 'Marker' : 'Zone'} "${createdItem.data.name}" เรียบร้อยแล้ว`
+                        }
+                    </div>
+                </div>
+            )}
             <Form layout="vertical"
-                 initialValues={{
-                    address: "999/765",
-                    name: "Nattapon Seejan",
-                    tel1: "0985574483",
-                    tel2: "0985574484",
-                    tel3: "0985574485",
-                    latitude: "50.5040806515",
-                    longitude: "-50.5040806515"
-                  }}
             >
-                <Form.Item label={<span className="text-[#002C55]">Address</span>} name="address" required>
-                    <Select >
-                        <Select.Option value="999/765">999/765</Select.Option>
-                        <Select.Option value="888/123">888/123</Select.Option>
+                <Form.Item label={<span className="text-[#002C55]">Address</span>} name="address">
+                    <Select
+                        showSearch
+                        filterOption={(input, option) =>
+                            (option?.children as unknown as string)
+                                ?.toLowerCase()
+                                ?.includes(input.toLowerCase()) ?? false
+                        }
+                        placeholder="ค้นหาหรือเลือก address"
+                    >
+
                     </Select>
                 </Form.Item>
-                <Form.Item label={<span className="text-[#002C55]">Name</span>} name="name" required>
+                <Form.Item label={<span className="text-[#002C55]">Name</span>} name="name">
                     <Input  />
                 </Form.Item>
-                <Form.Item label={<span className="text-[#002C55]">Tel 1</span>} name="tel1" required>
+                <Form.Item label={<span className="text-[#002C55]">Tel 1</span>} name="tel1">
                     <Input  />
                 </Form.Item>
                 <Form.Item label={<span className="text-[#002C55]">Tel 2</span>} name="tel2">

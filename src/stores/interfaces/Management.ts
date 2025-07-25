@@ -77,3 +77,58 @@ export interface conditionPage {
   sort?: string;
   sortBy?: string;
 }
+
+export interface BlockDataType {
+  data: Block[];
+  total: number;
+}
+
+export interface Block {
+  active: boolean;
+  blockName: string;
+  id: number;
+  totalOfFloor: number;
+}
+
+export interface FloorType {
+  data: Floor[];
+  total: number;
+}
+
+export interface Floor {
+  active: boolean;
+  floorName: string;
+  id: number;
+  isBasement: boolean;
+  numberOfFloor: number;
+}
+
+// Unit
+export interface UnitType {
+  data: Unit[];
+  total: number;
+}
+
+export interface Unit {
+  id: number;
+  roomAddress: string;
+  unitNo: string;
+
+  family?: number;
+  unitOwner?: UnitOwner;
+}
+
+export interface UnitOwner {
+  familyName: string;
+  givenName: string;
+  middleName?: string;
+  contact: string;
+}
+
+// Member
+export interface MemberType {
+  memberId: number;
+  memberName: string;
+  unitId: number;
+  role: string;
+}

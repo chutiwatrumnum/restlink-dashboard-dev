@@ -22,7 +22,6 @@
   width: 20% !important;
 }
 
-
 .announceModalContainer {
   display: flex;
   flex: 1;
@@ -46,11 +45,6 @@
 .announceBottomActionContainer {
   margin-top: 20px;
   margin-bottom: 20px;
-}
-
-.emergencyFormModal {
-  width: 30% !important;
-  font-weight: 'bold'
 }
 
 .announcementInfoRow {

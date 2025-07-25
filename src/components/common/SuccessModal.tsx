@@ -3,10 +3,10 @@ import { SuccessIcon } from "../../assets/icons/Icons";
 import { whiteLabel } from "../../configs/theme";
 import "../styles/common.css";
 
-const SuccessModal = (message: string) => {
+const SuccessModal = (message: string,timeout:number = 3000) => {
   setTimeout(() => {
     Modal.destroyAll();
-  }, 3000);
+  }, timeout);
 
   return Modal.success({
     icon: null,

@@ -20,7 +20,7 @@ export interface DataType {
   joiningDate: string;
   blockNo: string;
   unitNo: string;
-  roomAddress:string;
+  roomAddress: string;
   status: string;
   createdAt: string;
   startEndTime: string;
@@ -113,7 +113,7 @@ export interface ReservationListDataType {
   active?: boolean;
   createdAt?: string;
   updatedAt?: string;
-  limitPeople?: number;
+  limitPeople: number;
   description?: string;
   locked?: boolean;
   startTime?: string;
@@ -125,6 +125,19 @@ export interface ReservationListDataType {
   maxDayCanBooking?: number;
   maximumHourBooking?: string;
   facilitiesItems?: FacilitiesItemsType[];
+}
+
+export interface AddNewFacilityPayloadType {
+  name: string;
+  subName: string;
+  description: string;
+  startTime: string;
+  endTime: string;
+  limitPeople: number;
+  maximumHourBooking: string;
+  imageUrl: string;
+  facilitiesRules?: FacilitiesRuleType[];
+  accommodates?: AccommodateType[];
 }
 export interface ReservationListDataEquipmentType {
   id: number;
@@ -158,25 +171,42 @@ export interface ReservedListDataType {
 }
 
 export interface ReservedRowListDataType {
-  id?: number;
-  refBooking?: string;
-  topic?: string;
-  joinAt?: string;
-  startTime?: string;
-  endTime?: string;
-  facilitiesId?: number;
-  contactNo?: string;
-  email?: string;
-  createdAt?: string;
-  updatedAt?: string;
-  unit?: string;
-  qrCode?: string;
-  facilityName?: string;
-  fullName?: string;
-  bookedBy?: string;
-  countPeople?: number;
-  note?: string;
-  facilitiesItems?: FacilitiesItemsType;
+  id: number;
+  refBooking: string;
+  topic: string;
+  joinAt: string;
+  startTime: string;
+  endTime: string;
+  facilitiesId: number;
+  countPeople: number;
+  note: string;
+  contactNo: string;
+  createdAt: string;
+  updatedAt: string;
+  facilitiesItems: any;
+  unit: string;
+  bookingUser: BookingUser;
+  qrCode: string;
+  facilityName: string;
+  createdUser: CreatedUser;
+  createdByRole: CreatedByRoleType;
+}
+export interface CreatedByRoleType {
+  name: string;
+  roleCode: string;
+  roleManageCode: string;
+  roleCodeName: string;
+}
+
+export interface BookingUser {
+  familyName: string;
+  givenName: string;
+  middleName?: string;
+}
+export interface CreatedUser {
+  familyName: string;
+  givenName: string;
+  middleName?: string;
 }
 export interface FacilitiesItemsType {
   description: string;
@@ -236,8 +266,8 @@ export interface ReservedFormDataType {
   facilitiesItemId?: number;
 }
 export interface ResidentDataType {
-  lastName: string;
-  firstName: string;
+  familyName: string;
+  givenName: string;
   middleName: string;
   fullName: string;
   userId: string;

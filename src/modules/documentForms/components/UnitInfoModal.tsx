@@ -10,6 +10,7 @@ interface DataType {
 
 interface Unit {
   unitNo: string;
+  roomAddress: string;
 }
 interface ComponentCreateProps {
   isOpen: boolean;
@@ -48,7 +49,7 @@ const UnitInfoModal = ({
                     dataSource={dataItem.unit}
                     renderItem={(item) => (
                       <List.Item>
-                        <Text>{item.unitNo}</Text>
+                        <Text>{item.roomAddress}</Text>
                       </List.Item>
                     )}
                     className="listContainer"

@@ -302,16 +302,11 @@ const EditDeliverylog = (props: EditEventLogProps) => {
     <>
       <Modal
         title={"Record a delivery"}
-        width={700}
+        width={"50vw"}
         centered
         open={props?.isOpen}
         onCancel={handleCancel}
-        footer={false}
-        style={{
-          borderBottom: 20,
-          borderWidth: 200,
-          borderBlock: 10,
-        }}>
+        footer={false}>
         <Form
           form={form}
           layout="vertical"
