@@ -1,5 +1,5 @@
 import { useEffect, useState, useLayoutEffect } from "react";
-import { useOutlet } from "react-router-dom";
+import { useOutlet, useNavigate } from "react-router-dom";
 import { Layout } from "antd";
 import { useDispatch, useSelector } from "react-redux";
 import { Dispatch, RootState } from "../stores";
@@ -13,10 +13,9 @@ import { getEmergency } from "../modules/sosWarning/service/api/SOSwarning";
 const { Sider, Content } = Layout;
 
 function AuthorizedLayout() {
+  const navigate = useNavigate();
   const { isAuth } = useSelector((state: RootState) => state.userAuth);
   const dispatch = useDispatch<Dispatch>();
-  const access_token = encryptStorage.getItem("access_token");
-  const projectId = encryptStorage.getItem("projectId");
   const outlet = useOutlet();
 
   const [collapsed, setCollapsed] = useState(() => {
@@ -32,10 +31,9 @@ function AuthorizedLayout() {
 
   const handleHideToast = () => {
     setShowToast(false);
-    setIsToastExpanded(false); // รีเซ็ตการขยายเมื่อปิด toast
+    setIsToastExpanded(false);
   };
 
-  // ฟังก์ชันสำหรับ toggle การขยาย toast
   const handleToggleToast = () => {
     setIsToastExpanded(!isToastExpanded);
   };
@@ -55,60 +53,101 @@ function AuthorizedLayout() {
   }, []);
 
   useLayoutEffect(() => {
-    if (window.location.pathname !== "/auth") {
-      (async () => {
-        try {
-          // Check Access token
-          const access_token = await encryptStorage.getItem("access_token");
-          if (
-            access_token === null ||
-            access_token === undefined ||
-            access_token === ""
-          )
-            throw "access_token not found";
+    const checkAuthAndInitialize = async () => {
+      try {
+        console.log("🔍 AuthorizedLayout checking auth:", {
+          isAuth,
+          currentPath: window.location.pathname,
+        });
 
-          // Check Refresh token
-          const resReToken = await dispatch.userAuth.refreshTokenNew();
-          if (!resReToken) throw "access_token expired";
-
-          // Token pass
-          await dispatch.common.fetchUnitOptions();
-          dispatch.userAuth.updateAuthState(true);
-
-          return true;
-        } catch (e) {
-          dispatch.userAuth.onLogout();
-          return false;
+        // Check Access token
+        const access_token = await encryptStorage.getItem("access_token");
+        if (
+          !access_token ||
+          access_token === "undefined" ||
+          access_token === ""
+        ) {
+          console.log("❌ No access token found");
+          throw "access_token not found";
         }
-      })();
+
+        // ถ้า isAuth เป็น true แล้ว แสดงว่าเพิ่ง login มา ไม่ต้อง refresh token
+        if (isAuth) {
+          console.log("✅ User just logged in, skipping refresh token");
+          await dispatch.common.fetchUnitOptions();
+          return true;
+        }
+
+        // ถ้า isAuth เป็น false แต่มี token ให้ลอง refresh
+        console.log("🔄 Trying to refresh token");
+        const resReToken = await dispatch.userAuth.refreshTokenNew();
+        if (!resReToken) {
+          console.log("❌ Refresh token failed");
+          throw "access_token expired";
+        }
+
+        // Token valid - initialize app
+        console.log("✅ Auth check passed, initializing app");
+        await dispatch.common.fetchUnitOptions();
+        dispatch.userAuth.updateAuthState(true);
+
+        return true;
+      } catch (error) {
+        console.log("❌ Auth check failed:", error);
+        dispatch.userAuth.onLogout();
+        navigate("/auth", { replace: true });
+        return false;
+      }
+    };
+
+    // เรียกเช็ค auth เฉพาะถ้าไม่ได้อยู่หน้า login
+    if (window.location.pathname !== "/auth") {
+      checkAuthAndInitialize();
     }
-  }, [isAuth, reload]);
+  }, [dispatch, navigate, reload]);
+
+  // เช็คว่าต้อง redirect ไปหน้า login หรือไม่
+  useEffect(() => {
+    const checkRedirect = async () => {
+      const access_token = await encryptStorage.getItem("access_token");
+      const projectId = await encryptStorage.getItem("projectId");
+
+      console.log("🔍 Checking redirect need:", {
+        isAuth,
+        hasToken: !!access_token,
+        hasProjectId: !!projectId,
+        currentPath: window.location.pathname,
+      });
+
+      if (
+        (!isAuth || !access_token || access_token === "undefined") &&
+        window.location.pathname !== "/auth"
+      ) {
+        console.log("❌ Redirecting to login");
+        navigate("/auth", { replace: true });
+      }
+    };
+
+    checkRedirect();
+  }, [isAuth, navigate]);
 
   useEffect(() => {
-    if (
-      (!isAuth || !access_token || !projectId) &&
-      window.location.pathname !== "/auth"
-    ) {
-      window.location.pathname = "/auth";
-    }
-  }, [isAuth]);
-
-  useEffect(() => {
-
     async function connectSocket() {
       const getEmergencyData = async () => {
         let dataEmergency = await getEmergency();
         if (dataEmergency.status) {
-          setDataEmergency(dataEmergency.result)
-          let haveEmergency = dataEmergency.result.emergency.length > 0
-          let haveWarning = dataEmergency.result.deviceWarning.length > 0
+          setDataEmergency(dataEmergency.result);
+          let haveEmergency = dataEmergency.result.emergency.length > 0;
+          let haveWarning = dataEmergency.result.deviceWarning.length > 0;
           if (haveEmergency || haveWarning) {
             setShowToast(true);
           }
         }
-      }
+      };
       getEmergencyData();
-      const URL = "https://reslink-security-wqi2p.ondigitalocean.app/socket/sos/dashboard"
+
+      const URL =
+        "https://reslink-security-wqi2p.ondigitalocean.app/socket/sos/dashboard";
       const access_token = encryptStorage.getItem("access_token");
       const projectID = await encryptStorage.getItem("projectId");
       const newSocket = io(URL, {
@@ -119,17 +158,15 @@ function AuthorizedLayout() {
         timeout: 10000,
         extraHeaders: {
           Authorization: `Bearer ${access_token}`,
-          "x-api-key": projectID
+          "x-api-key": projectID,
         },
       });
       newSocket.connect();
       newSocket.on("connect", () => {
-        // console.log("Connected Successfully!");
         setConnected(true);
       });
 
       newSocket.on("disconnect", () => {
-        // console.log("Disconnected!");
         setConnected(false);
       });
 
@@ -140,38 +177,38 @@ function AuthorizedLayout() {
               setDataEmergency((prev: any) => ({
                 ...prev,
                 emergency: data.emergency,
-                deviceWarning: data.deviceWarning || []
+                deviceWarning: data.deviceWarning || [],
               }));
             }
           }
 
           if (data.deviceWarning?.length > 0 || data.emergency?.length > 0) {
             setShowToast(true);
-          }
-          else {
+          } else {
             setShowToast(false);
           }
         }
       });
 
-      // newSocket.onAny((eventName, ...args) => {
-      //   console.log('🔍 Received ANY event:', eventName, args);
-      // });
+      setSocket(newSocket);
 
-      // Debug - Listen for ANY event
-      setSocket(newSocket); // เพิ่มบรรทัดนี้
-
-
-      // Cleanup เมื่อ component unmount
       return () => {
-        // console.log('🧹 Cleaning up Socket.IO connection');
         newSocket.close();
       };
     }
-    connectSocket();
-  }, []); //
+
+    // เชื่อมต่อ socket เฉพาะเมื่อ login แล้ว
+    if (isAuth) {
+      connectSocket();
+    }
+  }, [isAuth]);
 
   const siderWidth = collapsed ? 80 : 320;
+
+  // ถ้ายังไม่ได้ login ให้แสดง loading หรือ redirect
+  if (!isAuth) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <Layout>
@@ -180,7 +217,8 @@ function AuthorizedLayout() {
         isToastExpanded={isToastExpanded}
         handleToggleToast={handleToggleToast}
         dataEmergency={dataEmergency}
-        handleHideToast={handleHideToast} />
+        handleHideToast={handleHideToast}
+      />
       <Sider
         width={320}
         collapsedWidth={80}
@@ -194,8 +232,7 @@ function AuthorizedLayout() {
           left: 0,
           top: 0,
           bottom: 0,
-        }}
-      >
+        }}>
         <SideMenu
           onMenuChange={() => {
             setReload(!reload);

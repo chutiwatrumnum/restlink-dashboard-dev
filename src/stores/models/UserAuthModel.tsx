@@ -8,6 +8,7 @@ import {
 import { RootModel } from "./index";
 import { encryptStorage } from "../../utils/encryptStorage";
 import FailedModal from "../../components/common/FailedModal";
+import { callSuccessModal } from "../../components/common/Modal";
 import axios from "axios";
 
 export const userAuth = createModel<RootModel>()({
@@ -15,7 +16,7 @@ export const userAuth = createModel<RootModel>()({
     userId: null,
     userFirstName: "Den",
     userLastName: "Tao",
-    isAuth: true,
+    isAuth: false, // เปลี่ยนจาก true เป็น false
     userToken: null,
     isSignUpModalOpen: false,
     isConfirmDetailModalOpen: false,
@@ -51,20 +52,65 @@ export const userAuth = createModel<RootModel>()({
       try {
         const data = { username: payload.username, password: payload.password };
         const userToken = await axios.post("/auth/dashboard/login", data);
+
         if (userToken.status >= 400) {
-          FailedModal(userToken.data.message);
-          return;
+          FailedModal(userToken.data.message || "Login failed");
+          return false;
         }
 
+        // เก็บ tokens
         encryptStorage.setItem("access_token", userToken.data.access_token);
-        encryptStorage.setItem("refreshToken", userToken.data.refreshToken);
-        const userData = await axios.get("/mcst/profile");
-        encryptStorage.setItem("userData", userData.data.result);
+        if (userToken.data.refreshToken) {
+          encryptStorage.setItem("refreshToken", userToken.data.refreshToken);
+        } else if (userToken.data.refresh_token) {
+          encryptStorage.setItem("refreshToken", userToken.data.refresh_token);
+        }
+
+        try {
+          // ลองเรียก API เพื่อเช็ค project ID
+          const projectId = await axios.get("/my-project");
+          if (
+            projectId.data &&
+            projectId.data.data &&
+            projectId.data.data.myProjectId
+          ) {
+            encryptStorage.setItem(
+              "projectId",
+              projectId.data.data.myProjectId
+            );
+          }
+        } catch (error) {
+          console.log("Project ID not found, but login successful");
+          // ไม่ต้อง throw error เพราะ login สำเร็จแล้ว
+        }
+
+        try {
+          // ลองเรียก profile API (ถ้ามี)
+          const userData = await axios.get("/mcst/profile");
+          if (userData.data && userData.data.result) {
+            encryptStorage.setItem("userData", userData.data.result);
+          }
+        } catch (error) {
+          console.log("Profile data not available, but login successful");
+          // ไม่ต้อง throw error เพราะ login สำเร็จแล้ว
+        }
+
+        // อัพเดท auth state
         dispatch.userAuth.updateAuthState(true);
+
+        // แสดง success message
+        callSuccessModal("Login successful!");
+
+        // ไม่ต้อง manual redirect ให้ useEffect ใน layout จัดการเอง
+
+        return true;
       } catch (error) {
-        console.error("ERROR", error);
+        console.error("Login ERROR:", error);
+        FailedModal("Login failed. Please try again.");
+        return false;
       }
     },
+
     async recoveryByEmail(payload: { email: string }) {
       try {
         const result = await axios.post("/users/forgot-password", payload);
@@ -78,6 +124,7 @@ export const userAuth = createModel<RootModel>()({
         console.error("ERROR", error);
       }
     },
+
     async resetPassword(payload: ResetPasswordPayloadType) {
       try {
         const result = await axios.put("/users/forgot-password", payload);
@@ -94,26 +141,39 @@ export const userAuth = createModel<RootModel>()({
     async refreshTokenNew() {
       try {
         const refreshToken = await encryptStorage.getItem("refreshToken");
-        // console.log("REFRESH : ", refreshToken);
+
+        if (!refreshToken || refreshToken === "undefined") {
+          console.error("No refresh token available");
+          throw "refresh token not found";
+        }
+
+        console.log("🔄 Attempting to refresh token...");
         const res = await axios.post("/auth/dashboard/refresh-token", {
           refreshToken: refreshToken,
         });
 
         if (res.status >= 400) {
-          console.error(">400 : ", res.data.message);
+          console.error("Refresh token API error:", res.data.message);
           throw "refresh token expired";
         }
+
         if (!res.data.hasOwnProperty("access_token")) {
-          console.error("No props : ", res.data.message);
+          console.error("No access_token in response:", res.data);
           throw "access_token not found";
         }
-        await encryptStorage.getItem("projectId");
-        // const projectId = await encryptStorage.getItem("projectId");
-        // console.log({ token: res.data.access_token, projId: projectId });
+
+        console.log("✅ Token refreshed successfully");
         encryptStorage.setItem("access_token", res.data.access_token);
+
+        // อัพเดท refresh token ใหม่ถ้ามี
+        if (res.data.refresh_token) {
+          encryptStorage.setItem("refreshToken", res.data.refresh_token);
+        }
+
         dispatch.userAuth.updateAuthState(true);
         return true;
       } catch (error) {
+        console.error("Refresh token failed:", error);
         dispatch.userAuth.onLogout();
         return false;
       }
@@ -121,16 +181,17 @@ export const userAuth = createModel<RootModel>()({
 
     async onLogout() {
       try {
-        // await axios.post("/users/logout");
         encryptStorage.removeItem("projectId");
         encryptStorage.removeItem("access_token");
         encryptStorage.removeItem("refreshToken");
+        encryptStorage.removeItem("userData");
         dispatch.userAuth.updateAuthState(false);
         return true;
       } catch (error) {
         encryptStorage.removeItem("projectId");
         encryptStorage.removeItem("access_token");
         encryptStorage.removeItem("refreshToken");
+        encryptStorage.removeItem("userData");
         dispatch.userAuth.updateAuthState(false);
         return false;
       }

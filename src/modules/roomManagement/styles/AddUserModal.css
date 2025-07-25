@@ -1,0 +1,230 @@
+/* components/AddUserModal.css */
+
+.add-user-modal .ant-modal-content {
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  
+  .add-user-modal .ant-modal-header {
+    text-align: center;
+    border-bottom: 1px solid #f0f0f0;
+    padding: 20px 24px 16px;
+  }
+  
+  .add-user-modal .ant-modal-body {
+    padding: 0;
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+  
+  .add-user-modal .ant-tabs {
+    margin: 0;
+  }
+  
+  .add-user-modal .ant-tabs-tab {
+    font-weight: 500;
+    color: #666;
+    padding: 12px 20px;
+  }
+  
+  .add-user-modal .ant-tabs-tab-active {
+    font-weight: 600;
+    color: #1890ff;
+  }
+  
+  .add-user-modal .ant-tabs-content-holder {
+    padding: 0;
+  }
+  
+  .add-user-modal .ant-tabs-tabpane {
+    padding: 0;
+  }
+  
+  .add-user-modal .ant-divider {
+    margin: 16px 24px;
+  }
+  
+  .add-user-modal .user-search-container {
+    padding: 0 24px;
+  }
+  
+  .add-user-modal .user-card {
+    transition: all 0.2s ease;
+    border-radius: 8px;
+    margin: 0 8px;
+  }
+  
+  .add-user-modal .user-card:hover {
+    background-color: #f5f5f5;
+    transform: translateY(-1px);
+  }
+  
+  .add-user-modal .user-avatar {
+    background: linear-gradient(45deg, #1890ff, #40a9ff);
+    border: 2px solid #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .add-user-modal .add-user-button {
+    margin: 0 24px 24px 24px;
+    height: 48px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 8px;
+    background: linear-gradient(45deg, #1890ff, #40a9ff);
+    border: none;
+    box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3);
+    transition: all 0.3s ease;
+  }
+  
+  .add-user-modal .add-user-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(24, 144, 255, 0.4);
+  }
+  
+  .add-user-modal .form-container {
+    padding: 24px;
+  }
+  
+  .add-user-modal .form-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  
+  .add-user-modal .back-button {
+    color: #1890ff;
+    font-weight: 500;
+    padding: 0;
+    height: auto;
+    border: none;
+    background: none;
+    box-shadow: none;
+  }
+  
+  .add-user-modal .back-button:hover {
+    color: #40a9ff;
+    background: none;
+  }
+  
+  .add-user-modal .form-title {
+    flex: 1;
+    text-align: center;
+    font-size: 18px;
+    font-weight: 600;
+    color: #262626;
+    margin: 0;
+  }
+  
+  .add-user-modal .form-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid #f0f0f0;
+  }
+  
+  .add-user-modal .form-buttons .ant-btn {
+    height: 44px;
+    padding: 0 32px;
+    font-size: 16px;
+    font-weight: 500;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+  }
+  
+  .add-user-modal .form-buttons .ant-btn-default {
+    border-color: #d9d9d9;
+    color: #595959;
+  }
+  
+  .add-user-modal .form-buttons .ant-btn-default:hover {
+    border-color: #1890ff;
+    color: #1890ff;
+    transform: translateY(-1px);
+  }
+  
+  .add-user-modal .form-buttons .ant-btn-primary {
+    background: linear-gradient(45deg, #1890ff, #40a9ff);
+    border: none;
+    box-shadow: 0 2px 8px rgba(24, 144, 255, 0.3);
+  }
+  
+  .add-user-modal .form-buttons .ant-btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(24, 144, 255, 0.4);
+  }
+  
+  .add-user-modal .avatar-display {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 50%;
+    padding: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  }
+  
+  .add-user-modal .avatar-close-btn {
+    background: rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(4px);
+    transition: all 0.2s ease;
+  }
+  
+  .add-user-modal .avatar-close-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+  }
+  
+  .add-user-modal .no-data-message {
+    color: #8c8c8c;
+    font-size: 16px;
+    font-weight: 500;
+    text-align: center;
+    margin: 24px 0;
+  }
+  
+  .add-user-modal .search-loading {
+    text-align: center;
+    padding: 32px;
+    color: #8c8c8c;
+  }
+  
+  .add-user-modal .search-empty {
+    text-align: center;
+    padding: 32px;
+    color: #bfbfbf;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .add-user-modal .ant-modal {
+      width: 90% !important;
+      margin: 16px;
+    }
+    
+    .add-user-modal .form-buttons {
+      flex-direction: column;
+    }
+    
+    .add-user-modal .form-buttons .ant-btn {
+      width: 100%;
+    }
+  }
+  
+  /* Animation for modal entrance */
+  .add-user-modal.ant-modal {
+    animation: modalSlideIn 0.3s ease-out;
+  }
+  
+  @keyframes modalSlideIn {
+    from {
+      opacity: 0;
+      transform: translateY(-20px) scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }

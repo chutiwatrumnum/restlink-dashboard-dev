@@ -6,6 +6,7 @@ import Header from "../../../components/templates/Header";
 import { Pagination, Tabs } from "antd";
 import FloorComponent from "../components/FloorComponent";
 import UnitComponent from "../components/UnitComponent";
+import AddUserModal from "../components/AddUserModal";
 
 // Types
 import type { PaginationProps, TabsProps } from "antd";
@@ -27,6 +28,12 @@ const RoomManageScreen = () => {
   const [currentBlockId, setCurrentBlockId] = useState<number>();
   const [currentFloor, setCurrentFloor] = useState<Floor>();
   const [currentUnit, setCurrentUnit] = useState<Unit>();
+
+  // Modal states
+  const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
+  const [selectedUnitForModal, setSelectedUnitForModal] = useState<Unit | null>(
+    null
+  );
 
   // Functions
   const onTabsChange = (key: string) => {
@@ -52,6 +59,30 @@ const RoomManageScreen = () => {
 
   const onPageUnitChange: PaginationProps["onChange"] = (page) => {
     console.log(page);
+  };
+
+  // Modal handlers
+  const handleEditClick = (unit: Unit) => {
+    setCurrentUnit(unit);
+    setSelectedUnitForModal(unit);
+    setIsAddUserModalOpen(true);
+    console.log("EDIT CLICKED - Unit data:", unit);
+    console.log("Unit has owner:", !!unit.unitOwner);
+    console.log("Unit family count:", unit.family);
+  };
+
+  const handleAddMemberClick = (unit: Unit) => {
+    setCurrentUnit(unit);
+    setSelectedUnitForModal(unit);
+    setIsAddUserModalOpen(true);
+    console.log("ADD MEMBER CLICKED - Unit data:", unit);
+    console.log("Unit has owner:", !!unit.unitOwner);
+    console.log("Unit family count:", unit.family);
+  };
+
+  const handleCloseModal = () => {
+    setIsAddUserModalOpen(false);
+    setSelectedUnitForModal(null);
   };
 
   // Data
@@ -104,6 +135,27 @@ const RoomManageScreen = () => {
     setCurrentBlockId(blockData?.data[0].id);
   }, [blockData]);
 
+  // Helper function เพื่อสร้าง initial members จาก unit data
+  const getInitialMembers = (unit: Unit) => {
+    const members = [];
+
+    // เพิ่มเจ้าของห้องถ้ามี
+    if (unit.unitOwner && unit.unitOwner.givenName) {
+      members.push({
+        id: `owner-${unit.id}`,
+        userId: `owner-user-${unit.id}`,
+        firstName: unit.unitOwner.givenName,
+        lastName: unit.unitOwner.familyName || "",
+        email: unit.unitOwner.email || "",
+        roleId: 1,
+        roleName: "Owner",
+        imageProfile: unit.unitOwner.imageProfile,
+      });
+    }
+
+    return members;
+  };
+
   return (
     <>
       <div className="flex flex-row w-full justify-between items-start">
@@ -115,8 +167,7 @@ const RoomManageScreen = () => {
         {currentFloor ? (
           <span
             onClick={clearData}
-            className="text-2xl/[40px] font-normal hover:cursor-pointer"
-          >
+            className="text-2xl/[40px] font-normal hover:cursor-pointer">
             {"< Back"}
           </span>
         ) : null}
@@ -144,7 +195,11 @@ const RoomManageScreen = () => {
             <div className="flex flex-col w-full h-full justify-between items-end">
               <div className="grid grid-cols-5 gap-4 w-full mb-8">
                 {floorData?.data.map((floor) => (
-                  <FloorComponent floor={floor} onFloorClick={onFloorClick} />
+                  <FloorComponent
+                    key={floor.id}
+                    floor={floor}
+                    onFloorClick={onFloorClick}
+                  />
                 ))}
               </div>
               <Pagination
@@ -161,15 +216,10 @@ const RoomManageScreen = () => {
                 {unitData
                   ? unitData?.data.map((unit) => (
                       <UnitComponent
+                        key={unit.id}
                         unit={unit}
-                        onEditClick={() => {
-                          setCurrentUnit(unit);
-                          console.log("EDIT CLICKED");
-                        }}
-                        onAddMemberClick={() => {
-                          setCurrentUnit(unit);
-                          console.log("ADD MEMBER CLICKED");
-                        }}
+                        onEditClick={() => handleEditClick(unit)}
+                        onAddMemberClick={() => handleAddMemberClick(unit)}
                       />
                     ))
                   : null}
@@ -185,6 +235,25 @@ const RoomManageScreen = () => {
           )}
         </section>
       </div>
+
+      {/* Add User Modal */}
+      <AddUserModal
+        isOpen={isAddUserModalOpen}
+        onClose={handleCloseModal}
+        unitInfo={
+          selectedUnitForModal
+            ? {
+                address: selectedUnitForModal.roomAddress,
+                roomNo: selectedUnitForModal.unitNo,
+                unitId: selectedUnitForModal.id,
+              }
+            : undefined
+        }
+        // ส่งข้อมูลสมาชิกเริ่มต้นจาก unit data
+        initialMembers={
+          selectedUnitForModal ? getInitialMembers(selectedUnitForModal) : []
+        }
+      />
     </>
   );
 };

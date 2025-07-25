@@ -12,7 +12,7 @@ import {
 } from "../../stores/interfaces/Management";
 
 // Block
-const getBlockList = async (): Promise<BlockDataType[]> => {
+const getBlockList = async (): Promise<BlockDataType> => {
   const res = await axios.get("/room-management/block");
   return res.data.result;
 };
@@ -34,7 +34,7 @@ const getFloorList = async ({
 const getUnitList = async ({
   queryKey,
 }: QueryFunctionContext<[string, number, number, number]>): Promise<
-  UnitType[]
+  UnitType
 > => {
   const [_key, curPage, perPage, floorId] = queryKey;
   const res = await axios.get(`/room-management/unit`, {
