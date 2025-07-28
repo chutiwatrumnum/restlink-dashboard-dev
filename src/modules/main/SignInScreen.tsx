@@ -150,7 +150,7 @@ const SignInScreen = () => {
                 htmlType="button"
                 size="large"
                 block
-                className="login-button"
+                className="login-button-google"
                 style={{ marginBottom: "1rem" }}>
                 <GoogleIcon />
                 <span>เข้าสู่ระบบด้วย Google</span>

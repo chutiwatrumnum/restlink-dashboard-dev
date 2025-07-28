@@ -219,7 +219,19 @@
 /* Login Button */
 .login-button {
   background: var(--primary-color) !important;
+  border-color: var(--white-color) !important;
+  border-radius: 12px !important;
+  height: 56px !important;
+  font-weight: 600 !important;
+  font-size: 0.875rem !important;
+  box-shadow: 0 4px 12px rgba(201, 169, 110, 0.2) !important;
+  transition: all 0.2s ease !important;
+}
+
+.login-button-google {
+  background: var(--white-color) !important;
   border-color: var(--primary-color) !important;
+  color: var(--primary-color) !important;
   border-radius: 12px !important;
   height: 56px !important;
   font-weight: 600 !important;
@@ -231,6 +243,14 @@
 .login-button:hover {
   background: var(--secondary-color) !important;
   border-color: var(--secondary-color) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 6px 16px rgba(201, 169, 110, 0.3) !important;
+}
+
+.login-button-google:hover {
+  background: var(--secondary-color) !important;
+  border-color: var(--secondary-color) !important;
+  color: var(--white-color) !important;
   transform: translateY(-1px) !important;
   box-shadow: 0 6px 16px rgba(201, 169, 110, 0.3) !important;
 }
