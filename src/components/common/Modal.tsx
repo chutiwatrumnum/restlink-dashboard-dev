@@ -10,6 +10,7 @@ interface ConfirmModalType {
   message?: string;
   okMessage: string;
   cancelMessage: string;
+  alertMessage?: string;
   onCancel?: () => void;
   onOk?: () => void;
 }
@@ -60,16 +61,31 @@ export const callConfirmModal = ({
   title = "title",
   okMessage = "okMessage",
   cancelMessage = "cancelMessage",
+  alertMessage,
   onOk,
   onCancel,
 }: ConfirmModalType) => {
   return Modal.confirm({
     icon: null,
-    title: <span style={{ fontWeight: whiteLabel.normalWeight }}>{title}</span>,
-    width: 500,
+    title: (
+      <span className="text-xl text-[var(--primary-color)] font-bold">
+        {title}
+      </span>
+    ),
     content: message ? (
-      <div>
-        <p>{message}</p>
+      <div className="flex flex-col gap-2 mb-4">
+        {alertMessage ? (
+          <span className="text-md text-[var(--danger-color)] font-light">
+            <span className="text-md text-[var(--danger-color)] font-semibold">
+              Please note:
+            </span>
+            {`*${alertMessage}`}
+          </span>
+        ) : (
+          <span className="text-md text-[var(--gray-color)] font-light">
+            {message}
+          </span>
+        )}
       </div>
     ) : null,
     footer: (
@@ -95,6 +111,9 @@ export const callConfirmModal = ({
       </div>
     ),
     centered: true,
-    className: "confirmModalStyle",
+    width: "90%",
+    style: {
+      maxWidth: 480,
+    },
   });
 };

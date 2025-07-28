@@ -10,7 +10,7 @@
 .statusModalController .ant-modal-confirm-body {
   justify-content: center;
 }
-.confirmModalStyle {
+/* .confirmModalStyle {
   width: 640px;
 }
 
@@ -19,14 +19,14 @@
   flex-direction: column;
   box-sizing: border-box;
   justify-content: space-between;
-  height: 150px;
-}
+  height: fit-content;
+} */
 
-.confirmModalFooter {
+/* .confirmModalFooter {
   display: flex;
   flex-direction: row;
   justify-content: center;
-}
+} */
 
 .cancelBtnColor:hover {
   border-color: var(--primary-color) !important;

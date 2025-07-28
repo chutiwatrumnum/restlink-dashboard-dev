@@ -6,11 +6,16 @@ import Header from "../../../components/templates/Header";
 import { Pagination, Tabs } from "antd";
 import FloorComponent from "../components/FloorComponent";
 import UnitComponent from "../components/UnitComponent";
-import AddUserModal from "../components/AddUserModal";
+import RoomManageModal from "../components/RoomManageModal";
+import SelectUserModal from "../components/SelectUserModal";
 
 // Types
 import type { PaginationProps, TabsProps } from "antd";
-import { Floor, Unit } from "../../../stores/interfaces/Management";
+import {
+  Floor,
+  Unit,
+  DeleteMemberPayload,
+} from "../../../stores/interfaces/Management";
 
 // Data
 import {
@@ -21,19 +26,44 @@ import {
 } from "../../../utils/queriesGroup/roomManageQueries";
 import { getProjectIDQuery } from "../../../utils/queriesGroup/authQueries";
 
-const RoomManageScreen = () => {
-  // Variables
+// API
+import { deleteMemberMutation } from "../../../utils/mutationsGroup/managementMutation";
 
+const RoomManageScreen = () => {
   // States
   const [currentBlockId, setCurrentBlockId] = useState<number>();
   const [currentFloor, setCurrentFloor] = useState<Floor>();
   const [currentUnit, setCurrentUnit] = useState<Unit>();
+  const [floorPage, setFloorPage] = useState<number>(1);
+  const [unitPage, setUnitPage] = useState<number>(1);
+  const [currentRoleId, setCurrentRoleId] = useState<number>(-1);
+  const [isSelectUserModalOpen, setIsSelectUserModalOpen] = useState(false);
 
-  // Modal states
-  const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
-  const [selectedUnitForModal, setSelectedUnitForModal] = useState<Unit | null>(
-    null
-  );
+  // Data
+  const { data: projectData } = getProjectIDQuery();
+  const { data: blockData } = getBlockListQuery();
+
+  const { data: floorData } = getFloorListQuery({
+    curPage: floorPage,
+    perPage: 20,
+    blockId: currentBlockId ? currentBlockId : -1,
+    shouldFetch: !!currentBlockId,
+  });
+
+  const { data: unitData, refetch: refetchUnit } = getUnitListQuery({
+    curPage: unitPage,
+    perPage: 20,
+    floorId: currentFloor ? currentFloor.id : -1,
+    shouldFetch: !!currentFloor,
+  });
+
+  const { data: memberData, refetch: refetchMember } = getMemberListQuery({
+    unitId: currentUnit?.id ?? -999,
+    shouldFetch: !!currentUnit,
+  });
+
+  // API
+  const deleteMember = deleteMemberMutation();
 
   // Functions
   const onTabsChange = (key: string) => {
@@ -44,7 +74,7 @@ const RoomManageScreen = () => {
   };
 
   const onFloorClick = (floor: Floor) => {
-    console.log("FLOOR DATA : ", floor);
+    // console.log("FLOOR DATA : ", floor);
     setCurrentFloor(floor);
   };
 
@@ -54,59 +84,43 @@ const RoomManageScreen = () => {
   };
 
   const onPageFloorChange: PaginationProps["onChange"] = (page) => {
-    console.log(page);
+    // console.log(page);
+    setFloorPage(page);
   };
 
   const onPageUnitChange: PaginationProps["onChange"] = (page) => {
-    console.log(page);
+    // console.log(page);
+    setUnitPage(page);
   };
 
-  // Modal handlers
-  const handleEditClick = (unit: Unit) => {
-    setCurrentUnit(unit);
-    setSelectedUnitForModal(unit);
-    setIsAddUserModalOpen(true);
-    console.log("EDIT CLICKED - Unit data:", unit);
-    console.log("Unit has owner:", !!unit.unitOwner);
-    console.log("Unit family count:", unit.family);
+  const onAddUserClick = () => {
+    setIsSelectUserModalOpen(true);
   };
 
-  const handleAddMemberClick = (unit: Unit) => {
-    setCurrentUnit(unit);
-    setSelectedUnitForModal(unit);
-    setIsAddUserModalOpen(true);
-    console.log("ADD MEMBER CLICKED - Unit data:", unit);
-    console.log("Unit has owner:", !!unit.unitOwner);
-    console.log("Unit family count:", unit.family);
+  const onSelectUserClose = () => {
+    setIsSelectUserModalOpen(false);
   };
 
-  const handleCloseModal = () => {
-    setIsAddUserModalOpen(false);
-    setSelectedUnitForModal(null);
+  const onRoleSelected = (index: number) => {
+    if (memberData) {
+      const roleId = memberData[index]?.roleId;
+      setCurrentRoleId(roleId);
+    } else {
+      // console.warn("Member data is undefined");
+    }
   };
 
-  // Data
-  const { data: projectData } = getProjectIDQuery();
-  const { data: blockData } = getBlockListQuery();
+  const onAddSuccess = () => {
+    setCurrentUnit(undefined);
+    setIsSelectUserModalOpen(false);
+    refetchUnit();
+  };
 
-  const { data: floorData } = getFloorListQuery({
-    curPage: 1,
-    perPage: 20,
-    blockId: currentBlockId ? currentBlockId : -1,
-    shouldFetch: !!currentBlockId,
-  });
-
-  const { data: unitData, isLoading: isUnitLoading } = getUnitListQuery({
-    curPage: 1,
-    perPage: 20,
-    floorId: currentFloor ? currentFloor.id : -1,
-    shouldFetch: !!currentFloor,
-  });
-
-  const { data: memberData, isLoading: isMemberLoading } = getMemberListQuery({
-    unitId: currentUnit?.id ?? -999,
-    shouldFetch: currentUnit?.family ? currentUnit?.family > 0 : false,
-  });
+  const onDeleteMember = (payload: DeleteMemberPayload) => {
+    deleteMember.mutateAsync(payload).then(() => {
+      refetchMember();
+    });
+  };
 
   // Components
 
@@ -116,45 +130,24 @@ const RoomManageScreen = () => {
     children: null,
   }));
 
-  useEffect(() => {
-    if (blockData !== undefined) {
-      console.log("BLOCK DATA : ", blockData);
-    }
-    if (floorData !== undefined) {
-      console.log("FLOOR DATA : ", floorData);
-    }
-    if (unitData !== undefined) {
-      console.log("UNIT DATA : ", unitData);
-    }
-    if (memberData !== undefined) {
-      console.log("MEMBER DATA : ", memberData);
-    }
-  }, [blockData, floorData, unitData, memberData]);
+  // useEffect(() => {
+  //   if (blockData !== undefined) {
+  //     console.log("BLOCK DATA : ", blockData);
+  //   }
+  //   if (floorData !== undefined) {
+  //     console.log("FLOOR DATA : ", floorData);
+  //   }
+  //   if (unitData !== undefined) {
+  //     console.log("UNIT DATA : ", unitData);
+  //   }
+  //   if (memberData !== undefined) {
+  //     console.log("MEMBER DATA : ", memberData);
+  //   }
+  // }, [blockData, floorData, unitData, memberData]);
 
   useEffect(() => {
     setCurrentBlockId(blockData?.data[0].id);
   }, [blockData]);
-
-  // Helper function เพื่อสร้าง initial members จาก unit data
-  const getInitialMembers = (unit: Unit) => {
-    const members = [];
-
-    // เพิ่มเจ้าของห้องถ้ามี
-    if (unit.unitOwner && unit.unitOwner.givenName) {
-      members.push({
-        id: `owner-${unit.id}`,
-        userId: `owner-user-${unit.id}`,
-        firstName: unit.unitOwner.givenName,
-        lastName: unit.unitOwner.familyName || "",
-        email: unit.unitOwner.email || "",
-        roleId: 1,
-        roleName: "Owner",
-        imageProfile: unit.unitOwner.imageProfile,
-      });
-    }
-
-    return members;
-  };
 
   return (
     <>
@@ -167,7 +160,8 @@ const RoomManageScreen = () => {
         {currentFloor ? (
           <span
             onClick={clearData}
-            className="text-2xl/[40px] font-normal hover:cursor-pointer">
+            className="text-2xl/[40px] font-normal hover:cursor-pointer"
+          >
             {"< Back"}
           </span>
         ) : null}
@@ -218,8 +212,12 @@ const RoomManageScreen = () => {
                       <UnitComponent
                         key={unit.id}
                         unit={unit}
-                        onEditClick={() => handleEditClick(unit)}
-                        onAddMemberClick={() => handleAddMemberClick(unit)}
+                        onEditClick={() => {
+                          setCurrentUnit(unit);
+                        }}
+                        onAddMemberClick={() => {
+                          setCurrentUnit(unit);
+                        }}
                       />
                     ))
                   : null}
@@ -236,23 +234,23 @@ const RoomManageScreen = () => {
         </section>
       </div>
 
-      {/* Add User Modal */}
-      <AddUserModal
-        isOpen={isAddUserModalOpen}
-        onClose={handleCloseModal}
-        unitInfo={
-          selectedUnitForModal
-            ? {
-                address: selectedUnitForModal.roomAddress,
-                roomNo: selectedUnitForModal.unitNo,
-                unitId: selectedUnitForModal.id,
-              }
-            : undefined
-        }
-        // ส่งข้อมูลสมาชิกเริ่มต้นจาก unit data
-        initialMembers={
-          selectedUnitForModal ? getInitialMembers(selectedUnitForModal) : []
-        }
+      <RoomManageModal
+        isModalOpen={currentUnit ? true : false}
+        onCancel={() => {
+          setCurrentUnit(undefined);
+        }}
+        unitData={currentUnit}
+        memberData={memberData}
+        onAdd={onAddUserClick}
+        onDelete={onDeleteMember}
+        onRoleSelected={onRoleSelected}
+      />
+      <SelectUserModal
+        open={isSelectUserModalOpen}
+        unitId={currentUnit?.id ?? -1}
+        roleId={currentRoleId}
+        onClose={onSelectUserClose}
+        onSuccess={onAddSuccess}
       />
     </>
   );

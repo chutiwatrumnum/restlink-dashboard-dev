@@ -1,9 +1,11 @@
 // Components
-import { Unit } from "../../../stores/interfaces/Management";
-import { Pagination, Button } from "antd";
+import { Button } from "antd";
 // Icons
 import IconLoader from "../../../components/common/IconLoader";
 import { EditOutlined } from "@ant-design/icons";
+
+// Types
+import { Unit } from "../../../stores/interfaces/Management";
 
 type UnitComponentType = {
   unit: Unit;
@@ -25,11 +27,13 @@ const UnitComponent = (props: UnitComponentType) => {
         <span className="text-2xl font-[500] text-[var(--primary-color)]">
           Address : {roomAddress ?? "XXX/XX"}
         </span>
-        <Button
-          icon={<EditOutlined className="iconButton" />}
-          type="text"
-          onClick={onEditClick}
-        />
+        {unitOwner ? (
+          <Button
+            icon={<EditOutlined className="iconButton" />}
+            type="text"
+            onClick={onEditClick}
+          />
+        ) : null}
       </div>
       <span className="text-lg font-light text-[var(--text-gray)]">
         Unit No. : {unitNo ?? "123(XX)"}
