@@ -60,7 +60,7 @@ export const maintenanceGuide = createModel<RootModel>()({
           result.data.result.totalFolder + result.data.result.totalFiles
         );
         dispatch.maintenanceGuide.updateFoldersLengthState(
-          result.data.result.totalFolder
+          result.data.result.folder.length
         );
         dispatch.maintenanceGuide.updateTableDataState([
           ...result.data.result.folder,

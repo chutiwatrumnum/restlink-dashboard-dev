@@ -1,4 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
+import { usePagination } from "../../../utils/hooks/usePagination";
+
 import { Button, Row, Pagination, Tag, Col, Tabs, Select } from "antd";
 import Header from "../../../components/templates/Header";
 import ServiceCenterTable from "../components/ServiceCenterTable";
@@ -6,7 +8,6 @@ import ServiceCenterEditModal from "../components/ServiceCenterEditModal";
 import { EditIcon } from "../../../assets/icons/Icons";
 import type { ColumnsType } from "antd/es/table";
 import type { PaginationProps, TabsProps } from "antd";
-import type { RangePickerProps } from "antd/es/date-picker";
 import {
   useServiceCenterServiceListQuery,
   useServiceCenterStatusTypeQuery,
@@ -30,15 +31,24 @@ interface ExtendedServiceCenterDataType extends ServiceCenterDataType {
 }
 
 const ServiceCenterLists = () => {
-  // variables
+  // Initial
+  const {
+    curPage,
+    perPage,
+    pageSizeOptions,
+    setCurPage,
+    setPerPage,
+    onPageChange: handlePageChange,
+    deleteAndHandlePagination,
+  } = usePagination();
+
+  // States
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editData, setEditData] =
     useState<ExtendedServiceCenterDataType | null>(null);
   const [search, setSearch] = useState("");
   const [unitNo, setUnitNo] = useState("");
   const [unit, setunitDetail] = useState<unitDetail[]>([]);
-  const [curPage, setCurPage] = useState(1);
-  const [perPage, setPerPage] = useState(5);
   const [startMonth, setStartMonth] = useState();
   const [endMonth, setEndMonth] = useState();
   const [SelectServiceCenterIssueType, setSelectServiceCenterIssueType] =
@@ -89,14 +99,8 @@ const ServiceCenterLists = () => {
   const { data: selectIssueList, isSuccess: isSuccessIssue } =
     useServiceCenterIssueTypeQuery();
 
-  const onSearch = (value: string) => {
-    setSearch(value);
-    setCurPage(1);
-    setPerPage(5);
-  };
-
   const onPageChange = (page: number) => {
-    setCurPage(page);
+    handlePageChange(page);
   };
 
   const onEdit = useCallback(
@@ -145,7 +149,7 @@ const ServiceCenterLists = () => {
           );
           if (selectedAppointment) {
             editData.appointmentDateConfirmAppointmentID =
-              selectedAppointment.id; 
+              selectedAppointment.id;
             if (selectedAppointment.startTime && selectedAppointment.endTime) {
               editData.appointmentDateConfirmAppointment = `${selectedAppointment.date} ${selectedAppointment.startTime}-${selectedAppointment.endTime}`;
             } else {
@@ -174,7 +178,7 @@ const ServiceCenterLists = () => {
             requestNewAppointment: typeof editData.requestNewAppointment,
             requestReSchedule: typeof editData.requestReSchedule,
           },
-        })
+        });
         setEditData({ ...editData });
       } catch (error) {
         console.error("❌ Failed to fetch latest data from API:", error);
@@ -204,19 +208,6 @@ const ServiceCenterLists = () => {
     setEditData(null);
     refetchServiceCenterList();
   }, [refetchServiceCenterList]);
-
-  const onDateSelect = (values: RangePickerProps["value"]) => {
-    let start: any, end: any;
-    values?.forEach((value, index) => {
-      if (index === 0) {
-        start = value?.format("YYYY-MM");
-      } else {
-        end = value?.format("YYYY-MM");
-      }
-    });
-    setStartMonth(start);
-    setEndMonth(end);
-  };
 
   const fetchData: VoidFunction = async () => {
     if (selectList) {
@@ -415,13 +406,14 @@ const ServiceCenterLists = () => {
       <Row
         className="announceBottomActionContainer"
         justify="end"
-        align="middle">
+        align="middle"
+      >
         <Pagination
           defaultCurrent={1}
           pageSize={perPage}
           onChange={onPageChange}
           total={dataServiceCenterList?.total}
-          pageSizeOptions={[10, 20, 40, 80, 100]}
+          pageSizeOptions={pageSizeOptions}
           showSizeChanger={true}
           onShowSizeChange={onShowSizeChange}
         />

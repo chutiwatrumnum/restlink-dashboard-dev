@@ -147,7 +147,6 @@ export const userAuth = createModel<RootModel>()({
           throw "refresh token not found";
         }
 
-        console.log("🔄 Attempting to refresh token...");
         const res = await axios.post("/auth/dashboard/refresh-token", {
           refreshToken: refreshToken,
         });
@@ -161,10 +160,7 @@ export const userAuth = createModel<RootModel>()({
           console.error("No access_token in response:", res.data);
           throw "access_token not found";
         }
-
-        console.log("✅ Token refreshed successfully");
         encryptStorage.setItem("access_token", res.data.access_token);
-
         // อัพเดท refresh token ใหม่ถ้ามี
         if (res.data.refresh_token) {
           encryptStorage.setItem("refreshToken", res.data.refresh_token);

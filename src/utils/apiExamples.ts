@@ -1,15 +1,47 @@
 // ตัวอย่างการใช้งาน axios instances ต่างๆ
-import { axiosMain, axiosSecondary, axiosLocation, locationServices, getAxiosInstance } from '../configs';
+import axios from 'axios';
 
-// ตัวอย่างที่ 1: ใช้ axios หลัก (main)
+// Utility function สำหรับ retry logic
+export const apiWithRetry = async (
+  apiCall: () => Promise<any>, 
+  maxRetries: number = 3, 
+  delay: number = 1000
+): Promise<any> => {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const result = await apiCall();
+      return result;
+    } catch (error: any) {
+      console.warn(`🔄 API attempt ${attempt}/${maxRetries} failed:`, error.message);
+      
+      // ถ้าเป็น timeout หรือ network error และยังมี retry เหลือ
+      if (
+        (error.code === 'ECONNABORTED' || error.message.includes('timeout') || error.message.includes('Network Error')) 
+        && attempt < maxRetries
+      ) {
+        console.log(`⏳ Retrying in ${delay}ms...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+        delay *= 2; // เพิ่ม delay แบบ exponential backoff
+        continue;
+      }
+      
+      // ถ้าไม่ใช่ error ที่ retry ได้ หรือ retry หมดแล้ว
+      throw error;
+    }
+  }
+};
+
+// ตัวอย่างที่ 1: ใช้ axios หลัก (main) พร้อม retry
 export const useMainApi = async () => {
   try {
-    // ใช้ axios หลักสำหรับ API ทั่วไป
-    const response = await axiosMain.get('/users');
+    const result = await apiWithRetry(async () => {
+      const response = await axios.get('/users');
     console.log('📡 Main API response:', response.data);
     return response.data;
+    });
+    return result;
   } catch (error) {
-    console.error('❌ Main API error:', error);
+    console.error('❌ Main API error after retries:', error);
     throw error;
   }
 };
@@ -18,7 +50,7 @@ export const useMainApi = async () => {
 export const useSecondaryApi = async () => {
   try {
     // ใช้ axios secondary ที่เปลี่ยน base URL อัตโนมัติ
-    const response = await axiosSecondary.get('/projects');
+    const response = await axios.get('/projects');
     console.log('📡 Secondary API response:', response.data);
     return response.data;
   } catch (error) {
@@ -27,33 +59,61 @@ export const useSecondaryApi = async () => {
   }
 };
 
-// ตัวอย่างที่ 3: ใช้ axios location (เฉพาะสำหรับ location services)
-export const useLocationApi = async (unitID: number) => {
+// ตัวอย่างที่ 3: ใช้ location services
+export const useLocationApi = async () => {
   try {
-    // วิธีที่ 1: ใช้ axios instance โดยตรง
-    const response = await axiosLocation.get(`/address/${unitID}`);
-    console.log('🗺️ Location API response:', response.data);
-    
-    // วิธีที่ 2: ใช้ helper functions
-    const addressData = await locationServices.getAddress(unitID);
-    console.log('🗺️ Address data:', addressData);
-    
-    return addressData;
+    // ใช้ location services สำหรับ API ที่เกี่ยวข้องกับตำแหน่ง
+    const response = await axios.get('/locations');
+    console.log('📍 Location API response:', response.data);
+    return response.data;
   } catch (error) {
     console.error('❌ Location API error:', error);
     throw error;
   }
 };
 
-// ตัวอย่างที่ 4: ใช้ getAxiosInstance สำหรับเลือก axios instance แบบ dynamic
-export const useDynamicApi = async (apiType: 'main' | 'secondary' | 'location', endpoint: string) => {
+// ตัวอย่างที่ 4: ใช้ axios instance แบบ dynamic พร้อม retry
+export const useDynamicApi = async (endpoint: string) => {
   try {
-    const axiosInstance = getAxiosInstance(apiType);
-    const response = await axiosInstance.get(endpoint);
-    console.log(`📡 ${apiType} API response:`, response.data);
+    const result = await apiWithRetry(async () => {
+      const response = await axios.get(endpoint);
+      console.log(`📡 API response:`, response.data);
     return response.data;
+    });
+    return result;
   } catch (error) {
-    console.error(`❌ ${apiType} API error:`, error);
+    console.error(`❌ API error after retries:`, error);
+    throw error;
+  }
+};
+
+// Helper function สำหรับจัดการ timeout แบบ manual
+export const withTimeout = <T>(
+  promise: Promise<T>, 
+  timeoutMs: number = 30000,
+  timeoutMessage: string = 'Request timeout'
+): Promise<T> => {
+  return Promise.race([
+    promise,
+    new Promise<never>((_, reject) => {
+      setTimeout(() => {
+        reject(new Error(timeoutMessage));
+      }, timeoutMs);
+    })
+  ]);
+};
+
+// ตัวอย่างการใช้ manual timeout
+export const useApiWithManualTimeout = async () => {
+  try {
+    const result = await withTimeout(
+      axios.get('/slow-endpoint'),
+      15000, // 15 วินาที
+      'API call took too long'
+    );
+    return result.data;
+  } catch (error) {
+    console.error('❌ API timeout or error:', error);
     throw error;
   }
 };
@@ -62,9 +122,9 @@ export const useDynamicApi = async (apiType: 'main' | 'secondary' | 'location', 
 export const postLocationData = async (locationData: any) => {
   try {
     // ใช้ location services helper
-    const result = await locationServices.postLocation(locationData);
-    console.log('✅ Location posted successfully:', result);
-    return result;
+    const result = await axios.post('/locations', locationData);
+    console.log('✅ Location posted successfully:', result.data);
+    return result.data;
   } catch (error) {
     console.error('❌ Error posting location:', error);
     throw error;
@@ -85,7 +145,7 @@ export const useAxiosInComponent = () => {
       
       // สำหรับข้อมูล location เฉพาะ
       if (window.location.pathname.includes('add-location')) {
-        const locationData = await useLocationApi(123);
+        const locationData = await useLocationApi();
         console.log('📍 Location data fetched:', locationData);
       }
       

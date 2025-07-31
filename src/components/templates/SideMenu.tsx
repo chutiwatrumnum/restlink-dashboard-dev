@@ -184,6 +184,8 @@ const SideMenu = ({
       okMessage: "Yes",
       cancelMessage: "Cancel",
       onOk: async () => {
+        dispatch.setupProject.setClearData();
+        dispatch.setupProject.setStep(0);
         await dispatch.userAuth.onLogout();
         navigate("/auth", { replace: true });
       },

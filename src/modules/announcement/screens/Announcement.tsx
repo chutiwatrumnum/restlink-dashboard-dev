@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
-import { Button, Row, Pagination, Tabs, message, Flex } from "antd";
+import { usePagination } from "../../../utils/hooks/usePagination";
+
+import { Button, Row, Pagination, Tabs, message } from "antd";
 import Header from "../../../components/templates/Header";
 import DatePicker from "../../../components/common/DatePicker";
 import SearchBox from "../../../components/common/SearchBox";
@@ -14,7 +16,7 @@ import { Dispatch, RootState } from "../../../stores";
 import ConfirmModal from "../../../components/common/ConfirmModal";
 
 import type { ColumnsType } from "antd/es/table";
-import type { PaginationProps, TabsProps } from "antd";
+import type { TabsProps } from "antd";
 import dayjs from "dayjs";
 import {
   AnnounceFormDataType,
@@ -50,14 +52,20 @@ const Announcement = () => {
       children: null,
     },
   ];
+  const {
+    curPage,
+    perPage,
+    pageSizeOptions,
+    onPageChange,
+    onShowSizeChange,
+    deleteAndHandlePagination,
+  } = usePagination();
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
   const [editData, setEditData] = useState<AnnounceFormDataType>({});
   const [search, setSearch] = useState("");
-  const [curPage, setCurPage] = useState(1);
-  const [perPage, setPerPage] = useState(10);
   const [startDate, setStartDate] = useState();
   const [endDate, setEndDate] = useState();
   const [refresh, setRefresh] = useState(false);
@@ -67,12 +75,7 @@ const Announcement = () => {
 
   // functions
   const onSearch = (value: string) => {
-    // console.log(value);
     setSearch(value);
-  };
-
-  const onPageChange = (page: number) => {
-    setCurPage(page);
   };
 
   const onCreate = () => {
@@ -156,22 +159,18 @@ const Announcement = () => {
       okMessage: "Yes",
       cancelMessage: "Cancel",
       onOk: async () => {
-        await dispatch.announcement.deleteTableData({
-          id: value.id,
-          type: fetchType,
+        await deleteAndHandlePagination({
+          dataLength: data.length,
+          onDelete: async () =>
+            dispatch.announcement.deleteTableData({
+              id: value.id,
+              type: fetchType,
+            }),
+          fetchData: onRefresh,
         });
-        onRefresh();
       },
       onCancel: () => console.log("Cancel"),
     });
-  };
-
-  const onShowSizeChange: PaginationProps["onShowSizeChange"] = (
-    current,
-    pageSize
-  ) => {
-    // console.log(current, pageSize);
-    setPerPage(pageSize);
   };
 
   const onTabsChange = (key: string) => {
@@ -347,10 +346,11 @@ const Announcement = () => {
       >
         <Pagination
           defaultCurrent={1}
+          current={curPage}
           pageSize={perPage}
           onChange={onPageChange}
           total={announcementMaxLength}
-          pageSizeOptions={[10, 20, 40, 80, 100]}
+          pageSizeOptions={pageSizeOptions}
           showSizeChanger={true}
           onShowSizeChange={onShowSizeChange}
         />

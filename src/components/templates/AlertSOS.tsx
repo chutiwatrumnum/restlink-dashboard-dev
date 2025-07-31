@@ -174,7 +174,6 @@ const AlertSOS = ({showToast,isToastExpanded,handleToggleToast,dataEmergency,han
         .animate-toast-slide-in {
           animation: toastSlideIn 0.4s ease-out forwards;
         }
-
       `}</style>
 
     

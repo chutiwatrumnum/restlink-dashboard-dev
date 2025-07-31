@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { usePagination } from "../../../utils/hooks/usePagination";
+
 import { Button, Row, Pagination, Tabs, DatePicker } from "antd";
 import { QrcodeOutlined } from "@ant-design/icons";
 import Header from "../../../components/templates/Header";
@@ -33,7 +35,13 @@ const ReservationList = () => {
   const { reservationListData, reservedListData } = useSelector(
     (state: RootState) => state.facilities
   );
-  // const { accessibility } = useSelector((state: RootState) => state.common);
+  const {
+    curPage,
+    perPage,
+    setCurPage,
+    setPerPage,
+    deleteAndHandlePagination,
+  } = usePagination();
   const defaultColumns: TableColumnsType<ReservedRowListDataType> = [
     {
       title: "Booked by",
@@ -113,15 +121,11 @@ const ReservationList = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isQRModalOpen, setIsQRModalOpen] = useState(false);
   const [facilitiesId, setFacilitiesId] = useState(0);
-  const [curPage, setCurPage] = useState(1);
-  const [perPage, setPerPage] = useState(10);
   const [date, setDate] = useState<string>();
   const [refresh, setRefresh] = useState(false);
   const [items, setItems] = useState<TabsProps["items"]>([]);
   const [qrData, setQrData] = useState<ReservedRowListDataType>();
   const [search, setSearch] = useState("");
-  // const [columns, setColumns] =
-  //   useState<TableColumnsType<ReservedRowListDataType>>(defaultColumns);
 
   // functions
   const onSearch = (value: string) => {
@@ -142,7 +146,6 @@ const ReservationList = () => {
   };
 
   const onQRClick = (record: ReservedRowListDataType) => {
-    // console.log(record);
     setQrData(record);
     setIsQRModalOpen(true);
   };
@@ -194,85 +197,24 @@ const ReservationList = () => {
       okMessage: "Yes",
       cancelMessage: "Cancel",
       onOk: async () => {
-        const result = await dispatch.facilities.deleteReserved([value.id]);
-        if (result) {
-          SuccessModal("Successfully deleted");
-        } else {
-          FailedModal("Something went wrong");
-        }
-        onRefresh();
+        deleteAndHandlePagination({
+          dataLength: reservedListData ? reservedListData?.rows?.length : 0,
+          fetchData: fetchData,
+          onDelete: async () => {
+            const result = await dispatch.facilities.deleteReserved([value.id]);
+            if (result) {
+              SuccessModal("Successfully deleted");
+            } else {
+              FailedModal("Something went wrong");
+            }
+          },
+        });
       },
       onCancel: () => console.log("Cancel"),
     });
   };
 
   const onTabsChange = (key: string) => {
-    // console.log(key);
-    // const newArr = defaultColumns;
-    // if (key === "12") {
-    //   newArr.splice(4, 0, {
-    //     title: "Equipment",
-    //     key: "facilitiesItems",
-    //     align: "center",
-    //     render: (_, record) => {
-    //       return <span>{record.facilitiesItems?.itemName}</span>;
-    //     },
-    //     filters: [
-    //       {
-    //         text: "Excite run 1000",
-    //         value: "Excite run 1000",
-    //       },
-    //       {
-    //         text: "Excite synchro",
-    //         value: "Excite synchro",
-    //       },
-    //     ],
-    //     onFilter: (value, record) =>
-    //       record.facilitiesItems?.itemName
-    //         ? record.facilitiesItems?.itemName.includes(value.toString())
-    //         : false,
-    //   });
-    // } else if (key === "11") {
-    //   newArr.splice(4, 0, {
-    //     title: "Zones",
-    //     key: "facilitiesItems",
-    //     align: "center",
-    //     render: (_, record) => {
-    //       return <span>{record.facilitiesItems?.description}</span>;
-    //     },
-    //     filters: [
-    //       {
-    //         text: "Zone 1",
-    //         value: "Zone 1",
-    //       },
-    //       {
-    //         text: "Zone 2",
-    //         value: "Zone 2",
-    //       },
-    //       {
-    //         text: "Zone 3",
-    //         value: "Zone 3",
-    //       },
-    //       {
-    //         text: "Zone 4",
-    //         value: "Zone 4",
-    //       },
-    //       {
-    //         text: "Zone 5",
-    //         value: "Zone 5",
-    //       },
-    //       {
-    //         text: "Zone 6",
-    //         value: "Zone 6",
-    //       },
-    //     ],
-    //     onFilter: (value, record) =>
-    //       record.facilitiesItems?.itemName
-    //         ? record.facilitiesItems?.itemName.includes(value.toString())
-    //         : false,
-    //   });
-    // }
-    // setColumns(newArr);
     setFacilitiesId(parseInt(key));
   };
 

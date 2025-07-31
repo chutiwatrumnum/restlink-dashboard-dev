@@ -37,10 +37,10 @@ export const ListMember = ({ member, count, idMarker, setIsModalOpen }: ListMemb
                 <h3 className="font-bold text-3xl">{member?.name || '-'}</h3>
                     <div className="flex justify-start items-start w-full">
                         {member?.role === 1 && (
-                            <div className="text-[#5387ea]  !font-medium text-2xl mr-auto">เจ้าของบ้าน</div>
+                            <div className="text-[#5387ea]  !font-medium text-2xl mr-auto">Owner</div>
                         )}
                         {member?.role === 0 && (
-                            <div className="text-[#5e5e5e]  !font-medium text-2xl mr-auto">(ครอบครัว)</div>
+                            <div className="text-[#5e5e5e]  !font-medium text-2xl mr-auto">(Family)</div>
                         )}
                         <div className="flex gap-2">
                             <button 
@@ -48,11 +48,11 @@ export const ListMember = ({ member, count, idMarker, setIsModalOpen }: ListMemb
                             className="  
                             w-[120px] bg-[#47a075] hover:bg-[#008000] 
                             !text-white px-4 py-2 rounded-md text-sm font-semibold cursor-pointer tracking-wider">
-                            สำเร็จ
+                            Success
                             </button>
                             <button className="
                             w-[120px] bg-[#cb3d38] hover:bg-[#FF0000] !text-white font-semibold px-4 py-2 rounded-md text-sm cursor-pointer tracking-wider">
-                            ไม่สำเร็จ ({member?.failedCount })
+                            Failed ({member?.failedCount })
                             </button>
                         </div>
                     </div>
@@ -69,7 +69,7 @@ export const ListMember = ({ member, count, idMarker, setIsModalOpen }: ListMemb
               </span>
               <span className="mr-4 text-2xl mr-auto font-medium">{member?.phone || '-'}</span>
               <span className="text-sm text-gray-500">
-                (โทรครั้งล่าสุด {member?.lastCall || '-'})
+                (Last call {member?.lastCall || '-'})
               </span>
             </div>
           </div>

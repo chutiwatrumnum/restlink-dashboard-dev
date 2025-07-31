@@ -1,12 +1,14 @@
-import { useState, } from "react";
+import { useState } from "react";
+import { usePagination } from "../../../utils/hooks/usePagination";
+
 import Header from "../../../components/templates/Header";
 // import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 // import { useDispatch, useSelector } from "react-redux";
 // import { Dispatch, RootState } from "../../../stores";
 import type { ColumnsType, TableProps } from "antd/es/table";
-import { ModalFormUpdate } from "../components/modalFormUpdate";
-import { warrantyData } from "../dummyData/table";
-import { ExpandedRowRender } from "../components/expand";
+import { ModalFormUpdate } from "../components/ModalFormUpdate";
+import { warrantyData } from "../dummyData/Table";
+import { ExpandedRowRender } from "../components/Expand";
 
 import { VerticalAlignBottomOutlined } from "@ant-design/icons";
 import {
@@ -18,50 +20,49 @@ import {
   Button,
   Table,
   Form,
-  
 } from "antd";
 
-import dayjs from 'dayjs';
+import dayjs from "dayjs";
 
 import {
   WarrantyDataType,
   WarrantyDetailsType,
-  paginationWarranty
+  paginationWarranty,
 } from "../../../stores/interfaces/Warranty";
 
 const WarrantyTracking = () => {
-  // variables
+  // Initial
+  const { curPage, perPage, pageSizeOptions, setCurPage, setPerPage } =
+    usePagination();
   //   const dispatch = useDispatch<Dispatch>();
   //   const data = useSelector((state: RootState) => state.announcement.tableData);
   //   const announcementMaxLength = useSelector(
   //     (state: RootState) => state.announcement.announcementMaxLength
   //   );
-  const [currentPage, setCurrentPage] = useState<number>(1);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [selectedWarranty, setSelectedWarranty] = useState<WarrantyDetailsType | null>(null);
+  const [selectedWarranty, setSelectedWarranty] =
+    useState<WarrantyDetailsType | null>(null);
   // setting pagination Option
-  const pageSizeOptions = [15, 20, 60, 100];
-  
+
   const PaginationConfig = {
     defaultPageSize: pageSizeOptions[0],
     pageSizeOptions: pageSizeOptions,
-    current: currentPage,
+    current: curPage,
     showSizeChanger: true,
     total: warrantyData?.length,
     ...pageSizeOptions,
   };
   let params: paginationWarranty = {
     perPage: pageSizeOptions[0],
-    curPage: currentPage
-  };
-  
-  const [paramsData, setParamsData] = useState<paginationWarranty>(params);
-  const { RangePicker } = DatePicker;
-  
-  const scroll: { x?: number | string } = {
-    x: "10vw"
+    curPage: curPage,
   };
 
+  const [paramsData, setParamsData] = useState<paginationWarranty>(params);
+  const { RangePicker } = DatePicker;
+
+  const scroll: { x?: number | string } = {
+    x: "10vw",
+  };
 
   const dateFormat = "MMMM,YYYY";
   const customFormat: DatePickerProps["format"] = (value) =>
@@ -98,7 +99,7 @@ const WarrantyTracking = () => {
       title: "Email",
       align: "center",
       dataIndex: "email",
-      width: 200
+      width: 200,
     },
     {
       title: "Warranty Lists",
@@ -113,8 +114,8 @@ const WarrantyTracking = () => {
             </Button>
           </Col>
         </Row>
-      )
-    }
+      ),
+    },
   ];
 
   // Actions
@@ -128,8 +129,6 @@ const WarrantyTracking = () => {
   const dowloadVisitorLogs = async () => {
     console.log("dowloadVisitorLogs");
   };
-
-
 
   const [imageUrl, setImageUrl] = useState<string>();
   const [form] = Form.useForm();
@@ -149,8 +148,6 @@ const WarrantyTracking = () => {
     setImageUrl(undefined);
   };
 
-
-
   const onChangeTable: TableProps<WarrantyDataType>["onChange"] = async (
     pagination: any,
     filters,
@@ -160,40 +157,48 @@ const WarrantyTracking = () => {
     params = paramsData;
     params.sort = sorter?.order;
     params.sortBy = sorter?.field;
-    params.curPage = pagination?.current ? pagination?.current : PaginationConfig.current;
-    params.perPage = pagination?.pageSize ? pagination?.pageSize : PaginationConfig.defaultPageSize;
-    await setParamsData(params);
-    await setCurrentPage(params.curPage);
+    params.curPage = pagination?.current
+      ? pagination?.current
+      : PaginationConfig.current;
+    params.perPage = pagination?.pageSize
+      ? pagination?.pageSize
+      : PaginationConfig.defaultPageSize;
+    setParamsData(params);
+    setCurPage(params.curPage);
     // await dispatch.visitor.getTableData(paramsData);
   };
 
   const handleSave = () => {
     const warrantyDetails: unknown = null;
-      setSelectedWarranty(warrantyDetails as WarrantyDetailsType);
-      setIsModalOpen(true);
-  }
+    setSelectedWarranty(warrantyDetails as WarrantyDetailsType);
+    setIsModalOpen(true);
+  };
 
   const handleEditClick = (record: WarrantyDetailsType) => {
     const warrantyDetails: WarrantyDetailsType = {
       ...record,
       warrantyName: record.warrantyName,
       serialNumber: record.serialNumber,
-      purchaseDate: record.purchaseDate ? dayjs(record.purchaseDate).format('YYYY-MM-DD') : '',
-      expireDate: record.expireDate ? dayjs(record.expireDate).format('YYYY-MM-DD') : '',
+      purchaseDate: record.purchaseDate
+        ? dayjs(record.purchaseDate).format("YYYY-MM-DD")
+        : "",
+      expireDate: record.expireDate
+        ? dayjs(record.expireDate).format("YYYY-MM-DD")
+        : "",
       image: record.image,
-      createdAt: record.createdAt || new Date().toISOString()
+      createdAt: record.createdAt || new Date().toISOString(),
     };
     setSelectedWarranty(warrantyDetails);
     setIsModalOpen(true);
   };
 
   const expandTableProps = {
-    handleEdit: handleEditClick
+    handleEdit: handleEditClick,
   };
 
   return (
     <>
-      <ModalFormUpdate 
+      <ModalFormUpdate
         isOpen={isModalOpen}
         onClose={() => {
           setIsModalOpen(false);
@@ -239,8 +244,9 @@ const WarrantyTracking = () => {
         <Col span={24}>
           <Table
             columns={columns}
-            expandable={{ 
-              expandedRowRender: (record) => ExpandedRowRender(expandTableProps)
+            expandable={{
+              expandedRowRender: (record) =>
+                ExpandedRowRender(expandTableProps),
             }}
             pagination={PaginationConfig}
             dataSource={warrantyData}
@@ -255,4 +261,3 @@ const WarrantyTracking = () => {
 };
 
 export default WarrantyTracking;
-

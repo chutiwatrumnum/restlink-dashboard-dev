@@ -193,7 +193,12 @@ const ServiceChat = () => {
       <Header title="Messages" />
       <Tabs defaultActiveKey="all" items={tabItems} onChange={onTabsChange} />
       <Row className="chatRoomContainer">
-        <Col span={8} className="leftSideChatContainer">
+        <Col
+          xs={{ span: 24 }}
+          lg={{ span: 10 }}
+          xxl={{ span: 8 }}
+          className="leftSideChatContainer"
+        >
           <Row className="filterContainer_CR">
             <Col span={20}>
               <Row justify={"space-between"} align={"middle"}>
@@ -254,7 +259,12 @@ const ServiceChat = () => {
             <div className="horizontal-line" />
           </Row>
         </Col>
-        <Col span={16} style={{ height: "100%" }}>
+        <Col
+          xs={{ span: 24 }}
+          lg={{ span: 14 }}
+          xxl={{ span: 16 }}
+          style={{ height: "100%" }}
+        >
           <div style={{ position: "relative", height: "100%" }}>
             <ServiceChatBoxContainer chatData={currentChat} />
           </div>

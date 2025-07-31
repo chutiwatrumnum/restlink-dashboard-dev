@@ -10,7 +10,7 @@ const getAddress = async (unitId: number) => {
                 unitId: unitId
             }
         }
-        const data = await axios.get(`/sos${version}dashboard/address`, obj);
+        const data = await axios.get(`/sos${version}plan/dashboard/marker/address`, obj);
         if (data.status === 200 || data.status === 201) {
             let result = { status: true, ...data.data }
             return result
@@ -23,7 +23,7 @@ const getAddress = async (unitId: number) => {
 
 const getMasterData = async () => {
     try {
-        const data = await axios.get(`/sos${version}dashboard/master-data`);
+        const data = await axios.get(`/sos${version}plan/dashboard/marker/master-data`);
         if (data.status === 200 || data.status === 201) {
             let result = { status: true, ...data.data }
             return result
@@ -37,7 +37,8 @@ const getMasterData = async () => {
 
 const getVillageData = async () => {
     try {
-        const data = await axios.get(`/sos${version}dashboard/plan-info`);
+        // /sos${version}dashboard/plan-info
+        const data = await axios.get(`/sos${version}plan/dashboard/info`);
         if (data.status === 200 || data.status === 201) {
             let result = { status: true, ...data.data }
             return result
@@ -93,7 +94,7 @@ const createVillage = async (data: any) => {
 
 const createMarker = async (data: any) => {
     try {
-        const response = await axios.post(`/sos${version}dashboard/village/marker`, data);
+        const response = await axios.post(`/sos${version}plan/dashboard/marker`, data);
         if (response.status === 200 || response.status === 201) {
             let result = { status: true, ...response.data }
             return result
@@ -107,7 +108,7 @@ const createMarker = async (data: any) => {
 
 const updateMarker = async (data: any) => {
     try {
-        const response = await axios.put(`/sos${version}dashboard/marker`, data);
+        const response = await axios.put(`/sos${version}plan/dashboard/marker`, data);
         if (response.status === 200 || response.status === 201) {
             let result = { status: true, ...response.data }
             return result

@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from "react";
+import { usePagination } from "../../../utils/hooks/usePagination";
+
 import Header from "../../../components/templates/Header";
 import { Table } from "antd";
 import type { ColumnsType, TableProps } from "antd/es/table";
@@ -9,11 +11,7 @@ import {
 } from "../service/api/EventLogsServiceAPI";
 import { Row, Col, DatePicker, Input, Button, Modal, Switch } from "antd";
 import type { DatePickerProps } from "antd";
-import {
-  DeleteOutlined,
-  EditOutlined,
-  VerticalAlignBottomOutlined,
-} from "@ant-design/icons";
+import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import CreateAddEventLog from "../components/CreateAddEventLog";
 import EditEventLog from "../components/EditEventLog";
@@ -31,65 +29,26 @@ const EventLogs = () => {
   const { loading, tableDataEventLog, total } = useSelector(
     (state: RootState) => state.eventLog
   );
-  const [currentPage, setCurrentPage] = useState<number>(1);
-  // setting pagination Option
-  const pageSizeOptions = [15, 30, 60, 100];
+  const { curPage, perPage, setCurPage, deleteAndHandlePagination } =
+    usePagination();
   const PaginationConfig = {
-    defaultPageSize: pageSizeOptions[0],
-    pageSizeOptions: pageSizeOptions,
-    current: currentPage,
+    defaultPageSize: perPage,
+    current: curPage,
     showSizeChanger: false,
     total: total,
   };
   let params: conditionPage = {
-    perPage: pageSizeOptions[0],
-    curPage: currentPage,
+    perPage: perPage,
+    curPage: curPage,
   };
-  const [rerender, setRerender] = useState<boolean>(true);
-  const [dataEdit, setDataEdit] = useState<dataEventLogsType | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isModalCreate, setIsModalCreate] = useState(false);
-  const [paramsData, setParamsData] = useState<conditionPage>(params);
-  const dispatch = useDispatch<Dispatch>();
-  const { RangePicker } = DatePicker;
   const customFormat: DatePickerProps["format"] = (value) =>
     `Month : ${value.format(dateFormat)}`;
   const dateFormat = "MMMM,YYYY";
-
   const { Search } = Input;
   const scroll: { x?: number | string } = {
-    x: 1500,
+    x: "max-content",
   };
-  useEffect(() => {
-    (async function () {
-      await setParamsData(params);
-      await dispatch.eventLog.getTableDataEventLogs(paramsData);
-    })();
-  }, [rerender]);
 
-  const onChangeTable: TableProps<dataEventLogsType>["onChange"] = async (
-    pagination: any,
-    sorter: any
-  ) => {
-    params = paramsData;
-    params.sort = sorter?.order;
-    params.sortBy = sorter?.field;
-    params.curPage = pagination?.current
-      ? pagination?.current
-      : PaginationConfig.current;
-    params.perPage = pagination?.pageSize
-      ? pagination?.pageSize
-      : PaginationConfig.defaultPageSize;
-    await setParamsData(params);
-    await setCurrentPage(params.curPage);
-    await dispatch.eventLog.getTableDataEventLogs(paramsData);
-  };
-  const onSearch = async (value: string) => {
-    params = paramsData;
-    params.search = value;
-    await setParamsData(params);
-    await dispatch.eventLog.getTableDataEventLogs(paramsData);
-  };
   const columns: ColumnsType<dataEventLogsType> = [
     {
       title: "Title",
@@ -228,15 +187,49 @@ const EventLogs = () => {
             value={record.key}
             type="text"
             icon={<DeleteOutlined />}
-            onClick={showDeleteConfirm}></Button>
+            onClick={showDeleteConfirm}
+          ></Button>
         </>
       ),
     },
   ];
+  // States
+  const [rerender, setRerender] = useState<boolean>(true);
+  const [dataEdit, setDataEdit] = useState<dataEventLogsType | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalCreate, setIsModalCreate] = useState(false);
+  const [paramsData, setParamsData] = useState<conditionPage>(params);
+  const dispatch = useDispatch<Dispatch>();
+  const { RangePicker } = DatePicker;
+
+  const onChangeTable: TableProps<dataEventLogsType>["onChange"] = async (
+    pagination: any,
+    sorter: any
+  ) => {
+    params = paramsData;
+    params.sort = sorter?.order;
+    params.sortBy = sorter?.field;
+    params.curPage = pagination?.current
+      ? pagination?.current
+      : PaginationConfig.current;
+    params.perPage = pagination?.pageSize
+      ? pagination?.pageSize
+      : PaginationConfig.defaultPageSize;
+    setParamsData(params);
+    setCurPage(params.curPage);
+    await dispatch.eventLog.getTableDataEventLogs(paramsData);
+  };
+
+  const onSearch = async (value: string) => {
+    params = paramsData;
+    params.search = value;
+    await setParamsData(params);
+    await dispatch.eventLog.getTableDataEventLogs(paramsData);
+  };
 
   const editButton = async (data: dataEventLogsType) => {
-    await setDataEdit(data);
-    await setIsModalOpen(true);
+    setDataEdit(data);
+    setIsModalOpen(true);
   };
 
   const showDeleteConfirm = ({ currentTarget }: any) => {
@@ -249,13 +242,20 @@ const EventLogs = () => {
       cancelText: "Cancel",
       centered: true,
       async onOk() {
-        const statusDeleted = await deleteEventLogsById(currentTarget.value);
-        if (statusDeleted) {
-          SuccessModal("Event logs has been successfully deleted.");
-          setRerender(!rerender);
-        } else {
-          FailedModal("Failed deleted");
-        }
+        deleteAndHandlePagination({
+          dataLength: tableDataEventLog.length,
+          fetchData: fetchData,
+          onDelete: async () => {
+            const statusDeleted = await deleteEventLogsById(
+              currentTarget.value
+            );
+            if (statusDeleted) {
+              SuccessModal("Event logs has been successfully deleted.");
+            } else {
+              FailedModal("Failed deleted");
+            }
+          },
+        });
       },
       onCancel() {
         console.log("Cancel");
@@ -296,7 +296,7 @@ const EventLogs = () => {
       async onOk() {
         const statusDeleted = await changeLockedById(data);
         if (statusDeleted) {
-           SuccessModal("Successfully locked");
+          SuccessModal("Successfully locked");
         } else {
           FailedModal("Failed locked");
         }
@@ -308,36 +308,14 @@ const EventLogs = () => {
     });
   };
 
-  const exportEventLogs = () => {
-    confirm({
-      title: "Confirm action",
-      icon: null,
-      content: "Are you sure you want to export this file?",
-      okText: "Yes",
-      okType: "primary",
-      cancelText: "Cancel",
-      centered: true,
-      async onOk() {
-        const statusSuccess = await downloadEventLogs();
-        // if (statusSuccess) {
-        //   dispatch.common.updateSuccessModalState({
-        //     open: true,
-        //     text: "Successfully deleted",
-        //   });
-        //   await initdata(paramsAPI);
-        // } else {
-        //   dispatch.common.updateSuccessModalState({
-        //     open: true,
-        //     status: "error",
-        //     text: "Failed deleted",
-        //   });
-        // }
-      },
-      onCancel() {
-        console.log("Cancel");
-      },
-    });
+  const fetchData = async () => {
+    setParamsData(params);
+    await dispatch.eventLog.getTableDataEventLogs(params);
   };
+
+  useEffect(() => {
+    fetchData();
+  }, [rerender]);
 
   return (
     <>
@@ -353,7 +331,8 @@ const EventLogs = () => {
         </Col>
         <Col
           span={10}
-          style={{ display: "flex", justifyContent: "flex-start" }}>
+          style={{ display: "flex", justifyContent: "flex-start" }}
+        >
           <Search
             placeholder="Search by title"
             allowClear
@@ -364,25 +343,19 @@ const EventLogs = () => {
         </Col>
 
         <Col span={4} style={{ display: "flex", justifyContent: "flex-end" }}>
-          {/* <Button
-            type="primary"
-            style={{ marginRight: 10 }}
-            onClick={exportEventLogs}>
-            Export
-          </Button> */}
-
           <Button
             type="primary"
             onClick={async () => {
-              await setIsModalCreate(true);
-            }}>
+              setIsModalCreate(true);
+            }}
+          >
             Add new
           </Button>
           <CreateAddEventLog
             callBack={async (isOpen: boolean, created: boolean) => {
-              await setIsModalCreate(isOpen);
+              setIsModalCreate(isOpen);
               if (created) {
-                await setRerender(!rerender);
+                setRerender(!rerender);
               }
             }}
             isOpen={isModalCreate}
@@ -403,9 +376,9 @@ const EventLogs = () => {
       </Row>
       <EditEventLog
         callBack={async (isOpen: boolean, saved: boolean) => {
-          await setIsModalOpen(isOpen);
+          setIsModalOpen(isOpen);
           if (saved) {
-            await setRerender(!rerender);
+            setRerender(!rerender);
           }
         }}
         isOpen={isModalOpen}

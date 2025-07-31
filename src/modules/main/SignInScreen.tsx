@@ -21,6 +21,9 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import { Dispatch, RootState } from "../../stores";
 import { requiredRule } from "../../utils/formRule";
+import { getProject } from "../setupProjectFirst/service/api/SetupProject";
+
+
 
 const { Title } = Typography;
 
@@ -35,6 +38,11 @@ const SignInScreen = () => {
   const dispatch = useDispatch<Dispatch>();
   const navigate = useNavigate();
   const { isAuth } = useSelector((state: RootState) => state.userAuth);
+  const { step,projectData } = useSelector((state: RootState) => state.setupProject);
+
+  
+
+
   const [authCode, setAuthCode] = useState<string>("");
   const [validateCode, setValidateCode] = useState<string>("");
   const [loading, setLoading] = useState(false);
@@ -46,14 +54,50 @@ const SignInScreen = () => {
 
   // Redirect ถ้า login แล้ว
   useEffect(() => {
-    if (isAuth) {
-      navigate("/dashboard/profile", { replace: true });
+    const  redirectDashboard = async () => { 
+      if (isAuth) {
+        const responseStep = await dispatch.setupProject.getStepCondoModel(0);
+        if(responseStep !== 3){
+          checkSetupProject();
+        }
+        else{
+          navigate("/dashboard/profile", { replace: true });
+        }
+      }
     }
+    redirectDashboard()
   }, [isAuth, navigate]);
 
   const handleLogin = async () => {
     startGoogleLogin();
   };
+
+
+  const checkSetupProject = async () => {
+    if(step !== 3){
+      const response = await getProject() 
+      let projectType 
+      if(response.status){
+        dispatch.setupProject.setProjectData(response || {});
+        projectType = response?.projectType?.nameCode || '';
+        const strType = projectType.split('_');
+        projectType = strType[strType.length - 1];       
+        if(projectType === 'condo'){
+          navigate('/setup-project/upload-number-building', { replace: true });
+        }
+        else if(projectType === 'village'){
+          navigate('/setup-project/upload-plan', { replace: true });
+        }
+      } 
+      else{
+        dispatch.setupProject.setProjectData({});
+      }
+    }
+    else {
+      navigate("/dashboard/profile", { replace: true });
+    }
+  }
+
 
   const handleGetAccessToken = async () => {
     if (authCode) {
@@ -61,6 +105,7 @@ const SignInScreen = () => {
         code: authCode,
         redirectUrl: window.location.origin + window.location.pathname,
       };
+      // await checkSetupProject();
       await postAuth.mutateAsync(payload);
     }
   };
@@ -86,7 +131,6 @@ const SignInScreen = () => {
   };
 
   const onFinishFailed = (errorInfo: any) => {
-    console.log("Failed:", errorInfo);
     callFailedModal("Please check your input and try again.");
   };
 
@@ -241,15 +285,11 @@ const SignInScreen = () => {
 
       <SignUpModal
         onOk={onSignUpOk}
-        onClose={() => {
-          console.log("cancel");
-        }}
+        onClose={() => {}}
       />
       <ConfirmDetailModal
         onOk={onJoinConfirm}
-        onClose={() => {
-          console.log("cancel");
-        }}
+        onClose={() => {}}
       />
     </div>
   );

@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { usePagination } from "../../../utils/hooks/usePagination";
+
 import { Button, Row, Col } from "antd";
 import Header from "../../../components/templates/Header";
 import DatePicker from "../../../components/common/DatePicker";
@@ -25,21 +27,21 @@ const ResidentInformationMain = () => {
   const { loading, tableData, total } = useSelector(
     (state: RootState) => state.resident
   );
+  const { curPage, pageSizeOptions, setCurPage, deleteAndHandlePagination } =
+    usePagination();
 
   // States
-  const [currentPage, setCurrentPage] = useState<number>(1);
   // setting pagination Option
-  const pageSizeOptions = [10, 20, 40, 80, 100];
   const PaginationConfig = {
     defaultPageSize: pageSizeOptions[0],
     pageSizeOptions: pageSizeOptions,
-    current: currentPage,
+    current: curPage,
     showSizeChanger: true,
     total: total,
   };
   let params: conditionPage = {
     perPage: pageSizeOptions[0],
-    curPage: currentPage,
+    curPage: curPage,
     verifyByJuristic: true,
     reject: false,
     isActive: true,
@@ -224,7 +226,7 @@ const ResidentInformationMain = () => {
         ? pagination?.pageSize
         : PaginationConfig.defaultPageSize;
       setParamsData(params);
-      setCurrentPage(params.curPage);
+      setCurPage(params.curPage);
       await dispatch.resident.getTableData(paramsData);
     };
 
@@ -234,13 +236,19 @@ const ResidentInformationMain = () => {
       okMessage: "Yes",
       cancelMessage: "Cancel",
       onOk: async () => {
-        const statusDeleted = await deleteResidentId(currentTarget.value);
-        if (statusDeleted) {
-          SuccessModal("Successfully deleted");
-        } else {
-          FailedModal("Failed deleted");
-        }
-        setRerender(!rerender);
+        await deleteAndHandlePagination({
+          dataLength: tableData.length,
+          onDelete: async () => {
+            const statusDeleted = await deleteResidentId(currentTarget.value);
+            if (statusDeleted) {
+              SuccessModal("Successfully deleted");
+            } else {
+              FailedModal("Failed deleted");
+            }
+            setRerender(!rerender);
+          },
+          fetchData: fetchData,
+        });
       },
       onCancel: () => {
         console.log("Cancel");
@@ -248,16 +256,22 @@ const ResidentInformationMain = () => {
     });
   };
 
+  const fetchData = async () => {
+    await dispatch.resident.getTableData(paramsData);
+  };
+
   // Actions
   useEffect(() => {
     (async function () {
       setParamsData(params);
-      await dispatch.resident.getTableData(paramsData);
+      await fetchData();
     })();
     // console.log(tableData);
   }, [rerender]);
 
   const importExcel = ({ currentTarget }: any) => {};
+
+  console.log(tableData.length);
 
   return (
     <>

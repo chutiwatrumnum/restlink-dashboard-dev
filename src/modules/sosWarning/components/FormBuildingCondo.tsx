@@ -25,8 +25,8 @@ const FormVillageLocation = ({ onCancel, createdItem }: FormBuildingCondoProps) 
                 <div className="mb-4 p-3 bg-green-100 border border-green-300 rounded-md">
                     <div className="text-sm text-green-800">
                         ✅ {createdItem.data.id ? 
-                            `กำลังแก้ไข ${createdItem.type === 'marker' ? 'Marker' : 'Zone'} "${createdItem.data.name}"` :
-                            `สร้าง ${createdItem.type === 'marker' ? 'Marker' : 'Zone'} "${createdItem.data.name}" เรียบร้อยแล้ว`
+                            `Editing ${createdItem.type === 'marker' ? 'Marker' : 'Zone'} "${createdItem.data.name}"` :
+                            `Created ${createdItem.type === 'marker' ? 'Marker' : 'Zone'} "${createdItem.data.name}" successfully`
                         }
                     </div>
                 </div>
@@ -41,7 +41,7 @@ const FormVillageLocation = ({ onCancel, createdItem }: FormBuildingCondoProps) 
                                 ?.toLowerCase()
                                 ?.includes(input.toLowerCase()) ?? false
                         }
-                        placeholder="ค้นหาหรือเลือก address"
+                        placeholder="Search or select address"
                     >
 
                     </Select>

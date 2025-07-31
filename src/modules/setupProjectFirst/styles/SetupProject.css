@@ -1,0 +1,86 @@
+/* Setup Project Font */
+@import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
+
+.font-sarabun {
+  font-family: 'Sarabun', sans-serif !important;
+}
+
+/* Custom table styles to remove border-radius from header */
+.custom-table-no-radius .ant-table-thead > tr > th {
+    border-radius: 0 !important;
+    border-top-left-radius: 0 !important;
+    border-top-right-radius: 0 !important;
+    border-bottom-left-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+}
+
+.custom-table-no-radius .ant-table-thead > tr > th:first-child {
+    border-top-left-radius: 0 !important;
+    border-bottom-left-radius: 0 !important;
+}
+
+.custom-table-no-radius .ant-table-thead > tr > th:last-child {
+    border-top-right-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+}
+
+/* Additional override for Ant Design table container */
+.custom-table-no-radius .ant-table-container {
+    border-radius: 0 !important;
+}
+
+.custom-table-no-radius .ant-table {
+    border-radius: 0 !important;
+}
+
+.custom-table-no-radius .ant-table-tbody > tr > td:first-child {
+    border-bottom-left-radius: 0 !important;
+}
+
+.custom-table-no-radius .ant-table-tbody > tr > td:last-child {
+    border-bottom-right-radius: 0 !important;
+}
+
+/* Setup Success Modal */
+.setup-success-modal .ant-modal-content {
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.setup-success-modal .ant-modal-body {
+    padding: 0;
+}
+
+/* Unit Preview Table Header */
+.unit-preview-table .ant-table-thead > tr > th {
+    border: none !important;
+    border-right: none !important;
+    border-left: none !important;
+    border-top: none !important;
+    border-bottom: none !important;
+    border-inline: none !important;
+    border-inline-end: none !important;
+    border-inline-start: none !important;
+    background-color: #A6CBFF !important;
+}
+
+.unit-preview-table .ant-table-thead > tr > th::before {
+    display: none !important;
+}
+
+.unit-preview-table .ant-table-thead > tr > th::after {
+    display: none !important;
+}
+
+/* Table row borders */
+.unit-preview-table .ant-table-tbody > tr > td {
+    border-top: none !important;
+    border-left: none !important;
+    border-right: none !important;
+    border-bottom: 1px solid #f0f0f0 !important;
+}
+
+/* Remove border from last row */
+.unit-preview-table .ant-table-tbody > tr:last-child > td {
+    border-bottom: none !important;
+}

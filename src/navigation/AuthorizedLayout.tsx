@@ -1,5 +1,5 @@
 import { useEffect, useState, useLayoutEffect } from "react";
-import { useOutlet, useNavigate } from "react-router-dom";
+import { useOutlet, useLocation } from "react-router-dom";
 import { Layout } from "antd";
 import { useDispatch, useSelector } from "react-redux";
 import { Dispatch, RootState } from "../stores";
@@ -9,6 +9,8 @@ import "./styles/authorizedLayout.css";
 import { io, Socket } from "socket.io-client";
 import AlertSOS from "../components/templates/AlertSOS";
 import { getEmergency } from "../modules/sosWarning/service/api/SOSwarning";
+import { useNavigate } from "react-router-dom";
+
 
 const { Sider, Content } = Layout;
 
@@ -17,6 +19,7 @@ function AuthorizedLayout() {
   const { isAuth } = useSelector((state: RootState) => state.userAuth);
   const dispatch = useDispatch<Dispatch>();
   const outlet = useOutlet();
+  const location = useLocation(); // เพิ่ม useLocation hook
 
   const [collapsed, setCollapsed] = useState(() => {
     const savedState = localStorage.getItem("sideMenuCollapsed");
@@ -28,6 +31,9 @@ function AuthorizedLayout() {
   const [showToast, setShowToast] = useState<boolean>(false);
   const [isToastExpanded, setIsToastExpanded] = useState<boolean>(false);
   const [reload, setReload] = useState(false);
+
+
+
 
   const handleHideToast = () => {
     setShowToast(false);
@@ -55,11 +61,6 @@ function AuthorizedLayout() {
   useLayoutEffect(() => {
     const checkAuthAndInitialize = async () => {
       try {
-        console.log("🔍 AuthorizedLayout checking auth:", {
-          isAuth,
-          currentPath: window.location.pathname,
-        });
-
         // Check Access token
         const access_token = await encryptStorage.getItem("access_token");
         if (
@@ -73,13 +74,11 @@ function AuthorizedLayout() {
 
         // ถ้า isAuth เป็น true แล้ว แสดงว่าเพิ่ง login มา ไม่ต้อง refresh token
         if (isAuth) {
-          console.log("✅ User just logged in, skipping refresh token");
           await dispatch.common.fetchUnitOptions();
           return true;
         }
 
         // ถ้า isAuth เป็น false แต่มี token ให้ลอง refresh
-        console.log("🔄 Trying to refresh token");
         const resReToken = await dispatch.userAuth.refreshTokenNew();
         if (!resReToken) {
           console.log("❌ Refresh token failed");
@@ -87,7 +86,6 @@ function AuthorizedLayout() {
         }
 
         // Token valid - initialize app
-        console.log("✅ Auth check passed, initializing app");
         await dispatch.common.fetchUnitOptions();
         dispatch.userAuth.updateAuthState(true);
 
@@ -110,20 +108,12 @@ function AuthorizedLayout() {
   useEffect(() => {
     const checkRedirect = async () => {
       const access_token = await encryptStorage.getItem("access_token");
-      const projectId = await encryptStorage.getItem("projectId");
-
-      console.log("🔍 Checking redirect need:", {
-        isAuth,
-        hasToken: !!access_token,
-        hasProjectId: !!projectId,
-        currentPath: window.location.pathname,
-      });
+      // const projectId = await encryptStorage.getItem("projectId");
 
       if (
         (!isAuth || !access_token || access_token === "undefined") &&
         window.location.pathname !== "/auth"
       ) {
-        console.log("❌ Redirecting to login");
         navigate("/auth", { replace: true });
       }
     };
@@ -146,8 +136,7 @@ function AuthorizedLayout() {
       };
       getEmergencyData();
 
-      const URL =
-        "https://reslink-security-wqi2p.ondigitalocean.app/socket/sos/dashboard";
+      const URL ="https://reslink-security-wqi2p.ondigitalocean.app/socket/sos/dashboard";
       const access_token = encryptStorage.getItem("access_token");
       const projectID = await encryptStorage.getItem("projectId");
       const newSocket = io(URL, {

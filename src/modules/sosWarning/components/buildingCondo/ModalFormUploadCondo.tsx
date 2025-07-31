@@ -112,7 +112,7 @@ const ModalFormUploadCondo: React.FC<ModalFormUploadCondoProps> = ({
       {isUploading && (
         <div className="mt-4 w-50 mx-auto flex flex-col justify-center items-center">
           <div className="mb-2 text-center">
-            <p className="text-gray-700 font-medium">กำลังอัปโหลด...</p>
+            <p className="text-gray-700 font-medium">Uploading...</p>
             <p className="text-gray-500 text-sm">{uploadingFileName}</p>
           </div>
           <Progress percent={uploadProgress} status="active" className="w-full" />

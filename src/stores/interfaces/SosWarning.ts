@@ -100,19 +100,21 @@ export interface createPlanCondo {
 
 export interface dataAllMap {
   id: string;
+  planInfoId: string;
   projectName: string;
   planTypeId: number;
   planType: string;
   planTypeCondo: string;
   floor: string;
-  planImage: string;
+  planImg: string;
   marker: Marker[];
   zone: Zone[];
 }
 
 export  interface MarkerProcess {
     markerId?: string | null;
-    villageId: string;
+    // villageId: string;
+    planInfoId?: string;
     unitId: number;
     markerType: string;
     markerInfo: {

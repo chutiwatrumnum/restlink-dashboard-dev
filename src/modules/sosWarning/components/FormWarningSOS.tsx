@@ -1,8 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "antd";
 import { dataAllMap } from "../../../stores/interfaces/SosWarning";
-import { getEmergency, readIssueEmergency,completeEmergency } from "../service/api/SOSwarning";
-import SuccessModal from "../../../components/common/SuccessModal";
 import { ModalFormMemberHome } from "./acknowledge/ModalFormMemberHome";
 
 interface AlertMarkers {
@@ -20,11 +18,6 @@ interface FormWarningSOSProps {
     currentMapMode: 'preview' | 'work-it';
     onClearFilter?: () => void;
 }
-
-
-
-
-
 
 const FormWarningSOS = ({  dataEmergency, unitHover, unitClick, setDataEmergency, currentMapMode, onClearFilter }: FormWarningSOSProps) => {
     
@@ -217,94 +210,6 @@ const FormWarningSOS = ({  dataEmergency, unitHover, unitClick, setDataEmergency
         setIdMarker(id)
         setIsModalOpen(true)        
     }
-
-
-    //   useEffect(() => {
-    //     const processMarkers = () => {
-    //       if (alertMarkers) {
-    //         // ตรวจสอบ markers ที่ถูกลบ
-    //         const currentMarkerIds = new Set([
-    //           ...(alertMarkers.red || []).map(m => m.id),
-    //           ...(alertMarkers.yellow || []).map(m => m.id)
-    //         ]);
-
-    //         const previousMarkerIds = new Set([
-    //           ...(previousMarkers.red || []).map(m => m.id),
-    //           ...(previousMarkers.yellow || []).map(m => m.id)
-    //         ]);
-
-    //         // หา markers ที่ถูกลบ
-    //         const removedMarkerIds = [...previousMarkerIds].filter(id => !currentMarkerIds.has(id));
-
-    //         if (removedMarkerIds.length > 0) {
-    //           console.log('🗑️ Detected removed markers:', removedMarkerIds);
-
-    //           // เพิ่ม removed markers เข้า removing set พร้อม animation
-    //           const removingSet = new Set(removingCards);
-    //           removedMarkerIds.forEach(id => {
-    //             removingSet.add(`red-${id}`);
-    //             removingSet.add(`yellow-${id}`);
-    //           });
-    //           setRemovingCards(removingSet);
-
-    //           // หลังจาก animation เสร็จ (500ms) ค่อยลบ card จริง
-    //           setTimeout(() => {
-    //             const updatedRemovingSet = new Set(removingSet);
-    //             removedMarkerIds.forEach(id => {
-    //               updatedRemovingSet.delete(`red-${id}`);
-    //               updatedRemovingSet.delete(`yellow-${id}`);
-    //             });
-    //             setRemovingCards(updatedRemovingSet);
-
-    //             // ตอนนี้ค่อย process markers ใหม่
-    //             processMarkersData();
-    //           }, 500);
-    //         } else {
-    //           // ถ้าไม่มี marker ถูกลบ ก็ process ปกติ
-    //           processMarkersData();
-    //         }
-
-    //         function processMarkersData() {
-    //           if (!alertMarkers) return;
-
-    //           // ใช้ข้อมูลที่มากับ markers แล้ว ไม่ต้องเรียก API เพิ่ม
-    //           console.log('📋 Processing markers with existing address data');
-
-    //           // แยก markers ตามสี และใช้ addressData ที่มากับ markers แล้ว
-    //           const enhancedRed = (alertMarkers.red || []).map(marker => ({
-    //             ...marker,
-    //             addressUnit: marker.addressData || null // ใช้ addressData จาก marker ที่มีอยู่แล้ว
-    //           }));
-
-    //           const enhancedYellow = (alertMarkers.yellow || []).map(marker => ({
-    //             ...marker,
-    //             addressUnit: marker.addressData || null // ใช้ addressData จาก marker ที่มีอยู่แล้ว
-    //           }));
-
-    //           setEnhancedMarkers({
-    //             red: enhancedRed,
-    //             yellow: enhancedYellow
-    //           });
-
-    //           // อัพเดท previous markers สำหรับการเปรียบเทียบครั้งต่อไป
-    //           setPreviousMarkers({
-    //             red: enhancedRed,
-    //             yellow: enhancedYellow
-    //           });
-
-    //           console.log('📋 Final processed markers:', { 
-    //             red: enhancedRed, 
-    //             yellow: enhancedYellow,
-    //             redWithAddressData: enhancedRed.filter(m => m.addressUnit).length,
-    //             yellowWithAddressData: enhancedYellow.filter(m => m.addressUnit).length
-    //           });
-    //         }
-    //       }
-    //     };
-
-    //     processMarkers();
-    //   }, [alertMarkers]);
-
     // ฟังก์ชันสำหรับตรวจสอบว่า card กำลังถูกลบหรือไม่
     const isCardRemoving = (cardId: string) => {
         return removingCards.has(cardId);
@@ -488,7 +393,7 @@ const FormWarningSOS = ({  dataEmergency, unitHover, unitClick, setDataEmergency
                     <div className="text-xs font-bold tracking-wide px-3 py-2 flex items-center  gap-2"  
                     style={{lineHeight: 'normal'}}>
                         <span>✅</span>
-                        <span className="pt-1">ไม่มีการรายงานปัญหา</span>
+                        <span className="pt-1 text-xl">No emergency</span>
                     </div>
                 )
             }

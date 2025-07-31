@@ -1,8 +1,8 @@
 import axios from "axios";
 import { encryptStorage } from "../utils/encryptStorage";
 import { API_URL } from "./configs";
+import { store } from "../stores";
 
-console.log(API_URL, 'API_URL')
 axios.defaults.baseURL = API_URL;
 axios.defaults.headers.post["Content-Type"] = "application/json";
 
@@ -27,14 +27,6 @@ axios.interceptors.request.use(
       // Fallback to default x-api-key for login requests
       request.headers["x-api-key"] = "9c89fc0d-5153-448b-a98a-9434f4ec1114";
     }
-
-    console.log("🔧 Request interceptor:", {
-      url: request.url,
-      method: request.method,
-      hasAuth: !!request.headers.Authorization,
-      apiKey: request.headers["x-api-key"]
-    });
-
     return request;
   },
   (error) => {
@@ -45,19 +37,46 @@ axios.interceptors.request.use(
 
 axios.interceptors.response.use(
   (response) => {
-    console.log("✅ Response interceptor:", {
-      status: response.status,
-      url: response.config.url,
-      data: response.data
-    });
     return response;
   },
-  (error) => {
-    console.log("❌ Response interceptor error:", {
-      status: error.response?.status,
-      url: error.config?.url,
-      message: error.response?.data?.message || error.message
-    });
+  async (error) => {
+    const originalRequest = error.config;
+    
+    // ตรวจสอบถ้าเป็น error 401 (Unauthorized) และยังไม่ได้ retry
+    if (error.response && error.response.status === 401 && !originalRequest._retry) {
+      // ตรวจสอบว่าอยู่ในหน้า login อยู่แล้วหรือไม่
+      if (!window.location.pathname.includes('/auth') && !window.location.pathname.includes('/login')) {
+        originalRequest._retry = true; // ป้องกัน infinite loop
+        
+        try {
+          // ลองทำ refresh token แบบเดียวกับ AuthorizedLayout
+          const resReToken = await store.dispatch.userAuth.refreshTokenNew();
+          
+          if (resReToken) {
+            // ถ้า refresh สำเร็จ ให้ retry request เดิมด้วย token ใหม่
+            const newAccessToken = await encryptStorage.getItem("access_token");
+            if (newAccessToken) {
+              originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+              return axios(originalRequest);
+            }
+          } else {
+            // ถ้า refresh ไม่สำเร็จ ให้ logout
+            await store.dispatch.userAuth.onLogout();
+            setTimeout(() => {
+              window.location.href = '/auth';
+            }, 100);
+          }
+          
+        } catch (refreshError) {
+          // ถ้า refresh token ล้มเหลว ให้ logout
+          await store.dispatch.userAuth.onLogout();
+          setTimeout(() => {
+            window.location.href = '/auth';
+          }, 100);
+        }
+      }
+    }
+    
     return error.response;
   }
 );

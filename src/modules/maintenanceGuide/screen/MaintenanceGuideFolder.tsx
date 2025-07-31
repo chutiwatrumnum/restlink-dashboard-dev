@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { usePagination } from "../../../utils/hooks/usePagination";
 import Header from "../../../components/templates/Header";
 import {
   Row,
@@ -47,11 +48,13 @@ const { Text, Link } = Typography;
 const { Search } = Input;
 const { confirm } = Modal;
 const MaintenanceGuideFolder = () => {
-  // Variables
+  // Initial
   const dispatch = useDispatch<Dispatch>();
   const scroll: { x?: number | string } = {
-    x: "50vw",
+    x: "max-content",
   };
+  const { curPage, perPage, setCurPage, deleteAndHandlePagination } =
+    usePagination();
 
   // Queries & Mutations
   const {
@@ -64,8 +67,6 @@ const MaintenanceGuideFolder = () => {
   const deleteFolder = deleteFolderMutation();
 
   // States
-  const [curPage, setCurPage] = useState(1);
-  const [perPage, setPerPage] = useState(10);
   const [FolderCurrent, setFolderCurrent] = useState<number>(0);
   const [folderDetail, setFolderDetail] = useState<MaintenanceGuideDataType>();
   const [breadcrumb, setBreadcrumb] = useState<BreadcrumbType[]>([]);
@@ -143,8 +144,8 @@ const MaintenanceGuideFolder = () => {
       title: "Action",
       dataIndex: "actions",
       align: "center",
-      // fixed: "right",
-      // hidden: breadcrumb.length === 1,
+      fixed: "right",
+      width: 120,
       render: (_, record, index: number) => (
         <>
           <Button
@@ -277,41 +278,32 @@ const MaintenanceGuideFolder = () => {
       cancelText: "No",
       centered: true,
       async onOk() {
-        if (typeof id === "string") {
-          const statusDeleted = await deleteMaintenanceGuideById(id);
-          if (statusDeleted) {
-            callSuccessModal("Delete successfully", 1500);
-            let conditions: GetMaintenanceGuideDataPayloadType = {
-              curPage: curPage,
-              perPage: perPage,
-              folderId: FolderCurrent,
-            };
-            if (FolderCurrent === 0) {
-              await fetchData();
+        deleteAndHandlePagination({
+          dataLength: tableData.length,
+          onDelete: async () => {
+            if (typeof id === "string") {
+              const statusDeleted = await deleteMaintenanceGuideById(id);
+              if (statusDeleted) {
+                callSuccessModal("Delete successfully", 1500);
+              } else {
+                callFailedModal("Delete failed", 1500);
+              }
+            } else if (typeof id === "number") {
+              // console.log("Delete folder because id is not string");
+              deleteFolder
+                .mutateAsync(id)
+                .then(() => {
+                  callSuccessModal("Delete successfully", 1500);
+                })
+                .catch(() => {
+                  callFailedModal("Delete failed", 1500);
+                });
             } else {
-              await dispatch.maintenanceGuide.getMaintenanceGuideData(
-                conditions
-              );
+              console.log("Something went wrong!");
             }
-          } else {
-            callFailedModal("Delete failed", 1500);
-          }
-        } else if (typeof id === "number") {
-          // console.log("Delete folder because id is not string");
-          deleteFolder
-            .mutateAsync(id)
-            .then(() => {
-              callSuccessModal("Delete successfully", 1500);
-            })
-            .catch(() => {
-              callFailedModal("Delete failed", 1500);
-            })
-            .finally(() => {
-              fetchData();
-            });
-        } else {
-          console.log("Something went wrong!");
-        }
+          },
+          fetchData: fetchData,
+        });
       },
       onCancel() {
         console.log("Cancel");

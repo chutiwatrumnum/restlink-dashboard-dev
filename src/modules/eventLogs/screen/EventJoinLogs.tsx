@@ -1,4 +1,6 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import { usePagination } from "../../../utils/hooks/usePagination";
+
 import Header from "../../../components/templates/Header";
 import { Table } from "antd";
 import type { ColumnsType, TableProps } from "antd/es/table";
@@ -26,19 +28,18 @@ const EventJoinLogs = () => {
   const { loading, tableData, total } = useSelector(
     (state: RootState) => state.eventLog
   );
-  const [currentPage, setCurrentPage] = useState<number>(1);
+  const { curPage, perPage, setCurPage, deleteAndHandlePagination } =
+    usePagination();
+
   // setting pagination Option
-  const pageSizeOptions = [15, 30, 60, 100];
   const PaginationConfig = {
-    defaultPageSize: pageSizeOptions[0],
-    pageSizeOptions: pageSizeOptions,
-    current: currentPage,
+    current: curPage,
     showSizeChanger: false,
     total: total,
   };
   let params: conditionPage = {
-    perPage: pageSizeOptions[0],
-    curPage: currentPage,
+    perPage: perPage,
+    curPage: curPage,
   };
   const [rerender, setRerender] = useState<boolean>(true);
   const [dataInfo, setDataInfo] = useState<any>(null);
@@ -52,14 +53,8 @@ const EventJoinLogs = () => {
 
   const { Search } = Input;
   const scroll: { x?: number | string } = {
-    x: 1500,
+    x: "max-content",
   };
-  useEffect(() => {
-    (async function () {
-      await setParamsData(params);
-      await dispatch.eventLog.getTableData(paramsData);
-    })();
-  }, [rerender]);
 
   const onChangeTable: TableProps<dataEventJoinLogsType>["onChange"] = async (
     pagination: any,
@@ -73,13 +68,11 @@ const EventJoinLogs = () => {
     params.curPage = pagination?.current
       ? pagination?.current
       : PaginationConfig.current;
-    params.perPage = pagination?.pageSize
-      ? pagination?.pageSize
-      : PaginationConfig.defaultPageSize;
-    await setParamsData(params);
-    await setCurrentPage(params.curPage);
+    setParamsData(params);
+    setCurPage(params.curPage);
     await dispatch.eventLog.getTableData(paramsData);
   };
+
   const onSearch = async (value: string) => {
     params = paramsData;
     params.search = value;
@@ -156,7 +149,8 @@ const EventJoinLogs = () => {
             value={record.key}
             type="text"
             icon={<DeleteOutlined />}
-            onClick={showDeleteConfirm}></Button>
+            onClick={showDeleteConfirm}
+          ></Button>
         </>
       ),
     },
@@ -171,13 +165,20 @@ const EventJoinLogs = () => {
       cancelText: "Cancel",
       centered: true,
       async onOk() {
-        const statusDeleted = await deleteEventJoinById(currentTarget.value);
-        if (statusDeleted) {
-          SuccessModal("Event joining logs has been successfully deleted.");
-        } else {
-          FailedModal("Failed to delete");
-        }
-        setRerender(!rerender);
+        deleteAndHandlePagination({
+          dataLength: tableData.length,
+          fetchData: fetchData,
+          onDelete: async () => {
+            const statusDeleted = await deleteEventJoinById(
+              currentTarget.value
+            );
+            if (statusDeleted) {
+              SuccessModal("Event joining logs has been successfully deleted.");
+            } else {
+              FailedModal("Failed to delete");
+            }
+          },
+        });
       },
       onCancel() {
         console.log("Cancel");
@@ -198,37 +199,14 @@ const EventJoinLogs = () => {
     await dispatch.eventLog.getTableData(paramsData);
   };
 
-  const exportEventJoinLogs = () => {
-    confirm({
-      title: "Confirm action",
-      icon: null,
-      content: "Are you sure you want to export this file?",
-      okText: "Yes",
-      okType: "primary",
-      cancelText: "Cancel",
-      centered: true,
-      async onOk() {
-        const statusSuccess = await downloadEventJoinLogs();
-        // if (statusSuccess) {
-        //   dispatch.common.updateSuccessModalState({
-        //     open: true,
-        //     text: "Successfully deleted",
-        //   });
-        //   await initdata(paramsAPI);
-        // } else {
-        //   dispatch.common.updateSuccessModalState({
-        //     open: true,
-        //     status: "error",
-        //     text: "Failed deleted",
-        //   });
-        // }
-      },
-      onCancel() {
-        console.log("Cancel");
-      },
-    });
+  const fetchData = async () => {
+    setParamsData(params);
+    await dispatch.eventLog.getTableData(paramsData);
   };
 
+  useEffect(() => {
+    fetchData();
+  }, [rerender]);
   return (
     <>
       <Header title="Event joining logs" />
@@ -243,7 +221,8 @@ const EventJoinLogs = () => {
         </Col>
         <Col
           span={10}
-          style={{ display: "flex", justifyContent: "flex-start" }}>
+          style={{ display: "flex", justifyContent: "flex-start" }}
+        >
           <Search
             placeholder="Search by event name"
             allowClear
