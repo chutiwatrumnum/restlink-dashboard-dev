@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Dispatch, RootState } from "../../../stores";
-// import { whiteLabel } from "../../../configs/theme";
 import { socket } from "../../../configs/socket";
 
 import {
@@ -27,17 +26,17 @@ import "@chatscope/chat-ui-kit-styles/dist/default/styles.min.css";
 import "../styles/serviceChat.css";
 
 const ServiceChat = () => {
-  // Variables
   const dispatch = useDispatch<Dispatch>();
   const queryClient = useQueryClient();
   const { chatListSortBy } = useSelector((state: RootState) => state.chat);
   const { status } = useSelector((state: RootState) => state.serviceCenter);
+
   const [activeServiceId, setActiveServiceId] = useState(-1);
   const [currentChat, setCurrentChat] = useState();
   const [currentServiceId, setCurrentServiceId] = useState("");
-  // const [chatListSortBy, setChatListSortBy] = useState("time");
+  const [currentTab, setCurrentTab] = useState("in_progress"); // เพิ่ม state สำหรับ tab
 
-  // API
+  // API calls
   const {
     data: serviceChatListData,
     isLoading: isServiceChatListLoading,
@@ -54,11 +53,86 @@ const ServiceChat = () => {
     id: currentServiceId ?? "",
   });
 
-  // Functions
+  // Filter chat list options based on current tab
+  const filteredChatOptions = chatListOptions?.filter((option) => {
+    // Try different possible field paths for service status
+    const serviceStatus =
+      option.serviceStatus ||
+      option.status ||
+      option.service?.status?.nameEn ||
+      option.service?.status?.nameCode;
 
+    if (currentTab === "in_progress") {
+      const inProgressStatuses = [
+        "Pending",
+        "Waiting for confirmation",
+        "Confirm appointment",
+        "Repairing",
+        "pending",
+        "waiting_for_confirmation",
+        "confirm_appointment",
+        "repairing",
+      ];
+      return inProgressStatuses.includes(serviceStatus);
+    } else if (currentTab === "history") {
+      const historyStatuses = ["Success", "Closed", "success", "closed"];
+      return historyStatuses.includes(serviceStatus);
+    }
+
+    return true;
+  });
+  const filteredChatData = serviceChatListData?.filter((item) => {
+    const serviceStatus =
+      item.service?.serviceStatus?.nameEn || item.serviceStatus;
+
+    if (currentTab === "in_progress") {
+      // In Progress: Pending, Waiting for confirmation, Confirm appointment, Repairing
+      return [
+        "Pending",
+        "Waiting for confirmation",
+        "Confirm appointment",
+        "Repairing",
+      ].includes(serviceStatus);
+    } else if (currentTab === "history") {
+      // History: Success, Closed
+      return ["Success", "Closed"].includes(serviceStatus);
+    }
+
+    return true; // fallback
+  });
+
+  // Functions
   const handleServiceSelected = async (serviceId: number, option: any) => {
-    // console.log(serviceId);
-    // console.log(option);
+    // Check if the selected service matches current tab filter
+    const serviceStatus =
+      option.serviceStatus ||
+      option.status ||
+      option.service?.status?.nameEn ||
+      option.service?.status?.nameCode;
+
+    let isValidForCurrentTab = false;
+    if (currentTab === "in_progress") {
+      const inProgressStatuses = [
+        "Pending",
+        "Waiting for confirmation",
+        "Confirm appointment",
+        "Repairing",
+        "pending",
+        "waiting_for_confirmation",
+        "confirm_appointment",
+        "repairing",
+      ];
+      isValidForCurrentTab = inProgressStatuses.includes(serviceStatus);
+    } else if (currentTab === "history") {
+      const historyStatuses = ["Success", "Closed", "success", "closed"];
+      isValidForCurrentTab = historyStatuses.includes(serviceStatus);
+    }
+
+    // Only proceed if the service matches current tab
+    if (!isValidForCurrentTab) {
+      return; // Don't select services that don't match current tab
+    }
+
     let payload = {
       serviceId: serviceId,
       serviceType: option.serviceType,
@@ -89,23 +163,27 @@ const ServiceChat = () => {
     if (seenData) seenData[index].juristicSeen = true;
   };
 
+  // Handle tab change
   const onTabsChange = (key: string) => {
-    let payload = undefined;
-    switch (key) {
-      case "all":
-        payload = "all";
-        break;
-      case "pending":
-        payload = "pending";
-        break;
-      case "repairing":
-        payload = "repairing";
-        break;
-      case "success":
-        payload = "success";
-        break;
+    setCurrentTab(key);
 
+    // Clear current selection when switching tabs
+    setCurrentChat(undefined);
+    setActiveServiceId(-1);
+    setCurrentServiceId("");
+
+    let payload = undefined;
+
+    // Map tab to status for API
+    switch (key) {
+      case "in_progress":
+        payload = "all"; // Get all data and filter on client side
+        break;
+      case "history":
+        payload = "all"; // Get all data and filter on client side
+        break;
       default:
+        payload = "all";
         break;
     }
 
@@ -123,22 +201,65 @@ const ServiceChat = () => {
     </Menu>
   );
 
+  // Calculate counts for both tabs
+  const inProgressCount =
+    serviceChatListData?.filter((item) => {
+      const serviceStatus =
+        item.service?.serviceStatus?.nameEn ||
+        item.service?.serviceStatus?.nameCode ||
+        item.serviceStatus ||
+        item.service?.status?.nameEn ||
+        item.service?.status?.nameCode;
+
+      const inProgressStatuses = [
+        "Pending",
+        "Waiting for confirmation",
+        "Confirm appointment",
+        "Repairing",
+        "pending",
+        "waiting_for_confirmation",
+        "confirm_appointment",
+        "repairing",
+      ];
+      return inProgressStatuses.includes(serviceStatus);
+    }).length || 0;
+
+  const historyCount =
+    serviceChatListData?.filter((item) => {
+      const serviceStatus =
+        item.service?.serviceStatus?.nameEn ||
+        item.service?.serviceStatus?.nameCode ||
+        item.serviceStatus ||
+        item.service?.status?.nameEn ||
+        item.service?.status?.nameCode;
+
+      const historyStatuses = ["Success", "Closed", "success", "closed"];
+      return historyStatuses.includes(serviceStatus);
+    }).length || 0;
+
+  // Updated tab items with always visible counts
   const tabItems: TabsProps["items"] = [
     {
-      key: "all",
-      label: "All",
+      key: "in_progress",
+      label: (
+        <span>
+          In Progress
+          <span style={{ marginLeft: 8, color: "var(--secondary)" }}>
+            ({inProgressCount})
+          </span>
+        </span>
+      ),
     },
     {
-      key: "pending",
-      label: "Pending",
-    },
-    {
-      key: "repairing",
-      label: "Repairing",
-    },
-    {
-      key: "success",
-      label: "Success",
+      key: "history",
+      label: (
+        <span>
+          History
+          <span style={{ marginLeft: 8, color: "var(--secondary)" }}>
+            ({historyCount})
+          </span>
+        </span>
+      ),
     },
   ];
 
@@ -152,7 +273,6 @@ const ServiceChat = () => {
       refetchServiceChatList();
     });
     socket.on(`service-center-chat-service-id-${currentServiceId}`, (cmd) => {
-      // console.log(cmd.cmd);
       if (cmd.cmd === "new_message") {
         onChatIncoming();
       } else if (cmd.cmd === "seen") {
@@ -165,9 +285,7 @@ const ServiceChat = () => {
             return seenMessages;
           }
         );
-        // console.log("Seen");
       }
-      // chatContainerRef.current?.handleIncomingChat();
     });
     socket.on("connect_error", (error) => {
       console.error("Connection Error:", error);
@@ -191,30 +309,46 @@ const ServiceChat = () => {
   return (
     <>
       <Header title="Messages" />
-      <Tabs defaultActiveKey="all" items={tabItems} onChange={onTabsChange} />
+
+      {/* Updated Tabs */}
+      <Tabs
+        defaultActiveKey="in_progress"
+        items={tabItems}
+        onChange={onTabsChange}
+        style={{ marginBottom: 16 }}
+      />
+
       <Row className="chatRoomContainer">
-        <Col span={8} className="leftSideChatContainer">
+        <Col
+          xs={{ span: 24 }}
+          lg={{ span: 10 }}
+          xxl={{ span: 8 }}
+          className="leftSideChatContainer">
           <Row className="filterContainer_CR">
             <Col span={20}>
               <Row justify={"space-between"} align={"middle"}>
                 <Select
                   size="large"
-                  placeholder="Select a by service"
+                  placeholder={
+                    currentTab === "in_progress"
+                      ? "Select an active service"
+                      : "Select a completed service"
+                  }
                   style={{ width: "100%" }}
                   onChange={handleServiceSelected}
-                  options={chatListOptions}
+                  options={filteredChatOptions} // Use filtered options
                   fieldNames={{
                     value: "serviceId",
                     label: "label",
                   }}
                   loading={isChatListOptionsLoading}
-                  // disabled={isChatListOptionsLoading}
                   filterOption={(input, option) =>
                     (option?.label.toUpperCase() ?? "").includes(
                       input.toUpperCase()
                     )
                   }
                   showSearch
+                  value={activeServiceId > 0 ? activeServiceId : undefined}
                 />
               </Row>
             </Col>
@@ -229,13 +363,15 @@ const ServiceChat = () => {
               </Dropdown>
             </Col>
           </Row>
+
           <Col className="userListContainer">
             {isServiceChatListLoading ? (
               <div style={{ textAlign: "center", marginTop: "20px" }}>
                 <Spin />
               </div>
             ) : (
-              serviceChatListData?.map((item, index) => {
+              // Use filtered data instead of raw data
+              filteredChatData?.map((item, index) => {
                 return (
                   <ServiceChatList
                     key={index}
@@ -247,14 +383,42 @@ const ServiceChat = () => {
                 );
               })
             )}
+
+            {/* Show message when no data */}
+            {!isServiceChatListLoading &&
+              (!filteredChatData || filteredChatData.length === 0) && (
+                <div
+                  style={{
+                    textAlign: "center",
+                    marginTop: "40px",
+                    color: "#999",
+                  }}>
+                  <p>
+                    {currentTab === "in_progress"
+                      ? "No active conversations found"
+                      : "No completed conversations found"}
+                  </p>
+                  <p style={{ fontSize: "12px", marginTop: "8px" }}>
+                    {currentTab === "in_progress"
+                      ? "Services with Pending, Waiting, Confirmed, or Repairing status will appear here"
+                      : "Services with Success or Closed status will appear here"}
+                  </p>
+                </div>
+              )}
           </Col>
+
           <Row className="userListBottomLine">
             <div className="horizontal-line" />
             <p className="centered-text">It is all, nothing more.</p>
             <div className="horizontal-line" />
           </Row>
         </Col>
-        <Col span={16} style={{ height: "100%" }}>
+
+        <Col
+          xs={{ span: 24 }}
+          lg={{ span: 14 }}
+          xxl={{ span: 16 }}
+          style={{ height: "100%" }}>
           <div style={{ position: "relative", height: "100%" }}>
             <ServiceChatBoxContainer chatData={currentChat} />
           </div>

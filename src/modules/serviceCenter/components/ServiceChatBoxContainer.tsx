@@ -450,7 +450,7 @@ const ServiceChatBoxContainer = ({
               <ConversationHeader className="chatBoxHeader">
                 <ConversationHeader.Content
                   userName={
-                    chatData.service && chatData.service
+                    chatData.service && chatData.myHome
                       ? `${chatData?.service?.serviceType?.nameEn} (${chatData?.myHome?.unit?.roomAddress})`
                       : `${chatData?.serviceType} (${chatData?.roomAddress})`
                   }
@@ -459,8 +459,7 @@ const ServiceChatBoxContainer = ({
               </ConversationHeader>
               <MessageList
                 loadingMore={isMoreChatLoading}
-                onYReachStart={onYReachStart}
-              >
+                onYReachStart={onYReachStart}>
                 {isChatDataByIDLoading ? (
                   <div style={{ textAlign: "center", marginTop: "20px" }}>
                     <Spin />
@@ -521,8 +520,7 @@ const ServiceChatBoxContainer = ({
               <Tag
                 className="tagControl"
                 onClick={() => resetMessageValue()}
-                color={whiteLabel.successColor}
-              >
+                color={whiteLabel.successColor}>
                 {file.name}
                 <TrashIcon
                   color={whiteLabel.whiteColor}
