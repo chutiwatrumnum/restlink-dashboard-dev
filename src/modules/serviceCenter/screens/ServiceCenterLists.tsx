@@ -332,7 +332,7 @@ const ServiceCenterLists = () => {
 
   return (
     <>
-      <Header title="Service Center Lists" />
+      <Header title="Fixing Lists" />
       <Row style={{ marginTop: 15, marginBottom: 15 }}>
         <Col span={6} style={{ display: "flex", justifyContent: "flex-start" }}>
           <Select
@@ -357,9 +357,7 @@ const ServiceCenterLists = () => {
             style={{ width: "100%", height: "100%" }}
           />
         </Col>
-        <Col span={6}>
-          {/* Placeholder for future date picker */}
-        </Col>
+        <Col span={6}>{/* Placeholder for future date picker */}</Col>
         <Col span={6} style={{ display: "flex", justifyContent: "flex-end" }}>
           <MediumActionButton
             disabled={true}
@@ -385,8 +383,7 @@ const ServiceCenterLists = () => {
       <Row
         className="announceBottomActionContainer"
         justify="end"
-        align="middle"
-      >
+        align="middle">
         <Pagination
           defaultCurrent={1}
           pageSize={perPage}

@@ -421,7 +421,7 @@ const SideMenu = ({
                 className="sideMenuIcon"
               />
             }
-            title="Repair">
+            title="Fixing">
             <Menu.Item
               key={`${main_link}/serviceDashboard`}
               icon={
@@ -430,9 +430,7 @@ const SideMenu = ({
                   className="sideMenuIcon"
                 />
               }>
-              <Link to={`${main_link}/serviceDashboard`}>
-                Repair report dashboard
-              </Link>
+              <Link to={`${main_link}/serviceDashboard`}>Fixing dashboard</Link>
             </Menu.Item>
             <Menu.Item
               key={`${main_link}/serviceCenterLists`}
@@ -442,9 +440,7 @@ const SideMenu = ({
                   className="sideMenuIcon"
                 />
               }>
-              <Link to={`${main_link}/serviceCenterLists`}>
-                Repair report lists
-              </Link>
+              <Link to={`${main_link}/serviceCenterLists`}>Fixing lists</Link>
             </Menu.Item>
             <Menu.Item
               key={`${main_link}/ServiceChat`}
