@@ -1,0 +1,407 @@
+/* Enhanced CSS for ServiceCenter Modal with appointment slots */
+
+/* Force modal width */
+.ant-modal.service-center-edit-modal {
+  width: 1000px !important;
+  max-width: 95vw !important;
+}
+
+.service-center-edit-modal .ant-modal-content,
+.service-center-edit-modal .ant-modal-body {
+  width: 100% !important;
+}
+
+.service-center-edit-modal-form {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.service-center-edit-modal .ant-modal-body {
+  padding: 24px;
+}
+
+/* Loading state styling */
+.service-center-edit-modal .loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+  padding: 40px;
+}
+
+.service-center-edit-modal .loading-container .ant-spin {
+  color: var(--primary-color);
+}
+
+/* Steps styling */
+.service-center-edit-modal .ant-steps {
+  margin-bottom: 24px;
+  padding: 16px;
+  background-color: #f7f9fc;
+  border-radius: 8px;
+}
+
+.service-center-edit-modal .ant-steps-label-vertical .ant-steps-item-icon {
+  margin-left: auto;
+  margin-right: auto;
+  width: 32px;
+  height: 32px;
+  line-height: 32px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-width: 1px;
+  border-style: solid;
+}
+
+.service-center-edit-modal .ant-steps-label-vertical .ant-steps-item-content {
+  text-align: center;
+  width: auto;
+  display: block;
+  min-height: auto;
+}
+
+.service-center-edit-modal .ant-steps-label-vertical .ant-steps-item-title {
+  font-size: 12px;
+  margin-top: 8px;
+  padding-right: 0;
+  line-height: 1.2;
+}
+
+/* Step status colors */
+.service-center-edit-modal .ant-steps-item .ant-steps-item-icon {
+  background-color: #d9d9d9;
+  border-color: #d9d9d9;
+}
+
+.service-center-edit-modal .ant-steps-item .ant-steps-item-icon .ant-steps-icon {
+  font-size: 14px;
+  color: #595959;
+  font-weight: normal;
+}
+
+.service-center-edit-modal .ant-steps-item .ant-steps-item-title {
+  color: #8c8c8c;
+}
+
+/* Process step styling */
+.service-center-edit-modal .ant-steps-item-process .ant-steps-item-icon .ant-steps-icon {
+  color: #fff !important;
+  font-weight: bold;
+}
+
+/* Step 1: Pending (Active) - Red */
+.service-center-edit-modal .ant-steps-item:nth-child(1).ant-steps-item-process .ant-steps-item-icon {
+  background-color: #d9363e;
+  border-color: #d9363e;
+}
+
+/* Step 2: Waiting for confirmation (Active) - Light Blue */
+.service-center-edit-modal .ant-steps-item:nth-child(2).ant-steps-item-process .ant-steps-item-icon {
+  background-color: #52c4e5;
+  border-color: #52c4e5;
+}
+
+/* Step 3: Confirm appointment (Active) - Purple */
+.service-center-edit-modal .ant-steps-item:nth-child(3).ant-steps-item-process .ant-steps-item-icon {
+  background-color: #a372f7;
+  border-color: #a372f7;
+}
+
+/* Step 4: Repairing (Active) - Orange/Yellow */
+.service-center-edit-modal .ant-steps-item:nth-child(4).ant-steps-item-process .ant-steps-item-icon {
+  background-color: #f5a623;
+  border-color: #f5a623;
+}
+
+/* Step 5: Success (Active) - Green */
+.service-center-edit-modal .ant-steps-item:nth-child(5).ant-steps-item-process .ant-steps-item-icon {
+  background-color: #52c41a;
+  border-color: #52c41a;
+}
+
+/* Step 6: Closed (Active) - Teal */
+.service-center-edit-modal .ant-steps-item:nth-child(6).ant-steps-item-process .ant-steps-item-icon {
+  background-color: #13c2c2;
+  border-color: #13c2c2;
+}
+
+/* Appointment Slots Styling */
+.appointment-slots-container {
+  margin: 20px 0;
+  padding: 20px;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  background-color: #fafafa;
+}
+
+.appointment-slots-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  font-weight: 500;
+  font-size: 16px;
+}
+
+.appointment-slots-header span {
+  display: flex;
+  align-items: center;
+}
+
+.slot-field {
+  margin-bottom: 8px;
+}
+
+.slot-field label {
+  display: block;
+  margin-bottom: 4px;
+  font-weight: 500;
+  color: #333;
+}
+
+.appointment-submit-section {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.send-button-teal {
+  background-color: #20c997 !important;
+  border-color: #20c997 !important;
+  color: #fff !important;
+  font-weight: 500;
+  min-width: 150px;
+}
+
+.send-button-teal:hover,
+.send-button-teal:focus {
+  background-color: #1baa80 !important;
+  border-color: #1baa80 !important;
+  color: #fff !important;
+}
+
+.send-button-teal:disabled {
+  background-color: #d9d9d9 !important;
+  border-color: #d9d9d9 !important;
+  color: #999 !important;
+}
+
+/* Report Summary Collapse */
+.service-center-edit-modal .report-summary-collapse .ant-collapse-item {
+  margin-bottom: 16px;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  background-color: #fff;
+}
+
+.service-center-edit-modal .report-summary-collapse .ant-collapse-header {
+  font-weight: 500;
+  border-radius: 8px 8px 0 0;
+}
+
+.service-center-edit-modal .report-summary-collapse .ant-collapse-content {
+  border-top: 1px solid #e8e8e8;
+}
+
+.service-center-edit-modal .report-summary-collapse .ant-collapse-content-box {
+  padding: 16px;
+}
+
+/* Section Headers */
+.service-center-edit-modal h4 {
+  margin-bottom: 16px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+.service-center-edit-modal .status-update-section {
+  margin-top: 24px;
+}
+
+.service-center-edit-modal .status-update-section .ant-form-item-label > label {
+  font-weight: 500;
+}
+
+.service-center-edit-modal .status-update-section .ant-picker {
+  width: 100%;
+}
+
+/* Action Buttons */
+.service-center-edit-modal .action-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 24px;
+}
+
+.service-center-edit-modal .close-ticket-link {
+  color: #ff4d4f;
+  cursor: pointer;
+  margin-right: auto;
+  align-self: center;
+  background: none;
+  border: none;
+  text-decoration: underline;
+}
+
+.service-center-edit-modal .close-ticket-link:hover {
+  color: #d9363e;
+  text-decoration: underline;
+}
+
+/* Alert Styling */
+.service-center-edit-modal .info-alert {
+  margin-top: 16px;
+}
+
+.service-center-edit-modal .ant-alert-info.info-alert {
+  background-color: #e6f7ff;
+  border: 1px solid #91d5ff;
+  border-radius: 8px;
+}
+
+.service-center-edit-modal .ant-alert-info.info-alert .ant-alert-icon {
+  color: #1890ff;
+}
+
+.service-center-edit-modal .ant-alert-info.info-alert .ant-alert-message {
+  color: #1890ff;
+}
+
+/* Summary Content */
+.service-center-edit-modal .summary-content {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.service-center-edit-modal .summary-image-container img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+  object-fit: cover;
+  max-height: 200px;
+}
+
+.service-center-edit-modal .summary-details {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px 16px;
+}
+
+.service-center-edit-modal .summary-details dt {
+  font-weight: 500;
+  color: #595959;
+}
+
+.service-center-edit-modal .summary-details dd {
+  margin-left: 0;
+  color: #262626;
+}
+
+/* Repairing Step Layout */
+.repairing-step-layout {
+  display: flex;
+  gap: 24px;
+  margin-top: 16px;
+  margin-bottom: 24px;
+}
+
+.repairing-step-left-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.repairing-step-right-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.service-center-edit-modal .image-gallery-container h5 {
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 8px;
+  color: #333;
+}
+
+/* Dark Blue Send Button for Repairing Step */
+.service-center-edit-modal .action-buttons .send-button-dark-blue {
+  background-color: #003a70 !important;
+  border-color: #003a70 !important;
+  color: #fff !important;
+}
+
+.service-center-edit-modal .action-buttons .send-button-dark-blue:hover,
+.service-center-edit-modal .action-buttons .send-button-dark-blue:focus {
+  background-color: #002a50 !important;
+  border-color: #002a50 !important;
+  color: #fff !important;
+}
+
+/* Card styling for appointment slots */
+.appointment-slots-container .ant-card {
+  margin-bottom: 12px;
+  border: 1px solid #e8e8e8;
+  border-radius: 6px;
+}
+
+.appointment-slots-container .ant-card-head {
+  background-color: #f7f9fc;
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.appointment-slots-container .ant-card-head-title {
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.appointment-slots-container .ant-card-body {
+  padding: 16px;
+}
+
+/* Time Range Picker */
+.appointment-slots-container .ant-picker-range {
+  width: 100%;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .service-center-edit-modal .summary-content {
+    grid-template-columns: 1fr;
+  }
+  
+  .repairing-step-layout {
+    flex-direction: column;
+  }
+  
+  .service-center-edit-modal-form {
+    max-width: 100%;
+  }
+  
+  .appointment-slots-container .ant-row {
+    flex-direction: column;
+  }
+  
+  .appointment-slots-container .ant-col {
+    width: 100% !important;
+    margin-bottom: 12px;
+  }
+}
+
+/* Validation error styling */
+.appointment-slots-container .ant-form-item-has-error .ant-picker,
+.appointment-slots-container .ant-form-item-has-error .ant-picker-range {
+  border-color: #ff4d4f;
+}
+
+.appointment-slots-container .ant-form-item-explain-error {
+  color: #ff4d4f;
+  font-size: 12px;
+  margin-top: 4px;
+}

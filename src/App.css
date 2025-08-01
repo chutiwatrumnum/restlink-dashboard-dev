@@ -1,0 +1,228 @@
+.searchBox .ant-btn-default {
+  box-shadow: none;
+}
+
+.pagination {
+  margin: 20px 0;
+  align-self: end;
+}
+
+.bold {
+  font-weight: var(--font-bold);
+}
+
+.ant-btn-primary {
+  color: #fff;
+  background-color: rgba(181, 141, 84, 1);
+  box-shadow: 0 2px 0 rgb(5 145 255 / 10%);
+}
+
+.ant-btn-primary:not(:disabled):hover {
+  color: #fff;
+  background-color: rgba(181, 141, 84, 0.6);
+}
+
+.column {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  flex-wrap: wrap;
+}
+
+.checkBoxUnitSelectedGrid {
+  width: 100%;
+  flex-wrap: wrap;
+}
+
+.checkBoxUnitSelectedGrid .ant-checkbox-group-item {
+  width: 12.5%;
+  margin: 0;
+  margin-bottom: 20px;
+  padding-right: 5px;
+  justify-content: center;
+}
+
+.space {
+  height: 15px;
+}
+
+/* .ant-tabs .ant-tabs-tab {
+  font-size: 20px;
+  margin-left: 40;
+} */
+
+.ant-tabs-tab-btn {
+  color: #7b6038;
+}
+
+/* Carlendar OurFacilities */
+:where(.css-dev-only-do-not-override-1sh5xth).ant-breadcrumb {
+  font-size: 40px;
+}
+
+:where(.Calendar-detail).ant-picker-calendar.ant-picker-calendar-full
+  .ant-picker-calendar-date {
+  display: block;
+  width: auto;
+  height: 6vh;
+  margin: 0px 20px 0px;
+  padding: 0px 20px 20px;
+  border: 0;
+  border-top: 2px solid rgba(5, 5, 5, 0.06);
+  border-radius: 0;
+  transition: background 0.3s;
+}
+:where(.Calendar-detail).ant-picker-calendar.ant-picker-calendar-full
+  .ant-picker-panel
+  .ant-picker-body
+  th {
+  height: auto;
+  padding-inline-end: 40px;
+  padding-bottom: 4px;
+  line-height: 18px;
+}
+
+.ant-breadcrumb-separator {
+  font-size: 40px;
+  color: #000;
+}
+
+/* Button control */
+.ant-btn {
+  /* border-radius: 16px; */
+}
+
+/* antd modal */
+.ant-modal-confirm-confirm {
+  width: 40% !important;
+  max-width: 400px;
+}
+
+.ant-modal-confirm-confirm .ant-modal-body {
+  height: 150px;
+}
+
+.ant-modal-confirm-body-wrapper {
+  text-align: center;
+  padding-top: 20px;
+}
+
+.ant-modal-confirm-btns {
+  text-align: center !important;
+}
+
+.ant-modal-confirm-btns .ant-btn-dangerous {
+  background-color: var(--primary-color) !important;
+  color: var(--white-color) !important;
+  border: none;
+  padding: 0 50px;
+  height: 40px;
+  border-radius: 20px;
+}
+
+.ant-modal-confirm-btns .ant-btn-dangerous:hover {
+  border-color: var(--primary-color) !important;
+}
+
+.ant-modal-confirm-btns .ant-btn-primary {
+  background-color: var(--primary-color) !important;
+  color: var(--white-color) !important;
+  border: none;
+  padding: 0 50px;
+  height: 40px;
+  border-radius: 20px;
+}
+
+.ant-modal-confirm-btns .ant-btn-primary:hover {
+  border-color: var(--primary-color) !important;
+}
+
+.ant-modal-confirm-btns .ant-btn-default {
+  padding: 0 50px;
+  height: 40px;
+  border-radius: 20px;
+}
+
+.ant-modal-confirm-btns .ant-btn-default:hover {
+  border: 1px solid var(--primary-color);
+  color: var(--primary-color);
+}
+
+.ant-modal-title {
+  padding-bottom: 15px;
+  border-bottom: solid 2px rgba(211, 211, 211, 0.6);
+  /* font-weight: var(--font-bold) !important; */
+}
+
+.ant-modal-content {
+  border-radius: 30px !important;
+}
+
+/* Table css control */
+.ant-table-thead > tr > th,
+.ant-table-thead > tr > td {
+  background-color: var(--tableHeadBg-color) !important;
+}
+
+.ant-table-tbody > tr > td {
+  background-color: var(--tableHeadBg-color) !important;
+}
+
+.ant-table-thead > tr > th {
+  color: var(--tableHeadText-color) !important;
+}
+
+/* Table expanded css control */
+.ant-table-column-title {
+  font-weight: var(--font-bold);
+}
+
+.ant-table-thead > tr > th {
+  font-weight: var(--font-bold) !important;
+}
+
+.ant-table-expanded-row .ant-table-thead > tr > th {
+  background-color: var(--subTableHeadBg-color) !important;
+}
+
+.ant-table-expanded-row .ant-table {
+  margin-inline: 0 !important;
+  background: var(--gray-color);
+}
+
+.ant-table-expanded-row .ant-table-cell-row-hover {
+  background: var(--gray-color) !important;
+}
+
+.ant-table-expanded-row table > thead > tr:first-child > *:first-child,
+.ant-table-expanded-row table > thead > tr:first-child > *:last-child {
+  border-radius: 0 !important;
+}
+
+.ant-table-expanded-row td {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+.ant-table-tbody > tr > td {
+  background-color: var(--bg-table-color) !important;
+}
+
+.ant-table-tbody > tr.ant-table-row:hover > td {
+  background-color: var(--bg-table-color) !important;
+}
+
+.ant-btn-primary:hover {
+  background-color: var(--primary-color) !important;
+  opacity: 0.9;
+  transition: 0.3s;
+}
+
+.iconButton {
+  font-size: 20px !important;
+}
+
+.iconWidthButton {
+  width: 20px;
+  height: 20px;
+}

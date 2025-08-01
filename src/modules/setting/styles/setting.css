@@ -1,0 +1,157 @@
+.changePasswordContainer,
+.profileContainer {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  background-color: var(--cardBG-color);
+  align-items: center;
+  justify-content: center;
+  border-radius: 20px;
+  padding: 5% 15%;
+}
+
+.formChangePassword {
+  width: 100%;
+}
+
+.changePasswordBottomBtnContainer {
+  margin-top: 20px;
+}
+
+.changePasswordFormText {
+  font-size: var(--font-size-xl);
+}
+
+.profileUploadImage {
+  border-radius: 50%;
+}
+
+.imageProfileContainer {
+  display: flex;
+  flex: 1;
+  height: 250px;
+  justify-content: center;
+}
+
+.avatarSize {
+  width: 150px;
+}
+
+.profileImage {
+  background-color: var(--white-color);
+  border: 6px solid var(--white-color);
+}
+
+.uploadImageBtn {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+}
+
+.profileFormContainer {
+  display: flex;
+  flex: 1;
+  flex-direction: row;
+  box-sizing: border-box;
+  margin-top: 10px;
+}
+
+.profileFormColumn {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 0 10px;
+}
+
+.adminManageTopActionGroup {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.createAdminMangeBtn,
+.adminManageSearchBox {
+  width: 32% !important;
+}
+
+.adminModalContainer {
+  display: flex;
+  flex: 1;
+  flex-direction: row;
+  box-sizing: border-box;
+  margin-top: 10px;
+}
+
+.adminModalColumn {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 0 10px;
+}
+
+.saveButton {
+  align-self: flex-end;
+  margin-top: 40px;
+}
+
+.adminManageBottomActionContainer {
+  margin-top: 40px;
+}
+
+.adminFormModal {
+  width: 40% !important;
+}
+
+.adminImageUpload {
+  height: 260px !important;
+}
+
+/* Custom button Profile*/
+.ProfileButton {
+  background-color: white;
+  color: black;
+  border-color: gray;
+  border-width: 1px;
+}
+
+:where(.css-dev-only-do-not-override-4tfrqs).ant-input-disabled, :where(.css-dev-only-do-not-override-4tfrqs).ant-input[disabled] {
+  color: rgba(0, 0, 0, 0.25);
+  background-color: rgba(228, 230, 232, 1);
+  border-color: #d9d9d9;
+  box-shadow: none;
+  cursor: not-allowed;
+  opacity: 1;
+}
+
+.ant-btn-primary:disabled {
+  background-color: rgba(228, 230, 232, 1);
+}
+
+:where(.css-dev-only-do-not-override-4tfrqs).ant-input-affix-wrapper-disabled, :where(.css-dev-only-do-not-override-4tfrqs).ant-input-affix-wrapper[disabled] {
+  color: rgba(0, 0, 0, 0.25);
+  background-color: rgba(228, 230, 232, 1);
+  border-color: #d9d9d9;
+  box-shadow: none;
+  cursor: not-allowed;
+  opacity: 1;
+}
+
+:where(.css-4tfrqs).ant-input-disabled, :where(.css-4tfrqs).ant-input[disabled] {
+  color: rgba(0, 0, 0, 0.25);
+  background-color: rgba(228, 230, 232, 1);
+  border-color: #d9d9d9;
+  box-shadow: none;
+  cursor: not-allowed;
+  opacity: 1;
+}
+
+:where(.css-4tfrqs).ant-input-affix-wrapper-disabled, :where(.css-4tfrqs).ant-input-affix-wrapper[disabled] {
+  color: rgba(0, 0, 0, 0.25);
+  background-color: rgba(228, 230, 232, 1);
+  border-color: #d9d9d9;
+  box-shadow: none;
+  cursor: not-allowed;
+  opacity: 1;
+}

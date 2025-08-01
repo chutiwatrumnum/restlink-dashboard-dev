@@ -1,0 +1,13 @@
+{
+  "globals_email": "Email",
+  "globals_password": "Password",
+  "globals_sendButton": "Send",
+  "globals_firstName": "First name",
+  "globals_lastName": "Last name",
+  "globals_nickName": "Nick Name",
+  "globals_contact": "Contact",
+  "globals_iuNumber": "IU Number",
+  "globals_role": "Role",
+  "globals_hobby": "Hobby",
+  "globals_birthDay": "Birth day"
+}
