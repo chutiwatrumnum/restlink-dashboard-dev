@@ -2,6 +2,7 @@ import { useState } from "react";
 import dayjs from "dayjs";
 import { useDispatch } from "react-redux";
 import { Dispatch } from "../../../stores";
+import { usePagination } from "../../../utils/hooks/usePagination";
 
 // Components
 import Header from "../../../components/templates/Header";
@@ -20,10 +21,10 @@ import type { TabsProps } from "antd";
 const ResidentActivation = () => {
   // Hooks & Variables
   const dispatch = useDispatch<Dispatch>();
+  const { curPage, onPageChange } = usePagination();
 
   // States
   const [isActivated, setIsActivated] = useState(false);
-  const [curPage, setCurPage] = useState(1);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   // Data
@@ -175,6 +176,7 @@ const ResidentActivation = () => {
   const onCreate = async () => {
     setIsCreateModalOpen(true);
   };
+
   return (
     <>
       <Header title="Resident’s invitations" />
@@ -201,8 +203,7 @@ const ResidentActivation = () => {
           current: curPage,
           total: invitationsData?.total,
           onChange: (page) => {
-            // console.log(page);
-            setCurPage(page);
+            onPageChange(page);
           },
         }}
       />

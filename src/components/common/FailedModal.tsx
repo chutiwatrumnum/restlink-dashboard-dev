@@ -4,7 +4,7 @@ import { FailedIcon } from "../../assets/icons/Icons";
 import { whiteLabel } from "../../configs/theme";
 import "../styles/common.css";
 
-const FailedModal = (message: string,second: number = 3000) => {
+const FailedModal = (message: string,second: number = 3000,onClose?: () => void) => {
   setTimeout(() => {
     Modal.destroyAll();
   }, second);
@@ -21,6 +21,7 @@ const FailedModal = (message: string,second: number = 3000) => {
     ),
     centered: true,
     className: "statusModalController",
+    onCancel: onClose,
   });
 };
 

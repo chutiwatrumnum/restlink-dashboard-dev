@@ -13,7 +13,7 @@ export const MODE = "dev"; // dev, uat
 // uat
 const APP_VERSION_CODE_UAT = "0.0.1.0";
 // dev
-const APP_VERSION_CODE_DEV = "0.0.7.0-dev";
+const APP_VERSION_CODE_DEV = "0.0.7.1-dev";
 // prod
 const APP_VERSION_CODE_PROD = "1.0.0";
 

@@ -35,29 +35,29 @@ export const ModalFormMemberHome: React.FC<ModalFormMemberHomeProps> = ({
   const [storeMember, setStoreMember] = useState<Member[]>([
     {
       id: 1,
-      name: "วรุณญา ท่าเจริญยิ่ง",
+      name: "Warunya Thacharoenyiing",
       role: 1,
-      phone: "0845625785",
+      phone: "08X-XXX-XXXX",
       lastCall: "22/11/2024 11:11",
-      status: "pending", // pending, success, failed
+      status: "pending" as const,
       failedCount: 0
     },
     {
       id: 2,
-      name: "คมชัย ท่าเจริญยิ่ง",
+      name: "Komchai Thacharoenyiing",
       role: 0,
-      phone: "0845625799",
+      phone: "08X-XXX-XXXX", 
       lastCall: "22/11/2024 11:11",
-      status: "pending",
+      status: "pending" as const,
       failedCount: 1
     },
     {
       id: 3,
-      name: "คมสัน ท่าเจริญยิ่ง",
+      name: "Komsan Thacharoenyiing",
       role: 0,
-      phone: "0845625888",
+      phone: "08X-XXX-XXXX",
       lastCall: "22/11/2024 11:11",
-      status: "pending",
+      status: "pending" as const,
       failedCount: 1
     }
   ]);
@@ -96,10 +96,10 @@ export const ModalFormMemberHome: React.FC<ModalFormMemberHomeProps> = ({
         {/* ส่วนหัว */}
         <div className="mb-6">
           <h2 className="text-2xl text-[#5387ea] font-bold mb-2" 
-          >รายชื่อสมาชิกในบ้าน</h2>
+          >House Members List</h2>
           <div className="flex items-center text-gray-600 mb-4">
             <span className="mr-2">🏠</span>
-            <span className="text-lg">11/9 ซอยวรัญสนิทวงศ์ 79 กรุงเทพมหานคร</span>
+            <span className="text-lg">11/9 Soi Waransinittwong 79, Bangkok</span>
           </div>
         </div>
 

@@ -171,7 +171,12 @@ const ChatRoom = () => {
     <>
       <Header title="Chat Room" />
       <Row className="chatRoomContainer">
-        <Col span={8} className="leftSideChatContainer">
+        <Col
+          xs={{ span: 24 }}
+          lg={{ span: 10 }}
+          xxl={{ span: 8 }}
+          className="leftSideChatContainer"
+        >
           <Row className="filterContainer_CR">
             <Col span={20}>
               <Row justify={"space-between"} align={"middle"}>
@@ -239,7 +244,12 @@ const ChatRoom = () => {
             <div className="horizontal-line" />
           </Row>
         </Col>
-        <Col span={16} style={{ height: "100%" }}>
+        <Col
+          xs={{ span: 24 }}
+          lg={{ span: 14 }}
+          xxl={{ span: 16 }}
+          style={{ height: "100%" }}
+        >
           <div style={{ position: "relative", height: "100%" }}>
             <ChatBoxContainer chatData={currentChat} />
           </div>

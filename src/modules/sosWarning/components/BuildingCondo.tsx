@@ -409,7 +409,7 @@ const BuildingCondo: React.FC<BuildingCondoProps> = ({
       <div className="px-4 py-2 bg-white shadow-sm">
         <div className="flex gap-4 items-center">
           <div className="flex items-center gap-2">
-            <span className="text-gray-700">กลุ่มที่ 1 เริ่มจากชั้น:</span>
+            <span className="text-gray-700">Group 1 start from floor:</span>
             <Input
               type="number"
               value={minFloor}
@@ -418,7 +418,7 @@ const BuildingCondo: React.FC<BuildingCondoProps> = ({
             />
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-gray-700">ระยะชั้น:</span>
+            <span className="text-gray-700">Floor range:</span>
             <Input
               type="number"
               value={floorRange}

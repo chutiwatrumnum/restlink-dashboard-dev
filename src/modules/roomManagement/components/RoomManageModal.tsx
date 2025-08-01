@@ -17,9 +17,8 @@ import type { TabsProps } from "antd";
 interface RoomManageModalProps {
   isModalOpen: boolean;
   onCancel: () => void;
-  onAdd: () => void;
+  onAdd: (curTabIndex: number) => void;
   onDelete: (payload: DeleteMemberPayload) => void;
-  onRoleSelected: (index: number) => void;
 
   unitData?: Unit;
   memberData?: MemberType[];
@@ -27,15 +26,8 @@ interface RoomManageModalProps {
 
 const RoomManageModal = (props: RoomManageModalProps) => {
   // initials
-  const {
-    unitData,
-    memberData,
-    isModalOpen,
-    onCancel,
-    onAdd,
-    onDelete,
-    onRoleSelected,
-  } = props;
+  const { unitData, memberData, isModalOpen, onCancel, onAdd, onDelete } =
+    props;
   const items: TabsProps["items"] = memberData?.map((memberType, index) => ({
     key: index.toString(),
     label: memberType.roleName,
@@ -54,12 +46,10 @@ const RoomManageModal = (props: RoomManageModalProps) => {
   const onTabsChange = (key: string) => {
     // console.log(parseInt(key));
     setCurrentMemberIndex(parseInt(key));
-    onRoleSelected(parseInt(key));
   };
 
   //   Actions
   useEffect(() => {
-    onRoleSelected(0);
     return () => {
       setCurrentMemberIndex(0);
     };
@@ -104,7 +94,9 @@ const RoomManageModal = (props: RoomManageModalProps) => {
               {memberData[currentMemberIndex]?.roleManageCode !==
                 "resident_owner" && unitData?.family < 5 ? (
                 <Button
-                  onClick={onAdd}
+                  onClick={() =>
+                    onAdd(memberData[currentMemberIndex]?.roleId ?? -1)
+                  }
                   type="primary"
                   size="large"
                   className="w-full"
@@ -114,7 +106,11 @@ const RoomManageModal = (props: RoomManageModalProps) => {
               ) : null}
             </div>
           ) : (
-            <EmptyCard onAdd={onAdd} />
+            <EmptyCard
+              onAdd={() =>
+                onAdd(memberData?.[currentMemberIndex]?.roleId ?? -1)
+              }
+            />
           )}
         </div>
       </div>

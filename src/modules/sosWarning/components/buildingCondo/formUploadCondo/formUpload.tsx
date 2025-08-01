@@ -81,16 +81,17 @@ const FormUploadCondo = ({
             </span>
           }
           name="numberOfBuilding"
-          rules={[{ required: true, message: "กรุณาระบุจำนวนอาคาร" }]}
+          rules={[{ required: true, message: "Please specify number of buildings" }]}
         >
           <Select
             showSearch
             filterOption={(input, option) =>
               (option?.label as unknown as string)
                 ?.toString()
-                ?.includes(input) ?? false
+                ?.toLowerCase()
+                ?.includes(input.toLowerCase()) ?? false
             }
-            placeholder="ค้นหาหรือเลือกจำนวนอาคาร"
+            placeholder="Search or select number of buildings"
             options={Array.from({ length: 20 }, (_, i) => ({
               value: i + 1,
               label: i + 1
@@ -106,7 +107,7 @@ const FormUploadCondo = ({
             </span>
           }
           name="floor"
-          rules={[{ required: true, message: "กรุณาระบุจำนวนชั้น" }]}
+          rules={[{ required: true, message: "Please specify number of floors" }]}
         >
           <Select
             showSearch
@@ -115,7 +116,7 @@ const FormUploadCondo = ({
                 ?.toString()
                 ?.includes(input) ?? false
             }
-            placeholder="ค้นหาหรือเลือกจำนวนชั้น"
+            placeholder="Search or select number of floors"
             options={Array.from({ length: 50 }, (_, i) => ({
               value: i + 1,
               label: i + 1
@@ -138,7 +139,7 @@ const FormUploadCondo = ({
             }
             return e?.fileList;
           }}
-          rules={[{ required: true, message: "กรุณาอัพโหลดรูปภาพ" }]}
+          rules={[{ required: true, message: "Please upload an image" }]}
           extra={
             <div>
               {imageUrl ? (
@@ -157,7 +158,7 @@ const FormUploadCondo = ({
                       form.resetFields();
                     }}
                   >
-                    ลบรูป
+                    Delete image
                   </Button>
                 </div>
               ) : (

@@ -8,9 +8,10 @@ import {
 import LOGO from "../../assets/images/SignInLogo.png";
 import type { AccessTokenType } from "../../stores/interfaces/Auth";
 import "./styles/signIn.css";
-import { getAuthCode, startGoogleLogin } from "../../utils/googleAuth";
+import { getAuthCode, startGoogleLogin, getIntendedDestination, isOAuthCallback, cleanOAuthUrl } from "../../utils/googleAuth";
+import { useGoogleAuthRedirect } from "../../utils/hooks/useGoogleAuth";
 import { GoogleIcon } from "../../assets/icons/Icons";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import SignUpModal from "./components/SignUpModal";
 import ConfirmDetailModal from "./components/ConfirmDetailModal";
 import { JoinPayloadType } from "../../stores/interfaces/JuristicManage";
@@ -21,6 +22,9 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import { Dispatch, RootState } from "../../stores";
 import { requiredRule } from "../../utils/formRule";
+import { getProject } from "../setupProjectFirst/service/api/SetupProject";
+
+
 
 const { Title } = Typography;
 
@@ -34,33 +38,86 @@ const SignInScreen = () => {
   const [form] = Form.useForm();
   const dispatch = useDispatch<Dispatch>();
   const navigate = useNavigate();
+  const location = useLocation();
   const { isAuth } = useSelector((state: RootState) => state.userAuth);
+  const { step,projectData } = useSelector((state: RootState) => state.setupProject);
+  const { handlePostAuthSuccess } = useGoogleAuthRedirect();
+
+  
+
+
   const [authCode, setAuthCode] = useState<string>("");
   const [validateCode, setValidateCode] = useState<string>("");
   const [loading, setLoading] = useState(false);
 
   // API
-  const postAuth = postAuthMutation();
+  const postAuth = postAuthMutation(handlePostAuthSuccess);
   const postValidateCode = postValidateCodeMutation();
   const postJoin = postJoinMutation();
 
   // Redirect ถ้า login แล้ว
   useEffect(() => {
-    if (isAuth) {
-      navigate("/dashboard/profile", { replace: true });
+    const redirectDashboard = async () => { 
+      if (isAuth) {
+        // เช็คว่ามี intended destination จาก Google OAuth หรือไม่
+        const intendedPath = getIntendedDestination();
+        if (intendedPath) {
+          navigate(intendedPath, { replace: true });
+          return;
+        }
+
+        const responseStep = await dispatch.setupProject.getStepCondoModel(0);
+        if(responseStep !== 3){
+          checkSetupProject();
+        }
+        else{
+          navigate("/dashboard/profile", { replace: true });
+        }
+      }
     }
+    redirectDashboard()
   }, [isAuth, navigate]);
 
   const handleLogin = async () => {
-    startGoogleLogin();
+    // ส่ง current path เป็น intended destination
+    const currentPath = location.pathname !== '/auth' ? location.pathname : '/dashboard/profile';
+    startGoogleLogin(currentPath);
   };
+
+
+  const checkSetupProject = async () => {
+    if(step !== 3){
+      const response = await getProject() 
+      let projectType 
+      if(response.status){
+        dispatch.setupProject.setProjectData(response || {});
+        projectType = response?.projectType?.nameCode || '';
+        const strType = projectType.split('_');
+        projectType = strType[strType.length - 1];       
+        if(projectType === 'condo'){
+          navigate('/setup-project/upload-number-building', { replace: true });
+        }
+        else if(projectType === 'village'){
+          navigate('/setup-project/upload-plan', { replace: true });
+        }
+      } 
+      else{
+        dispatch.setupProject.setProjectData({});
+      }
+    }
+    else {
+      navigate("/dashboard/profile", { replace: true });
+    }
+  }
+
 
   const handleGetAccessToken = async () => {
     if (authCode) {
       const payload: AccessTokenType = {
         code: authCode,
-        redirectUrl: window.location.origin + window.location.pathname,
+        redirectUrl: window.location.origin + "/auth",
       };
+      // await checkSetupProject();
       await postAuth.mutateAsync(payload);
     }
   };
@@ -86,7 +143,6 @@ const SignInScreen = () => {
   };
 
   const onFinishFailed = (errorInfo: any) => {
-    console.log("Failed:", errorInfo);
     callFailedModal("Please check your input and try again.");
   };
 
@@ -109,10 +165,25 @@ const SignInScreen = () => {
   };
 
   useEffect(() => {
+    // ตรวจสอบ OAuth errors ก่อน
+    const urlParams = new URLSearchParams(window.location.search);
+    const error = urlParams.get('error');
+    const errorDescription = urlParams.get('error_description');
+    
+    if (error) {
+      console.error('OAuth Error:', error, errorDescription);
+      callFailedModal(`Google OAuth Error: ${error} - ${errorDescription}`);
+      // ทำความสะอาด URL
+      cleanOAuthUrl();
+      return;
+    }
+
     // ดึง Auth Code เมื่อมีการ Redirect
     const code = getAuthCode();
     if (code && code !== authCode) {
       setAuthCode(code);
+      // ทำความสะอาด URL หลังจากได้รับ auth code
+      cleanOAuthUrl();
     }
     handleGetAccessToken();
   }, [authCode]);
@@ -241,15 +312,11 @@ const SignInScreen = () => {
 
       <SignUpModal
         onOk={onSignUpOk}
-        onClose={() => {
-          console.log("cancel");
-        }}
+        onClose={() => {}}
       />
       <ConfirmDetailModal
         onOk={onJoinConfirm}
-        onClose={() => {
-          console.log("cancel");
-        }}
+        onClose={() => {}}
       />
     </div>
   );

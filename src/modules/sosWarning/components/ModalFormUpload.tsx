@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import CreateModal from "../../../components/common/FormModal";
-import dayjs from 'dayjs';
-import { Form, message, Progress } from "antd";
+import { Progress } from "antd";
 import { WarrantyDetailsType } from "../../../stores/interfaces/Warranty";
 import { dataAllMap } from "../../../stores/interfaces/SosWarning";
 import { FormUploadPlan } from "./FormUploadPlan";

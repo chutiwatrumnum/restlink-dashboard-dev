@@ -8,6 +8,10 @@ import SmallButton from "../../../components/common/SmallButton";
 import ConfirmModal from "../../../components/common/ConfirmModal";
 import SuccessModal from "../../../components/common/SuccessModal";
 import {
+  callConfirmModal,
+  callSuccessModal,
+} from "../../../components/common/Modal";
+import {
   DataEmergencyCreateByType,
   DataEmergencyTableDataType,
 } from "../../../stores/interfaces/Emergency";
@@ -115,8 +119,9 @@ const EmergencyEditModal = ({
         autoComplete="off"
         layout="vertical"
         onFinish={async (value) => {
-          ConfirmModal({
-            title: "Are you sure you want to edit this?",
+          callConfirmModal({
+            title: "Edit contact lists",
+            message: "Are you sure you want to edit this?",
             okMessage: "Yes",
             cancelMessage: "Cancel",
             onOk: async () => {
@@ -146,6 +151,11 @@ const EmergencyEditModal = ({
         }}
         onFinishFailed={() => {
           console.log("FINISHED FAILED");
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+          }
         }}
       >
         <div>

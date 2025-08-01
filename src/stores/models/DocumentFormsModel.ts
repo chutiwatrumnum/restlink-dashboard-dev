@@ -51,9 +51,11 @@ export const document = createModel<RootModel>()({
       try {
         dispatch.document.updateIsLoadingState(true);
         const result = await axios.get(
-          `/document-home/dashboard?curPage=${item.curPage}&perPage=${item.perPage}${search}${sort}${sortBy}${folderId}`
+          `/document-home/dashboard?curPage=${item.curPage}&perPage=${
+            item.perPage / 2
+          }${search}${sort}${sortBy}${folderId}`
         );
-        // console.log("Doc result : ", result.data.result);
+        console.log("Doc result : ", result.data.result);
 
         if (result.data.statusCode >= 400) {
           console.error(result.data.message);
@@ -63,7 +65,7 @@ export const document = createModel<RootModel>()({
           result.data.result.totalFolder + result.data.result.totalFiles
         );
         dispatch.document.updateFoldersLengthState(
-          result.data.result.totalFolder
+          result.data.result.folder.length
         );
         dispatch.document.updateTableDataState([
           ...result.data.result.folder,

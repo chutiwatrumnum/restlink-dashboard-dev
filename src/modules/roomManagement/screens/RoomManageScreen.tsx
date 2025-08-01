@@ -1,6 +1,7 @@
 // Hooks
 import { useState, useEffect } from "react";
-import "../styles/roomManage.css";
+import { usePagination } from "../../../utils/hooks/usePagination";
+
 // Components
 import Header from "../../../components/templates/Header";
 import { Pagination, Tabs } from "antd";
@@ -17,6 +18,7 @@ import {
   DeleteMemberPayload,
 } from "../../../stores/interfaces/Management";
 
+import "../styles/roomManage.css";
 // Data
 import {
   getBlockListQuery,
@@ -30,12 +32,21 @@ import { getProjectIDQuery } from "../../../utils/queriesGroup/authQueries";
 import { deleteMemberMutation } from "../../../utils/mutationsGroup/managementMutation";
 
 const RoomManageScreen = () => {
+  // Initial
+  const { curPage: floorPage, onPageChange: onPageFChange } = usePagination({
+    initialPage: 1,
+    initialPerPage: 20,
+  });
+
+  const { curPage: unitPage, onPageChange: onPageUChange } = usePagination({
+    initialPage: 1,
+    initialPerPage: 20,
+  });
+
   // States
   const [currentBlockId, setCurrentBlockId] = useState<number>();
   const [currentFloor, setCurrentFloor] = useState<Floor>();
   const [currentUnit, setCurrentUnit] = useState<Unit>();
-  const [floorPage, setFloorPage] = useState<number>(1);
-  const [unitPage, setUnitPage] = useState<number>(1);
   const [currentRoleId, setCurrentRoleId] = useState<number>(-1);
   const [isSelectUserModalOpen, setIsSelectUserModalOpen] = useState(false);
 
@@ -84,30 +95,22 @@ const RoomManageScreen = () => {
   };
 
   const onPageFloorChange: PaginationProps["onChange"] = (page) => {
-    // console.log(page);
-    setFloorPage(page);
+    onPageFChange(page);
   };
 
   const onPageUnitChange: PaginationProps["onChange"] = (page) => {
-    // console.log(page);
-    setUnitPage(page);
+    onPageUChange(page);
   };
 
-  const onAddUserClick = () => {
+  const onAddUserClick = (curRoleId: number) => {
+    console.log("ADD CLICKED WITH ROLE ID:", curRoleId);
+
+    setCurrentRoleId(curRoleId);
     setIsSelectUserModalOpen(true);
   };
 
   const onSelectUserClose = () => {
     setIsSelectUserModalOpen(false);
-  };
-
-  const onRoleSelected = (index: number) => {
-    if (memberData) {
-      const roleId = memberData[index]?.roleId;
-      setCurrentRoleId(roleId);
-    } else {
-      // console.warn("Member data is undefined");
-    }
   };
 
   const onAddSuccess = () => {
@@ -119,6 +122,7 @@ const RoomManageScreen = () => {
   const onDeleteMember = (payload: DeleteMemberPayload) => {
     deleteMember.mutateAsync(payload).then(() => {
       refetchMember();
+      refetchUnit();
     });
   };
 
@@ -129,21 +133,6 @@ const RoomManageScreen = () => {
     label: block.blockName,
     children: null,
   }));
-
-  // useEffect(() => {
-  //   if (blockData !== undefined) {
-  //     console.log("BLOCK DATA : ", blockData);
-  //   }
-  //   if (floorData !== undefined) {
-  //     console.log("FLOOR DATA : ", floorData);
-  //   }
-  //   if (unitData !== undefined) {
-  //     console.log("UNIT DATA : ", unitData);
-  //   }
-  //   if (memberData !== undefined) {
-  //     console.log("MEMBER DATA : ", memberData);
-  //   }
-  // }, [blockData, floorData, unitData, memberData]);
 
   useEffect(() => {
     setCurrentBlockId(blockData?.data[0].id);
@@ -243,7 +232,6 @@ const RoomManageScreen = () => {
         memberData={memberData}
         onAdd={onAddUserClick}
         onDelete={onDeleteMember}
-        onRoleSelected={onRoleSelected}
       />
       <SelectUserModal
         open={isSelectUserModalOpen}

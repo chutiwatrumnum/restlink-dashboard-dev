@@ -5,8 +5,7 @@ import FormWarningSOS from "../components/FormWarningSOS";
 import ImageVillage from "../components/ImageVilage";
 import FormVillageLocation from "../components/FormVillageLocation";
 import BuildingCondo from "../components/BuildingCondo";
-import { Row, Col, Button, Card, Spin } from "antd";
-import defaultImageSOS from "../../../assets/images/defaultImageSOS.png";
+import { Row, Col, Card, Spin } from "antd";
 import { deletePlanAccount, deleteMarker, getMasterData, getVillageData, getEmergency } from "../service/api/SOSwarning";
 import { dataSelectPlan, dataAllMap, SelectMarker } from "../../../stores/interfaces/SosWarning";
 import { io, Socket } from 'socket.io-client';
@@ -35,12 +34,13 @@ const WarrantyTracking = () => {
   });
   const [dataMapAll, setDataMapAll] = useState<dataAllMap>({
     id: '',
+    planInfoId: '',
     projectName: '',
     planTypeId: 70,
     planType: '',
     planTypeCondo: '',
     floor: '',
-    planImage: '',
+    planImg: '',
     marker: [],
     zone: []
   });
@@ -59,13 +59,13 @@ const WarrantyTracking = () => {
 
 
   // Debug selectedMarker changes
-  useEffect(() => {
-    console.log('🔄 selectedMarker state changed:', {
-      selectedMarker,
-      hasSelectedMarker: !!selectedMarker,
-      timestamp: new Date().toISOString()
-    });
-  }, [selectedMarker]);
+  // useEffect(() => {
+  //   console.log('🔄 selectedMarker state changed:', {
+  //     selectedMarker,
+  //     hasSelectedMarker: !!selectedMarker,
+  //     timestamp: new Date().toISOString()
+  //   });
+  // }, [selectedMarker]);
 
   const [selectedMarkerUpdate, setSelectedMarkerUpdate] = useState<{
     id: string;
@@ -90,7 +90,7 @@ const WarrantyTracking = () => {
   const [isToastExpanded, setIsToastExpanded] = useState<boolean>(false);
   // State สำหรับเก็บสถานะ active marker
   const [hasActiveMarker, setHasActiveMarker] = useState<boolean>(false);
-  
+
   // Loading state
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [loadingText, setLoadingText] = useState<string>("Loading...");
@@ -326,7 +326,7 @@ const WarrantyTracking = () => {
     if (selectedMarker && villageMapResetRef.current) {
       // เรียกใช้ cancelMarkerEdit โดยส่ง "cancel" เพื่อให้ VillageMapTS รู้ว่าต้องการยกเลิกการแก้ไขเท่านั้น
       villageMapResetRef.current("cancel");
-    } 
+    }
     // ทำทุกอย่างในครั้งเดียว:
     // 1. ปิด form village ทันที
     setShouldShowVillageForm(false);
@@ -340,15 +340,15 @@ const WarrantyTracking = () => {
     try {
       setIsLoading(true);
       // setLoadingText("กำลังโหลดข้อมูลหลัก...");
-      
+
       let data = await getMasterData();
-      
+
       // setLoadingText("กำลังโหลดข้อมูลแผนที่...");
       let dataAllMap = await getVillageData();
-
+      
       // setLoadingText("กำลังโหลดข้อมูลแจ้งเตือน...");
       let dataEmergency = await getEmergency();
-      
+
       if (dataEmergency.status) {
         setDataEmergency(dataEmergency.result)
       }
@@ -356,33 +356,34 @@ const WarrantyTracking = () => {
       if (data.status) {
         setDataSelectPlan(data.result);
       }
-      // console.log(data.result, 'data.result')
-      // console.log(dataSelectPlan, 'dataSelectPlan')
 
       if (dataAllMap.status) {
-        // console.log(dataAllMap.result, 'dataAllMap.result')
+        dataAllMap.result.marker = dataAllMap.result.marker.marker.map((item: any) => {
+          return item
+        })
+        if(dataAllMap.result.planImg){
+          setUploadedImage(dataAllMap.result.planImg)
+        }
+
         setDataMapAll(dataAllMap.result);
 
         // เซ็ต uploadedImage และ hasImageData จาก API response
-        if (dataAllMap.result && dataAllMap.result.planImage) {
-          // console.log('✅ Setting uploadedImage from API:', dataAllMap.result.planImage);
-          setUploadedImage(dataAllMap.result.planImage);
+        if (dataAllMap.result && dataAllMap.result.planImg) {
+          setUploadedImage(dataAllMap.result.planImg);
           setHasImageData(true);
         } else {
-          console.log('❌ No planImage found in API response');
           setHasImageData(false);
         }
       } else {
-        console.log('❌ API call failed, no dataAllMap.result');
         setHasImageData(false);
       }
-      
+
       // setLoadingText("เสร็จสิ้น");
       // เพิ่ม delay เล็กน้อยเพื่อให้ดู smooth
       setTimeout(() => {
         setIsLoading(false);
       }, 500);
-      
+
     } catch (error) {
       // console.error('Error loading data:', error);
       // setLoadingText("เกิดข้อผิดพลาดในการโหลดข้อมูล");
@@ -468,35 +469,6 @@ const WarrantyTracking = () => {
 
   // state สำหรับเช็คว่ามีแผนหรือไม่ (ตัวอย่างนี้ให้แสดง No plan เสมอ)
   const hasPlan = false;
-
-  // const sendSOSEvent = () => {
-  //   if (socket && connected) {
-  //     const data = {
-  //       test: "xxxxxxxx",
-  //       test2: "zzzzzz",
-  //       timestamp: new Date().toISOString()
-  //     };
-
-  //     socket.emit('SOS', data);
-  //     console.log('📤 Sent SOS event:', data);
-  //   }
-  // };
-
-  // ฟังก์ชันจำลองการรับ SOS event (สำหรับทดสอบ)
-  // const simulateReceivedSOS = () => {
-  //   const mockData = {
-  //     test: "simulated_xxxxxxxx",
-  //     test2: "simulated_zzzzzz",
-  //     emergency_type: "fire",
-  //     location: "Building A, Floor 2",
-  //     timestamp: new Date().toISOString(),
-  //     from: "simulation"
-  //   };
-
-  //   console.log('🎭 Simulating received SOS event:', mockData);
-  //   setMessages(prev => [...prev, { type: 'SOS', data: mockData, timestamp: new Date() }]);
-  // };
-
 
 
 
@@ -598,7 +570,6 @@ const WarrantyTracking = () => {
       // ถ้าเป็น array จาก VillageMapTS
       id = deletedMarker[0].id;
     } else {
-      console.log('Invalid deletedMarker parameter');
       return;
     }
 
@@ -630,7 +601,7 @@ const WarrantyTracking = () => {
     setShouldShowVillageForm(false);
     setShouldShowWarningSOS(true);
     setSelectedMarker(null);
-    
+
     // ปิด loading
     setTimeout(() => {
       setIsLoading(false);
@@ -648,7 +619,6 @@ const WarrantyTracking = () => {
 
     // เรียกใช้ villageMapResetRef เฉพาะสำหรับลบ marker จำลองเท่านั้น
     if (isTemporaryMarker && villageMapResetRef.current || true) {
-      // console.log('🚀 sosWarning.tsx - Deleting temporary marker with ID:', markerId);
       if (villageMapResetRef.current) {
         villageMapResetRef.current(markerId || 0);
       }
@@ -706,16 +676,14 @@ const WarrantyTracking = () => {
   const confirmDeletePlan = async (id: string) => {
     setLoadingText("กำลังลบแผนที่...");
     setIsLoading(true);
-    
+
     let dataDelete = await deletePlanAccount(id);
     if (dataDelete.status) {
-      console.log('delete success')
       setLoadingText("ลบแผนที่สำเร็จ กำลังรีเฟรชหน้า...");
       await SuccessModal("ลบแผนที่สำเร็จ", 1000);
       window.location.reload();
     }
     else {
-      console.log('delete failed')
       setIsLoading(false);
     }
   }
@@ -732,48 +700,12 @@ const WarrantyTracking = () => {
     });
   }
 
-  // const fetchVillageData = async () => {
-  //   try {
-  //     const data = await getVillageData();
-
-  //     // ตรวจสอบว่ามี result หรือไม่
-  //     if (data?.result) {
-  //       const result = data.result;
-
-  //       // Set uploaded image จาก planImage
-  //       if (result.planImage) {
-  //         setUploadedImage(result.planImage);
-  //         setHasImageData(true);
-  //       }
-
-  //       // แปลงข้อมูล markers จาก API response
-  //       // แปลงข้อมูล zones จาก API response
-  //     }
-  //   } catch (error) {
-  //     setHasImageData(false);
-  //   }
-  // }
-
   // เพิ่มฟังก์ชันจัดการ editMarkerData
   const handleEditMarkerData = (markerData: any | null) => {
     setEditMarkerData(markerData);
   };
 
-  // ฟังก์ชันสำหรับแสดง toast
-  const handleShowToast = () => {
-    setShowToast(true);
-  };
 
-  // ฟังก์ชันสำหรับซ่อน toast
-  const handleHideToast = () => {
-    setShowToast(false);
-    setIsToastExpanded(false); // รีเซ็ตการขยายเมื่อปิด toast
-  };
-
-  // ฟังก์ชันสำหรับ toggle การขยาย toast
-  const handleToggleToast = () => {
-    setIsToastExpanded(!isToastExpanded);
-  };
 
   // Handler สำหรับรับสถานะ active marker จาก VillageMapTS
   const handleActiveMarkerChange = (isActive: boolean) => {
@@ -870,22 +802,6 @@ const WarrantyTracking = () => {
               </button>
             </div>
           )}
-
-          {/* ปุ่ม Delete */}
-          {/* {
-            (dataMapAll?.id || uploadedImage) && (
-              <>
-                <Button
-                  type="primary"
-                  size="large"
-                  className="rounded-lg px-8 w-40"
-                  onClick={deletePlan}
-                >
-                  Delete
-                </Button>
-              </>
-            )           
-          } */}
         </div>
       </div>
 
@@ -986,6 +902,7 @@ const WarrantyTracking = () => {
                           setDataMapAll={setDataMapAll}
                           onMarkerSelect={handleMarkerSelect}
                           hasActiveMarker={!!selectedMarker}
+                          dataAllMap={dataMapAll}
                         />
                       </div>
                     </div>
@@ -1038,185 +955,14 @@ const WarrantyTracking = () => {
           </Card>
         </div>
       )}
-      {/*  form upload image อันแรก */}
+
       {!uploadedImage && !buildingPlan && (
-        <div className="flex flex-col items-center justify-center min-h-[70vh] w-full">
-          <img
-            src={defaultImageSOS}
-            alt="No plan available"
-            className="w-[140px] h-[140px] mb-6 object-contain"
-          />
-          <div className="text-center">
-            <div className="font-bold text-lg text-[#002B45] mb-2">
-              No plan available
-            </div>
-            <div className="text-[#002B45] text-sm mb-6 max-w-xs">
-              Please upload a plan using the button below and follow the
-              instructions.
-            </div>
-            <Button
-              type="primary"
-              size="large"
-              className="rounded-lg px-8"
-              onClick={handleUploadImage}
-            >
-              Upload plan
-            </Button>
-          </div>
+        <div className="flex flex-col items-center justify-center  min-h-[70vh] w-full text-2xl text-[#403d38]">
+          ไม่มีข้อมูล Plan
         </div>
       )}
 
-      {/* Toast Component */}
-      {/* {showToast && (
-        <div className="fixed top-20 right-4 z-50 animate-toast-slide-in">
-          <div className={`bg-white shadow-lg rounded-lg border border-gray-200 transition-all duration-300 ease-in-out ${
-            isToastExpanded ? 'min-w-[320px] max-w-[420px]' : 'min-w-[280px] max-w-[320px]'
-          }`}>
-            <div 
-              className="flex justify-between items-center p-4 cursor-pointer hover:bg-gray-50 transition-colors rounded-t-lg"
-              onClick={handleToggleToast}
-            >
-              <div className="flex items-center">
-                <div className="w-4 h-4 bg-red-500 rounded-full mr-2"></div>
-                <h3 className="text-sm font-semibold text-gray-800 !mb-0">รายการแจ้งเตือน</h3>
-                {
-                  dataEmergency.emergency.length > 0 && (
-                    <div className="ml-2 bg-red-500 text-white rounded-full text-xs px-2 py-0.5 min-w-[20px] text-center">
-                      {dataEmergency.emergency.length }
-                    </div>
-                  )
-                }
 
-                {
-                  dataEmergency.deviceWarning.length > 0 && (
-                    <div className="ml-2 bg-yellow-500 text-white rounded-full text-xs px-2 py-0.5 min-w-[20px] text-center">
-                      {dataEmergency.deviceWarning.length }
-                    </div>
-                  )
-                }
-              </div>
-              <div className="flex items-center space-x-2">
-                <button className="text-gray-400 hover:text-gray-600 transition-colors">
-                  <svg 
-                    className={`w-4 h-4 transform transition-transform duration-200 ${
-                      isToastExpanded ? 'rotate-180' : ''
-                    }`} 
-                    fill="currentColor" 
-                    viewBox="0 0 20 20"
-                  >
-                    <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                  </svg>
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleHideToast();
-                  }}
-                  className="text-gray-400 hover:text-gray-600 transition-colors"
-                >
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                  </svg>
-                </button>
-              </div>
-            </div>
-            
-            <div className={`overflow-hidden transition-all duration-300 ease-in-out ${
-              isToastExpanded ? 'max-h-80 opacity-100' : 'max-h-0 opacity-0'
-            }`}>
-              <div className="border-t border-gray-200">
-                <div className="max-h-80 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
-                  <div className="divide-y divide-gray-200">
-                    
-                    
-                    {
-                      dataEmergency.emergency.map((item: any,index:number) => (
-                        <div key={index} className="flex items-start space-x-3 py-3 px-4 hover:bg-gray-50 transition-colors">
-                          <div className="w-2 h-2 bg-red-500 rounded-full mt-2 flex-shrink-0"></div>
-                          <div className="flex-1">
-                            <div>
-                        
-                            </div>
-                            <p className="text-xs font-medium t">
-                              ห้อง : {item.unit.roomAddress || '-'}
-                            </p>
-
-                            <p className="text-xs font-medium t">
-                              ชื่อ : {item.createdByUser.givenName || '-'}
-                            </p>
-
-                            <p className="text-xs font-medium t">
-                              ติดต่อ : {item.createdByUser.contact || '-'}
-                            </p>
-
-                            <p className="text-xs font-medium t">
-                              สร้างเมื่อ : {new Date(item.createdAt).toLocaleString('th-TH', {
-                                day: '2-digit',
-                                month: '2-digit',
-                                year: 'numeric',
-                                hour: '2-digit',
-                                minute: '2-digit',
-                                second: '2-digit',
-                                hour12: false
-                              })}
-                            </p>
-
-
-
-                          </div>
-                        </div>
-                      ))
-                    }
-                    
-
-
-
-
-
-
-
-                    {
-                      dataEmergency.deviceWarning.map((item: any,index:number) => (
-                        <div key={index} className="flex items-start space-x-3 py-3 px-4 hover:bg-gray-50 transition-colors">
-                          <div className="w-2 h-2 bg-yellow-500 rounded-full mt-2 flex-shrink-0"></div>
-                          <div className="flex-1">
-                            <div>
-                        
-                            </div>
-                            <p className="text-xs font-medium t">
-                              ห้อง : {item.unit.roomAddress || '-'}
-                            </p>
-
-                            <p className="text-xs font-medium t">
-                              ชื่อ : {item.createdByUser.givenName || '-'}
-                            </p>
-
-                            <p className="text-xs font-medium t">
-                              ติดต่อ : {item.createdByUser.contact || '-'}
-                            </p>
-
-                            <p className="text-xs font-medium t">
-                              สร้างเมื่อ : {new Date(item.createdAt).toLocaleString('th-TH', {
-                                day: '2-digit',
-                                month: '2-digit',
-                                year: 'numeric',
-                                hour: '2-digit',
-                                minute: '2-digit',
-                                second: '2-digit',
-                                hour12: false
-                              })}
-                            </p>
-                          </div>
-                        </div>
-                      ))
-                    }
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )} */}
 
       {/* Custom CSS สำหรับ animations */}
       <style>{`

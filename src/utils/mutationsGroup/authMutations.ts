@@ -7,7 +7,7 @@ import { encryptStorage } from "../../utils/encryptStorage";
 import { callFailedModal } from "../../components/common/Modal";
 import { JoinPayloadType } from "../../stores/interfaces/JuristicManage";
 
-export const postAuthMutation = () => {
+export const postAuthMutation = (onSuccessCallback?: () => Promise<boolean>) => {
   const dispatch = useDispatch<Dispatch>();
 
   return useMutation({
@@ -24,7 +24,7 @@ export const postAuthMutation = () => {
     onSuccess: async (data) => {
       // console.log("Success:", data);
       if (data.status >= 400) {
-        const cleanUrl = window.location.origin + window.location.pathname;
+        const cleanUrl = window.location.origin + "/auth";
         window.history.replaceState({}, "", cleanUrl);
       }
       encryptStorage.setItem("access_token", data.data.access_token);
@@ -37,6 +37,14 @@ export const postAuthMutation = () => {
         // console.log("success : ", projectId);
         encryptStorage.setItem("projectId", projectId.data.data.myProjectId);
         dispatch.userAuth.updateAuthState(true);
+        
+        // ใช้ callback สำหรับ custom redirect logic
+        if (onSuccessCallback) {
+          const hasRedirected = await onSuccessCallback();
+          if (hasRedirected) {
+            return; // ถ้า redirect แล้วไม่ต้องทำอะไรเพิ่ม
+          }
+        }
       } else {
         if (access_token !== "undefined") {
           dispatch.userAuth.updateIsSignUpModalOpenState(true);

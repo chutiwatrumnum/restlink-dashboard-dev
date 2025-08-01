@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { usePagination } from "../../../utils/hooks/usePagination";
+
 import { Button, Row, Pagination } from "antd";
 import Header from "../../../components/templates/Header";
 import SearchBox from "../../../components/common/SearchBox";
@@ -17,7 +19,6 @@ import {
   DataEmergencyTableDataType,
   EmergencyPayloadType,
 } from "../../../stores/interfaces/Emergency";
-import type { RangePickerProps } from "antd/es/date-picker";
 
 import "../styles/announcement.css";
 
@@ -27,17 +28,22 @@ const Emergency = () => {
   const { tableData, EmergencyMaxLength } = useSelector(
     (state: RootState) => state.emergency
   );
+  const {
+    curPage,
+    perPage,
+    setPerPage,
+    pageSizeOptions,
+    deleteAndHandlePagination,
+    onPageChange: handlePageChange,
+  } = usePagination();
+
+  // States
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
   const [editData, setEditData] = useState<DataEmergencyTableDataType | null>(
     null
   );
   const [search, setSearch] = useState("");
-  const [curPage, setCurPage] = useState(1);
-  const [perPage, setPerPage] = useState(10);
-  const [startDate, setStartDate] = useState();
-  const [endDate, setEndDate] = useState();
   const [refresh, setRefresh] = useState(false);
 
   // functions
@@ -47,7 +53,7 @@ const Emergency = () => {
   };
 
   const onPageChange = (page: number) => {
-    setCurPage(page);
+    handlePageChange(page);
   };
 
   const onCreate = () => {
@@ -79,28 +85,6 @@ const Emergency = () => {
     setEditData(null);
   };
 
-  const onInfoClick = (record: DataEmergencyTableDataType) => {
-    setEditData(record);
-    setIsInfoModalOpen(true);
-  };
-
-  const onInfoCancel = () => {
-    setIsInfoModalOpen(false);
-  };
-
-  const onDateSelect = (values: RangePickerProps["value"]) => {
-    let start: any, end: any;
-    values?.forEach((value, index) => {
-      if (index === 0) {
-        start = value?.format("YYYY-MM");
-      } else {
-        end = value?.format("YYYY-MM");
-      }
-    });
-    setStartDate(start);
-    setEndDate(end);
-  };
-
   const fetchData: VoidFunction = async () => {
     const payload: EmergencyPayloadType = {
       search: search,
@@ -120,8 +104,13 @@ const Emergency = () => {
       okMessage: "Yes",
       cancelMessage: "Cancel",
       onOk: async () => {
-        await dispatch.emergency.deleteTableData(value.id);
-        onRefresh();
+        deleteAndHandlePagination({
+          dataLength: tableData.length,
+          fetchData: fetchData,
+          onDelete: async () => {
+            await dispatch.emergency.deleteTableData(value.id);
+          },
+        });
       },
       onCancel: () => console.log("Cancel"),
     });
@@ -131,7 +120,6 @@ const Emergency = () => {
     current,
     pageSize
   ) => {
-    // console.log(current, pageSize);
     setPerPage(pageSize);
   };
 
@@ -202,7 +190,7 @@ const Emergency = () => {
   // Actions
   useEffect(() => {
     fetchData();
-  }, [startDate, endDate, search, curPage, refresh, perPage]);
+  }, [search, curPage, refresh, perPage]);
 
   return (
     <>
@@ -232,7 +220,7 @@ const Emergency = () => {
           pageSize={perPage}
           onChange={onPageChange}
           total={EmergencyMaxLength}
-          pageSizeOptions={[10, 20, 40, 80, 100]}
+          pageSizeOptions={pageSizeOptions}
           showSizeChanger={true}
           onShowSizeChange={onShowSizeChange}
         />
