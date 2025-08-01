@@ -1,1 +1,0 @@
-export const UpdateProfileSuccessMessage:string='You have completed filling in the information.'
