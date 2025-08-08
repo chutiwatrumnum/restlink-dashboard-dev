@@ -22,7 +22,7 @@ export const postCreateJuristicMutation = () => {
 
       console.log("API Payload:", apiPayload);
       // เปลี่ยน endpoint เป็น /team-management/add
-      return axios.post(`/team-management/add`, apiPayload);
+      return axios.post(`/team-management/invitation/juristic/create`, apiPayload);
     },
     onError: (error: any) => {
       console.error("Create juristic error:", error);

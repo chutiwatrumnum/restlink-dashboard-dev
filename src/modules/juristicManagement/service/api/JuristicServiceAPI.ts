@@ -283,7 +283,7 @@ const addJuristic = async (req: JuristicAddNew) => {
     console.log("addJuristic API Payload:", apiPayload);
 
     // เปลี่ยนเป็น endpoint ใหม่
-    const result = await axios.post("/team-management/add", apiPayload);
+    const result = await axios.post("/team-management/invitation/juristic/create", apiPayload);
     console.log("addJuristic result:", result);
 
     if (result.status === 200 || result.status === 201) {
