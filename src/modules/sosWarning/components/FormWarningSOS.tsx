@@ -30,18 +30,8 @@ const FormWarningSOS = ({  dataEmergency, unitHover, unitClick, setDataEmergency
     
     useEffect(() => {
         if(currentMapMode==='preview') { 
-            if(unitClick) {
-                console.log('🎯 New filter applied:', {
-                    unitClick,
-                    currentDataEmergency: dataEmergency,
-                    previousDataOriginEmergency: dataOriginEmergency
-                });
+            if(unitClick) {                
                 
-                // dataOriginEmergency จะถูกอัพเดทจาก useEffect ด้านบนเมื่อมีข้อมูลใหม่จาก API
-                
-                // สร้าง set ของ cards ที่จะแสดง (ที่ผ่าน filter) ทันที
-                // ใช้ทั้ง unitId และ unitID เพื่อ compatible กับทั้งสองแบบ
-                // ใช้ข้อมูลต้นฉบับ (dataOriginEmergency) ในการ filter เสมอ
                 const emergency = dataOriginEmergency.emergency.filter((marker: any) => 
                     marker?.unitId === unitClick || marker?.unitID === unitClick
                 );
@@ -206,9 +196,12 @@ const FormWarningSOS = ({  dataEmergency, unitHover, unitClick, setDataEmergency
             document.removeEventListener('mousedown', handleClickOutside);
         };
     }, [unitClick, onClearFilter]);
-    const handleAcknowledgeEmergency = async (id: string) => {
-        setIdMarker(id)
-        setIsModalOpen(true)        
+    const handleAcknowledgeEmergency = async (marker: any) => {
+        console.log(marker,'marker-acknowledge')
+        // console.log(id,'id')
+        // navigate('/security-alarm')
+        // setIdMarker(id)
+        // setIsModalOpen(true)        
     }
     // ฟังก์ชันสำหรับตรวจสอบว่า card กำลังถูกลบหรือไม่
     const isCardRemoving = (cardId: string) => {
@@ -298,7 +291,7 @@ const FormWarningSOS = ({  dataEmergency, unitHover, unitClick, setDataEmergency
                             <div className="text-xs mb-3"><span className="font-bold">Time:</span> {time}</div>
                             <Button type="primary" block 
                             className="rounded bg-[#E74C3C] border-[#E74C3C] hover:bg-[#C0392B] hover:border-[#C0392B]" 
-                            onClick={() => handleAcknowledgeEmergency(id)}>
+                            onClick={() => handleAcknowledgeEmergency(marker)}>
                                 Acknowledge Emergency
                             </Button>
                         </div>

@@ -11,6 +11,7 @@ import {
 import { paramsdata } from "./paramsAPI";
 import { encryptStorage } from "../../../../utils/encryptStorage";
 import { message } from "antd";
+
 const getdatajuristiclist = async (params: conditionPage) => {
   let url: string = `/team-management/list?`;
   const resultparams = await paramsdata(params);
@@ -91,6 +92,7 @@ const ApprovedId = async (id: string) => {
     };
   }
 };
+
 const ResendById = async (id: string) => {
   try {
     const resultApproved = await axios.post(`/users/approve`, {
@@ -111,6 +113,7 @@ const ResendById = async (id: string) => {
     };
   }
 };
+
 const getDataMasterJuristicDetail = async () => {
   try {
     const data = await axios.get("/users/sign-up/master-data");
@@ -156,6 +159,7 @@ const getDataMasterJuristicDetail = async () => {
     };
   }
 };
+
 const getdatarole = async () => {
   try {
     const data = await axios.get("/role/list");
@@ -192,6 +196,7 @@ const getdatarole = async () => {
     };
   }
 };
+
 const getdatahobby = async () => {
   try {
     const data = await axios.get("/hobby");
@@ -230,10 +235,23 @@ const getdatahobby = async () => {
     };
   }
 };
+
+// อัพเดตฟังก์ชัน editdatajuristic ให้รองรับ format ใหม่
 const editdatajuristic = async (userId: string, payload: JuristicAddNew) => {
   try {
-    console.log("edit request:", payload);
-    const result = await axios.put(`/team-management/${userId}`, payload);
+    // แปลงข้อมูลให้ตรงกับ API format ใหม่
+    const apiPayload = {
+      roleId: payload.roleId,
+      firstName: payload.firstName,
+      middleName: payload.middleName || "",
+      lastName: payload.lastName,
+      contact: payload.contact,
+      email: payload.email,
+      ...(payload.image && { image: payload.image })
+    };
+
+    console.log("edit request:", apiPayload);
+    const result = await axios.put(`/team-management/${userId}`, apiPayload);
     console.log("result edit:", result);
 
     if (result.status < 400) {
@@ -247,18 +265,55 @@ const editdatajuristic = async (userId: string, payload: JuristicAddNew) => {
     return false;
   }
 };
+
+// อัพเดตฟังก์ชัน addJuristic ให้ใช้ endpoint ใหม่ /team-management/add
 const addJuristic = async (req: JuristicAddNew) => {
   try {
-    const result = await axios.post("/users/sign-up-by-juristic", req);
+    // แปลงข้อมูลให้ตรงกับ API format ใหม่
+    const apiPayload = {
+      roleId: req.roleId,
+      firstName: req.firstName,
+      middleName: req.middleName || "",
+      lastName: req.lastName,
+      contact: req.contact,
+      email: req.email,
+      ...(req.image && { image: req.image })
+    };
+
+    console.log("addJuristic API Payload:", apiPayload);
+
+    // เปลี่ยนเป็น endpoint ใหม่
+    const result = await axios.post("/team-management/add", apiPayload);
     console.log("addJuristic result:", result);
 
-    if (result.status === 200) {
-      return true;
+    if (result.status === 200 || result.status === 201) {
+      return {
+        status: true,
+        data: result.data
+      };
     } else {
-      message.error(result.data.message);
-      return false;
+      message.error(result.data.message || "Failed to add team member");
+      return {
+        status: false,
+        data: null
+      };
     }
-  } catch (error) {}
+  } catch (error: any) {
+    console.error("addJuristic error:", error);
+
+    let errorMessage = "Failed to add team member";
+    if (error.response?.data?.message) {
+      errorMessage = error.response.data.message;
+    } else if (error.message) {
+      errorMessage = error.message;
+    }
+
+    message.error(errorMessage);
+    return {
+      status: false,
+      data: null
+    };
+  }
 };
 
 const RejectById = async (data: rejectRequest) => {
@@ -276,6 +331,7 @@ const RejectById = async (data: rejectRequest) => {
     };
   }
 };
+
 export {
   getdatajuristiclist,
   deleteJuristicId,

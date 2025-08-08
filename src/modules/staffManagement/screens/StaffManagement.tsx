@@ -1,52 +1,68 @@
 import { useState, useEffect } from "react";
-import { Button } from "antd";
+import { usePagination } from "../../../utils/hooks/usePagination";
+import dayjs from "dayjs";
+import { useDispatch, useSelector } from "react-redux";
+import { Dispatch, RootState } from "../../../stores";
+
+import { Button, Tabs } from "antd";
 import Header from "../../../components/templates/Header";
 import DatePicker from "../../../components/common/DatePicker";
 import SearchBox from "../../../components/common/SearchBox";
-import JuristicManageTable from "../components/JuristicManageTable";
-import JuristicManageEditModal from "../components/JuristicManageEditModal";
-import dayjs from "dayjs";
-import { conditionPage } from "../../../stores/interfaces/JuristicManage";
-import { useDispatch, useSelector } from "react-redux";
-import { Dispatch, RootState } from "../../../stores";
-import type { ColumnsType, TableProps } from "antd/es/table";
-import { JuristicManageDataType } from "../../../stores/interfaces/JuristicManage";
-import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
-import "../styles/userManagement.css";
-import SuccessModal from "../../../components/common/SuccessModal";
-import FailedModal from "../../../components/common/FailedModal";
-import { deleteJuristicId } from "../service/api/JuristicServiceAPI";
+import StaffManageTable from "../components/StaffManageTable";
+import StaffManageEditModal from "../components/StaffManageEditModal";
+import StaffManageCreateModal from "../components/StaffManageCreateModal";
+import RoleStaffComponent from "../components/RoleStaffComponent";
 import ConfirmModal from "../../../components/common/ConfirmModal";
+import CreateRoleModal from "../components/CreateRoleModal";
 
-const JuristicManage = () => {
+import IconLoader from "../../../components/common/IconLoader";
+import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import { PlusIcon } from "../../../assets/icons/Icons";
+
+import {
+  JuristicManageDataType,
+  conditionPage,
+} from "../../../stores/interfaces/JuristicManage";
+import type { ColumnsType, TableProps } from "antd/es/table";
+import type { TabsProps } from "antd";
+
+import "../style.css";
+
+const StaffManage = () => {
   // variables
   const dispatch = useDispatch<Dispatch>();
   const { loading, tableData, total } = useSelector(
     (state: RootState) => state.juristic
   );
+  const { curPage, perPage, pageSizeOptions, setCurPage, setPerPage } =
+    usePagination();
 
-  // States
-  const [currentPage, setCurrentPage] = useState<number>(1);
   // setting pagination Option
-  const pageSizeOptions = [10, 20, 40, 80, 100];
   const PaginationConfig = {
     defaultPageSize: pageSizeOptions[0],
     pageSizeOptions: pageSizeOptions,
-    current: currentPage,
+    current: curPage,
     showSizeChanger: true,
     total: total,
   };
   let params: conditionPage = {
-    perPage: pageSizeOptions[0],
-    curPage: currentPage,
+    perPage: perPage,
+    curPage: curPage,
     verifyByJuristic: true,
     reject: false,
     isActive: true,
   };
-  const [rerender, setRerender] = useState<boolean>(true);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [editData, setEditData] = useState<JuristicManageDataType | null>(null);
-  const [paramsData, setParamsData] = useState<conditionPage>(params);
+
+  const items: TabsProps["items"] = [
+    {
+      key: "staff",
+      label: "Staff",
+    },
+    {
+      key: "role",
+      label: "Role",
+    },
+  ];
 
   const columns: ColumnsType<JuristicManageDataType> = [
     {
@@ -55,19 +71,14 @@ const JuristicManage = () => {
       width: "7%",
       align: "center",
       sorter: {
-        compare: (a, b) => {
-          const aName = a.firstName || a.givenName || "";
-          const bName = b.firstName || b.givenName || "";
-          return aName.localeCompare(bName);
-        },
+        compare: (a, b) => a.givenName.localeCompare(b.givenName),
       },
       render: (_, record) => {
-        // รองรับทั้ง format เก่าและใหม่
-        const firstName = record?.firstName || record?.givenName || "";
-        const middleName = record?.middleName || "";
-        const lastName = record?.lastName || record?.familyName || "";
-
-        return <div>{`${firstName} ${middleName} ${lastName}`.trim()}</div>;
+        return (
+          <div>{`${record?.givenName} ${record?.middleName ?? ""} ${
+            record?.familyName ?? ""
+          }`}</div>
+        );
       },
     },
     {
@@ -76,11 +87,7 @@ const JuristicManage = () => {
       align: "center",
       width: "7%",
       sorter: {
-        compare: (a, b) => {
-          const aContact = a.contact || "";
-          const bContact = b.contact || "";
-          return aContact.localeCompare(bContact);
-        },
+        compare: (a, b) => a.familyName.localeCompare(b.familyName),
       },
       render: (_, record) => {
         return <div>{`${record?.contact ?? "-"}`}</div>;
@@ -92,11 +99,7 @@ const JuristicManage = () => {
       align: "center",
       width: "5%",
       sorter: {
-        compare: (a, b) => {
-          const aEmail = a.email || "";
-          const bEmail = b.email || "";
-          return aEmail.localeCompare(bEmail);
-        },
+        compare: (a, b) => a.unit.roomAddress.localeCompare(b.unit.roomAddress),
       },
       render: (_, record) => {
         return <div>{record.email ?? "Something went wrong!"}</div>;
@@ -171,6 +174,28 @@ const JuristicManage = () => {
     },
   ];
 
+  const mockRoleData = [
+    {
+      id: 1,
+      name: "Security guard",
+      total: 5,
+    },
+    {
+      id: 2,
+      name: "Maid",
+      total: 12,
+    },
+  ];
+
+  // States
+  const [rerender, setRerender] = useState<boolean>(true);
+  const [isCreateRoleOpen, setIsCreateRoleOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editData, setEditData] = useState<JuristicManageDataType | null>(null);
+  const [paramsData, setParamsData] = useState<conditionPage>(params);
+  const [activeKey, setActiveKey] = useState("staff");
+  const [isCreateStaffModalOpen, setIsCreateStaffModalOpen] = useState(false);
+
   // functions
   const onChange = async (e: any) => {
     params = paramsData;
@@ -212,7 +237,7 @@ const JuristicManage = () => {
       ? pagination?.pageSize
       : PaginationConfig.defaultPageSize;
     setParamsData(params);
-    setCurrentPage(params.curPage);
+    setCurPage(params.curPage);
     await dispatch.juristic.getTableData(paramsData);
   };
 
@@ -221,33 +246,55 @@ const JuristicManage = () => {
       title: "Are you sure you want to delete this?",
       okMessage: "Yes",
       cancelMessage: "Cancel",
-      onOk: async () => {
-        const statusDeleted = await deleteJuristicId(userId);
-        if (statusDeleted) {
-          SuccessModal("Successfully deleted");
-        } else {
-          FailedModal("Failed deleted");
-        }
-        setRerender(!rerender);
-      },
+      onOk: async () => {},
       onCancel: () => {
         console.log("Cancel");
       },
     });
   };
 
+  const onTabsChange = (key: string) => {
+    setActiveKey(key);
+  };
+
+  const onCreateRole = () => {
+    setIsCreateRoleOpen(true);
+  };
+
+  const fetchData = async () => {
+    setParamsData(params);
+    await dispatch.juristic.getTableData(paramsData);
+  };
+
+  const onCreateStaff = () => {
+    setIsCreateStaffModalOpen(true);
+  };
+
+  // Components
+  const CreateCard = () => {
+    return (
+      <div
+        onClick={onCreateRole}
+        className="staffRoleCard flex flex-col p-4 gap-4 rounded-2xl justify-center items-center hover:cursor-pointer hover:brightness-90"
+      >
+        <div className="flex flex-row justify-center items-center gap-4">
+          <PlusIcon color="var(--light-color)" style={{ height: 48 }} />
+          <span className="font-normal text-lg text-[var(--light-color)]">
+            Create role
+          </span>
+        </div>
+      </div>
+    );
+  };
+
   // Actions
   useEffect(() => {
-    (async function () {
-      setParamsData(params);
-      await dispatch.juristic.getTableData(paramsData);
-    })();
-    // console.log(tableData);
-  }, [rerender]);
+    fetchData();
+  }, [rerender, curPage]);
 
   return (
     <>
-      <Header title="Juristic's information" />
+      <Header title="Juristic’s information" />
       <div className="userManagementTopActionGroup">
         <div className="userManagementTopActionLeftGroup">
           <DatePicker
@@ -261,27 +308,57 @@ const JuristicManage = () => {
             onSearch={onSearch}
           />
         </div>
+        <div className="userManagementTopActionRightGroup">
+          <Button
+            type="primary"
+            size="large"
+            onClick={onCreateStaff}
+            className="px-4"
+          >
+            Create staff
+          </Button>
+        </div>
       </div>
-      <JuristicManageTable
-        columns={columns}
-        data={tableData}
-        onEdit={onEdit}
-        PaginationConfig={PaginationConfig}
-        loading={loading}
-        onchangeTable={onChangeTable}
+      <Tabs
+        defaultActiveKey={activeKey}
+        items={items}
+        onChange={onTabsChange}
       />
-      <JuristicManageEditModal
-        isEditModalOpen={isEditModalOpen}
-        data={editData}
-        callBack={async (isOpen: boolean, saved: boolean) => {
-          setIsEditModalOpen(isOpen);
-          if (saved) {
-            setRerender(!rerender);
-          }
+      <div>
+        {activeKey === "staff" ? (
+          <StaffManageTable
+            columns={columns}
+            data={tableData}
+            onEdit={onEdit}
+            PaginationConfig={PaginationConfig}
+            loading={loading}
+            onchangeTable={onChangeTable}
+          />
+        ) : (
+          <div className="flex grid grid-cols-4 gap-4 p-8 max-2xl:grid-cols-3">
+            {mockRoleData.map((item) => {
+              return <RoleStaffComponent key={item.id} data={item} />;
+            })}
+            <CreateCard />
+          </div>
+        )}
+      </div>
+      <CreateRoleModal
+        isCreateModalOpen={isCreateRoleOpen}
+        onCancel={() => {
+          setIsCreateRoleOpen(false);
+        }}
+        refetch={() => {}}
+      />
+      <StaffManageCreateModal
+        isCreateModalOpen={isCreateStaffModalOpen}
+        refetch={() => {}}
+        onCancel={() => {
+          setIsCreateStaffModalOpen(false);
         }}
       />
     </>
   );
 };
 
-export default JuristicManage;
+export default StaffManage;

@@ -42,10 +42,18 @@ axiosSOS.interceptors.response.use(
     
     // ตรวจสอบถ้าเป็น error 401 (Unauthorized) และยังไม่ได้ retry
     if (error.response && error.response.status === 401 && !originalRequest._retry) {
+      // ข้าม refresh token API เพื่อป้องกัน infinite loop
+      if (originalRequest.url && originalRequest.url.includes('/refresh-token')) {
+        return Promise.reject(error);
+      }
+      
       // ตรวจสอบว่าอยู่ในหน้า login อยู่แล้วหรือไม่
       if (!window.location.pathname.includes('/auth') && !window.location.pathname.includes('/login')) {
         originalRequest._retry = true; // ป้องกัน infinite loop
         
+        console.log("❌ [SOS] 401 Unauthorized detected, redirecting to login immediately");
+        
+        // ไม่ต้องพยายาม refresh token แล้ว ให้ logout และไปหน้า login ทันที
         try {
           // ลองทำ refresh token แบบเดียวกับ AuthorizedLayout
           const resReToken = await store.dispatch.userAuth.refreshTokenNew();
@@ -70,11 +78,15 @@ axiosSOS.interceptors.response.use(
           // ถ้า refresh token ล้มเหลว ให้ logout
           localStorage.clear();
           await store.dispatch.userAuth.onLogout();
-          setTimeout(() => {
-            localStorage.clear();
-            window.location.href = '/auth';
-          }, 100);
         }
+        
+        // เคลียร์ storage
+        localStorage.clear();
+        
+        // Redirect ไปหน้า auth ทันที
+        window.location.href = '/auth';
+        
+        return Promise.reject(error);
       }
       
       return Promise.reject(error);

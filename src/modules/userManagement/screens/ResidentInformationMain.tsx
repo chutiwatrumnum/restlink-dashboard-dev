@@ -175,13 +175,13 @@ const ResidentInformationMain = () => {
               icon={<EditOutlined />}
               onClick={() => onEdit(record)}
             />
-            <Button
+            {/* <Button
               className="iconButton"
               value={record.userId}
               type="text"
               onClick={showDeleteConfirm}
               icon={<DeleteOutlined />}
-            />
+            /> */}
           </>
         );
       },
@@ -270,8 +270,6 @@ const ResidentInformationMain = () => {
   }, [rerender]);
 
   const importExcel = ({ currentTarget }: any) => {};
-
-  console.log(tableData.length);
 
   return (
     <>

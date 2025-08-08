@@ -1,5 +1,11 @@
 // import { useEffect, useLayoutEffect } from "react";
-import { Navigate, Route, Routes, BrowserRouter, useLocation } from "react-router-dom";
+import {
+  Navigate,
+  Route,
+  Routes,
+  BrowserRouter,
+  useLocation,
+} from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "./stores";
 import { useEffect, useState, useLayoutEffect } from "react";
@@ -64,6 +70,7 @@ import Emergency from "./modules/emergency/screens/Emergency";
 
 import JuristicInvitation from "./modules/juristicManagement/screens/JuristicInvitation";
 import JuristicManage from "./modules/juristicManagement/screens/JuristicManage";
+import StaffManagement from "./modules/staffManagement/screens/StaffManagement";
 
 import RoomManageScreen from "./modules/roomManagement/screens/RoomManageScreen";
 
@@ -74,7 +81,6 @@ import ResetPassword from "./modules/main/ResetPassword";
 import SuccessResetScreen from "./modules/main/SuccessResetScreen";
 import ParcelDashboard from "./modules/parcelDashboard/screen/ParcelDashboard";
 import ParcelDeliverLogs from "./modules/parcelDeliveryLogs/screen/parcelDeliverLogs";
-
 
 import SetupProject from "./modules/setupProjectFirst/screens/SetupProject";
 // village
@@ -88,10 +94,7 @@ import UnitPreviewCondo from "./modules/setupProjectFirst/screens/condominium/Un
 import UploadFloorPlan from "./modules/setupProjectFirst/screens/condominium/UploadFloorPlan";
 // components
 
-
 // data project
-
-
 
 // ตัวอย่างการใช้ Custom Hooks (เก็บไว้สำหรับ scroll to top)
 function AppWithCustomHooks() {
@@ -103,12 +106,16 @@ function AppWithCustomHooks() {
 
 // Route Guard Component ที่เช็คเงื่อนไขก่อน render Routes
 function AppRoutes() {
-  const { projectData, step } = useSelector((state: RootState) => state.setupProject);
+  const { projectData, step } = useSelector(
+    (state: RootState) => state.setupProject
+  );
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
-  const [routeState, setRouteState] = useState<'checking' | 'allow'>('checking');
-  const [previousLayoutType, setPreviousLayoutType] = useState<string>('');
+  const [routeState, setRouteState] = useState<"checking" | "allow">(
+    "checking"
+  );
+  const [previousLayoutType, setPreviousLayoutType] = useState<string>("");
 
   useLayoutEffect(() => {
     const checkRouteAccess = async () => {
@@ -118,67 +125,71 @@ function AppRoutes() {
       if (step === 0) {
         currentStep = await dispatch.setupProject.getStepCondoModel();
       }
-      
 
       // กำหนด layout type ของ route ปัจจุบัน
-      let currentLayoutType = '';
-      if (currentPath.includes('/dashboard')) {
-        currentLayoutType = 'dashboard';
-      } else if (currentPath.includes('/setup-project')) {
-        currentLayoutType = 'setup-project';
-      } else if (currentPath.includes('/auth') || 
-                 currentPath.includes('/recovery') || 
-                 currentPath.includes('/forgot-password') || 
-                 currentPath.includes('/success-reset')) {
-        currentLayoutType = 'unauthorized';
+      let currentLayoutType = "";
+      if (currentPath.includes("/dashboard")) {
+        currentLayoutType = "dashboard";
+      } else if (currentPath.includes("/setup-project")) {
+        currentLayoutType = "setup-project";
+      } else if (
+        currentPath.includes("/auth") ||
+        currentPath.includes("/recovery") ||
+        currentPath.includes("/forgot-password") ||
+        currentPath.includes("/success-reset")
+      ) {
+        currentLayoutType = "unauthorized";
       }
 
-      if(currentLayoutType === 'dashboard'){
-        if(currentStep === 3){
-          setRouteState('allow');
+      if (currentLayoutType === "dashboard") {
+        if (currentStep === 3) {
+          setRouteState("allow");
           return;
         }
       }
-      
+
       // ถ้า navigate ภายใน layout เดียวกัน ให้ skip การเช็คและ allow ทันที
-      if (previousLayoutType === currentLayoutType && currentLayoutType !== '') {
-        setRouteState('allow');
+      if (
+        previousLayoutType === currentLayoutType &&
+        currentLayoutType !== ""
+      ) {
+        setRouteState("allow");
 
         return;
       }
-      
-      setRouteState('checking');
-      
+
+      setRouteState("checking");
+
       if (!projectData) {
         // อัพเดท previous layout type เฉพาะเมื่อ allow
         setPreviousLayoutType(currentLayoutType);
-        setRouteState('allow');
+        setRouteState("allow");
         return;
       }
 
-
-
-      let projectType = projectData?.projectType?.nameCode || '';
+      let projectType = projectData?.projectType?.nameCode || "";
       // ถ้าเป็น unauthorized routes ให้ผ่านได้
-      if (currentPath.includes('/auth') || 
-          currentPath.includes('/recovery') || 
-          currentPath.includes('/forgot-password') || 
-          currentPath.includes('/success-reset')) {
+      if (
+        currentPath.includes("/auth") ||
+        currentPath.includes("/recovery") ||
+        currentPath.includes("/forgot-password") ||
+        currentPath.includes("/success-reset")
+      ) {
         // อัพเดท previous layout type เฉพาะเมื่อ allow
         setPreviousLayoutType(currentLayoutType);
-        setRouteState('allow');
+        setRouteState("allow");
         return;
       }
-      
+
       if (projectType) {
-        const strType = projectType.split('_');
+        const strType = projectType.split("_");
         projectType = strType[strType.length - 1];
         // เช็คเงื่อนไขสำหรับ dashboard routes ก่อน (เพื่อป้องกัน UI flash)
-        if (currentPath.includes('/dashboard')) {
-          if (projectType === 'condo') {
+        if (currentPath.includes("/dashboard")) {
+          if (projectType === "condo") {
             const objStep = {
-              1: '/setup-project/upload-number-building',
-              2: '/setup-project/upload-floor-plan',
+              1: "/setup-project/get-start",
+              2: "/setup-project/upload-floor-plan",
             };
             const targetRoute = objStep[currentStep as keyof typeof objStep];
             if (targetRoute) {
@@ -188,17 +199,17 @@ function AppRoutes() {
             }
             // ถ้าไม่ต้อง redirect แสดงว่าหน้านี้ถูกต้อง (step 3 ขึ้นไป)
             setPreviousLayoutType(currentLayoutType);
-            setRouteState('allow');
+            setRouteState("allow");
             return;
-          }
-          else if (projectType === 'village') {
+          } else if (projectType === "village") {
             let currentStep = step;
             if (currentStep === 0) {
               currentStep = await dispatch.setupProject.getStepCondoModel();
             }
             const objStep = {
-              1: '/setup-project/upload-plan',
-              2: '/setup-project/upload-plan',
+              0: "/setup-project/get-start",
+              1: "/setup-project/get-start",
+              2: "/setup-project/get-start",
             };
             const targetRoute = objStep[currentStep as keyof typeof objStep];
             if (targetRoute) {
@@ -208,66 +219,36 @@ function AppRoutes() {
             }
             // ถ้าไม่ต้อง redirect แสดงว่าหน้านี้ถูกต้อง (step 3 ขึ้นไป)
             setPreviousLayoutType(currentLayoutType);
-            setRouteState('allow');
+            setRouteState("allow");
             return;
           }
           // ถ้าไม่ใช่ condo หรือ village ให้ผ่านได้
           setPreviousLayoutType(currentLayoutType);
-          setRouteState('allow');
+          setRouteState("allow");
           return;
         }
-        
+
         // เช็คเงื่อนไขสำหรับ setup-project routes
-        else if (currentPath.includes('/setup-project')) {
-          if (projectType === 'condo') {
+        else if (currentPath.includes("/setup-project")) {
+          if (projectType === "condo") {
             const currentStep = await dispatch.setupProject.getStepCondoModel();
             let storePathCondo = [
-              '/setup-project/upload-plan',
-              '/setup-project/upload-unit',
-              '/setup-project/unit-preview'
-            ]
+              "/setup-project/upload-plan",
+              "/setup-project/upload-unit",
+              "/setup-project/unit-preview",
+            ];
             const currentRoutePath = location.pathname;
-            if(storePathCondo.includes(currentRoutePath)){
-              // ไม่ update previousLayoutType เพราะจะ redirect
-              navigate('/setup-project/upload-number-building', { replace: true });
-              return 
-            }
-            
-            
-            if (currentStep > 0) {
-              const objStep = {
-                2: '/setup-project/upload-floor-plan',
-                3: '/dashboard/profile'
-              };
-              const targetRoute = objStep[currentStep as keyof typeof objStep];
-              if (targetRoute && targetRoute !== currentPath) {
-                // ไม่ update previousLayoutType เพราะจะ redirect
-                navigate(targetRoute, { replace: true });
-                return; // ไม่ set state เพื่อให้ useLayoutEffect ทำงานใหม่
-              }
-            }
-            // ถ้าไม่ต้อง redirect แสดงว่าหน้านี้ถูกต้อง
-            setPreviousLayoutType(currentLayoutType);
-            setRouteState('allow');
-            return;
-          }
-          else if (projectType === 'village') {
-            const currentStep = await dispatch.setupProject.getStepCondoModel();
-            let storePathCondo = [
-              '/setup-project/upload-number-building',
-              '/setup-project/unit-preview-condo',
-              '/setup-project/upload-floor-plan'
-            ]
-            const currentRoutePath = location.pathname;
-            if(storePathCondo.includes(currentRoutePath)){
-              // ไม่ update previousLayoutType เพราะจะ redirect
-              navigate('/setup-project/upload-plan', { replace: true });
-              return 
+            if (storePathCondo.includes(currentRoutePath)) {
+              navigate("/setup-project/get-start", { replace: true });
+              return;
             }
 
             if (currentStep > 0) {
               const objStep = {
-                3: '/dashboard/profile'
+                0: "/setup-project/get-start",
+                1: "/setup-project/get-start",
+                2: "/setup-project/upload-floor-plan",
+                3: "/dashboard/profile",
               };
               const targetRoute = objStep[currentStep as keyof typeof objStep];
               if (targetRoute && targetRoute !== currentPath) {
@@ -278,26 +259,84 @@ function AppRoutes() {
             }
             // ถ้าไม่ต้อง redirect แสดงว่าหน้านี้ถูกต้อง
             setPreviousLayoutType(currentLayoutType);
-            setRouteState('allow');
+            setRouteState("allow");
+            return;
+          } else if (projectType === "village") {
+            const currentStep = await dispatch.setupProject.getStepCondoModel();
+            let storePathCondo = [
+              "/setup-project/upload-number-building",
+              "/setup-project/unit-preview-condo",
+              "/setup-project/upload-floor-plan",
+            ];
+            const currentRoutePath = location.pathname;
+            if (storePathCondo.includes(currentRoutePath)) {
+              navigate("/setup-project/get-start", { replace: true });
+              return;
+            }
+
+            if (currentStep > 0) {
+              const objStep = {
+                2: "/setup-project/upload-floor-plan",
+                3: "/dashboard/profile",
+              };
+              const targetRoute = objStep[currentStep as keyof typeof objStep];
+              if (targetRoute && targetRoute !== currentPath) {
+                // ไม่ update previousLayoutType เพราะจะ redirect
+                navigate(targetRoute, { replace: true });
+                return; // ไม่ set state เพื่อให้ useLayoutEffect ทำงานใหม่
+              }
+            }
+            // ถ้าไม่ต้อง redirect แสดงว่าหน้านี้ถูกต้อง
+            setPreviousLayoutType(currentLayoutType);
+            setRouteState("allow");
+            return;
+          } else if (projectType === "village") {
+            const currentStep = await dispatch.setupProject.getStepCondoModel();
+            let storePathCondo = [
+              "/setup-project/upload-number-building",
+              "/setup-project/unit-preview-condo",
+              "/setup-project/upload-floor-plan",
+            ];
+            const currentRoutePath = location.pathname;
+            if (storePathCondo.includes(currentRoutePath)) {
+              // ไม่ update previousLayoutType เพราะจะ redirect
+              navigate("/setup-project/upload-plan", { replace: true });
+              return;
+            }
+
+            if (currentStep > 0) {
+              const objStep = {
+                3: "/dashboard/profile",
+              };
+              const targetRoute = objStep[currentStep as keyof typeof objStep];
+              if (targetRoute && targetRoute !== currentPath) {
+                // ไม่ update previousLayoutType เพราะจะ redirect
+                navigate(targetRoute, { replace: true });
+                return; // ไม่ set state เพื่อให้ useLayoutEffect ทำงานใหม่
+              }
+            }
+            // ถ้าไม่ต้อง redirect แสดงว่าหน้านี้ถูกต้อง
+            setPreviousLayoutType(currentLayoutType);
+            setRouteState("allow");
             return;
           }
           // ถ้าไม่ใช่ condo หรือ village ให้ผ่านได้
           setPreviousLayoutType(currentLayoutType);
-          setRouteState('allow');
+          setRouteState("allow");
           return;
         }
       }
-      
+
       // สำหรับ route อื่นๆ ที่ไม่เข้าเงื่อนไขข้างต้น ให้ผ่านได้
       setPreviousLayoutType(currentLayoutType);
-      setRouteState('allow');
+      setRouteState("allow");
     };
 
     checkRouteAccess();
   }, [location.pathname, projectData, step, dispatch, navigate]);
 
   // ไม่ render อะไรเลยระหว่างเช็ค
-  if (routeState === 'checking') {
+  if (routeState === "checking") {
     return null;
   }
 
@@ -306,7 +345,6 @@ function AppRoutes() {
     <Routes>
       {/* unauthorized_route */}
       <Route element={<UnauthorizedLayout />}>
-        
         <Route index path="/auth" element={<SignInScreen />} />
         <Route path="/recovery" element={<RecoveryScreen />} />
         <Route path="/forgot-password/:token" element={<ResetPassword />} />
@@ -367,6 +405,7 @@ function AppRoutes() {
         {/* Juristic manage */}
         <Route path="juristicInvitation" element={<JuristicInvitation />} />
         <Route path="juristicManage" element={<JuristicManage />} />
+        <Route path="staffManage" element={<StaffManagement />} />
       </Route>
 
       {/* setup project first */}
@@ -377,7 +416,10 @@ function AppRoutes() {
         <Route path="upload-unit" element={<UploadUnit />} />
         <Route path="unit-preview" element={<UnitPreview />} />
         {/* condominium */}
-        <Route path="upload-number-building" element={<UploadNumberBuilding />} />
+        <Route
+          path="upload-number-building"
+          element={<UploadNumberBuilding />}
+        />
         <Route path="unit-preview-condo" element={<UnitPreviewCondo />} />
         <Route path="upload-floor-plan" element={<UploadFloorPlan />} />
       </Route>
@@ -386,7 +428,6 @@ function AppRoutes() {
     </Routes>
   );
 }
-
 
 function App() {
   const dispatch = useDispatch();
@@ -398,12 +439,16 @@ function App() {
     const fetchData = async () => {
       try {
         setIsLoading(true);
-        if (Object.keys(projectData).length === 0 || projectData === null || true) {
+        if (
+          Object.keys(projectData).length === 0 ||
+          projectData === null ||
+          true
+        ) {
           await dispatch.setupProject.setDataProject();
           setIsDataProjectReady(true);
         }
       } catch (error) {
-        console.error('Error fetching data:', error);
+        console.error("Error fetching data:", error);
         setIsDataProjectReady(true);
       } finally {
         setIsLoading(false);
@@ -415,31 +460,27 @@ function App() {
   return (
     <BrowserRouter>
       {isLoading && (
-        <div 
-          style={{ 
-            position: 'fixed', 
-            top: 0, 
-            left: 0, 
-            right: 0, 
-            bottom: 0, 
-            background: 'url(/src/assets/images/BG.png)',
-            backgroundColor: '#f9f9f9',
-            backgroundPosition: 'center center',
-            backgroundRepeat: 'no-repeat',
-            backgroundSize: 'cover',
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'center',
-            zIndex: 9999 
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: "url(/src/assets/images/BG.png)",
+            backgroundColor: "#f9f9f9",
+            backgroundPosition: "center center",
+            backgroundRepeat: "no-repeat",
+            backgroundSize: "cover",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 9999,
           }}
         >
           <div className="flex flex-col items-center">
-            <div 
-              className="w-16 h-16 border-4 border-gray-100 border-t-blue-500 rounded-full animate-spin mb-4"
-            ></div>
-            <p className="text-gray-600 text-lg font-medium m-0">
-              Loading...
-            </p>
+            <div className="w-16 h-16 border-4 border-gray-100 border-t-blue-500 rounded-full animate-spin mb-4"></div>
+            <p className="text-gray-600 text-lg font-medium m-0">Loading...</p>
           </div>
         </div>
       )}

@@ -5,13 +5,61 @@ import FormWarningSOS from "../components/FormWarningSOS";
 import ImageVillage from "../components/ImageVilage";
 import FormVillageLocation from "../components/FormVillageLocation";
 import BuildingCondo from "../components/BuildingCondo";
-import { Row, Col, Card, Spin } from "antd";
+import { Row, Col, Card, Spin, Button } from "antd";
 import { deletePlanAccount, deleteMarker, getMasterData, getVillageData, getEmergency } from "../service/api/SOSwarning";
 import { dataSelectPlan, dataAllMap, SelectMarker } from "../../../stores/interfaces/SosWarning";
 import { io, Socket } from 'socket.io-client';
 import { encryptStorage } from "../../../utils/encryptStorage";
 import ConfirmModal from "../../../components/common/ConfirmModal";
 import SuccessModal from "../../../components/common/SuccessModal";
+
+// ฟังก์ชันทดสอบ Token Expiry
+const testTokenExpiry = () => {
+  console.log("🧪 Testing token expiry...");
+
+  // ลบ token ทั้งหมดเพื่อจำลองการหมดอายุ
+  encryptStorage.removeItem("access_token");
+  encryptStorage.removeItem("refreshToken");
+  encryptStorage.removeItem("projectId");
+};
+
+// ฟังก์ชันทดสอบ API call ด้วย token หมดอายุ
+const testApiCall = async () => {
+  try {
+    console.log("🧪 Testing API call...");
+    const result = await getMasterData();
+    console.log("✅ API call successful:", result);
+  } catch (error) {
+    console.log("❌ API call failed:", error);
+  }
+};
+
+// เพิ่ม global functions สำหรับทดสอบใน console
+if (typeof window !== 'undefined') {
+  (window as any).testTokenExpiry = () => {
+    encryptStorage.removeItem("access_token");
+    encryptStorage.removeItem("refreshToken");
+    encryptStorage.removeItem("projectId");
+    localStorage.clear();
+  };
+
+  (window as any).testApiCall = async () => {
+    console.log("🧪 [Console] Testing API call...");
+    try {
+      const result = await getMasterData();
+    } catch (error) {
+      console.log("❌ [Console] API call failed:", error);
+    }
+  };
+
+  (window as any).checkTokens = () => {
+    const accessToken = encryptStorage.getItem("access_token");
+    const refreshToken = encryptStorage.getItem("refreshToken");
+    const projectId = encryptStorage.getItem("projectId");
+  };
+
+
+}
 
 const WarrantyTracking = () => {
 
@@ -345,7 +393,7 @@ const WarrantyTracking = () => {
 
       // setLoadingText("กำลังโหลดข้อมูลแผนที่...");
       let dataAllMap = await getVillageData();
-      
+
       // setLoadingText("กำลังโหลดข้อมูลแจ้งเตือน...");
       let dataEmergency = await getEmergency();
 
@@ -361,7 +409,7 @@ const WarrantyTracking = () => {
         dataAllMap.result.marker = dataAllMap.result.marker.marker.map((item: any) => {
           return item
         })
-        if(dataAllMap.result.planImg){
+        if (dataAllMap.result.planImg) {
           setUploadedImage(dataAllMap.result.planImg)
         }
 
@@ -428,6 +476,8 @@ const WarrantyTracking = () => {
         // อัพเดทข้อมูลทั้งชุดเมื่อได้รับข้อมูลใหม่
         if (data) {
           // อัพเดท marker
+          console.log(data, 'data-sos')
+          console.log(data?.events, 'data-events')
           if (data.marker && Array.isArray(data.marker)) {
             setDataMapAll(prev => ({
               ...prev,
@@ -758,6 +808,26 @@ const WarrantyTracking = () => {
       <div className="flex justify-between  items-center !mb-5">
         <Header title="Add location" className="!mb-0" />
         <div className="flex gap-3 items-center">
+          {/* ปุ่มทดสอบ Token Expiry */}
+          {/* <div className="flex gap-2">
+             <Button 
+               size="small" 
+               danger 
+               onClick={testTokenExpiry}
+               title="ลบ Token เพื่อทดสอบการหมดอายุ"
+             >
+               🧪 Test Token Expiry
+             </Button>
+             <Button 
+               size="small" 
+               type="primary" 
+               onClick={testApiCall}
+               title="ทดสอบ API Call"
+             >
+               📡 Test API
+             </Button>
+           </div> */}
+
           {/* Button Group สำหรับสลับโหมด */}
           {(dataMapAll?.id || uploadedImage) && (
             <div className="flex border border-gray-300 rounded-lg overflow-hidden bg-white">

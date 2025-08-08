@@ -4,5 +4,5 @@
 }
 
 .unitCard {
-  box-shadow: rgba(149, 157, 165, 0.3) 0px 8px 12px;
+  box-shadow: var(--card-shadow);
 }

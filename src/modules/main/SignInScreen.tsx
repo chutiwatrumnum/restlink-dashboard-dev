@@ -67,7 +67,7 @@ const SignInScreen = () => {
         }
 
         const responseStep = await dispatch.setupProject.getStepCondoModel(0);
-        if(responseStep !== 3){
+        if(responseStep === 0){
           checkSetupProject();
         }
         else{
@@ -125,6 +125,7 @@ const SignInScreen = () => {
   // Handle email/password login
   const onFinish = async (values: LoginFormData) => {
     setLoading(true);
+    console.log('onFinish')
     try {
       const result = await dispatch.userAuth.loginEffects({
         username: values.username,
@@ -132,6 +133,7 @@ const SignInScreen = () => {
       });
 
       if (result) {
+
         // Success message จะแสดงใน loginEffects แล้ว
         // Navigation จะเกิดขึ้นใน useEffect เมื่อ isAuth เปลี่ยน
       }

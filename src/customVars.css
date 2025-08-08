@@ -31,6 +31,7 @@
     --secondary-color: #4995ff;
     --tertiary-color: #ecf4ff;
     --header-color: #a6cbff;
+    --light-color: #c0daff;
     --opacity-color: rgb(170, 198, 247, 0.1);
     --bg-color: #a6cbff;
     --login-color: #36cccc;
@@ -73,5 +74,8 @@
     --tableHeadBg-color: var(--header-color);
     --tableHeadText-color: var(--black-color);
     --subTableHeadBg-color: var(--header-color);
+
+    /* Shadow */
+    --card-shadow: rgba(149, 157, 165, 0.3) 0px 8px 12px;
   }
 }

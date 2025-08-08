@@ -4,8 +4,25 @@ import bgStartProject from "../../../assets/images/setupProject/BG-SetupProjectR
 import demoProject from "../../../assets/images/setupProject/DemoProgram.png";
 import logoProject from "../../../assets/images/setupProject/LogoProject.png";
 import { useNavigate } from "react-router-dom";
+import { useDispatch,useSelector } from "react-redux";
+import { RootState } from "../../../stores";
 const SetupProject = () => {
   const navigate = useNavigate();
+  const { projectData } = useSelector((state: RootState) => state.setupProject);
+
+  const setTypeRedirect = ()=>{
+    let projectType = projectData?.projectType?.nameCode || '';
+    const strType = projectType.split('_');
+    projectType = strType[strType.length - 1];
+    console.log(projectType,'projectType')
+    if(projectType === 'village'){
+      navigate("/setup-project/upload-plan")
+    }
+    else if(projectType === 'condo'){
+      navigate("/setup-project/upload-floor-plan")
+    }
+    
+  }
   return (
     <>
     <Row className="w-full h-screen relative" style={{ minHeight: "100vh" }}>
@@ -15,7 +32,7 @@ const SetupProject = () => {
         <div className="text-3xl font-medium  text-[#002C55] mb-5"> Welcome to ONNEX</div>
         <div className="text-xl text-[#002C55]">Let’s set up your property so you can start</div>
         <div className="text-xl text-[#002C55] mb-20">managing everything easily.</div>
-        <Button onClick={() => navigate("/setup-project/upload-plan")} type="primary" className="bg-[#002C55] text-white font-medium !rounded-xl !px-10 !py-5 !text-lg">Get Started</Button>
+        <Button onClick={ setTypeRedirect} type="primary" className="bg-[#002C55] text-white font-medium !rounded-xl !px-10 !py-5 !text-lg">Get Started</Button>
       </div>
       </Col>
       <Col xs={24} md={12} className="bg-blue-200 flex items-center justify-end h-full pr-0" style={{ backgroundImage: `url(${bgStartProject})`, backgroundSize: "cover", backgroundPosition: "center" }}>
