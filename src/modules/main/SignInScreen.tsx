@@ -42,10 +42,6 @@ const SignInScreen = () => {
   const { isAuth } = useSelector((state: RootState) => state.userAuth);
   const { step,projectData } = useSelector((state: RootState) => state.setupProject);
   const { handlePostAuthSuccess } = useGoogleAuthRedirect();
-
-  
-
-
   const [authCode, setAuthCode] = useState<string>("");
   const [validateCode, setValidateCode] = useState<string>("");
   const [loading, setLoading] = useState(false);
