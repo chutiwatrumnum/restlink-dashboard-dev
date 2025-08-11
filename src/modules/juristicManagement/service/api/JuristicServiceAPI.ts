@@ -1,12 +1,12 @@
 import axios from "axios";
 import {
-  JuristicManageDataType,
   JuristicAddNew,
   conditionPage,
   roleDetail,
   hobbyDetail,
   rejectRequest,
   unitDetail,
+  JuristicEditPayload
 } from "../../../../stores/interfaces/JuristicManage";
 import { paramsdata } from "./paramsAPI";
 import { encryptStorage } from "../../../../utils/encryptStorage";
@@ -237,17 +237,16 @@ const getdatahobby = async () => {
 };
 
 // อัพเดตฟังก์ชัน editdatajuristic ให้รองรับ format ใหม่
-const editdatajuristic = async (userId: string, payload: JuristicAddNew) => {
+const editdatajuristic = async (userId: string, payload: any) => {
   try {
-    // แปลงข้อมูลให้ตรงกับ API format ใหม่
+    // แปลงข้อมูลให้ตรงกับ API format ที่ต้องการ (ไม่รวม image)
     const apiPayload = {
-      roleId: payload.roleId,
-      firstName: payload.firstName,
+      givenName: payload.givenName,
+      familyName: payload.familyName,
       middleName: payload.middleName || "",
-      lastName: payload.lastName,
       contact: payload.contact,
-      email: payload.email,
-      ...(payload.image && { image: payload.image })
+      roleId: payload.roleId
+      // ไม่ส่ง image ใน payload นี้
     };
 
     console.log("edit request:", apiPayload);
@@ -260,8 +259,13 @@ const editdatajuristic = async (userId: string, payload: JuristicAddNew) => {
       message.error(result.data.message);
       return false;
     }
-  } catch (err) {
-    console.error(err);
+  } catch (err: any) {
+    console.error("Edit juristic error:", err);
+    if (err.response?.data?.message) {
+      message.error(err.response.data.message);
+    } else {
+      message.error("Failed to update user information");
+    }
     return false;
   }
 };
@@ -269,21 +273,20 @@ const editdatajuristic = async (userId: string, payload: JuristicAddNew) => {
 // อัพเดตฟังก์ชัน addJuristic ให้ใช้ endpoint ใหม่ /team-management/add
 const addJuristic = async (req: JuristicAddNew) => {
   try {
-    // แปลงข้อมูลให้ตรงกับ API format ใหม่
+    // แปลงข้อมูลให้ตรงกับ API format ใหม่ (ไม่รวม image)
     const apiPayload = {
       roleId: req.roleId,
       firstName: req.firstName,
       middleName: req.middleName || "",
       lastName: req.lastName,
       contact: req.contact,
-      email: req.email,
-      ...(req.image && { image: req.image })
+      email: req.email
+      // ไม่ส่ง image ใน payload นี้
     };
 
     console.log("addJuristic API Payload:", apiPayload);
 
-    // เปลี่ยนเป็น endpoint ใหม่
-    const result = await axios.post("/team-management/invitation/juristic/create", apiPayload);
+    const result = await axios.post("/team-management/add", apiPayload);
     console.log("addJuristic result:", result);
 
     if (result.status === 200 || result.status === 201) {
@@ -332,6 +335,88 @@ const RejectById = async (data: rejectRequest) => {
   }
 };
 
+
+// เพิ่มฟังก์ชันใหม่ในไฟล์ JuristicServiceAPI.ts
+
+import axios from "axios";
+import { message } from "antd";
+
+// ฟังก์ชันสำหรับ upload image profile
+const uploadJuristicImage = async (base64String: string): Promise<string | null> => {
+  try {
+    // สร้าง payload ตาม format ที่ API ต้องการ
+    const payload = {
+      imageProfile: base64String
+    };
+
+    console.log("Uploading image with payload format...");
+    const result = await axios.put(`/users/juristic/image-profile`, payload, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    console.log("Image upload result:", result);
+
+    if (result.status === 200 || result.status === 201) {
+      // สมมติว่า API return { imageUrl: "..." } หรือ success message
+      return result.data.imageUrl || result.data.data?.imageUrl || result.data.url || "success";
+    } else {
+      message.error(result.data.message || "Failed to upload image");
+      return null;
+    }
+  } catch (err: any) {
+    console.error("Image upload error:", err);
+    const errorMessage = err.response?.data?.message || "Failed to upload image";
+    message.error(errorMessage);
+    return null;
+  }
+};
+
+// ฟังก์ชันสำหรับ get juristic profile (รวมรูปภาพ)
+const getJuristicProfile = async () => {
+  try {
+    console.log("Fetching juristic profile...");
+    const result = await axios.get(`/users/juristic/profile`);
+
+    console.log("Profile result:", result);
+
+    if (result.status === 200) {
+      return {
+        status: true,
+        data: result.data.data || result.data
+      };
+    } else {
+      message.error(result.data.message || "Failed to fetch profile");
+      return {
+        status: false,
+        data: null
+      };
+    }
+  } catch (err: any) {
+    console.error("Profile fetch error:", err);
+    const errorMessage = err.response?.data?.message || "Failed to fetch profile";
+    message.error(errorMessage);
+    return {
+      status: false,
+      data: null
+    };
+  }
+};
+
+// ฟังก์ชันแปลง File เป็น base64 string
+const fileToBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      resolve(result); // จะได้ "data:image/jpeg;base64,xxxxxxxx"
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+};
+
 export {
   getdatajuristiclist,
   deleteJuristicId,
@@ -343,4 +428,7 @@ export {
   getDataMasterJuristicDetail,
   addJuristic,
   ResendById,
+  uploadJuristicImage,
+  getJuristicProfile,
+  fileToBase64
 };

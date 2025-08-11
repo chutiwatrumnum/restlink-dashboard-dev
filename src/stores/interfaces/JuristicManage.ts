@@ -1,5 +1,3 @@
-// อัพเดต interface สำหรับ JuristicAddNew ในไฟล์ stores/interfaces/JuristicManage.ts
-
 export interface JuristicAddNew {
   roleId: string | number;
   firstName: string;
@@ -7,9 +5,7 @@ export interface JuristicAddNew {
   lastName: string;
   contact: string;
   email: string;
-  image?: string; // เพิ่มฟิลด์ image (optional)
-
-  // เก็บฟิลด์เก่าไว้เพื่อความเข้ากันได้ (deprecated)
+  image?: string;
   givenName?: string;
   familyName?: string;
 }
@@ -32,7 +28,6 @@ export interface JuristicManageDataType {
     id: number;
     roomAddress: string;
   };
-  // เพิ่มฟิลด์ใหม่
   firstName?: string;
   lastName?: string;
   image?: string;
@@ -83,27 +78,35 @@ export interface GetInvitationsType {
   activate: boolean;
   curPage: number;
 }
-
 export interface InvitationsDataType {
   id: string;
-  code: string;
-  roleId: string;
+  code: string | null;
+  firstName: string;
+  lastName: string;
+  middleName?: string | null;
+  contact: string;
+  email: string;
   expireDate: string;
-  activateDate?: string;
-  createdAt: string;
+  activate: boolean;
   activateBy?: {
     givenName: string;
     middleName?: string;
     familyName: string;
     contact?: string;
+  } | null;
+  activateDate?: string | null;
+  failReason?: string | null;
+  createdAt: string;
+  project: {
+    name: string;
+    lat: number;
+    long: number;
   };
   role: {
-    id: string;
     name: string;
   };
   createdBy: {
     givenName: string;
-    middleName?: string;
     familyName: string;
   };
 }
@@ -111,4 +114,13 @@ export interface InvitationsDataType {
 export interface JuristicInvitationsPromiseType {
   rows: InvitationsDataType[];
   total: number;
+}
+
+export interface JuristicEditPayload {
+  givenName: string;
+  familyName: string;
+  middleName?: string;
+  contact: string;
+  roleId: string | number;
+  image?: string;
 }
