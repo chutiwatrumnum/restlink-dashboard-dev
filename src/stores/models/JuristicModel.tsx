@@ -1,7 +1,87 @@
+// ไฟล์: src/stores/models/JuristicModel.tsx
+
 import { createModel } from "@rematch/core";
 import { JuristicType, conditionPage } from "../interfaces/JuristicManage";
 import { RootModel } from "./index";
-import { getdatajuristiclist } from "../../modules/juristicManagement/service/api/JuristicServiceAPI";
+import axios from "axios";
+import { message } from "antd";
+import { encryptStorage } from "../../utils/encryptStorage";
+const getdatajuristiclist = async (params: conditionPage) => {
+  let url: string = `/team-management/list?`;
+
+  // สร้าง query string จาก params
+  const queryParams = new URLSearchParams();
+  queryParams.append("perPage", params.perPage.toString());
+  queryParams.append("curPage", params.curPage.toString());
+
+  if (params.verifyByJuristic !== undefined) {
+    queryParams.append("verifyByJuristic", params.verifyByJuristic.toString());
+  }
+  if (params.reject !== undefined) {
+    queryParams.append("reject", params.reject.toString());
+  }
+  if (params.isActive !== undefined) {
+    queryParams.append("isActive", params.isActive.toString());
+  }
+  if (params.startDate) {
+    queryParams.append("startDate", params.startDate);
+  }
+  if (params.endDate) {
+    queryParams.append("endDate", params.endDate);
+  }
+  if (params.search) {
+    queryParams.append("search", params.search);
+  }
+  if (params.sort && params.sortBy) {
+    queryParams.append("sortBy", params.sortBy);
+    queryParams.append("sort", params.sort.slice(0, -3)); // remove 'end' from 'ascend'/'descend'
+  }
+
+  url = url + queryParams.toString();
+
+  const token = await encryptStorage.getItem("access_token");
+  if (token) {
+    try {
+      const result = await axios.get(url);
+
+      if (result.status < 400) {
+        const AllDataJuristic = result.data.result.rows;
+
+        return {
+          total: result.data.result.total,
+          status: true,
+          dataValue: AllDataJuristic,
+        };
+      } else {
+        message.error(result.data.message);
+        console.warn("status code:", result.status);
+        console.warn("data error:", result.data);
+        return {
+          total: 0,
+          status: false,
+          dataValue: [],
+        };
+      }
+    } catch (err) {
+      console.error("err:", err);
+      return {
+        total: 0,
+        status: false,
+        dataValue: [],
+      };
+    }
+  } else {
+    console.log("====================================");
+    console.log("token undefined.....");
+    console.log("====================================");
+    return {
+      total: 0,
+      status: false,
+      dataValue: [],
+    };
+  }
+};
+
 const filterDataInit: conditionPage = {
   perPage: 0,
   curPage: 0,
@@ -9,6 +89,7 @@ const filterDataInit: conditionPage = {
   reject: false,
   isActive: false,
 };
+
 export const juristic = createModel<RootModel>()({
   state: {
     tableData: [],
@@ -54,6 +135,8 @@ export const juristic = createModel<RootModel>()({
         dispatch.juristic.updatetotalgDataState(data.total);
         dispatch.juristic.updateloadingDataState(false);
       } else {
+        dispatch.juristic.updateTableDataState([]);
+        dispatch.juristic.updatetotalgDataState(0);
         dispatch.juristic.updateloadingDataState(false);
       }
     },

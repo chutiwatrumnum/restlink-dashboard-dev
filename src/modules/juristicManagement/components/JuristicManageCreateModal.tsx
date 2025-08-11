@@ -15,14 +15,16 @@ import { getJuristicRoleQuery } from "../../../utils/queriesGroup/juristicQuerie
 import { JuristicAddNew } from "../../../stores/interfaces/JuristicManage";
 import ConfirmModal from "../../../components/common/ConfirmModal";
 import SmallButton from "../../../components/common/SmallButton";
-import { postCreateJuristicMutation } from "../../../utils/mutationsGroup/juristicMutations";
 import { useDispatch } from "react-redux";
 import { Dispatch } from "../../../stores";
-import {
-  uploadJuristicImage,
-  fileToBase64,
-} from "../service/api/JuristicServiceAPI";
 import type { UploadFile, UploadProps } from "antd/es/upload/interface";
+
+// *** ใช้ mutations แทน API functions ***
+import {
+  postCreateJuristicMutation,
+  useUploadJuristicImageMutation,
+  fileToBase64,
+} from "../../../utils/mutationsGroup/juristicMutations";
 
 type ManagementCreateModalType = {
   isCreateModalOpen: boolean;
@@ -38,18 +40,18 @@ const JuristicManageCreateModal = ({
   const dispatch = useDispatch<Dispatch>();
   const [juristicForm] = Form.useForm();
   const { data: roleData, isLoading: roleLoading } = getJuristicRoleQuery();
+
+  // *** ใช้ mutations ***
   const createJuristicMutation = postCreateJuristicMutation();
+  const uploadImageMutation = useUploadJuristicImageMutation();
+
   const [imageUrl, setImageUrl] = useState<string>("");
   const [imageBase64, setImageBase64] = useState<string>("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [uploadingImage, setUploadingImage] = useState(false);
 
   const onCancelHandler = async () => {
     juristicForm.resetFields();
     setImageUrl("");
     setImageBase64("");
-    setIsSubmitting(false);
-    setUploadingImage(false);
     onCancel();
   };
 
@@ -64,64 +66,52 @@ const JuristicManageCreateModal = ({
       okMessage: "Yes",
       cancelMessage: "Cancel",
       onOk: async () => {
-        try {
-          setIsSubmitting(true);
+        // *** ใช้ mutation แทน API call ***
+        createJuristicMutation.mutate(value, {
+          onSuccess: async (res) => {
+            console.log("Create invitation successful:", res.data);
 
-          // Step 1: Create juristic user (ไม่รวม image)
-          const payload = {
-            ...value,
-            // ไม่ส่ง image ในขั้นตอนนี้
-          };
-
-          console.log("Sending create payload:", payload);
-          const res = await createJuristicMutation.mutateAsync(payload);
-          console.log("RESULT DATA : ", res);
-
-          // Step 2: Upload image หลังจาก create สำเร็จแล้ว (ถ้ามี image)
-          if (imageBase64) {
-            try {
-              setUploadingImage(true);
-              console.log("Uploading image...");
-              const imageUploadResult = await uploadJuristicImage(imageBase64);
-
-              if (imageUploadResult) {
-                console.log("Image uploaded successfully:", imageUploadResult);
-                message.success(
-                  "User created and image uploaded successfully!"
-                );
-              } else {
-                message.warning("User created but image upload failed");
-              }
-            } catch (imageError) {
-              console.error("Image upload error:", imageError);
-              message.warning("User created but image upload failed");
-            } finally {
-              setUploadingImage(false);
+            // Step 2: Upload image หลังจาก create สำเร็จแล้ว (ถ้ามี image)
+            if (imageBase64) {
+              uploadImageMutation.mutate(imageBase64, {
+                onSuccess: () => {
+                  message.success(
+                    "Invitation created and image uploaded successfully!"
+                  );
+                  handleSuccess(res);
+                },
+                onError: () => {
+                  message.warning("Invitation created but image upload failed");
+                  handleSuccess(res);
+                },
+              });
+            } else {
+              message.success("Invitation created successfully!");
+              handleSuccess(res);
             }
-          } else {
-            message.success("User created successfully!");
-          }
-
-          // ตรวจสอบโครงสร้างของ response สำหรับ QR Code
-          if (res.data?.data?.qrCode) {
-            dispatch.juristic.updateQrCodeState(res.data.data.qrCode);
-          } else if (res.data?.qrCode) {
-            dispatch.juristic.updateQrCodeState(res.data.qrCode);
-          }
-
-          refetch();
-          onCancelHandler();
-        } catch (err) {
-          console.log("Create juristic error:", err);
-        } finally {
-          setIsSubmitting(false);
-          setUploadingImage(false);
-        }
+          },
+          onError: (error: any) => {
+            // error message จะแสดงจาก mutation แล้ว
+            console.error("Create failed:", error);
+          },
+        });
       },
       onCancel: () => {
         console.log("Cancel");
       },
     });
+  };
+
+  const handleSuccess = (res: any) => {
+    // ตรวจสอบโครงสร้างของ response สำหรับ QR Code
+    if (res.data?.data?.qrCode) {
+      dispatch.juristic.updateQrCodeState(res.data.data.qrCode);
+    } else if (res.data?.qrCode) {
+      dispatch.juristic.updateQrCodeState(res.data.qrCode);
+    }
+
+    refetch();
+    onCancelHandler();
   };
 
   // Handle image upload
@@ -151,17 +141,15 @@ const JuristicManageCreateModal = ({
     return false; // Prevent default upload behavior
   };
 
+  const isLoading =
+    createJuristicMutation.isPending || uploadImageMutation.isPending;
+
   const uploadProps: UploadProps = {
     name: "file",
     beforeUpload: handleImageUpload,
     showUploadList: false,
     accept: "image/*",
-    disabled: isSubmitting || uploadingImage,
-  };
-
-  // Handle image change from UploadImageGroup
-  const handleImageChange = (url: string) => {
-    setImageUrl(url);
+    disabled: isLoading,
   };
 
   const ModalContent = () => {
@@ -313,7 +301,7 @@ const JuristicManageCreateModal = ({
                           color: imageUrl ? "#fff" : "#999",
                           padding: "8px 16px",
                           borderRadius: "4px",
-                          opacity: isSubmitting || uploadingImage ? 0.6 : 1,
+                          opacity: isLoading ? 0.6 : 1,
                           position: "relative",
                           zIndex: 1,
                         }}>
@@ -326,7 +314,7 @@ const JuristicManageCreateModal = ({
                             alignItems: "center",
                             justifyContent: "center",
                           }}>
-                          {uploadingImage ? (
+                          {uploadImageMutation.isPending ? (
                             <Spin size="large" />
                           ) : (
                             <svg
@@ -339,7 +327,7 @@ const JuristicManageCreateModal = ({
                           )}
                         </div>
                         <p style={{ margin: 0, fontSize: "14px" }}>
-                          {uploadingImage
+                          {uploadImageMutation.isPending
                             ? "Uploading..."
                             : imageUrl
                             ? "Change photo"
@@ -397,20 +385,20 @@ const JuristicManageCreateModal = ({
               form={juristicForm}
               formSubmit={juristicForm.submit}
               message={
-                isSubmitting
-                  ? uploadingImage
+                isLoading
+                  ? uploadImageMutation.isPending
                     ? "Uploading image..."
                     : "Adding..."
                   : "Add new"
               }
-              disabled={isSubmitting || uploadingImage}
+              disabled={isLoading}
             />
           </div>,
         ]}
         onOk={() => {}}
         onCancel={onCancelHandler}
         className="managementFormModal"
-        confirmLoading={isSubmitting}>
+        confirmLoading={isLoading}>
         <ModalContent />
       </Modal>
     </>

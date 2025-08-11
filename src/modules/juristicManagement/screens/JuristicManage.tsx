@@ -1,3 +1,5 @@
+// ไฟล์: src/modules/juristicManagement/screens/JuristicManage.tsx
+
 import { useState, useEffect } from "react";
 import { Button } from "antd";
 import Header from "../../../components/templates/Header";
@@ -13,9 +15,9 @@ import type { ColumnsType, TableProps } from "antd/es/table";
 import { JuristicManageDataType } from "../../../stores/interfaces/JuristicManage";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import "../styles/userManagement.css";
-import SuccessModal from "../../../components/common/SuccessModal";
-import FailedModal from "../../../components/common/FailedModal";
-import { deleteJuristicId } from "../service/api/JuristicServiceAPI";
+
+// *** แก้ไขตรงนี้ - ใช้ mutation แทน API function ***
+import { useDeleteJuristicMutation } from "../../../utils/mutationsGroup/juristicMutations";
 import ConfirmModal from "../../../components/common/ConfirmModal";
 
 const JuristicManage = () => {
@@ -24,6 +26,9 @@ const JuristicManage = () => {
   const { loading, tableData, total } = useSelector(
     (state: RootState) => state.juristic
   );
+
+  // *** เพิ่ม mutation ***
+  const deleteJuristicMutation = useDeleteJuristicMutation();
 
   // States
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -160,10 +165,13 @@ const JuristicManage = () => {
               className="iconButton"
               value={record.userId}
               type="text"
-              onClick={() => {
-                showDeleteConfirm(record.userId);
-              }}
+              onClick={() => showDeleteConfirm(record.userId)}
               icon={<DeleteOutlined />}
+              // *** แสดง loading state ***
+              loading={
+                deleteJuristicMutation.isPending &&
+                deleteJuristicMutation.variables === record.userId
+              }
             />
           </>
         );
@@ -193,7 +201,6 @@ const JuristicManage = () => {
   };
 
   const onEdit = async (data: JuristicManageDataType) => {
-    // console.log(data);
     setEditData(data);
     setIsEditModalOpen(true);
   };
@@ -216,22 +223,26 @@ const JuristicManage = () => {
     await dispatch.juristic.getTableData(paramsData);
   };
 
+  // *** แก้ไขฟังก์ชัน delete ให้ใช้ mutation ***
   const showDeleteConfirm = (userId: string) => {
     ConfirmModal({
       title: "Are you sure you want to delete this?",
       okMessage: "Yes",
       cancelMessage: "Cancel",
-      onOk: async () => {
-        const statusDeleted = await deleteJuristicId(userId);
-        if (statusDeleted) {
-          SuccessModal("Successfully deleted");
-        } else {
-          FailedModal("Failed deleted");
-        }
-        setRerender(!rerender);
+      onOk: () => {
+        // ใช้ mutation แทน API call โดยตรง
+        deleteJuristicMutation.mutate(userId, {
+          onSuccess: () => {
+            // ไม่ต้องแสดง success message ที่นี่ เพราะ mutation จัดการให้แล้ว
+            setRerender(!rerender); // refresh data
+          },
+          onError: () => {
+            // error message จะแสดงจาก mutation
+          },
+        });
       },
       onCancel: () => {
-        console.log("Cancel");
+        console.log("Cancel delete");
       },
     });
   };
@@ -242,7 +253,6 @@ const JuristicManage = () => {
       setParamsData(params);
       await dispatch.juristic.getTableData(paramsData);
     })();
-    // console.log(tableData);
   }, [rerender]);
 
   return (

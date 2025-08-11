@@ -11,23 +11,19 @@ import {
   message,
 } from "antd";
 import { requiredRule, emailRule, telRule } from "../../../configs/inputRule";
-
 import SmallButton from "../../../components/common/SmallButton";
-
 import { JuristicAddNew } from "../../../stores/interfaces/JuristicManage";
-import {
-  editdatajuristic,
-  uploadJuristicImage,
-  getJuristicProfile,
-  fileToBase64,
-} from "../service/api/JuristicServiceAPI";
-import SuccessModal from "../../../components/common/SuccessModal";
-import FailedModal from "../../../components/common/FailedModal";
 import ConfirmModal from "../../../components/common/ConfirmModal";
 import { getJuristicRoleQuery } from "../../../utils/queriesGroup/juristicQueries";
-
 import { JuristicManageDataType } from "../../../stores/interfaces/JuristicManage";
 import type { UploadProps } from "antd/es/upload/interface";
+
+// *** ใช้ mutations แทน API functions ***
+import {
+  useEditJuristicMutation,
+  useUploadJuristicImageMutation,
+  fileToBase64,
+} from "../../../utils/mutationsGroup/juristicMutations";
 
 type ManagementEditModalType = {
   isEditModalOpen: boolean;
@@ -43,9 +39,11 @@ const JuristicManageEditModal = ({
   const [juristicManageForm] = Form.useForm();
   const [imageUrl, setImageUrl] = useState<string>("");
   const [imageBase64, setImageBase64] = useState<string>("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [uploadingImage, setUploadingImage] = useState(false);
   const [hasImageChanged, setHasImageChanged] = useState(false);
+
+  // *** ใช้ mutations ***
+  const editJuristicMutation = useEditJuristicMutation();
+  const uploadImageMutation = useUploadJuristicImageMutation();
 
   // Data
   const { data: roleData } = getJuristicRoleQuery();
@@ -54,8 +52,6 @@ const JuristicManageEditModal = ({
     juristicManageForm.resetFields();
     setImageUrl("");
     setImageBase64("");
-    setIsSubmitting(false);
-    setUploadingImage(false);
     setHasImageChanged(false);
     callBack(!open, false);
   };
@@ -69,6 +65,7 @@ const JuristicManageEditModal = ({
       contact: values.contact,
       roleId: values.roleId,
     };
+
     console.log(data.userId, payload);
     showEditConfirm(data.userId, payload);
   };
@@ -79,64 +76,50 @@ const JuristicManageEditModal = ({
       okMessage: "Yes",
       cancelMessage: "Cancel",
       onOk: async () => {
-        try {
-          setIsSubmitting(true);
-
-          // Step 1: Update user information (ไม่รวม image)
-          const resultedit = await editdatajuristic(userId, payload);
-
-          if (resultedit) {
-            // Step 2: Upload image หากมีการเปลี่ยนแปลง
-            if (hasImageChanged && imageBase64) {
-              try {
-                setUploadingImage(true);
-                console.log("Uploading updated image...");
-                const imageUploadResult = await uploadJuristicImage(
-                  imageBase64
-                );
-
-                if (imageUploadResult) {
-                  console.log("Image updated successfully:", imageUploadResult);
-                  SuccessModal(
-                    "User information and image updated successfully!"
-                  );
-                } else {
-                  SuccessModal(
-                    "User information updated but image upload failed"
-                  );
-                }
-              } catch (imageError) {
-                console.error("Image upload error:", imageError);
-                SuccessModal(
-                  "User information updated but image upload failed"
-                );
-              } finally {
-                setUploadingImage(false);
+        // *** ใช้ mutation แทน API call ***
+        editJuristicMutation.mutate(
+          { userId, payload },
+          {
+            onSuccess: async () => {
+              // ถ้ามีการเปลี่ยนรูป ให้ upload
+              if (hasImageChanged && imageBase64) {
+                uploadImageMutation.mutate(imageBase64, {
+                  onSuccess: () => {
+                    message.success(
+                      "User information and image updated successfully!"
+                    );
+                    closeModal();
+                  },
+                  onError: () => {
+                    message.warning(
+                      "User information updated but image upload failed"
+                    );
+                    closeModal();
+                  },
+                });
+              } else {
+                // ไม่มีการเปลี่ยนรูป แค่แสดงข้อความสำเร็จ
+                closeModal();
               }
-            } else {
-              SuccessModal("Successfully updated");
-            }
-
-            juristicManageForm.resetFields();
-            setImageUrl("");
-            setImageBase64("");
-            setHasImageChanged(false);
-            callBack(!open, true);
-          } else {
-            FailedModal("Failed to update");
+            },
+            onError: () => {
+              // error จะแสดงจาก mutation แล้ว
+            },
           }
-        } catch (error) {
-          console.error("Edit error:", error);
-          FailedModal("Failed to update");
-        } finally {
-          setIsSubmitting(false);
-          setUploadingImage(false);
-        }
+        );
       },
       onCancel: () => {
         console.log("Cancel");
       },
     });
+  };
+
+  const closeModal = () => {
+    juristicManageForm.resetFields();
+    setImageUrl("");
+    setImageBase64("");
+    setHasImageChanged(false);
+    callBack(!open, true);
   };
 
   // Handle image upload
@@ -172,7 +155,7 @@ const JuristicManageEditModal = ({
     beforeUpload: handleImageUpload,
     showUploadList: false,
     accept: "image/*",
-    disabled: isSubmitting || uploadingImage,
+    disabled: editJuristicMutation.isPending || uploadImageMutation.isPending,
   };
 
   useEffect(() => {
@@ -198,12 +181,13 @@ const JuristicManageEditModal = ({
         juristicManageForm.resetFields();
         setImageUrl("");
         setImageBase64("");
-        setIsSubmitting(false);
-        setUploadingImage(false);
         setHasImageChanged(false);
       }
     };
   }, [isEditModalOpen, data]);
+
+  const isLoading =
+    editJuristicMutation.isPending || uploadImageMutation.isPending;
 
   const ModalContent = () => {
     return (
@@ -329,7 +313,7 @@ const JuristicManageEditModal = ({
                           color: imageUrl ? "#fff" : "#999",
                           padding: "8px 16px",
                           borderRadius: "4px",
-                          opacity: isSubmitting || uploadingImage ? 0.6 : 1,
+                          opacity: isLoading ? 0.6 : 1,
                           position: "relative",
                           zIndex: 1,
                         }}>
@@ -342,7 +326,7 @@ const JuristicManageEditModal = ({
                             alignItems: "center",
                             justifyContent: "center",
                           }}>
-                          {uploadingImage ? (
+                          {uploadImageMutation.isPending ? (
                             <Spin size="small" />
                           ) : (
                             <svg
@@ -355,7 +339,7 @@ const JuristicManageEditModal = ({
                           )}
                         </div>
                         <p style={{ margin: 0, fontSize: "12px" }}>
-                          {uploadingImage
+                          {uploadImageMutation.isPending
                             ? "Uploading..."
                             : imageUrl
                             ? "Change photo"
@@ -428,19 +412,19 @@ const JuristicManageEditModal = ({
               form={juristicManageForm}
               formSubmit={juristicManageForm.submit}
               message={
-                isSubmitting
-                  ? uploadingImage
+                isLoading
+                  ? uploadImageMutation.isPending
                     ? "Uploading image..."
                     : "Updating..."
                   : "Update"
               }
-              disabled={isSubmitting || uploadingImage}
+              disabled={isLoading}
             />
           </div>,
         ]}
         onCancel={onClose}
         className="managementFormModal"
-        confirmLoading={isSubmitting}>
+        confirmLoading={isLoading}>
         <ModalContent />
       </Modal>
     </>
