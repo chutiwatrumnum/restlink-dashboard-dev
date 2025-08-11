@@ -1,64 +1,79 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   Form,
+  Input,
   Col,
   Row,
-  Select,
   Modal,
-  Input,
+  Select,
   Upload,
   Spin,
   message,
 } from "antd";
 import { requiredRule, emailRule, telRule } from "../../../configs/inputRule";
-import { getJuristicRoleQuery } from "../../../utils/queriesGroup/juristicQueries";
-import { JuristicAddNew } from "../../../stores/interfaces/JuristicManage";
-import ConfirmModal from "../../../components/common/ConfirmModal";
+
 import SmallButton from "../../../components/common/SmallButton";
-import { postCreateJuristicMutation } from "../../../utils/mutationsGroup/juristicMutations";
-import { useDispatch } from "react-redux";
-import { Dispatch } from "../../../stores";
+
+import { JuristicAddNew } from "../../../stores/interfaces/JuristicManage";
 import {
+  editdatajuristic,
   uploadJuristicImage,
+  getJuristicProfile,
   fileToBase64,
 } from "../service/api/JuristicServiceAPI";
-import type { UploadFile, UploadProps } from "antd/es/upload/interface";
+import SuccessModal from "../../../components/common/SuccessModal";
+import FailedModal from "../../../components/common/FailedModal";
+import ConfirmModal from "../../../components/common/ConfirmModal";
+import { getJuristicRoleQuery } from "../../../utils/queriesGroup/juristicQueries";
 
-type ManagementCreateModalType = {
-  isCreateModalOpen: boolean;
-  onCancel: () => void;
-  refetch: () => void;
+import { JuristicManageDataType } from "../../../stores/interfaces/JuristicManage";
+import type { UploadProps } from "antd/es/upload/interface";
+
+type ManagementEditModalType = {
+  isEditModalOpen: boolean;
+  callBack: (isOpen: boolean, saved: boolean) => void;
+  data: JuristicManageDataType;
 };
 
-const JuristicManageCreateModal = ({
-  isCreateModalOpen,
-  onCancel,
-  refetch,
-}: ManagementCreateModalType) => {
-  const dispatch = useDispatch<Dispatch>();
-  const [juristicForm] = Form.useForm();
-  const { data: roleData, isLoading: roleLoading } = getJuristicRoleQuery();
-  const createJuristicMutation = postCreateJuristicMutation();
+const JuristicManageEditModal = ({
+  isEditModalOpen,
+  callBack,
+  data,
+}: ManagementEditModalType) => {
+  const [juristicManageForm] = Form.useForm();
   const [imageUrl, setImageUrl] = useState<string>("");
   const [imageBase64, setImageBase64] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [hasImageChanged, setHasImageChanged] = useState(false);
 
-  const onCancelHandler = async () => {
-    juristicForm.resetFields();
+  // Data
+  const { data: roleData } = getJuristicRoleQuery();
+
+  const onClose = async () => {
+    juristicManageForm.resetFields();
     setImageUrl("");
     setImageBase64("");
     setIsSubmitting(false);
     setUploadingImage(false);
-    onCancel();
+    setHasImageChanged(false);
+    callBack(!open, false);
   };
 
   const onFinish = async (values: JuristicAddNew) => {
-    console.log("Form values:", values);
-    showAddConfirm(values);
+    // แปลงค่าให้ตรงกับ API format
+    const payload = {
+      givenName: values.firstName,
+      familyName: values.lastName,
+      middleName: values.middleName || "",
+      contact: values.contact,
+      roleId: values.roleId,
+    };
+    console.log(data.userId, payload);
+    showEditConfirm(data.userId, payload);
   };
 
-  const showAddConfirm = (value: JuristicAddNew) => {
+  const showEditConfirm = (userId: string, payload: any) => {
     ConfirmModal({
       title: "You confirm the information?",
       okMessage: "Yes",
@@ -67,52 +82,52 @@ const JuristicManageCreateModal = ({
         try {
           setIsSubmitting(true);
 
-          // Step 1: Create juristic user (ไม่รวม image)
-          const payload = {
-            ...value,
-            // ไม่ส่ง image ในขั้นตอนนี้
-          };
+          // Step 1: Update user information (ไม่รวม image)
+          const resultedit = await editdatajuristic(userId, payload);
 
-          console.log("Sending create payload:", payload);
-          const res = await createJuristicMutation.mutateAsync(payload);
-          console.log("RESULT DATA : ", res);
-
-          // Step 2: Upload image หลังจาก create สำเร็จแล้ว (ถ้ามี image)
-          if (imageBase64) {
-            try {
-              setUploadingImage(true);
-              console.log("Uploading image...");
-              const imageUploadResult = await uploadJuristicImage(imageBase64);
-
-              if (imageUploadResult) {
-                console.log("Image uploaded successfully:", imageUploadResult);
-                message.success(
-                  "User created and image uploaded successfully!"
+          if (resultedit) {
+            // Step 2: Upload image หากมีการเปลี่ยนแปลง
+            if (hasImageChanged && imageBase64) {
+              try {
+                setUploadingImage(true);
+                console.log("Uploading updated image...");
+                const imageUploadResult = await uploadJuristicImage(
+                  imageBase64
                 );
-              } else {
-                message.warning("User created but image upload failed");
+
+                if (imageUploadResult) {
+                  console.log("Image updated successfully:", imageUploadResult);
+                  SuccessModal(
+                    "User information and image updated successfully!"
+                  );
+                } else {
+                  SuccessModal(
+                    "User information updated but image upload failed"
+                  );
+                }
+              } catch (imageError) {
+                console.error("Image upload error:", imageError);
+                SuccessModal(
+                  "User information updated but image upload failed"
+                );
+              } finally {
+                setUploadingImage(false);
               }
-            } catch (imageError) {
-              console.error("Image upload error:", imageError);
-              message.warning("User created but image upload failed");
-            } finally {
-              setUploadingImage(false);
+            } else {
+              SuccessModal("Successfully updated");
             }
+
+            juristicManageForm.resetFields();
+            setImageUrl("");
+            setImageBase64("");
+            setHasImageChanged(false);
+            callBack(!open, true);
           } else {
-            message.success("User created successfully!");
+            FailedModal("Failed to update");
           }
-
-          // ตรวจสอบโครงสร้างของ response สำหรับ QR Code
-          if (res.data?.data?.qrCode) {
-            dispatch.juristic.updateQrCodeState(res.data.data.qrCode);
-          } else if (res.data?.qrCode) {
-            dispatch.juristic.updateQrCodeState(res.data.qrCode);
-          }
-
-          refetch();
-          onCancelHandler();
-        } catch (err) {
-          console.log("Create juristic error:", err);
+        } catch (error) {
+          console.error("Edit error:", error);
+          FailedModal("Failed to update");
         } finally {
           setIsSubmitting(false);
           setUploadingImage(false);
@@ -138,6 +153,7 @@ const JuristicManageCreateModal = ({
       // แปลง File เป็น base64 สำหรับส่ง API
       const base64String = await fileToBase64(file);
       setImageBase64(base64String);
+      setHasImageChanged(true);
 
       console.log(
         "Image converted to base64:",
@@ -159,25 +175,47 @@ const JuristicManageCreateModal = ({
     disabled: isSubmitting || uploadingImage,
   };
 
-  // Handle image change from UploadImageGroup
-  const handleImageChange = (url: string) => {
-    setImageUrl(url);
-  };
+  useEffect(() => {
+    if (isEditModalOpen && data) {
+      juristicManageForm.setFieldsValue({
+        firstName: data?.firstName || data?.givenName,
+        middleName: data?.middleName ?? "",
+        lastName: data?.lastName || data?.familyName,
+        contact: data?.contact,
+        email: data?.email,
+        roleId: data?.role.id,
+      });
+
+      // Set existing image if available
+      if (data?.image) {
+        setImageUrl(data.image);
+        setHasImageChanged(false);
+      }
+    }
+
+    return () => {
+      if (!isEditModalOpen) {
+        juristicManageForm.resetFields();
+        setImageUrl("");
+        setImageBase64("");
+        setIsSubmitting(false);
+        setUploadingImage(false);
+        setHasImageChanged(false);
+      }
+    };
+  }, [isEditModalOpen, data]);
 
   const ModalContent = () => {
     return (
       <Form
-        form={juristicForm}
-        name="juristicCreateModal"
-        className="managementFormContainer"
-        labelCol={{ span: 24 }}
-        wrapperCol={{ span: 24 }}
+        form={juristicManageForm}
+        name="juristicEditModal"
         initialValues={{ remember: true }}
         autoComplete="off"
         layout="vertical"
         onFinish={onFinish}
-        onFinishFailed={(errorInfo) => {
-          console.log("FINISHED FAILED:", errorInfo);
+        onFinishFailed={() => {
+          console.log("FINISHED FAILED");
         }}>
         <Row gutter={[24, 16]}>
           {/* Left Column */}
@@ -185,7 +223,7 @@ const JuristicManageCreateModal = ({
             <Row gutter={[16, 0]}>
               <Col span={24}>
                 <Form.Item<JuristicAddNew>
-                  label="First Name"
+                  label="First name"
                   name="firstName"
                   rules={requiredRule}>
                   <Input
@@ -199,7 +237,20 @@ const JuristicManageCreateModal = ({
 
               <Col span={24}>
                 <Form.Item<JuristicAddNew>
-                  label="Last Name"
+                  label="Middle name"
+                  name="middleName">
+                  <Input
+                    size="large"
+                    placeholder="Please input middle name"
+                    maxLength={120}
+                    showCount
+                  />
+                </Form.Item>
+              </Col>
+
+              <Col span={24}>
+                <Form.Item<JuristicAddNew>
+                  label="Last name"
                   name="lastName"
                   rules={requiredRule}>
                   <Input
@@ -221,42 +272,7 @@ const JuristicManageCreateModal = ({
                     placeholder="Please input email"
                     maxLength={120}
                     showCount
-                  />
-                </Form.Item>
-              </Col>
-
-              <Col span={24}>
-                <Form.Item<JuristicAddNew>
-                  label="Role"
-                  name="roleId"
-                  rules={requiredRule}>
-                  <Select
-                    placeholder={
-                      roleLoading ? "Loading roles..." : "Select role"
-                    }
-                    size="large"
-                    loading={roleLoading}
-                    notFoundContent={
-                      roleLoading ? (
-                        <div style={{ textAlign: "center", padding: "20px" }}>
-                          <Spin size="small" />
-                          <div style={{ marginTop: "8px" }}>Loading...</div>
-                        </div>
-                      ) : (
-                        <div style={{ textAlign: "center", padding: "20px" }}>
-                          <div style={{ marginBottom: "8px" }}>📭</div>
-                          <div>No data</div>
-                        </div>
-                      )
-                    }
-                    fieldNames={{ label: "name", value: "id" }}
-                    options={roleData || []}
-                    showSearch
-                    filterOption={(input, option) =>
-                      (option?.name ?? "")
-                        .toLowerCase()
-                        .includes(input.toLowerCase())
-                    }
+                    disabled={true}
                   />
                 </Form.Item>
               </Col>
@@ -276,7 +292,7 @@ const JuristicManageCreateModal = ({
                       padding: "30px 20px",
                       textAlign: "center",
                       cursor: "pointer",
-                      minHeight: "240px",
+                      minHeight: "200px",
                       display: "flex",
                       flexDirection: "column",
                       alignItems: "center",
@@ -319,31 +335,31 @@ const JuristicManageCreateModal = ({
                         }}>
                         <div
                           style={{
-                            width: "48px",
-                            height: "48px",
+                            width: "32px",
+                            height: "32px",
                             margin: "0 auto 8px",
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
                           }}>
                           {uploadingImage ? (
-                            <Spin size="large" />
+                            <Spin size="small" />
                           ) : (
                             <svg
-                              width="24"
-                              height="24"
+                              width="20"
+                              height="20"
                               viewBox="0 0 24 24"
                               fill="currentColor">
                               <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
                             </svg>
                           )}
                         </div>
-                        <p style={{ margin: 0, fontSize: "14px" }}>
+                        <p style={{ margin: 0, fontSize: "12px" }}>
                           {uploadingImage
                             ? "Uploading..."
                             : imageUrl
                             ? "Change photo"
-                            : "Upload your photo"}
+                            : "Upload photo"}
                         </p>
                       </div>
                     </Upload>
@@ -351,7 +367,7 @@ const JuristicManageCreateModal = ({
                     <p
                       style={{
                         margin: "8px 0 0 0",
-                        fontSize: "12px",
+                        fontSize: "10px",
                         color: imageUrl ? "#fff" : "#999",
                         position: "relative",
                         zIndex: 1,
@@ -364,14 +380,28 @@ const JuristicManageCreateModal = ({
 
               <Col span={24}>
                 <Form.Item<JuristicAddNew>
-                  label="Mobile no."
+                  label="Phone number"
                   name="contact"
                   rules={telRule}>
                   <Input
                     size="large"
-                    placeholder="Please input contact"
+                    placeholder="Please input phone number"
                     maxLength={10}
                     showCount
+                  />
+                </Form.Item>
+              </Col>
+
+              <Col span={24}>
+                <Form.Item<JuristicAddNew>
+                  label="Role"
+                  name="roleId"
+                  rules={requiredRule}>
+                  <Select
+                    placeholder="Select a role"
+                    options={roleData}
+                    size="large"
+                    fieldNames={{ label: "name", value: "id" }}
                   />
                 </Form.Item>
               </Col>
@@ -385,30 +415,30 @@ const JuristicManageCreateModal = ({
   return (
     <>
       <Modal
-        open={isCreateModalOpen}
-        title="Add admin management"
+        open={isEditModalOpen}
+        title="Edit user"
         centered={true}
         width={"90%"}
-        style={{ maxWidth: 800 }}
+        style={{ minWidth: 400, maxWidth: 900 }}
         footer={[
           <div key="footer" style={{ textAlign: "right" }}>
             <SmallButton
+              key="submit"
               className="saveButton"
-              form={juristicForm}
-              formSubmit={juristicForm.submit}
+              form={juristicManageForm}
+              formSubmit={juristicManageForm.submit}
               message={
                 isSubmitting
                   ? uploadingImage
                     ? "Uploading image..."
-                    : "Adding..."
-                  : "Add new"
+                    : "Updating..."
+                  : "Update"
               }
               disabled={isSubmitting || uploadingImage}
             />
           </div>,
         ]}
-        onOk={() => {}}
-        onCancel={onCancelHandler}
+        onCancel={onClose}
         className="managementFormModal"
         confirmLoading={isSubmitting}>
         <ModalContent />
@@ -417,4 +447,4 @@ const JuristicManageCreateModal = ({
   );
 };
 
-export default JuristicManageCreateModal;
+export default JuristicManageEditModal;
