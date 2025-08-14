@@ -273,9 +273,7 @@ const SideMenu = ({
                 />
               }
             >
-              <Link to={`${main_link}/juristicManage`}>
-                Juristic management
-              </Link>
+              <Link to={`${main_link}/juristicManage`}>Juristic list</Link>
             </Menu.Item>
 
             <Menu.Item

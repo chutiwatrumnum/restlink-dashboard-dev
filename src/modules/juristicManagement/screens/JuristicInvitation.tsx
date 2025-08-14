@@ -1,19 +1,23 @@
 import { useState } from "react";
 import dayjs from "dayjs";
-import { useDispatch } from "react-redux";
-import { Dispatch } from "../../../stores";
+import { encryptStorage } from "../../../utils/encryptStorage";
+
+// Queries
+import { getJuristicInvitationsQuery } from "../../../utils/queriesGroup/juristicQueries";
+import { useDeleteJuristicInvitationMutation } from "../../../utils/mutationsGroup/juristicMutations";
 
 // Components
 import Header from "../../../components/templates/Header";
-import { Row, Button, Col, Table, Tabs, Flex, message, Modal } from "antd";
-import { getJuristicInvitationsQuery } from "../../../utils/queriesGroup/juristicQueries";
-import { InfoCircleOutlined, ReloadOutlined } from "@ant-design/icons";
-import QrCodeModal from "../components/QrCodeModal";
+import { Row, Button, Col, Table, Tabs, Flex } from "antd";
+import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import MediumActionButton from "../../../components/common/MediumActionButton";
 import JuristicManageCreateModal from "../components/JuristicManageCreateModal";
-import ConfirmModal from "../../../components/common/ConfirmModal";
-import SuccessModal from "../../../components/common/SuccessModal";
-import FailedModal from "../../../components/common/FailedModal";
+import JuristicEditInvitationModal from "../components/JuristicEditInvitationModal";
+import {
+  callConfirmModal,
+  callFailedModal,
+  callSuccessModal,
+} from "../../../components/common/Modal";
 
 // Types
 import type { ColumnsType } from "antd/es/table";
@@ -22,17 +26,16 @@ import type { TabsProps } from "antd";
 import axios from "axios";
 
 const JuristicInvitation = () => {
-  // Hooks & Variables
-  const dispatch = useDispatch<Dispatch>();
+  // Initiate
+  const deleteInvitation = useDeleteJuristicInvitationMutation();
+  const projectID = encryptStorage.getItem("projectId");
 
   // States
   const [isActivated, setIsActivated] = useState(false);
   const [curPage, setCurPage] = useState(1);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [resendingId, setResendingId] = useState<string | null>(null);
-  const [detailModalVisible, setDetailModalVisible] = useState(false);
-  const [selectedRecord, setSelectedRecord] =
-    useState<InvitationsDataType | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editData, setEditData] = useState<InvitationsDataType>();
 
   // Data
   const {
@@ -55,48 +58,9 @@ const JuristicInvitation = () => {
     },
   ];
 
-  // Resend invitation function
-  const handleResendInvitation = async (invitationId: string) => {
-    ConfirmModal({
-      title: "Resend Invitation",
-      message: "Are you sure you want to resend this invitation?",
-      okMessage: "Yes, Resend",
-      cancelMessage: "Cancel",
-      onOk: async () => {
-        try {
-          setResendingId(invitationId);
-          const response = await axios.post(
-            `/team-management/invitation/juristic/resend/${invitationId}`
-          );
-
-          if (response.status === 200 || response.status === 201) {
-            SuccessModal("Invitation resent successfully!");
-            refetchInvitations();
-          } else {
-            FailedModal("Failed to resend invitation. Please try again.");
-          }
-        } catch (error: any) {
-          console.error("Resend invitation error:", error);
-          const errorMessage =
-            error.response?.data?.message ||
-            "Failed to resend invitation. Please try again.";
-          FailedModal(errorMessage);
-        } finally {
-          setResendingId(null);
-        }
-      },
-    });
-  };
-
-  // Show detail modal
-  const showDetailModal = (record: InvitationsDataType) => {
-    setSelectedRecord(record);
-    setDetailModalVisible(true);
-  };
-
   const defaultColumns: ColumnsType<InvitationsDataType> = [
     {
-      title: "Name-Surname",
+      title: "Name-surname",
       align: "center",
       render: (_, record) => {
         // สำหรับ Inactivated tab ใช้ firstName และ lastName จาก record เอง
@@ -135,10 +99,27 @@ const JuristicInvitation = () => {
       },
     },
     {
-      title: "Role assign",
+      title: "Role",
       align: "center",
       render: (_, record) => {
         return <div>{record?.role?.name || "-"}</div>;
+      },
+    },
+    {
+      title: "Email",
+      align: "center",
+      render: (_, record) => {
+        return <div>{record?.email}</div>;
+      },
+    },
+    {
+      title: "Phone No.",
+      align: "center",
+      render: (_, record) => {
+        // ลองใช้ contact จาก record ก่อน แล้วค่อย activateBy.contact
+        return (
+          <div>{record?.contact || record?.activateBy?.contact || "-"}</div>
+        );
       },
     },
   ];
@@ -149,7 +130,14 @@ const JuristicInvitation = () => {
       title: "Create at",
       align: "center",
       render: (_, record) => {
-        return <div>{dayjs(record?.createdAt).format("DD/MM/YYYY")}</div>;
+        return <div>{dayjs(record?.createdAt).format("DD/MM/YYYY HH:mm")}</div>;
+      },
+    },
+    {
+      title: "Create by",
+      align: "center",
+      render: (_, record) => {
+        return <div>{record?.createdBy?.givenName || "-"}</div>;
       },
     },
     {
@@ -162,10 +150,24 @@ const JuristicInvitation = () => {
       },
     },
     {
-      title: "Create by",
+      title: "Resend",
       align: "center",
       render: (_, record) => {
-        return <div>{record?.createdBy?.givenName || "-"}</div>;
+        return (
+          <Row gutter={[8, 8]} justify="center">
+            <Col>
+              <Button
+                type="default"
+                style={{
+                  border: "2px solid var(--secondary-color)",
+                }}
+                onClick={() => handleResendInvitation(record.id)}
+              >
+                Resend verify
+              </Button>
+            </Col>
+          </Row>
+        );
       },
     },
     {
@@ -177,10 +179,12 @@ const JuristicInvitation = () => {
             <Col>
               <Button
                 type="text"
-                onClick={() => showDetailModal(record)}
+                onClick={() => {
+                  onEdit(record);
+                }}
                 icon={
-                  <InfoCircleOutlined
-                    style={{ fontSize: 20, color: "#403d38" }}
+                  <EditOutlined
+                    style={{ fontSize: 20, color: "var(--primary-color)" }}
                   />
                 }
                 title="View Details"
@@ -189,13 +193,15 @@ const JuristicInvitation = () => {
             <Col>
               <Button
                 type="text"
-                loading={resendingId === record.id}
-                onClick={() => handleResendInvitation(record.id)}
+                onClick={() => {
+                  onDelete(record.id);
+                }}
                 icon={
-                  <ReloadOutlined style={{ fontSize: 20, color: "#1890ff" }} />
+                  <DeleteOutlined
+                    style={{ fontSize: 20, color: "var(--primary-color)" }}
+                  />
                 }
-                title="Resend Invitation"
-                disabled={resendingId === record.id}
+                title="View Details"
               />
             </Col>
           </Row>
@@ -206,16 +212,6 @@ const JuristicInvitation = () => {
 
   const activatedColumn: ColumnsType<InvitationsDataType> = [
     ...defaultColumns,
-    {
-      title: "Phone No.",
-      align: "center",
-      render: (_, record) => {
-        // ลองใช้ contact จาก record ก่อน แล้วค่อย activateBy.contact
-        return (
-          <div>{record?.contact || record?.activateBy?.contact || "-"}</div>
-        );
-      },
-    },
     {
       title: "Activate at",
       align: "center",
@@ -236,28 +232,6 @@ const JuristicInvitation = () => {
         return <div>{record?.createdBy?.givenName || "-"}</div>;
       },
     },
-    {
-      title: "Action",
-      align: "center",
-      render: (_, record) => {
-        return (
-          <Row gutter={[8, 8]} justify="center">
-            <Col>
-              <Button
-                type="text"
-                onClick={() => showDetailModal(record)}
-                icon={
-                  <InfoCircleOutlined
-                    style={{ fontSize: 20, color: "#403d38" }}
-                  />
-                }
-                title="View Details"
-              />
-            </Col>
-          </Row>
-        );
-      },
-    },
   ];
 
   // Functions
@@ -272,6 +246,70 @@ const JuristicInvitation = () => {
 
   const onCreate = async () => {
     setIsCreateModalOpen(true);
+  };
+
+  const handleResendInvitation = async (invitationId: string) => {
+    callConfirmModal({
+      title: "Resend Invitation",
+      message: "Are you sure you want to resend this invitation?",
+      okMessage: "Yes, Resend",
+      cancelMessage: "Cancel",
+      onOk: async () => {
+        try {
+          const response = await axios.post(
+            `/team-management/invitation/juristic/resend/${invitationId}`
+          );
+
+          if (response.status === 200 || response.status === 201) {
+            callSuccessModal("Invitation resent successfully!");
+            refetchInvitations();
+          } else {
+            callFailedModal("Failed to resend invitation. Please try again.");
+          }
+        } catch (error: any) {
+          console.error("Resend invitation error:", error);
+          const errorMessage =
+            error.response?.data?.message ||
+            "Failed to resend invitation. Please try again.";
+          callFailedModal(errorMessage);
+        }
+      },
+    });
+  };
+
+  const onEdit = async (record: InvitationsDataType) => {
+    setIsEditModalOpen(true);
+    setEditData(record);
+  };
+
+  const onEditClose = () => {
+    setIsEditModalOpen(false);
+    setEditData(undefined);
+  };
+
+  const onDelete = async (id: string) => {
+    callConfirmModal({
+      title: "Delete invitation",
+      message: "Are you sure you want to delete this invitation?",
+      okMessage: "Yes, Delete",
+      cancelMessage: "Cancel",
+      onOk: async () => {
+        try {
+          await deleteInvitation
+            .mutateAsync(id)
+            .then(() => {
+              // console.log(res);
+              refetchInvitations();
+            })
+            .catch((err) => {
+              console.error(err);
+            });
+        } catch (error: any) {
+          console.error(error);
+          callFailedModal(`Failed to delete: ${error.response?.data?.message}`);
+        }
+      },
+    });
   };
 
   return (
@@ -313,128 +351,15 @@ const JuristicInvitation = () => {
         }}
         refetch={refetchInvitations}
       />
-
-      <QrCodeModal />
-
-      {/* Detail Modal */}
-      <Modal
-        title="Invitation Details"
-        open={detailModalVisible}
-        onCancel={() => {
-          setDetailModalVisible(false);
-          setSelectedRecord(null);
-        }}
-        footer={[
-          <Button
-            key="close"
-            onClick={() => {
-              setDetailModalVisible(false);
-              setSelectedRecord(null);
-            }}>
-            Close
-          </Button>,
-        ]}
-        width={600}>
-        {selectedRecord && (
-          <div style={{ padding: "16px 0" }}>
-            <Row gutter={[16, 16]}>
-              <Col span={12}>
-                <div>
-                  <strong>Name:</strong>
-                </div>
-                <div>
-                  {selectedRecord?.firstName} {selectedRecord?.middleName || ""}{" "}
-                  {selectedRecord?.lastName}
-                </div>
-              </Col>
-              <Col span={12}>
-                <div>
-                  <strong>Email:</strong>
-                </div>
-                <div>{selectedRecord?.email || "-"}</div>
-              </Col>
-              <Col span={12}>
-                <div>
-                  <strong>Contact:</strong>
-                </div>
-                <div>{selectedRecord?.contact || "-"}</div>
-              </Col>
-              <Col span={12}>
-                <div>
-                  <strong>Role:</strong>
-                </div>
-                <div>{selectedRecord?.role?.name || "-"}</div>
-              </Col>
-              <Col span={12}>
-                <div>
-                  <strong>Created At:</strong>
-                </div>
-                <div>
-                  {dayjs(selectedRecord?.createdAt).format("DD/MM/YYYY HH:mm")}
-                </div>
-              </Col>
-              <Col span={12}>
-                <div>
-                  <strong>Expire At:</strong>
-                </div>
-                <div>
-                  {dayjs(selectedRecord?.expireDate).format("DD/MM/YYYY HH:mm")}
-                </div>
-              </Col>
-              <Col span={12}>
-                <div>
-                  <strong>Created By:</strong>
-                </div>
-                <div>
-                  {selectedRecord?.createdBy?.givenName}{" "}
-                  {selectedRecord?.createdBy?.familyName}
-                </div>
-              </Col>
-              <Col span={12}>
-                <div>
-                  <strong>Project:</strong>
-                </div>
-                <div>{selectedRecord?.project?.name || "-"}</div>
-              </Col>
-              {selectedRecord?.failReason && (
-                <Col span={24}>
-                  <div>
-                    <strong>Fail Reason:</strong>
-                  </div>
-                  <div style={{ color: "#ff4d4f" }}>
-                    {selectedRecord.failReason}
-                  </div>
-                </Col>
-              )}
-              {selectedRecord?.activate && selectedRecord?.activateBy && (
-                <>
-                  <Col span={12}>
-                    <div>
-                      <strong>Activated By:</strong>
-                    </div>
-                    <div>
-                      {selectedRecord.activateBy.givenName}{" "}
-                      {selectedRecord.activateBy.familyName}
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <div>
-                      <strong>Activated At:</strong>
-                    </div>
-                    <div>
-                      {selectedRecord?.activateDate
-                        ? dayjs(selectedRecord.activateDate).format(
-                            "DD/MM/YYYY HH:mm"
-                          )
-                        : "-"}
-                    </div>
-                  </Col>
-                </>
-              )}
-            </Row>
-          </div>
-        )}
-      </Modal>
+      {editData ? (
+        <JuristicEditInvitationModal
+          editData={editData}
+          onCancel={onEditClose}
+          isEditModalOpen={isEditModalOpen}
+          refetch={refetchInvitations}
+          key={"editModal"}
+        />
+      ) : null}
     </>
   );
 };

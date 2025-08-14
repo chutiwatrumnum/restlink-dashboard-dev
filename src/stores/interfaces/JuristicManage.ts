@@ -80,10 +80,10 @@ export interface GetInvitationsType {
 }
 export interface InvitationsDataType {
   id: string;
-  code: string | null;
-  firstName: string;
+  code: string;
   lastName: string;
-  middleName?: string | null;
+  firstName: string;
+  middleName?: string;
   contact: string;
   email: string;
   expireDate: string;
@@ -122,5 +122,16 @@ export interface JuristicEditPayload {
   middleName?: string;
   contact: string;
   roleId: string | number;
+  email?: string;
   image?: string;
+}
+
+export interface JuristicInvitationEditPayload {
+  id: string;
+  firstName: string;
+  lastName: string;
+  middleName?: string;
+  contact: string;
+  roleId: string | number;
+  email: string;
 }

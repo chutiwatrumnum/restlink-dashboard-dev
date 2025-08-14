@@ -36,9 +36,8 @@ const getJuristicRole = async () => {
       label: role.name || role.roleName || role.roleCode || role.title,
     }));
 
-    console.log("Formatted Roles:", formattedRoles);
+    // console.log("Formatted Roles:", formattedRoles);
     return formattedRoles;
-
   } catch (error: any) {
     console.error("Error fetching juristic roles:", error);
 
@@ -47,7 +46,7 @@ const getJuristicRole = async () => {
       console.error("Error Response:", {
         status: error.response.status,
         statusText: error.response.statusText,
-        data: error.response.data
+        data: error.response.data,
       });
     }
 
@@ -69,23 +68,10 @@ const getJuristicInvitations = async ({
   return res.data.result;
 };
 
-//  Queries Service Chat
 export const getJuristicRoleQuery = () => {
   return useQuery({
     queryKey: ["juristicRole"],
     queryFn: getJuristicRole,
-    // เพิ่ม retry และ error handling
-    retry: 2,
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    cacheTime: 10 * 60 * 1000, // 10 minutes
-    // เพิ่ม onError callback เพื่อ debug
-    onError: (error) => {
-      console.error("getJuristicRoleQuery error:", error);
-    },
-    onSuccess: (data) => {
-      console.log("getJuristicRoleQuery success:", data);
-    }
   });
 };
 
