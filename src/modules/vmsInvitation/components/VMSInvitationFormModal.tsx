@@ -1,4 +1,4 @@
-// ไฟล์: src/modules/vmsInvitation/components/VMSInvitationFormModal.tsx - Debug Version
+// ไฟล์: src/modules/vmsInvitation/components/VMSInvitationFormModal.tsx - Clean Version
 
 import { useState, useEffect } from "react";
 import {
@@ -15,7 +15,6 @@ import {
 } from "antd";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState, Dispatch } from "../../../stores";
-import { vmsMappingService } from "../../../utils/services/vmsMappingService";
 import { requiredRule } from "../../../configs/inputRule";
 import SmallButton from "../../../components/common/SmallButton";
 import {
@@ -50,15 +49,22 @@ const VMSInvitationFormModal = ({
   const [areaOptions, setAreaOptions] = useState<
     { label: string; value: string }[]
   >([]);
+  const [vehicleOptions, setVehicleOptions] = useState<
+    { label: string; value: string; licensePlate: string }[]
+  >([]);
   const [loadingHouses, setLoadingHouses] = useState(false);
   const [loadingAreas, setLoadingAreas] = useState(false);
+  const [loadingVehicles, setLoadingVehicles] = useState(false);
 
-  // Get house and area data from state
+  // Get data from state
   const { tableData: houseData, loading: houseLoading } = useSelector(
     (state: RootState) => state.house
   );
   const { tableData: areaData, loading: areaLoading } = useSelector(
     (state: RootState) => state.area
+  );
+  const { tableData: vehicleData, loading: vehicleLoading } = useSelector(
+    (state: RootState) => state.vehicle
   );
 
   // Mutations
@@ -68,130 +74,91 @@ const VMSInvitationFormModal = ({
   const isEditing = !!editData;
   const isLoading = createMutation.isPending || updateMutation.isPending;
 
-  // Debug effect for house data
-  useEffect(() => {
-    console.log("🔍 Form Modal Debug Info:", {
-      isOpen,
-      houseData: {
-        exists: !!houseData,
-        length: houseData?.length || 0,
-        sample: houseData?.[0] || "No data",
-        loading: houseLoading,
-      },
-      areaData: {
-        exists: !!areaData,
-        length: areaData?.length || 0,
-        sample: areaData?.[0] || "No data",
-        loading: areaLoading,
-      },
-      houseOptions: {
-        length: houseOptions.length,
-        sample: houseOptions[0] || "No options",
-      },
-      areaOptions: {
-        length: areaOptions.length,
-        sample: areaOptions[0] || "No options",
-      },
-    });
-  }, [
-    isOpen,
-    houseData,
-    areaData,
-    houseOptions,
-    areaOptions,
-    houseLoading,
-    areaLoading,
-  ]);
-
-  // Load house and area data when modal opens
+  // Load data when modal opens
   useEffect(() => {
     const loadData = async () => {
       if (!isOpen) return;
 
-      console.log("🔄 Modal opened, loading data...");
-
       try {
-        // Load house data
         setLoadingHouses(true);
-        console.log("📍 Current house data:", {
-          length: houseData?.length || 0,
-          sample: houseData?.[0],
-        });
-
         if (!houseData || houseData.length === 0) {
-          console.log("🏠 Loading house data...");
           await dispatch.house.getHouseList({ page: 1, perPage: 500 });
         }
 
-        // Load area data
         setLoadingAreas(true);
-        console.log("📍 Current area data:", {
-          length: areaData?.length || 0,
-          sample: areaData?.[0],
-        });
-
         if (!areaData || areaData.length === 0) {
-          console.log("🗺️ Loading area data...");
           await dispatch.area.getAreaList({ page: 1, perPage: 500 });
         }
+
+        setLoadingVehicles(true);
+        if (!vehicleData || vehicleData.length === 0) {
+          await dispatch.vehicle.getVehicleList({ page: 1, perPage: 500 });
+        }
       } catch (error) {
-        console.error("❌ Error loading data:", error);
+        // Error handled by individual dispatches
       } finally {
         setLoadingHouses(false);
         setLoadingAreas(false);
+        setLoadingVehicles(false);
       }
     };
 
     loadData();
-  }, [isOpen, dispatch, houseData, areaData]);
+  }, [isOpen, dispatch, houseData, areaData, vehicleData]);
 
-  // Convert data to options when data changes
+  // Convert house data to options
   useEffect(() => {
-    console.log("🔄 Converting house data to options...");
-
     if (houseData && houseData.length > 0) {
       const houses = houseData.map((house) => ({
         label: `${house.address} (${house.id.substring(0, 8)}...)`,
         value: house.id,
       }));
-
-      console.log("🏠 House options created:", {
-        count: houses.length,
-        sample: houses[0],
-      });
-
       setHouseOptions(houses);
     } else {
-      console.log("⚠️ No house data available");
       setHouseOptions([]);
     }
   }, [houseData]);
 
+  // Convert area data to options
   useEffect(() => {
-    console.log("🔄 Converting area data to options...");
-
     if (areaData && areaData.length > 0) {
       const areas = areaData.map((area) => ({
         label: area.name,
         value: area.id,
       }));
-
-      console.log("🗺️ Area options created:", {
-        count: areas.length,
-        sample: areas[0],
-      });
-
       setAreaOptions(areas);
     } else {
-      console.log("⚠️ No area data available");
       setAreaOptions([]);
     }
   }, [areaData]);
 
+  // Convert vehicle data to options
+  useEffect(() => {
+    if (vehicleData && vehicleData.length > 0) {
+      const vehicles = vehicleData
+        .filter((vehicle) => {
+          const expireTime = new Date(vehicle.expire_time);
+          const now = new Date();
+          const isActive = expireTime > now;
+          const isInEditData = editData?.vehicle_id?.includes(vehicle.id);
+          return isActive || isInEditData;
+        })
+        .map((vehicle) => ({
+          label: `${vehicle.license_plate} (${vehicle.tier})`,
+          value: vehicle.id,
+          licensePlate: vehicle.license_plate,
+        }));
+
+      setVehicleOptions(vehicles);
+    } else {
+      setVehicleOptions([]);
+    }
+  }, [vehicleData, editData]);
+
   // Pre-fill form for editing
   useEffect(() => {
     if (isOpen && editData) {
-      console.log("✏️ Pre-filling form for editing:", editData);
+      const vehicleIds = editData.vehicle_id || [];
 
       form.setFieldsValue({
         guest_name: editData.guest_name,
@@ -200,20 +167,18 @@ const VMSInvitationFormModal = ({
         start_time: editData.start_time ? dayjs(editData.start_time) : null,
         expire_time: editData.expire_time ? dayjs(editData.expire_time) : null,
         authorized_area: editData.authorized_area || [],
-        vehicle_id: editData.vehicle_id || [],
+        vehicle_id: vehicleIds,
         note: editData.note || "",
         active: editData.active,
       });
     } else if (isOpen && !editData) {
-      console.log("🆕 Resetting form for new entry");
-      // Reset form for creating
       form.resetFields();
       form.setFieldsValue({
         type: "invitation",
         active: true,
       });
     }
-  }, [isOpen, editData, form]);
+  }, [isOpen, editData, form, vehicleOptions]);
 
   const handleCancel = () => {
     form.resetFields();
@@ -222,8 +187,6 @@ const VMSInvitationFormModal = ({
 
   const handleSubmit = async (values: any) => {
     try {
-      console.log("📤 Submitting form values:", values);
-
       const payload: VMSInvitationPayload = {
         guest_name: values.guest_name,
         house_id: values.house_id,
@@ -235,12 +198,10 @@ const VMSInvitationFormModal = ({
           ? dayjs(values.expire_time).toISOString()
           : dayjs().add(30, "days").toISOString(),
         authorized_area: values.authorized_area || [],
-        vehicle_id: values.vehicle_id || [],
+        vehicle_id: values.vehicle_id || [], // จะถูกแปลงใน mutation
         note: values.note || "",
         active: values.active !== undefined ? values.active : true,
       };
-
-      console.log("🔄 Final payload:", payload);
 
       if (isEditing && editData) {
         const editPayload: VMSInvitationEditPayload = {
@@ -255,7 +216,7 @@ const VMSInvitationFormModal = ({
       refetch();
       handleCancel();
     } catch (error) {
-      console.error("❌ Form submission error:", error);
+      // Error handled by mutations
     }
   };
 
@@ -338,14 +299,6 @@ const VMSInvitationFormModal = ({
                     <div style={{ textAlign: "center", padding: "20px" }}>
                       <div style={{ marginBottom: "8px" }}>🏠</div>
                       <div>No houses found</div>
-                      <div
-                        style={{
-                          fontSize: "12px",
-                          color: "#999",
-                          marginTop: "4px",
-                        }}>
-                        Try refreshing or check VMS connection
-                      </div>
                     </div>
                   )
                 }
@@ -422,12 +375,80 @@ const VMSInvitationFormModal = ({
               />
             </Form.Item>
 
-            <Form.Item label="Vehicle IDs" name="vehicle_id">
+            <Form.Item label="Vehicle License Plates" name="vehicle_id">
               <Select
-                mode="tags"
+                mode="multiple"
                 size="large"
-                placeholder="Enter vehicle IDs"
-                tokenSeparators={[","]}
+                placeholder={
+                  loadingVehicles || vehicleLoading
+                    ? "Loading vehicles..."
+                    : vehicleOptions.length === 0
+                    ? "No vehicles available"
+                    : "Select vehicle license plates"
+                }
+                options={vehicleOptions}
+                loading={loadingVehicles || vehicleLoading}
+                showSearch
+                filterOption={(input, option) =>
+                  (option?.label ?? "")
+                    .toLowerCase()
+                    .includes(input.toLowerCase())
+                }
+                optionRender={(option) => (
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}>
+                    <span>{option.data.licensePlate}</span>
+                    <Tag size="small" color="blue">
+                      {option.data.label.split("(")[1]?.replace(")", "")}
+                    </Tag>
+                  </div>
+                )}
+                tagRender={(props) => {
+                  const { label, value, closable, onClose } = props;
+                  const vehicleInfo = vehicleOptions.find(
+                    (v) => v.value === value
+                  );
+                  const displayLabel = vehicleInfo?.licensePlate || value;
+
+                  return (
+                    <Tag
+                      color="processing"
+                      closable={closable}
+                      onClose={onClose}
+                      style={{ marginRight: 3 }}>
+                      🚗 {displayLabel}
+                    </Tag>
+                  );
+                }}
+                notFoundContent={
+                  loadingVehicles || vehicleLoading ? (
+                    <div style={{ textAlign: "center", padding: "20px" }}>
+                      <Spin size="small" />
+                      <div style={{ marginTop: "8px" }}>
+                        Loading vehicles...
+                      </div>
+                    </div>
+                  ) : (
+                    <div style={{ textAlign: "center", padding: "20px" }}>
+                      <div style={{ marginBottom: "8px" }}>🚗</div>
+                      <div>No vehicles found</div>
+                      <div
+                        style={{
+                          fontSize: "12px",
+                          color: "#999",
+                          marginTop: "4px",
+                        }}>
+                        {isEditing
+                          ? "Active vehicles + current selection shown"
+                          : "Only active vehicles are shown"}
+                      </div>
+                    </div>
+                  )
+                }
               />
             </Form.Item>
 
@@ -445,26 +466,6 @@ const VMSInvitationFormModal = ({
             </Form.Item>
           </Col>
         </Row>
-
-        {/* Debug Info (only in development) */}
-        {process.env.NODE_ENV === "development" && (
-          <div
-            style={{
-              background: "#f5f5f5",
-              padding: "10px",
-              borderRadius: "4px",
-              fontSize: "12px",
-              marginTop: "16px",
-            }}>
-            <strong>Debug Info:</strong>
-            <br />
-            Houses: {houseOptions.length} options | Loading:{" "}
-            {loadingHouses || houseLoading ? "Yes" : "No"}
-            <br />
-            Areas: {areaOptions.length} options | Loading:{" "}
-            {loadingAreas || areaLoading ? "Yes" : "No"}
-          </div>
-        )}
       </Form>
     </Modal>
   );

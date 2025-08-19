@@ -1,18 +1,25 @@
-// ไฟล์: src/utils/mutationsGroup/vmsInvitationMutations.ts
+// ไฟล์: src/utils/mutationsGroup/vmsInvitationMutations.ts - Final Schema Handling
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { message } from "antd";
 import axiosVMS from "../../configs/axiosVMS";
 
+// Interface สำหรับ Vehicle Object (POST format)
+interface VehicleData {
+    license_plate: string;
+    area_code: string;
+}
+
 // Interface สำหรับ Create/Edit Invitation
 export interface VMSInvitationPayload {
     guest_name: string;
-    start_time: string; // ISO string format
-    expire_time: string; // ISO string format  
+    start_time: string;
+    expire_time: string;
     authorized_area: string[];
     house_id: string;
     type: string;
-    vehicle_id?: string[];
+    vehicle_id?: string[];  // สำหรับ UI
+    vehicle?: VehicleData[];  // สำหรับ POST API
     note?: string;
     active: boolean;
 }
@@ -20,6 +27,35 @@ export interface VMSInvitationPayload {
 export interface VMSInvitationEditPayload extends VMSInvitationPayload {
     id: string;
 }
+
+// Helper function to convert vehicle IDs to vehicle objects
+const convertVehicleIdsToObjects = async (vehicleIds: string[]): Promise<VehicleData[]> => {
+    if (!vehicleIds || vehicleIds.length === 0) {
+        return [];
+    }
+
+    try {
+        const vehicleObjects: VehicleData[] = [];
+
+        for (const vehicleId of vehicleIds) {
+            try {
+                const response = await axiosVMS.get(`/api/collections/vehicle/records/${vehicleId}`);
+                if (response.data) {
+                    vehicleObjects.push({
+                        license_plate: response.data.license_plate,
+                        area_code: response.data.area_code || "th-11"
+                    });
+                }
+            } catch (error) {
+                continue;
+            }
+        }
+
+        return vehicleObjects;
+    } catch (error) {
+        return [];
+    }
+};
 
 // === CREATE VMS INVITATION ===
 export const useCreateVMSInvitationMutation = () => {
@@ -32,46 +68,60 @@ export const useCreateVMSInvitationMutation = () => {
         },
         mutationFn: async (payload: VMSInvitationPayload) => {
             try {
-                console.log("🔄 Creating VMS Invitation:", payload);
+                // รับ vehicle_id จาก form
+                const vehicleIds = (payload as any).vehicle_id || [];
+
+                // แปลง vehicle IDs เป็น vehicle objects สำหรับ POST API
+                const vehicleObjects = await convertVehicleIdsToObjects(vehicleIds);
+
+                // สร้าง payload สำหรับ POST API (format ที่ต้องการ)
+                const apiPayload = {
+                    guest_name: payload.guest_name,
+                    house_id: payload.house_id,
+                    type: payload.type || "invitation",
+                    start_time: payload.start_time,
+                    expire_time: payload.expire_time,
+                    authorized_area: payload.authorized_area || [],
+                    vehicle: vehicleObjects, // POST format: vehicle array
+                    note: payload.note || "",
+                    active: payload.active
+                };
+
+                // ลบ fields ที่เป็น empty
+                if (apiPayload.vehicle.length === 0) {
+                    delete apiPayload.vehicle;
+                }
+                if (!apiPayload.note) {
+                    delete apiPayload.note;
+                }
 
                 const response = await axiosVMS.post(
                     `/api/collections/invitation/records`,
-                    payload
+                    apiPayload
                 );
 
-                if (response.status >= 400) {
-                    const errorMessage =
-                        response.data?.message ||
-                        response.data?.data?.message ||
-                        "Create invitation failed";
-                    throw new Error(errorMessage);
+                // API Response จะมี license_plate และ area_code แยกออกมา
+                // เราต้องแปลงกลับเป็น vehicle_id สำหรับ UI
+                if (response.data) {
+                    // สร้าง vehicle_id จาก license_plate ที่ส่งไป
+                    // เนื่องจาก API ไม่ return vehicle IDs กลับมา
+                    response.data.vehicle_id = vehicleIds;
                 }
 
-                console.log("✅ VMS Invitation created successfully:", response.data);
+                if (response.status >= 400) {
+                    throw new Error("Create invitation failed");
+                }
+
                 return response;
             } catch (error: any) {
-                console.error("❌ Create VMS Invitation Error:", error);
-
-                if (error.response) {
-                    const errorMessage =
-                        error.response.data?.message ||
-                        error.response.data?.data?.message ||
-                        `API Error: ${error.response.status}`;
-                    throw new Error(errorMessage);
-                }
-
-                throw error;
+                throw new Error(error.message || "Failed to create invitation");
             }
         },
-        onSuccess: (data) => {
-            console.log("Create VMS invitation mutation success:", data);
+        onSuccess: () => {
             message.success("Invitation created successfully!");
-
-            // Invalidate and refetch invitations list
             queryClient.invalidateQueries({ queryKey: ["vmsInvitations"] });
         },
         onError: (error: any) => {
-            console.error("Create VMS invitation mutation error:", error);
             message.error(error.message || "Failed to create invitation");
         },
     });
@@ -88,51 +138,63 @@ export const useUpdateVMSInvitationMutation = () => {
         },
         mutationFn: async (payload: VMSInvitationEditPayload) => {
             try {
-                console.log("🔄 Updating VMS Invitation:", payload);
-
                 const { id, ...updateData } = payload;
+
+                // รับ vehicle_id จาก form
+                const vehicleIds = (updateData as any).vehicle_id || [];
+
+                // แปลง vehicle IDs เป็น vehicle objects สำหรับ PATCH API
+                const vehicleObjects = await convertVehicleIdsToObjects(vehicleIds);
+
+                // สร้าง payload สำหรับ PATCH API (format ที่ต้องการ)
+                const apiPayload = {
+                    guest_name: updateData.guest_name,
+                    house_id: updateData.house_id,
+                    type: updateData.type || "invitation",
+                    start_time: updateData.start_time,
+                    expire_time: updateData.expire_time,
+                    authorized_area: updateData.authorized_area || [],
+                    vehicle: vehicleObjects, // PATCH format: vehicle array
+                    note: updateData.note || "",
+                    active: updateData.active
+                };
+
+                // ลบ fields ที่เป็น empty
+                if (apiPayload.vehicle.length === 0) {
+                    delete apiPayload.vehicle;
+                }
+                if (!apiPayload.note) {
+                    delete apiPayload.note;
+                }
 
                 const response = await axiosVMS.patch(
                     `/api/collections/invitation/records/${id}`,
-                    updateData
+                    apiPayload
                 );
 
-                if (response.status >= 400) {
-                    const errorMessage =
-                        response.data?.message ||
-                        response.data?.data?.message ||
-                        "Update invitation failed";
-                    throw new Error(errorMessage);
+                // API Response จะมี license_plate และ area_code แยกออกมา
+                // เราต้องแปลงกลับเป็น vehicle_id สำหรับ UI
+                if (response.data) {
+                    response.data.vehicle_id = vehicleIds;
                 }
 
-                console.log("✅ VMS Invitation updated successfully:", response.data);
+                if (response.status >= 400) {
+                    throw new Error("Update invitation failed");
+                }
+
                 return response;
             } catch (error: any) {
-                console.error("❌ Update VMS Invitation Error:", error);
-
-                if (error.response) {
-                    const errorMessage =
-                        error.response.data?.message ||
-                        error.response.data?.data?.message ||
-                        `API Error: ${error.response.status}`;
-                    throw new Error(errorMessage);
-                }
-
-                throw error;
+                throw new Error(error.message || "Failed to update invitation");
             }
         },
         onSuccess: (data, payload) => {
-            console.log("Update VMS invitation mutation success:", data);
             message.success("Invitation updated successfully!");
-
-            // Invalidate and refetch invitations list
             queryClient.invalidateQueries({ queryKey: ["vmsInvitations"] });
             queryClient.invalidateQueries({
                 queryKey: ["vmsInvitation", payload.id],
             });
         },
         onError: (error: any) => {
-            console.error("Update VMS invitation mutation error:", error);
             message.error(error.message || "Failed to update invitation");
         },
     });
@@ -149,48 +211,24 @@ export const useDeleteVMSInvitationMutation = () => {
         },
         mutationFn: async (invitationId: string) => {
             try {
-                console.log("🗑️ Deleting VMS Invitation ID:", invitationId);
-
                 const response = await axiosVMS.delete(
                     `/api/collections/invitation/records/${invitationId}`
                 );
 
                 if (response.status >= 400) {
-                    const errorMessage =
-                        response.data?.message ||
-                        response.data?.data?.message ||
-                        "Delete invitation failed";
-                    throw new Error(errorMessage);
+                    throw new Error("Delete invitation failed");
                 }
 
-                console.log("✅ VMS Invitation deleted successfully");
                 return response;
             } catch (error: any) {
-                console.error("❌ Delete VMS Invitation Error:", error);
-
-                if (error.response) {
-                    const errorMessage =
-                        error.response.data?.message ||
-                        error.response.data?.data?.message ||
-                        `API Error: ${error.response.status}`;
-                    throw new Error(errorMessage);
-                }
-
-                throw error;
+                throw new Error(error.message || "Failed to delete invitation");
             }
         },
-        onSuccess: (data, invitationId) => {
-            console.log("Delete VMS invitation mutation success");
+        onSuccess: () => {
             message.success("Invitation deleted successfully!");
-
-            // Invalidate and refetch invitations list
             queryClient.invalidateQueries({ queryKey: ["vmsInvitations"] });
-            queryClient.invalidateQueries({
-                queryKey: ["vmsInvitation", invitationId],
-            });
         },
         onError: (error: any) => {
-            console.error("Delete VMS invitation mutation error:", error);
             message.error(error.message || "Failed to delete invitation");
         },
     });

@@ -1,4 +1,4 @@
-// ไฟล์: src/modules/vmsInvitation/screens/VMSInvitation.tsx
+// ไฟล์: src/modules/vmsInvitation/screens/VMSInvitation.tsx - Improved Vehicle Display
 
 import { useState, useEffect } from "react";
 import { Button, Tag, Tooltip } from "antd";
@@ -11,10 +11,10 @@ import { useDispatch, useSelector } from "react-redux";
 import { Dispatch, RootState } from "../../../stores";
 import type { ColumnsType, TableProps } from "antd/es/table";
 import { InvitationRecord } from "../../../stores/interfaces/Invitation";
-import { RefreshIcon } from "../../../assets/icons/Icons";
 import { EditOutlined, DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import { useDeleteVMSInvitationMutation } from "../../../utils/mutationsGroup/vmsInvitationMutations";
 import { callConfirmModal } from "../../../components/common/Modal";
+import { vmsMappingService } from "../../../utils/services/vmsMappingService";
 import "../styles/vmsInvitation.css";
 
 const VMSInvitation = () => {
@@ -30,6 +30,9 @@ const VMSInvitation = () => {
   const [rerender, setRerender] = useState<boolean>(false);
   const [isFormModalOpen, setIsFormModalOpen] = useState<boolean>(false);
   const [editData, setEditData] = useState<InvitationRecord | null>(null);
+  const [vehicleMapping, setVehicleMapping] = useState<Map<string, string>>(
+    new Map()
+  );
 
   // Pagination Options
   const pageSizeOptions = [10, 20, 40, 80, 100];
@@ -45,6 +48,23 @@ const VMSInvitation = () => {
   const getHouseAddress = (houseId: string): string => {
     if (!houseId) return "-";
     return houseMapping?.get(houseId) || houseId;
+  };
+
+  // Improved function to get vehicle license plates
+  const getVehicleLicensePlates = (vehicleIds: string[]): string => {
+    if (!vehicleIds || vehicleIds.length === 0) return "-";
+
+    // ถ้า vehicleIds เป็น license plates แล้ว (จากการแปลงใน model)
+    // ให้แสดงตรงๆ
+    const licensePlates = vehicleIds.filter(Boolean);
+
+    if (licensePlates.length === 0) return "-";
+    if (licensePlates.length === 1) return licensePlates[0];
+    if (licensePlates.length <= 2) return licensePlates.join(", ");
+
+    return `${licensePlates.slice(0, 2).join(", ")} +${
+      licensePlates.length - 2
+    } more`;
   };
 
   // Functions
@@ -69,7 +89,7 @@ const VMSInvitation = () => {
           await deleteMutation.mutateAsync(record.id);
           refetchData();
         } catch (error) {
-          console.error("Delete error:", error);
+          // Error handled by mutation
         }
       },
     });
@@ -99,20 +119,6 @@ const VMSInvitation = () => {
       render: (guest_name) => <div>{guest_name || "-"}</div>,
     },
     {
-      title: "Code",
-      key: "code",
-      dataIndex: "code",
-      width: "18%",
-      align: "center",
-      render: (code) => (
-        <Tooltip title={code} placement="topLeft">
-          <div style={{ fontSize: "12px", wordBreak: "break-all" }}>
-            {code ? `${code.substring(0, 20)}...` : "-"}
-          </div>
-        </Tooltip>
-      ),
-    },
-    {
       title: "House Address",
       key: "house_id",
       dataIndex: "house_id",
@@ -131,6 +137,35 @@ const VMSInvitation = () => {
                 fontSize: isOriginalId ? "11px" : "13px",
               }}>
               {address}
+            </div>
+          </Tooltip>
+        );
+      },
+    },
+    {
+      title: "Vehicle License Plates",
+      key: "vehicle_id",
+      dataIndex: "vehicle_id",
+      align: "center",
+      width: "18%",
+      render: (vehicle_ids) => {
+        const licensePlates = getVehicleLicensePlates(vehicle_ids);
+
+        return (
+          <Tooltip
+            title={
+              vehicle_ids && vehicle_ids.length > 0
+                ? `License Plates: ${vehicle_ids.join(", ")}`
+                : "No vehicles"
+            }
+            placement="top">
+            <div
+              style={{
+                fontSize: "12px",
+                color: licensePlates === "-" ? "#999" : "#1890ff",
+                fontWeight: licensePlates === "-" ? "400" : "500",
+              }}>
+              {licensePlates}
             </div>
           </Tooltip>
         );
@@ -208,18 +243,6 @@ const VMSInvitation = () => {
       },
     },
     {
-      title: "Updated",
-      key: "updated",
-      dataIndex: "updated",
-      align: "center",
-      width: "10%",
-      render: (updated) => {
-        return (
-          <div>{updated ? dayjs(updated).format("DD/MM/YYYY HH:mm") : "-"}</div>
-        );
-      },
-    },
-    {
       title: "Action",
       key: "action",
       align: "center",
@@ -255,82 +278,41 @@ const VMSInvitation = () => {
     const page = pagination?.current || currentPage;
     const pageSize = pagination?.pageSize || perPage;
 
-    // TODO: Handle sorting if needed
-    // const sortField = sorter?.field;
-    // const sortOrder = sorter?.order;
-
     await dispatch.invitation.getInvitationList({
       page,
       perPage: pageSize,
     });
   };
 
-  const handleRefresh = async () => {
-    refetchData();
-  };
+  // Load mapping data when component mounts
+  useEffect(() => {
+    const loadMappingData = async () => {
+      try {
+        const currentHouseData = dispatch.getState().house.tableData;
+        if (!currentHouseData || currentHouseData.length === 0) {
+          await dispatch.house.getHouseList({ page: 1, perPage: 500 });
+        }
 
-  // Load house and area data when component mounts
-useEffect(() => {
-  const loadMappingData = async () => {
-    console.log("🔄 Loading mapping data for form modal...");
+        const currentAreaData = dispatch.getState().area.tableData;
+        if (!currentAreaData || currentAreaData.length === 0) {
+          await dispatch.area.getAreaList({ page: 1, perPage: 500 });
+        }
 
-    try {
-      // โหลด house data ถ้ายังไม่มี
-      const currentHouseData = dispatch.getState().house.tableData;
-      console.log("🏠 Current house data in state:", {
-        exists: !!currentHouseData,
-        length: currentHouseData?.length || 0,
-        sample: currentHouseData?.[0] || "No data",
-      });
+        const currentVehicleData = dispatch.getState().vehicle.tableData;
+        if (!currentVehicleData || currentVehicleData.length === 0) {
+          await dispatch.vehicle.getVehicleList({ page: 1, perPage: 500 });
+        }
 
-      if (!currentHouseData || currentHouseData.length === 0) {
-        console.log("🔄 Dispatching house.getHouseList...");
-        await dispatch.house.getHouseList({ page: 1, perPage: 500 });
-
-        // เช็คหลังจากโหลดแล้ว
-        const newHouseData = dispatch.getState().house.tableData;
-        console.log("🏠 House data after loading:", {
-          length: newHouseData?.length || 0,
-          sample: newHouseData?.[0] || "Still no data",
-        });
+        if (!houseMapping || houseMapping.size === 0) {
+          await dispatch.invitation.refreshHouseMapping();
+        }
+      } catch (error) {
+        // Error handled by individual dispatches
       }
+    };
 
-      // โหลด area data ถ้ายังไม่มี
-      const currentAreaData = dispatch.getState().area.tableData;
-      console.log("🗺️ Current area data in state:", {
-        exists: !!currentAreaData,
-        length: currentAreaData?.length || 0,
-        sample: currentAreaData?.[0] || "No data",
-      });
-
-      if (!currentAreaData || currentAreaData.length === 0) {
-        console.log("🔄 Dispatching area.getAreaList...");
-        await dispatch.area.getAreaList({ page: 1, perPage: 500 });
-
-        // เช็คหลังจากโหลดแล้ว
-        const newAreaData = dispatch.getState().area.tableData;
-        console.log("🗺️ Area data after loading:", {
-          length: newAreaData?.length || 0,
-          sample: newAreaData?.[0] || "Still no data",
-        });
-      }
-
-      // โหลด house mapping ถ้ายังไม่มี
-      if (!houseMapping || houseMapping.size === 0) {
-        console.log("🔄 Loading house mapping...");
-        await dispatch.invitation.refreshHouseMapping();
-      }
-    } catch (error) {
-      console.error("❌ Error loading mapping data:", error);
-    }
-  };
-
-  // โหลดข้อมูลเมื่อเปิด form modal
-  if (isFormModalOpen) {
-    console.log("📝 Form modal opened, loading required data...");
     loadMappingData();
-  }
-}, [isFormModalOpen, dispatch, houseMapping]);
+  }, [dispatch, houseMapping]);
 
   // Effects
   useEffect(() => {
@@ -358,28 +340,11 @@ useEffect(() => {
         </div>
         <div className="userManagementTopActionRightGroup">
           <Button
-            type="default"
-            onClick={() => dispatch.invitation.refreshHouseMapping()}
-            loading={loading}
-            style={{ marginRight: 8 }}
-            size="small">
-            Refresh Mapping
-          </Button>
-          <Button
             type="primary"
             icon={<PlusOutlined />}
             onClick={onCreate}
-            style={{ marginRight: 8 }}
             className="userManagementExportBtn">
             Add New
-          </Button>
-          <Button
-            type="primary"
-            icon={<RefreshIcon />}
-            onClick={handleRefresh}
-            loading={loading}
-            className="userManagementExportBtn">
-            Refresh
           </Button>
         </div>
       </div>

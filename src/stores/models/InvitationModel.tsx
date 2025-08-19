@@ -1,4 +1,4 @@
-// ไฟล์: src/stores/models/InvitationModel.tsx
+// ไฟล์: src/stores/models/InvitationModel.tsx - Final Version
 
 import { createModel } from "@rematch/core";
 import { InvitationType } from "../interfaces/Invitation";
@@ -14,7 +14,7 @@ export const invitation = createModel<RootModel>()({
     total: 0,
     currentPage: 1,
     perPage: 10,
-    houseMapping: new Map<string, string>(), // เพิ่ม house mapping
+    houseMapping: new Map<string, string>(),
   } as InvitationType & { houseMapping: Map<string, string> },
   reducers: {
     updateLoadingState: (state, payload) => ({
@@ -50,8 +50,6 @@ export const invitation = createModel<RootModel>()({
         const page = payload?.page || 1;
         const perPage = payload?.perPage || 10;
 
-        console.log("🔄 Fetching invitation list:", { page, perPage });
-
         const response = await axiosVMS.get(
           `/api/collections/invitation/records`,
           {
@@ -62,72 +60,62 @@ export const invitation = createModel<RootModel>()({
           }
         );
 
-        console.log("✅ Raw VMS Response:", response.data);
-
         if (response.data) {
           const data = response.data;
           const items = data.items || [];
 
+          // แปลงข้อมูลจาก VMS format เป็น UI format
+          const processedItems = items.map((item: any) => {
+            // VMS API ส่ง license_plate และ area_code แยกออกมา (GET format)
+            // เราต้องสร้าง vehicle_id เพื่อใช้ในตาราง
+
+            let vehicleIds: string[] = [];
+
+            // ถ้ามี license_plate อยู่ใน item (flattened format)
+            if (item.license_plate) {
+              // ใช้ license_plate เป็น vehicle_id ชั่วคราวสำหรับแสดงใน UI
+              vehicleIds = [item.license_plate];
+            }
+
+            // ถ้ามี vehicle_id อยู่แล้ว (ในบางกรณี)
+            if (item.vehicle_id && Array.isArray(item.vehicle_id)) {
+              vehicleIds = item.vehicle_id;
+            }
+
+            return {
+              ...item,
+              vehicle_id: vehicleIds, // เพิ่ม vehicle_id สำหรับ UI
+            };
+          });
+
           // ดึง house IDs ทั้งหมดที่มีใน invitation
-          const houseIds = items
+          const houseIds = processedItems
             .map((item: any) => item.house_id)
             .filter(Boolean);
-          console.log("🏠 House IDs found in invitations:", houseIds);
 
           // โหลด house mapping
           if (houseIds.length > 0) {
             const houseMapping =
               await houseMappingService.getMultipleHouseAddresses(houseIds);
             dispatch.invitation.updateHouseMappingState(houseMapping);
-            console.log(
-              "🗺️ House mapping loaded:",
-              Array.from(houseMapping.entries())
-            );
           }
 
-          const totalItems = data.totalItems || items.length || 0;
+          const totalItems = data.totalItems || processedItems.length || 0;
 
-          dispatch.invitation.updateTableDataState(items);
+          dispatch.invitation.updateTableDataState(processedItems);
           dispatch.invitation.updateTotalState(totalItems);
           dispatch.invitation.updateCurrentPageState(page);
           dispatch.invitation.updatePerPageState(perPage);
 
-          console.log("✅ State updated:", {
-            itemsCount: items.length,
-            total: totalItems,
-            page,
-            perPage,
-            houseMappingSize: houseIds.length,
-          });
-
           message.success(
-            `Loaded ${items.length} invitation records with house mapping!`
+            `Loaded ${processedItems.length} invitation records!`
           );
         } else {
-          console.warn("⚠️ No data in response");
           dispatch.invitation.updateTableDataState([]);
           dispatch.invitation.updateTotalState(0);
           message.warning("No data received from VMS");
         }
       } catch (error: any) {
-        console.error("❌ Error fetching invitation list:", error);
-
-        // แสดงข้อมูล error ที่ละเอียดมากขึ้น
-        if (error.response) {
-          console.error("📋 Error details:", {
-            status: error.response.status,
-            statusText: error.response.statusText,
-            data: error.response.data,
-            headers: error.response.headers,
-            config: {
-              url: error.config?.url,
-              method: error.config?.method,
-              baseURL: error.config?.baseURL,
-              params: error.config?.params,
-            },
-          });
-        }
-
         const errorMessage =
           error.response?.data?.message ||
           error.message ||
@@ -144,10 +132,8 @@ export const invitation = createModel<RootModel>()({
 
     async refreshHouseMapping() {
       try {
-        console.log("🔄 Manually refreshing house mapping...");
         await houseMappingService.refreshHouseCache();
 
-        // รีเฟรช invitation list เพื่อใช้ mapping ใหม่
         const { currentPage, perPage } = dispatch.getState().invitation;
         await dispatch.invitation.getInvitationList({
           page: currentPage,
@@ -156,7 +142,6 @@ export const invitation = createModel<RootModel>()({
 
         message.success("House mapping refreshed successfully!");
       } catch (error) {
-        console.error("❌ Failed to refresh house mapping:", error);
         message.error("Failed to refresh house mapping");
       }
     },
