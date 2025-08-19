@@ -39,6 +39,9 @@ import {
   Parcel,
   ParcelDeliveryLogIcon,
   StaffMenuIcon,
+  JuristicPermissionIcon,
+  JuristicManageIcon,
+  JuristicIcon,
 } from "../../assets/icons/Icons";
 
 import MENU_LOGO from "../../assets/images/Reslink-Logo.png";
@@ -121,7 +124,8 @@ const SideMenu = ({
 
         case pathname.includes("/juristicInvitation") ||
           pathname.includes("/juristicManage") ||
-          pathname.includes("/staffManage"):
+          pathname.includes("/staffManage") ||
+          pathname.includes("/juristicTeamPermission"):
           return ["managementTeam"];
 
         case pathname.includes("/invitation") ||
@@ -243,7 +247,7 @@ const SideMenu = ({
           <SubMenu
             key="managementTeam"
             icon={
-              <UserManagementIcon
+              <JuristicIcon
                 color={iconMenuColorSelector("managementTeam")}
                 className="sideMenuIcon"
               />
@@ -253,7 +257,7 @@ const SideMenu = ({
             <Menu.Item
               key={`${main_link}/juristicInvitation`}
               icon={
-                <ResidentManagementIcon
+                <JuristicManageIcon
                   color={iconSubMenuColorSelector("juristicInvitation")}
                   className="sideMenuIcon"
                 />
@@ -286,6 +290,20 @@ const SideMenu = ({
               }
             >
               <Link to={`${main_link}/staffManage`}>Staff management</Link>
+            </Menu.Item>
+
+            <Menu.Item
+              key={`${main_link}/juristicTeamPermission`}
+              icon={
+                <JuristicPermissionIcon
+                  color={iconSubMenuColorSelector("staffManage")}
+                  className="sideMenuIcon"
+                />
+              }
+            >
+              <Link to={`${main_link}/juristicTeamPermission`}>
+                Juristic team permission
+              </Link>
             </Menu.Item>
           </SubMenu>
           <SubMenu

@@ -63,3 +63,38 @@
   color: #bcbec0;
   border-color: #bcbec0;
 }
+
+.custom-card-title .ant-card-head {
+  background-color: #ECF4FF !important;
+  color: var(--primary-color) !important;
+}
+
+.checkboxGroup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 10px;
+}
+
+.checkboxGroup .ant-checkbox-wrapper {
+  width: calc(50% - 4px);
+}
+
+.reset-button {
+    width: 9rem;
+    border: 1px solid var(--primary-color);
+    color: var(--primary-color);
+    margin-right: 8px;
+}
+.save-button {
+    width: 9rem;
+}
+
+.custom-form-label .ant-form-item-label > label {
+  font-weight: 500;
+  color: var(--primary-color);
+}
+
+.custom-tabs .ant-tabs-tab-active {
+  background: linear-gradient(90deg, white, #C0DAFF) !important;
+}

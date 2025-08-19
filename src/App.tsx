@@ -92,6 +92,7 @@ import UnitPreview from "./modules/setupProjectFirst/screens/village/UnitPreview
 import UploadNumberBuilding from "./modules/setupProjectFirst/screens/condominium/UploadNumberBuilding";
 import UnitPreviewCondo from "./modules/setupProjectFirst/screens/condominium/UnitPreview";
 import UploadFloorPlan from "./modules/setupProjectFirst/screens/condominium/UploadFloorPlan";
+import JuristicTeamPermission from "./modules/juristicManagement/screens/JuristicTeamPermission";
 // components
 
 // data project
@@ -406,6 +407,10 @@ function AppRoutes() {
         <Route path="juristicInvitation" element={<JuristicInvitation />} />
         <Route path="juristicManage" element={<JuristicManage />} />
         <Route path="staffManage" element={<StaffManagement />} />
+        <Route
+          path="juristicTeamPermission"
+          element={<JuristicTeamPermission />}
+        />
       </Route>
 
       {/* setup project first */}
