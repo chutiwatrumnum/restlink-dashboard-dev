@@ -1,3 +1,5 @@
+// ไฟล์: src/stores/models/UserAuthModel.tsx
+
 import { createModel } from "@rematch/core";
 import { message } from "antd";
 import {
@@ -17,11 +19,19 @@ export const userAuth = createModel<RootModel>()({
     userId: null,
     userFirstName: "Den",
     userLastName: "Tao",
-    isAuth: false, // เปลี่ยนจาก true เป็น false
+    isAuth: false,
     userToken: null,
     isSignUpModalOpen: false,
     isConfirmDetailModalOpen: false,
-  } as UserType,
+    // เพิ่ม state สำหรับ VMS
+    vmsUrl: null,
+    vmsToken: null,
+    roleName: null,
+  } as UserType & {
+    vmsUrl: string | null;
+    vmsToken: string | null;
+    roleName: string | null;
+  },
   reducers: {
     updateUserIdState: (state, payload) => ({
       ...state,
@@ -47,11 +57,20 @@ export const userAuth = createModel<RootModel>()({
       ...state,
       isConfirmDetailModalOpen: payload,
     }),
+    // เพิ่ม reducers สำหรับ VMS
+    updateVmsState: (state, payload) => ({
+      ...state,
+      vmsUrl: payload.vmsUrl,
+      vmsToken: payload.vmsToken,
+      roleName: payload.roleName,
+    }),
   },
   effects: (dispatch) => ({
     async loginEffects(payload: LoginPayloadType) {
       try {
         const data = { username: payload.username, password: payload.password };
+
+        // Step 1: Login เพื่อเอา access_token
         const userToken = await axios.post("/auth/dashboard/login", data);
 
         if (userToken.status >= 400) {
@@ -59,7 +78,7 @@ export const userAuth = createModel<RootModel>()({
           return false;
         }
 
-        // เก็บ tokens
+        // เก็บ tokens จาก login
         encryptStorage.setItem("access_token", userToken.data.access_token);
         if (userToken.data.refreshToken) {
           encryptStorage.setItem("refreshToken", userToken.data.refreshToken);
@@ -68,20 +87,40 @@ export const userAuth = createModel<RootModel>()({
         }
 
         try {
-          // ลองเรียก API เพื่อเช็ค project ID
-          const projectId = await axios.get("/my-project");
-          if (
-            projectId.data &&
-            projectId.data.data &&
-            projectId.data.data.myProjectId
-          ) {
-            encryptStorage.setItem(
-              "projectId",
-              projectId.data.data.myProjectId
-            );
+          // Step 2: เรียก /my-project เพื่อเอา projectId และ VMS data
+          const projectResponse = await axios.get("/my-project");
+
+          if (projectResponse.data && projectResponse.data.data) {
+            const projectData = projectResponse.data.data;
+
+            // เก็บ projectId แบบเดิม
+            if (projectData.myProjectId) {
+              encryptStorage.setItem("projectId", projectData.myProjectId);
+            }
+
+            // เก็บข้อมูล VMS ใหม่
+            if (projectData.vmsUrl && projectData.vmsToken) {
+              const vmsData = {
+                vmsUrl: projectData.vmsUrl,
+                vmsToken: projectData.vmsToken,
+                roleName: projectData.roleName || null,
+              };
+
+              // เก็บลง encrypted storage
+              encryptStorage.setItem("vmsUrl", projectData.vmsUrl);
+              encryptStorage.setItem("vmsToken", projectData.vmsToken);
+              if (projectData.roleName) {
+                encryptStorage.setItem("roleName", projectData.roleName);
+              }
+
+              // อัพเดท state
+              dispatch.userAuth.updateVmsState(vmsData);
+
+              console.log("VMS Data saved:", vmsData);
+            }
           }
         } catch (error) {
-          console.log("Project ID not found, but login successful");
+          console.log("Project/VMS data not found, but login successful");
           // ไม่ต้อง throw error เพราะ login สำเร็จแล้ว
         }
 
@@ -93,7 +132,6 @@ export const userAuth = createModel<RootModel>()({
           }
         } catch (error) {
           console.log("Profile data not available, but login successful");
-          // ไม่ต้อง throw error เพราะ login สำเร็จแล้ว
         }
 
         // อัพเดท auth state
@@ -101,8 +139,6 @@ export const userAuth = createModel<RootModel>()({
 
         // แสดง success message
         callSuccessModal("Login successful!");
-
-        // ไม่ต้อง manual redirect ให้ useEffect ใน layout จัดการเอง
 
         return true;
       } catch (error) {
@@ -161,10 +197,25 @@ export const userAuth = createModel<RootModel>()({
           console.error("No access_token in response:", res.data);
           throw "access_token not found";
         }
+
         encryptStorage.setItem("access_token", res.data.access_token);
+
         // อัพเดท refresh token ใหม่ถ้ามี
         if (res.data.refresh_token) {
           encryptStorage.setItem("refreshToken", res.data.refresh_token);
+        }
+
+        // โหลด VMS data จาก storage กลับเข้า state
+        const vmsUrl = await encryptStorage.getItem("vmsUrl");
+        const vmsToken = await encryptStorage.getItem("vmsToken");
+        const roleName = await encryptStorage.getItem("roleName");
+
+        if (vmsUrl && vmsToken) {
+          dispatch.userAuth.updateVmsState({
+            vmsUrl,
+            vmsToken,
+            roleName,
+          });
         }
 
         dispatch.userAuth.updateAuthState(true);
@@ -182,8 +233,21 @@ export const userAuth = createModel<RootModel>()({
         encryptStorage.removeItem("access_token");
         encryptStorage.removeItem("refreshToken");
         encryptStorage.removeItem("userData");
+        // ลบข้อมูล VMS
+        encryptStorage.removeItem("vmsUrl");
+        encryptStorage.removeItem("vmsToken");
+        encryptStorage.removeItem("roleName");
+
         // ทำความสะอาด intended destination จาก Google OAuth
         clearIntendedDestination();
+
+        // รีเซ็ต VMS state
+        dispatch.userAuth.updateVmsState({
+          vmsUrl: null,
+          vmsToken: null,
+          roleName: null,
+        });
+
         dispatch.userAuth.updateAuthState(false);
         return true;
       } catch (error) {
@@ -191,8 +255,18 @@ export const userAuth = createModel<RootModel>()({
         encryptStorage.removeItem("access_token");
         encryptStorage.removeItem("refreshToken");
         encryptStorage.removeItem("userData");
-        // ทำความสะอาด intended destination จาก Google OAuth
+        encryptStorage.removeItem("vmsUrl");
+        encryptStorage.removeItem("vmsToken");
+        encryptStorage.removeItem("roleName");
+
         clearIntendedDestination();
+
+        dispatch.userAuth.updateVmsState({
+          vmsUrl: null,
+          vmsToken: null,
+          roleName: null,
+        });
+
         dispatch.userAuth.updateAuthState(false);
         return false;
       }

@@ -93,6 +93,9 @@ import UploadNumberBuilding from "./modules/setupProjectFirst/screens/condominiu
 import UnitPreviewCondo from "./modules/setupProjectFirst/screens/condominium/UnitPreview";
 import UploadFloorPlan from "./modules/setupProjectFirst/screens/condominium/UploadFloorPlan";
 import JuristicTeamPermission from "./modules/juristicManagement/screens/JuristicTeamPermission";
+
+import VMSInvitation from "./modules/vmsInvitation/screens/VMSInvitation";
+
 // components
 
 // data project
@@ -365,6 +368,7 @@ function AppRoutes() {
           path="buildingProgressDashboard"
           element={<SummaryDashboard />}
         />
+        <Route path="vms-invitation" element={<VMSInvitation />} />
         <Route path="managementMain" element={<ManagementMain />} />
         <Route path="serviceDashboard" element={<ServiceDashboard />} />
         <Route path="serviceCenterLists" element={<ServiceCenterLists />} />

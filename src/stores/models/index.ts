@@ -1,3 +1,5 @@
+// ไฟล์: src/stores/models/index.ts
+
 import { Models } from "@rematch/core";
 import { userAuth } from "./UserAuthModel";
 import { common } from "./CommonModel";
@@ -17,6 +19,10 @@ import { maintenanceGuide } from "./MaintenanceGuide";
 import { visitor } from "./visitorModel";
 import { juristic } from "./JuristicModel";
 import { setupProject } from "./SetupProjectModel";
+import { invitation } from "./InvitationModel"; // เพิ่มใหม่
+import { house } from "./HouseModel"; // เพิ่มใหม่
+import { area } from "./AreaModel"; // เพิ่มใหม่
+
 export interface RootModel extends Models<RootModel> {
   userAuth: typeof userAuth;
   common: typeof common;
@@ -36,7 +42,11 @@ export interface RootModel extends Models<RootModel> {
   visitor: typeof visitor;
   juristic: typeof juristic;
   setupProject: typeof setupProject;
+  invitation: typeof invitation; // เพิ่มใหม่
+  house: typeof house; // เพิ่มใหม่
+  area: typeof area; // เพิ่มใหม่
 }
+
 export const models: RootModel = {
   userAuth,
   common,
@@ -56,4 +66,7 @@ export const models: RootModel = {
   visitor,
   juristic,
   setupProject,
+  invitation, // เพิ่มใหม่
+  house, // เพิ่มใหม่
+  area, // เพิ่มใหม่
 };

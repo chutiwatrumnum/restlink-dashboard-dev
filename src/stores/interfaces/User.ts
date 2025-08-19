@@ -1,4 +1,3 @@
-// เพิ่มใน stores/interfaces/User.ts (ถ้ายังไม่มี)
 export interface LoginPayloadType {
   username: string;
   password: string;
@@ -12,6 +11,9 @@ export interface UserType {
   userToken: string | null;
   isSignUpModalOpen: boolean;
   isConfirmDetailModalOpen: boolean;
+  vmsUrl?: string | null;
+  vmsToken?: string | null;
+  roleName?: string | null;
 }
 
 export interface ResetPasswordPayloadType {
