@@ -1,5 +1,3 @@
-// ไฟล์: src/stores/models/HouseModel.tsx
-
 import { createModel } from "@rematch/core";
 import { HouseType } from "../interfaces/House";
 import { RootModel } from "./index";
@@ -37,12 +35,17 @@ export const house = createModel<RootModel>()({
     }),
   },
   effects: (dispatch) => ({
-    async getHouseList(payload?: { page?: number; perPage?: number }) {
+    async getHouseList(payload?: {
+      page?: number;
+      perPage?: number;
+      silent?: boolean;
+    }) {
       dispatch.house.updateLoadingState(true);
 
       try {
         const page = payload?.page || 1;
         const perPage = payload?.perPage || 10;
+        const silent = payload?.silent || false; // เพิ่ม silent mode
 
         console.log("🏠 Fetching house list:", { page, perPage });
 
@@ -57,17 +60,6 @@ export const house = createModel<RootModel>()({
 
         if (response.data) {
           const data = response.data;
-
-          // ตรวจสอบโครงสร้างข้อมูลและแสดงใน console
-          console.log("🏠 House response structure:", {
-            hasItems: !!data.items,
-            itemsCount: data.items?.length || 0,
-            totalItems: data.totalItems,
-            page: data.page,
-            perPage: data.perPage,
-            sampleItem: data.items?.[0] || "No items",
-          });
-
           const items = data.items || [];
           const totalItems = data.totalItems || items.length || 0;
 
@@ -83,17 +75,22 @@ export const house = createModel<RootModel>()({
             perPage,
           });
 
-          message.success(`Loaded ${items.length} house records!`);
+          // แก้ไข: แสดง success message เฉพาะเมื่อไม่อยู่ใน silent mode
+          if (!silent) {
+            message.success(`Loaded ${items.length} house records!`);
+          }
         } else {
           console.warn("⚠️ No house data in response");
           dispatch.house.updateTableDataState([]);
           dispatch.house.updateTotalState(0);
-          message.warning("No house data received from VMS");
+
+          if (!silent) {
+            message.warning("No house data received from VMS");
+          }
         }
       } catch (error: any) {
         console.error("❌ Error fetching house list:", error);
 
-        // แสดงข้อมูล error ที่ละเอียดมากขึ้น
         if (error.response) {
           console.error("🏠 House API Error details:", {
             status: error.response.status,
@@ -114,7 +111,10 @@ export const house = createModel<RootModel>()({
           error.message ||
           "Failed to fetch house list";
 
-        message.error(`House API Error: ${errorMessage}`);
+        // แก้ไข: แสดง error message เฉพาะเมื่อไม่อยู่ใน silent mode
+        if (!payload?.silent) {
+          message.error(`House API Error: ${errorMessage}`);
+        }
 
         dispatch.house.updateTableDataState([]);
         dispatch.house.updateTotalState(0);

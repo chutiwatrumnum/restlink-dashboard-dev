@@ -5,7 +5,7 @@ import { useDispatch } from "react-redux";
 import { Dispatch } from "../../stores";
 import { APP_VERSION } from "../../configs/configs";
 import ConfirmModal from "../../components/common/ConfirmModal";
-import { MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons";
+import { CarOutlined, DatabaseOutlined, MenuFoldOutlined, MenuUnfoldOutlined, UserAddOutlined } from "@ant-design/icons";
 import {
   LogOutIcon,
   AnnouncementIcon,
@@ -616,16 +616,37 @@ const SideMenu = ({
             <Link to={`${main_link}/warranty-tracking`}>Warranty tracking</Link>
           </Menu.Item>
 
-          <Menu.Item
-            key={`${main_link}/vms-invitation`}
+          <SubMenu
+            key="vms"
             icon={
-              <UserManagementIcon
-                color={iconMenuColorSelector("vms-invitation")}
+              <DatabaseOutlined
+                color={iconMenuColorSelector("vms")}
                 className="sideMenuIcon"
               />
-            }>
-            <Link to={`${main_link}/vms-invitation`}>VMS Invitations</Link>
-          </Menu.Item>
+            }
+            title="VMS Management">
+            <Menu.Item
+              key={`${main_link}/vms-invitation`}
+              icon={
+                <UserAddOutlined
+                  color={iconSubMenuColorSelector("vms-invitation")}
+                  className="sideMenuIcon"
+                />
+              }>
+              <Link to={`${main_link}/vms-invitation`}>VMS Invitations</Link>
+            </Menu.Item>
+
+            <Menu.Item
+              key={`${main_link}/vms-vehicle`}
+              icon={
+                <CarOutlined
+                  color={iconSubMenuColorSelector("vms-vehicle")}
+                  className="sideMenuIcon"
+                />
+              }>
+              <Link to={`${main_link}/vms-vehicle`}>VMS Vehicles</Link>
+            </Menu.Item>
+          </SubMenu>
         </Menu>
       </div>
 

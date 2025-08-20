@@ -1,0 +1,271 @@
+.userManagementTopActionGroup {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.userManagementTopActionLeftGroup {
+  display: flex;
+  flex-direction: row;
+  width: 65%;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.userManagementTopActionRightGroup {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  width: 35%;
+  gap: 8px;
+}
+
+.userManagementExportBtn {
+  min-width: 120px !important;
+  height: 40px;
+}
+
+.vms-vehicle-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.vms-vehicle-header h1 {
+  margin: 0;
+}
+
+.vms-vehicle-table .ant-table-thead > tr > th {
+  background-color: var(--tableHeadBg-color) !important;
+  color: var(--tableHeadText-color) !important;
+  font-weight: var(--font-bold) !important;
+  text-align: center;
+}
+
+.vms-vehicle-table .ant-table-tbody > tr > td {
+  text-align: center;
+}
+
+/* License Plate column styling */
+.vms-vehicle-table .ant-table-tbody > tr > td:first-child {
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* Status tags styling */
+.vms-vehicle-table .ant-tag {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+/* Action buttons styling */
+.vms-vehicle-table .ant-table-tbody > tr > td:last-child {
+  padding: 8px 4px;
+}
+
+.vms-vehicle-table .ant-table-tbody > tr > td:last-child .ant-btn {
+  border: none;
+  box-shadow: none;
+  padding: 4px 8px;
+  height: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.vms-vehicle-table .ant-table-tbody > tr > td:last-child .ant-btn:hover {
+  background-color: rgba(24, 144, 255, 0.1);
+  border-radius: 4px;
+}
+
+.vms-vehicle-table .ant-table-tbody > tr > td:last-child .ant-btn[title*="Delete"]:hover {
+  background-color: rgba(255, 77, 79, 0.1);
+}
+
+/* Expired time styling */
+.vms-vehicle-table .expired-time {
+  color: #ff4d4f !important;
+  font-weight: 500;
+}
+
+/* Loading overlay */
+.vms-vehicle-table .ant-spin-container {
+  min-height: 400px;
+}
+
+/* Form Modal Styling */
+.vms-vehicle-form-modal .ant-modal-content {
+  border-radius: 12px;
+}
+
+.vms-vehicle-form-modal .ant-form-item-label > label {
+  font-weight: 500;
+  color: #262626;
+}
+
+.vms-vehicle-form-modal .ant-select-multiple .ant-select-selection-item {
+  background: #e6f7ff;
+  border-color: #91d5ff;
+  color: #0050b3;
+}
+
+.vms-vehicle-form-modal .ant-input,
+.vms-vehicle-form-modal .ant-select-selector,
+.vms-vehicle-form-modal .ant-picker {
+  border-radius: 6px;
+}
+
+.vms-vehicle-form-modal .ant-input:focus,
+.vms-vehicle-form-modal .ant-select-focused .ant-select-selector,
+.vms-vehicle-form-modal .ant-picker:hover,
+.vms-vehicle-form-modal .ant-picker-focused {
+  border-color: #1890ff;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+  .vms-vehicle-table .ant-table-thead > tr > th,
+  .vms-vehicle-table .ant-table-tbody > tr > td {
+    padding: 8px 4px;
+    font-size: 12px;
+  }
+  
+  .userManagementTopActionRightGroup {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  
+  .userManagementExportBtn {
+    min-width: 100px !important;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 768px) {
+  .vms-vehicle-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .userManagementTopActionGroup {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .userManagementTopActionLeftGroup,
+  .userManagementTopActionRightGroup {
+    width: 100%;
+  }
+  
+  .userManagementTopActionRightGroup {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+  
+  .userManagementExportBtn {
+    width: auto !important;
+    min-width: 100px;
+    font-size: 12px;
+  }
+  
+  /* Mobile table adjustments */
+  .vms-vehicle-table .ant-table-tbody > tr > td:last-child {
+    padding: 4px 2px;
+  }
+  
+  .vms-vehicle-table .ant-table-tbody > tr > td:last-child div {
+    flex-direction: column;
+    gap: 4px;
+  }
+}
+
+.vms-vehicle-form-modal .ant-select-selection-search-input {
+  font-family: inherit;
+}
+
+.vms-vehicle-form-modal .province-option {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+}
+
+.vms-vehicle-form-modal .province-option .province-name {
+  font-weight: 500;
+  color: #262626;
+}
+
+.vms-vehicle-form-modal .province-option .province-code {
+  font-size: 12px;
+  color: #8c8c8c;
+  font-family: 'Courier New', monospace;
+}
+
+/* Province tag styling */
+.vms-vehicle-form-modal .province-tag {
+  background: #e6f7ff !important;
+  border: 1px solid #91d5ff !important;
+  border-radius: 6px !important;
+  padding: 2px 8px !important;
+  margin: 2px !important;
+  font-size: 12px !important;
+  color: #0050b3 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+}
+
+.vms-vehicle-form-modal .province-tag .close-btn {
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  margin-left: 4px;
+}
+
+.vms-vehicle-form-modal .province-tag .close-btn:hover {
+  color: #ff4d4f;
+}
+
+/* ปรับปรุง Area Code column ในตาราง */
+.vms-vehicle-table .province-tag-table {
+  font-size: 11px !important;
+  max-width: 100px !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  cursor: pointer !important;
+  border-radius: 12px !important;
+}
+
+.vms-vehicle-table .province-tag-table:hover {
+  opacity: 0.8;
+  transform: scale(1.02);
+  transition: all 0.2s ease;
+}
+
+/* Mobile responsive สำหรับ province column */
+@media (max-width: 768px) {
+  .vms-vehicle-table .province-tag-table {
+    font-size: 10px !important;
+    max-width: 80px !important;
+    padding: 1px 4px !important;
+  }
+  
+  .vms-vehicle-form-modal .province-option {
+    padding: 6px 8px;
+  }
+  
+  .vms-vehicle-form-modal .province-option .province-name {
+    font-size: 13px;
+  }
+  
+  .vms-vehicle-form-modal .province-option .province-code {
+    font-size: 11px;
+  }
+}

@@ -1,5 +1,3 @@
-// ไฟล์: src/stores/models/VehicleModel.tsx
-
 import { createModel } from "@rematch/core";
 import { VehicleType } from "../interfaces/Vehicle";
 import { RootModel } from "./index";
@@ -38,12 +36,17 @@ export const vehicle = createModel<RootModel>()({
     }),
   },
   effects: (dispatch) => ({
-    async getVehicleList(payload?: { page?: number; perPage?: number }) {
+    async getVehicleList(payload?: {
+      page?: number;
+      perPage?: number;
+      silent?: boolean;
+    }) {
       dispatch.vehicle.updateLoadingState(true);
 
       try {
         const page = payload?.page || 1;
         const perPage = payload?.perPage || 10;
+        const silent = payload?.silent || false; // เพิ่ม silent mode
 
         console.log("🚗 Fetching vehicle list:", { page, perPage });
 
@@ -61,17 +64,6 @@ export const vehicle = createModel<RootModel>()({
 
         if (response.data) {
           const data = response.data;
-
-          // ตรวจสอบโครงสร้างข้อมูลและแสดงใน console
-          console.log("🚗 Vehicle response structure:", {
-            hasItems: !!data.items,
-            itemsCount: data.items?.length || 0,
-            totalItems: data.totalItems,
-            page: data.page,
-            perPage: data.perPage,
-            sampleItem: data.items?.[0] || "No items",
-          });
-
           const items = data.items || [];
           const totalItems = data.totalItems || items.length || 0;
 
@@ -87,17 +79,22 @@ export const vehicle = createModel<RootModel>()({
             perPage,
           });
 
-          message.success(`Loaded ${items.length} vehicle records!`);
+          // แก้ไข: แสดง success message เฉพาะเมื่อไม่อยู่ใน silent mode
+          if (!silent) {
+            // message.success(`Loaded ${items.length} vehicle records!`);
+          }
         } else {
           console.warn("⚠️ No vehicle data in response");
           dispatch.vehicle.updateTableDataState([]);
           dispatch.vehicle.updateTotalState(0);
-          message.warning("No vehicle data received from VMS");
+
+          if (!silent) {
+            message.warning("No vehicle data received from VMS");
+          }
         }
       } catch (error: any) {
         console.error("❌ Error fetching vehicle list:", error);
 
-        // แสดงข้อมูล error ที่ละเอียดมากขึ้น
         if (error.response) {
           console.error("🚗 Vehicle API Error details:", {
             status: error.response.status,
@@ -118,7 +115,10 @@ export const vehicle = createModel<RootModel>()({
           error.message ||
           "Failed to fetch vehicle list";
 
-        message.error(`Vehicle API Error: ${errorMessage}`);
+        // แก้ไข: แสดง error message เฉพาะเมื่อไม่อยู่ใน silent mode
+        if (!payload?.silent) {
+          message.error(`Vehicle API Error: ${errorMessage}`);
+        }
 
         dispatch.vehicle.updateTableDataState([]);
         dispatch.vehicle.updateTotalState(0);

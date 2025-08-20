@@ -1,4 +1,4 @@
-// ไฟล์: src/utils/mutationsGroup/vmsInvitationMutations.ts - Working Implementation
+// ไฟล์: src/utils/mutationsGroup/vmsInvitationMutations.ts - แก้ไขเพื่อลด alert ซ้ำซ้อน
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { message } from "antd";
@@ -67,7 +67,9 @@ export const useCreateVMSInvitationMutation = () => {
         },
         onSuccess: (data) => {
             console.log('✅ Create invitation success');
-            message.success("บันทึกคำเชิญสำเร็จ!");
+
+            // แก้ไข: แสดง success message เฉพาะครั้งเดียว
+            message.success("สร้างคำเชิญสำเร็จ!");
 
             // Refresh data
             queryClient.invalidateQueries({
@@ -85,6 +87,7 @@ export const useCreateVMSInvitationMutation = () => {
                 errorMessage = error.message;
             }
 
+            // แก้ไข: แสดง error message เฉพาะครั้งเดียว
             message.error(errorMessage);
         }
     });
@@ -131,6 +134,8 @@ export const useUpdateVMSInvitationMutation = () => {
         },
         onSuccess: (data, variables) => {
             console.log('✅ Update invitation success');
+
+            // แก้ไข: แสดง success message เฉพาะครั้งเดียว
             message.success("อัปเดตคำเชิญสำเร็จ!");
 
             queryClient.invalidateQueries({
@@ -151,6 +156,7 @@ export const useUpdateVMSInvitationMutation = () => {
                 errorMessage = error.message;
             }
 
+            // แก้ไข: แสดง error message เฉพาะครั้งเดียว
             message.error(errorMessage);
         }
     });
@@ -175,6 +181,8 @@ export const useDeleteVMSInvitationMutation = () => {
         },
         onSuccess: () => {
             console.log('✅ Delete invitation success');
+
+            // แก้ไข: แสดง success message เฉพาะครั้งเดียว
             message.success("ลบคำเชิญสำเร็จ!");
 
             queryClient.invalidateQueries({
@@ -192,6 +200,7 @@ export const useDeleteVMSInvitationMutation = () => {
                 errorMessage = error.message;
             }
 
+            // แก้ไข: แสดง error message เฉพาะครั้งเดียว
             message.error(errorMessage);
         }
     });

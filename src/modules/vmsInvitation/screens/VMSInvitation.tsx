@@ -1,7 +1,7 @@
-// ไฟล์: src/modules/vmsInvitation/screens/VMSInvitation.tsx - ใช้ Vehicle Mapping Service
+// แก้ไข VMSInvitation.tsx - เวอร์ชั่นที่ทำงานได้แน่นอน
 
 import { useState, useEffect } from "react";
-import { Button, Tag, Tooltip } from "antd";
+import { Button, Tag, Tooltip, message } from "antd";
 import Header from "../../../components/templates/Header";
 import InvitationTable from "../components/InvitationTable";
 import VMSInvitationFormModal from "../components/VMSInvitationFormModal";
@@ -15,13 +15,15 @@ import { EditOutlined, DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import { useDeleteVMSInvitationMutation } from "../../../utils/mutationsGroup/vmsInvitationMutations";
 import { callConfirmModal } from "../../../components/common/Modal";
 import { vehicleMappingService } from "../../../utils/services/vehicleMappingService";
+import axiosVMS from "../../../configs/axiosVMS";
 import "../styles/vmsInvitation.css";
 
 const VMSInvitation = () => {
   // Variables
   const dispatch = useDispatch<Dispatch>();
-  const { loading, tableData, total, currentPage, perPage, houseMapping } =
-    useSelector((state: RootState) => state.invitation);
+  const { loading, tableData, total, currentPage, perPage } = useSelector(
+    (state: RootState) => state.invitation
+  );
 
   // Mutations
   const deleteMutation = useDeleteVMSInvitationMutation();
@@ -34,6 +36,12 @@ const VMSInvitation = () => {
     Map<string, string[]>
   >(new Map());
 
+  // State สำหรับ house address mapping
+  const [houseAddressMap, setHouseAddressMap] = useState<Map<string, string>>(
+    new Map()
+  );
+  const [isLoadingHouseMapping, setIsLoadingHouseMapping] = useState(false);
+
   // Pagination Options
   const pageSizeOptions = [10, 20, 40, 80, 100];
   const PaginationConfig = {
@@ -44,25 +52,109 @@ const VMSInvitation = () => {
     total: total,
   };
 
-  // Function to get house address from mapping
-  const getHouseAddress = (houseId: string): string => {
-    if (!houseId) return "-";
-    return houseMapping?.get(houseId) || houseId;
+  // ฟังก์ชันโหลด house address mapping โดยตรงจาก VMS API
+  const loadHouseAddressMapping = async () => {
+    if (isLoadingHouseMapping) return;
+
+    setIsLoadingHouseMapping(true);
+    try {
+      console.log("🏠 Loading house address mapping directly from VMS API...");
+
+      let allHouses: any[] = [];
+      let currentPage = 1;
+      let hasMoreData = true;
+
+      // ดึงข้อมูลทุกหน้าจนหมด
+      while (hasMoreData) {
+        console.log(`📄 Fetching houses page ${currentPage}...`);
+
+        const response = await axiosVMS.get("/api/collections/house/records", {
+          params: {
+            page: currentPage,
+            perPage: 500,
+          },
+        });
+
+        if (response.data?.items && response.data.items.length > 0) {
+          allHouses = [...allHouses, ...response.data.items];
+          console.log(
+            `✅ Page ${currentPage}: ${response.data.items.length} houses`
+          );
+
+          // ตรวจสอบว่ามีหน้าถัดไปหรือไม่
+          const totalPages = response.data.totalPages || 1;
+          hasMoreData = currentPage < totalPages;
+          currentPage++;
+        } else {
+          hasMoreData = false;
+        }
+      }
+
+      console.log(`📊 Total houses loaded: ${allHouses.length}`);
+
+      // สร้าง mapping
+      const mapping = new Map<string, string>();
+
+      allHouses.forEach((house: any) => {
+        mapping.set(house.id, house.address);
+        console.log(`🏠 Mapped: ${house.id} → ${house.address}`);
+      });
+
+      setHouseAddressMap(mapping);
+      console.log(`✅ House address mapping created: ${mapping.size} entries`);
+
+      // แสดงตัวอย่าง mapping
+      console.log(
+        "🏠 Sample mappings:",
+        Array.from(mapping.entries()).slice(0, 5)
+      );
+    } catch (error) {
+      console.error("❌ Error loading house address mapping:", error);
+      message.error("Failed to load house address mapping");
+    } finally {
+      setIsLoadingHouseMapping(false);
+    }
   };
 
-  // แปลง vehicle IDs เป็น license plates สำหรับทุก invitation
+  // โหลด house mapping เมื่อ component mount
+  useEffect(() => {
+    loadHouseAddressMapping();
+  }, []);
+
+  // ฟังก์ชันสำหรับ get house address
+  const getHouseAddress = (houseId: string): string => {
+    if (!houseId) return "-";
+
+    console.log(`🔍 Looking up house ID: ${houseId}`);
+    console.log(`📋 Available mappings: ${houseAddressMap.size}`);
+
+    // หาจาก mapping
+    const address = houseAddressMap.get(houseId);
+
+    if (address) {
+      console.log(`✅ Found address: ${address}`);
+      return address;
+    } else {
+      console.log(`❌ No address found for ID: ${houseId}`);
+      console.log(
+        `🗂️ Available IDs:`,
+        Array.from(houseAddressMap.keys()).slice(0, 5)
+      );
+
+      // ถ้าไม่เจอ address ให้แสดง ID แบบย่อ
+      return houseId.length > 10 ? `${houseId.substring(0, 8)}...` : houseId;
+    }
+  };
+
+  // แปลง vehicle IDs เป็น license plates
   useEffect(() => {
     const processVehicleMappings = async () => {
       if (!tableData || tableData.length === 0) return;
 
-      console.log(
-        "🚗 Processing vehicle mappings using vehicleMappingService..."
-      );
+      console.log("🚗 Processing vehicle mappings...");
 
       try {
-        // Initialize vehicle mapping service
         await vehicleMappingService.refreshVehicleCache();
-
         const mappings = new Map<string, string[]>();
 
         for (const invitation of tableData) {
@@ -74,11 +166,7 @@ const VMSInvitation = () => {
                 const licensePlate =
                   await vehicleMappingService.getVehicleLicensePlate(vehicleId);
                 licensePlates.push(licensePlate);
-                console.log(`✅ Mapped ${vehicleId} → ${licensePlate}`);
               } catch (error) {
-                console.warn(
-                  `⚠️ Could not map vehicle ${vehicleId}, using ID as fallback`
-                );
                 licensePlates.push(vehicleId);
               }
             }
@@ -88,7 +176,6 @@ const VMSInvitation = () => {
         }
 
         setVehicleLicensePlates(mappings);
-        console.log("✅ Vehicle mappings processed:", mappings);
       } catch (error) {
         console.error("❌ Error processing vehicle mappings:", error);
       }
@@ -102,7 +189,6 @@ const VMSInvitation = () => {
     invitationId: string,
     vehicleIds: string[]
   ): string => {
-    // ลองใช้ mapping ที่ประมวลผลแล้วก่อน
     const mappedPlates = vehicleLicensePlates.get(invitationId);
 
     if (mappedPlates && mappedPlates.length > 0) {
@@ -117,7 +203,6 @@ const VMSInvitation = () => {
       }
     }
 
-    // Fallback: ใช้ vehicle IDs เดิม
     if (!vehicleIds || vehicleIds.length === 0) return "-";
 
     if (vehicleIds.length === 1) {
@@ -190,15 +275,26 @@ const VMSInvitation = () => {
       width: "15%",
       render: (house_id) => {
         const address = getHouseAddress(house_id);
-        const isOriginalId = address === house_id;
+        const isOriginalId = address === house_id || address.includes("...");
 
         return (
-          <Tooltip title={`House ID: ${house_id}`} placement="top">
+          <Tooltip
+            title={
+              isOriginalId
+                ? `House ID: ${house_id}`
+                : `Address: ${address}\nHouse ID: ${house_id}`
+            }
+            placement="top">
             <div
               style={{
-                fontWeight: isOriginalId ? "400" : "500",
+                fontWeight: isOriginalId ? "400" : "600",
                 color: isOriginalId ? "#666" : "#1890ff",
                 fontSize: isOriginalId ? "11px" : "13px",
+                cursor: "pointer",
+                maxWidth: "120px",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
               }}>
               {address}
             </div>
@@ -355,37 +451,6 @@ const VMSInvitation = () => {
     });
   };
 
-  // Load mapping data when component mounts
-  useEffect(() => {
-    const loadMappingData = async () => {
-      try {
-        const currentHouseData = dispatch.getState().house.tableData;
-        if (!currentHouseData || currentHouseData.length === 0) {
-          await dispatch.house.getHouseList({ page: 1, perPage: 500 });
-        }
-
-        const currentAreaData = dispatch.getState().area.tableData;
-        if (!currentAreaData || currentAreaData.length === 0) {
-          await dispatch.area.getAreaList({ page: 1, perPage: 500 });
-        }
-
-        // โหลด vehicle data สำหรับ vehicle mapping service
-        const currentVehicleData = dispatch.getState().vehicle.tableData;
-        if (!currentVehicleData || currentVehicleData.length === 0) {
-          await dispatch.vehicle.getVehicleList({ page: 1, perPage: 500 });
-        }
-
-        if (!houseMapping || houseMapping.size === 0) {
-          await dispatch.invitation.refreshHouseMapping();
-        }
-      } catch (error) {
-        // Error handled by individual dispatches
-      }
-    };
-
-    loadMappingData();
-  }, [dispatch, houseMapping]);
-
   // Effects
   useEffect(() => {
     (async function () {
@@ -407,7 +472,7 @@ const VMSInvitation = () => {
 
       <div className="userManagementTopActionGroup">
         <div className="userManagementTopActionLeftGroup">
-          {/* เอาข้อมูลส่วนเกินออก */}
+          {/* เอาปุ่ม refresh ออก */}
         </div>
         <div className="userManagementTopActionRightGroup">
           <Button
@@ -424,7 +489,7 @@ const VMSInvitation = () => {
         columns={columns}
         data={tableData}
         PaginationConfig={PaginationConfig}
-        loading={loading}
+        loading={loading || isLoadingHouseMapping}
         onChangeTable={onChangeTable}
       />
 

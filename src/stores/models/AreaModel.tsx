@@ -1,5 +1,3 @@
-// ไฟล์: src/stores/models/AreaModel.tsx
-
 import { createModel } from "@rematch/core";
 import { AreaType } from "../interfaces/Area";
 import { RootModel } from "./index";
@@ -38,12 +36,17 @@ export const area = createModel<RootModel>()({
     }),
   },
   effects: (dispatch) => ({
-    async getAreaList(payload?: { page?: number; perPage?: number }) {
+    async getAreaList(payload?: {
+      page?: number;
+      perPage?: number;
+      silent?: boolean;
+    }) {
       dispatch.area.updateLoadingState(true);
 
       try {
         const page = payload?.page || 1;
         const perPage = payload?.perPage || 10;
+        const silent = payload?.silent || false; // เพิ่ม silent mode
 
         console.log("📍 Fetching area list:", { page, perPage });
 
@@ -73,12 +76,18 @@ export const area = createModel<RootModel>()({
             perPage,
           });
 
-          message.success(`Loaded ${items.length} area records!`);
+          // แก้ไข: แสดง success message เฉพาะเมื่อไม่อยู่ใน silent mode
+          if (!silent) {
+            message.success(`Loaded ${items.length} area records!`);
+          }
         } else {
           console.warn("⚠️ No area data in response");
           dispatch.area.updateTableDataState([]);
           dispatch.area.updateTotalState(0);
-          message.warning("No area data received from VMS");
+
+          if (!silent) {
+            message.warning("No area data received from VMS");
+          }
         }
       } catch (error: any) {
         console.error("❌ Error fetching area list:", error);
@@ -103,7 +112,10 @@ export const area = createModel<RootModel>()({
           error.message ||
           "Failed to fetch area list";
 
-        message.error(`Area API Error: ${errorMessage}`);
+        // แก้ไข: แสดง error message เฉพาะเมื่อไม่อยู่ใน silent mode
+        if (!payload?.silent) {
+          message.error(`Area API Error: ${errorMessage}`);
+        }
 
         dispatch.area.updateTableDataState([]);
         dispatch.area.updateTotalState(0);

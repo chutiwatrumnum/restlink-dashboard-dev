@@ -95,6 +95,7 @@ import UploadFloorPlan from "./modules/setupProjectFirst/screens/condominium/Upl
 import JuristicTeamPermission from "./modules/juristicManagement/screens/JuristicTeamPermission";
 
 import VMSInvitation from "./modules/vmsInvitation/screens/VMSInvitation";
+import VMSVehicle from "./modules/vmsVehicle/screens/VMSVehicle";
 
 // components
 
@@ -369,6 +370,7 @@ function AppRoutes() {
           element={<SummaryDashboard />}
         />
         <Route path="vms-invitation" element={<VMSInvitation />} />
+        <Route path="vms-vehicle" element={<VMSVehicle />} />
         <Route path="managementMain" element={<ManagementMain />} />
         <Route path="serviceDashboard" element={<ServiceDashboard />} />
         <Route path="serviceCenterLists" element={<ServiceCenterLists />} />

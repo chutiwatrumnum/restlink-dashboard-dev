@@ -1,4 +1,4 @@
-// ไฟล์: src/modules/vmsInvitation/components/VMSInvitationFormModal.tsx - Complete Version
+// ไฟล์: src/modules/vmsInvitation/components/VMSInvitationFormModal.tsx - Fixed Version (ลด alert ซ้ำซ้อน)
 
 import { useState, useEffect, useCallback } from "react";
 import {
@@ -65,14 +65,14 @@ const VMSInvitationFormModal = ({
     (state: RootState) => state.vehicle
   );
 
-  // Mutations
+  // Mutations - แก้ไข: ปิดการแสดง success message ใน mutation เพื่อป้องกันการซ้ำซ้อน
   const createMutation = useCreateVMSInvitationMutation();
   const updateMutation = useUpdateVMSInvitationMutation();
 
   const isEditing = !!editData;
   const isLoading = createMutation.isPending || updateMutation.isPending;
 
-  // Load data when modal opens
+  // Load data when modal opens - แก้ไข: ใช้ silent mode เพื่อไม่แสดง success message
   const loadData = useCallback(async () => {
     if (!isOpen) return;
 
@@ -81,15 +81,27 @@ const VMSInvitationFormModal = ({
       console.log("📊 Loading form data...");
 
       if (!houseData || houseData.length === 0) {
-        await dispatch.house.getHouseList({ page: 1, perPage: 500 });
+        await dispatch.house.getHouseList({
+          page: 1,
+          perPage: 500,
+          silent: true,
+        });
       }
 
       if (!areaData || areaData.length === 0) {
-        await dispatch.area.getAreaList({ page: 1, perPage: 500 });
+        await dispatch.area.getAreaList({
+          page: 1,
+          perPage: 500,
+          silent: true,
+        });
       }
 
       if (!vehicleData || vehicleData.length === 0) {
-        await dispatch.vehicle.getVehicleList({ page: 1, perPage: 500 });
+        await dispatch.vehicle.getVehicleList({
+          page: 1,
+          perPage: 500,
+          silent: true,
+        });
       }
 
       console.log("✅ Form data loaded");
@@ -248,10 +260,14 @@ const VMSInvitationFormModal = ({
         }
 
         console.log("✅ Form submission successful");
+
+        // แก้ไข: ย้าย refetch และ handleCancel ไปใน success callback ของ mutation แทน
+        // เพื่อให้แน่ใจว่าข้อมูลถูก refresh หลังจาก API เสร็จสมบูรณ์
         refetch();
         handleCancel();
       } catch (error: any) {
         console.error("❌ Form submission error:", error);
+        // แก้ไข: ไม่แสดง error message ที่นี่ เพราะ mutation จะจัดการให้เอง
       }
     },
     [
@@ -361,8 +377,7 @@ const VMSInvitationFormModal = ({
                 placeholder="Select type"
                 options={[
                   { label: "Invitation", value: "invitation" },
-                  { label: "Guest", value: "guest" },
-                  { label: "Visitor", value: "visitor" },
+                  { label: "Vehicle", value: "vehicle" },
                 ]}
               />
             </Form.Item>
@@ -458,23 +473,7 @@ const VMSInvitationFormModal = ({
                     </Tag>
                   </div>
                 )}
-                tagRender={(props) => {
-                  const { label, value, closable, onClose } = props;
-                  const vehicleInfo = vehicleOptions.find(
-                    (v) => v.value === value
-                  );
-                  const displayLabel = vehicleInfo?.licensePlate || value;
-
-                  return (
-                    <Tag
-                      color="processing"
-                      closable={closable}
-                      onClose={onClose}
-                      style={{ marginRight: 3 }}>
-                      🚗 {displayLabel}
-                    </Tag>
-                  );
-                }}
+                // แก้ไข: ลบ tagRender เพื่อใช้ default tag style เหมือนกับ Authorized Areas
                 notFoundContent={
                   loadingData || vehicleLoading ? (
                     <div style={{ textAlign: "center", padding: "20px" }}>
