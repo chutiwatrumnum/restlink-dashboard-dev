@@ -1,4 +1,4 @@
-// ไฟล์: src/stores/models/index.ts (Updated with Vehicle model)
+// ไฟล์: src/stores/models/index.ts (Updated with Log models)
 
 import { Models } from "@rematch/core";
 import { userAuth } from "./UserAuthModel";
@@ -22,7 +22,9 @@ import { setupProject } from "./SetupProjectModel";
 import { invitation } from "./InvitationModel";
 import { house } from "./HouseModel";
 import { area } from "./AreaModel";
-import { vehicle } from "./VehicleModel"; // เพิ่มใหม่
+import { vehicle } from "./VehicleModel";
+import { logAccess } from "./LogAccessModel";
+import { logPassage } from "./LogPassageModel";
 
 export interface RootModel extends Models<RootModel> {
   userAuth: typeof userAuth;
@@ -47,6 +49,8 @@ export interface RootModel extends Models<RootModel> {
   house: typeof house;
   area: typeof area;
   vehicle: typeof vehicle;
+  logAccess: typeof logAccess;
+  logPassage: typeof logPassage;
 }
 
 export const models: RootModel = {
@@ -72,4 +76,6 @@ export const models: RootModel = {
   house,
   area,
   vehicle,
+  logAccess,
+  logPassage,
 };

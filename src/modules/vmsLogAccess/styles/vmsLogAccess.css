@@ -1,0 +1,306 @@
+/* ไฟล์: src/modules/vmsLogAccess/styles/vmsLogAccess.css */
+/* ไฟล์: src/modules/vmsLogPassage/styles/vmsLogPassage.css */
+
+.vms-log-access-header,
+.vms-log-passage-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.vms-log-access-header h1,
+.vms-log-passage-header h1 {
+  margin: 0;
+}
+
+.vms-log-access-filters,
+.vms-log-passage-filters {
+  margin-bottom: 20px;
+  padding: 16px;
+  background: #fafafa;
+  border-radius: 8px;
+  border: 1px solid #f0f0f0;
+}
+
+.vms-log-access-table .ant-table-thead > tr > th,
+.vms-log-passage-table .ant-table-thead > tr > th {
+  background-color: var(--tableHeadBg-color) !important;
+  color: var(--tableHeadText-color) !important;
+  font-weight: var(--font-bold) !important;
+  text-align: center;
+}
+
+.vms-log-access-table .ant-table-tbody > tr > td,
+.vms-log-passage-table .ant-table-tbody > tr > td {
+  text-align: center;
+}
+
+/* License Plate column styling */
+.vms-log-passage-table .ant-table-tbody > tr > td:first-child {
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* Status tags styling */
+.vms-log-access-table .ant-tag,
+.vms-log-passage-table .ant-tag {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+/* Image preview buttons */
+.vms-log-passage-table .ant-btn-link {
+  padding: 4px 8px;
+  height: auto;
+  border: none;
+  box-shadow: none;
+}
+
+.vms-log-passage-table .ant-btn-link:hover {
+  background-color: rgba(24, 144, 255, 0.1);
+  border-radius: 4px;
+}
+
+/* Loading overlay */
+.vms-log-access-table .ant-spin-container,
+.vms-log-passage-table .ant-spin-container {
+  min-height: 400px;
+}
+
+/* Stats Cards customization */
+.vms-log-access-stats,
+.vms-log-passage-stats {
+  margin-bottom: 24px;
+}
+
+/* Filter section styling */
+/* Clean up all old filter styling */
+.vms-log-access-filters .ant-space-item,
+.vms-log-passage-filters .ant-space-item,
+.vms-log-access-filters .ant-picker,
+.vms-log-passage-filters .ant-picker,
+.vms-log-access-filters .ant-select-selector,
+.vms-log-passage-filters .ant-select-selector,
+.vms-log-access-filters .ant-input,
+.vms-log-passage-filters .ant-input,
+.vms-log-access-filters .ant-picker:hover,
+.vms-log-passage-filters .ant-picker:hover,
+.vms-log-access-filters .ant-select-focused .ant-select-selector,
+.vms-log-passage-filters .ant-select-focused .ant-select-selector,
+.vms-log-access-filters .ant-input:focus,
+.vms-log-passage-filters .ant-input:focus {
+  display: none !important;
+}
+
+/* Ensure new filter container is visible */
+.vms-log-filters-container {
+  display: block !important;
+  padding-bottom: 15px;
+}
+
+/* Tooltip styling */
+.vms-log-access-table .ant-tooltip,
+.vms-log-passage-table .ant-tooltip {
+  max-width: 300px;
+}
+
+/* Note column styling */
+.vms-log-access-table .note-cell,
+.vms-log-passage-table .note-cell {
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.vms-log-access-table .note-cell:hover,
+.vms-log-passage-table .note-cell:hover {
+  color: #1890ff;
+}
+
+/* ID column styling */
+.vms-log-access-table .id-cell,
+.vms-log-passage-table .id-cell {
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  color: #666;
+}
+
+/* Success/Result tag animations */
+.vms-log-access-table .ant-tag.ant-tag-green,
+.vms-log-passage-table .ant-tag.ant-tag-green {
+  animation: pulse-success 2s infinite;
+}
+
+.vms-log-access-table .ant-tag.ant-tag-red,
+.vms-log-passage-table .ant-tag.ant-tag-red {
+  animation: pulse-error 2s infinite;
+}
+
+@keyframes pulse-success {
+  0% { opacity: 1; }
+  50% { opacity: 0.7; }
+  100% { opacity: 1; }
+}
+
+@keyframes pulse-error {
+  0% { opacity: 1; }
+  50% { opacity: 0.8; }
+  100% { opacity: 1; }
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+  .vms-log-access-table .ant-table-thead > tr > th,
+  .vms-log-access-table .ant-table-tbody > tr > td,
+  .vms-log-passage-table .ant-table-thead > tr > th,
+  .vms-log-passage-table .ant-table-tbody > tr > td {
+    padding: 8px 4px;
+    font-size: 12px;
+  }
+  
+  .vms-log-access-filters,
+  .vms-log-passage-filters {
+    padding: 12px;
+  }
+}
+
+/* Responsive design for filters */
+@media (max-width: 1200px) {
+  .vms-log-filters-container .ant-space {
+    gap: 12px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .vms-log-filters-container {
+    padding: 16px 20px;
+  }
+  
+  .vms-log-filters-container .ant-space-item {
+    width: 100%;
+  }
+  
+  .vms-log-filters-container .ant-picker,
+  .vms-log-filters-container .ant-input-search,
+  .vms-log-filters-container .ant-select {
+    width: 100% !important;
+    min-width: auto !important;
+  }
+  
+  .vms-log-access-header,
+  .vms-log-passage-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+/* Image preview modal */
+.ant-image-preview-wrap {
+  z-index: 9999;
+}
+
+.ant-image-preview-img {
+  max-height: 80vh;
+  max-width: 80vw;
+}
+
+/* Region/Province tag styling for passage logs */
+.vms-log-passage-table .region-tag {
+  font-size: 10px !important;
+  max-width: 100px !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  cursor: pointer !important;
+  border-radius: 12px !important;
+}
+
+.vms-log-passage-table .region-tag:hover {
+  opacity: 0.8;
+  transform: scale(1.02);
+  transition: all 0.2s ease;
+}
+
+/* License plate highlighting */
+.vms-log-passage-table .license-plate-cell {
+  background: rgba(24, 144, 255, 0.05);
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-weight: 600;
+  font-family: 'Courier New', monospace;
+  color: #1890ff;
+}
+
+/* House address styling for passage logs */
+.vms-log-passage-table .house-address-cell {
+  background: rgba(24, 144, 255, 0.05);
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-weight: 600;
+  color: #1890ff;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.vms-log-passage-table .house-address-cell:hover {
+  background: rgba(24, 144, 255, 0.1);
+  transform: scale(1.02);
+  transition: all 0.2s ease;
+}
+
+/* House ID fallback styling (when address not found) */
+.vms-log-passage-table .house-id-fallback {
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  color: #666;
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 3px;
+  padding: 2px 6px;
+}
+
+/* Gate name highlighting for access logs */
+.vms-log-access-table .gate-name-cell {
+  background: rgba(24, 144, 255, 0.05);
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-weight: 600;
+  color: #1890ff;
+}
+
+/* Custom scrollbar for table */
+.vms-log-access-table .ant-table-body,
+.vms-log-passage-table .ant-table-body {
+  scrollbar-width: thin;
+  scrollbar-color: #bfbfbf #f0f0f0;
+}
+
+.vms-log-access-table .ant-table-body::-webkit-scrollbar,
+.vms-log-passage-table .ant-table-body::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.vms-log-access-table .ant-table-body::-webkit-scrollbar-track,
+.vms-log-passage-table .ant-table-body::-webkit-scrollbar-track {
+  background: #f0f0f0;
+  border-radius: 4px;
+}
+
+.vms-log-access-table .ant-table-body::-webkit-scrollbar-thumb,
+.vms-log-passage-table .ant-table-body::-webkit-scrollbar-thumb {
+  background: #bfbfbf;
+  border-radius: 4px;
+}
+
+.vms-log-access-table .ant-table-body::-webkit-scrollbar-thumb:hover,
+.vms-log-passage-table .ant-table-body::-webkit-scrollbar-thumb:hover {
+  background: #999;
+}

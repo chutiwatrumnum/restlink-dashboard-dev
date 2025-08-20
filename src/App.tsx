@@ -96,6 +96,8 @@ import JuristicTeamPermission from "./modules/juristicManagement/screens/Juristi
 
 import VMSInvitation from "./modules/vmsInvitation/screens/VMSInvitation";
 import VMSVehicle from "./modules/vmsVehicle/screens/VMSVehicle";
+import VMSLogAccess from "./modules/vmsLogAccess/screens/VMSLogAccess";
+import VMSLogPassage from "./modules/vmsLogPassage/screens/VMSLogPassage";
 
 // components
 
@@ -371,6 +373,8 @@ function AppRoutes() {
         />
         <Route path="vms-invitation" element={<VMSInvitation />} />
         <Route path="vms-vehicle" element={<VMSVehicle />} />
+        <Route path="vms-log-access" element={<VMSLogAccess />} />
+        <Route path="vms-log-passage" element={<VMSLogPassage />} />
         <Route path="managementMain" element={<ManagementMain />} />
         <Route path="serviceDashboard" element={<ServiceDashboard />} />
         <Route path="serviceCenterLists" element={<ServiceCenterLists />} />

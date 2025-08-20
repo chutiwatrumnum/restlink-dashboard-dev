@@ -5,7 +5,7 @@ import { useDispatch } from "react-redux";
 import { Dispatch } from "../../stores";
 import { APP_VERSION } from "../../configs/configs";
 import ConfirmModal from "../../components/common/ConfirmModal";
-import { CarOutlined, DatabaseOutlined, MenuFoldOutlined, MenuUnfoldOutlined, UserAddOutlined } from "@ant-design/icons";
+import { CarOutlined, DatabaseOutlined, MenuFoldOutlined, MenuUnfoldOutlined, UserAddOutlined, UserOutlined } from "@ant-design/icons";
 import {
   LogOutIcon,
   AnnouncementIcon,
@@ -645,6 +645,27 @@ const SideMenu = ({
                 />
               }>
               <Link to={`${main_link}/vms-vehicle`}>VMS Vehicles</Link>
+            </Menu.Item>
+            <Menu.Item
+              key={`${main_link}/vms-log-access`}
+              icon={
+                <UserOutlined
+                  color={iconSubMenuColorSelector("vms-log-access")}
+                  className="sideMenuIcon"
+                />
+              }>
+              <Link to={`${main_link}/vms-log-access`}>Access Logs</Link>
+            </Menu.Item>
+
+            <Menu.Item
+              key={`${main_link}/vms-log-passage`}
+              icon={
+                <CarOutlined
+                  color={iconSubMenuColorSelector("vms-log-passage")}
+                  className="sideMenuIcon"
+                />
+              }>
+              <Link to={`${main_link}/vms-log-passage`}>Passage Logs</Link>
             </Menu.Item>
           </SubMenu>
         </Menu>
