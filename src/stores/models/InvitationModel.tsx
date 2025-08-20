@@ -1,148 +1,227 @@
-// ไฟล์: src/stores/models/InvitationModel.tsx - Final Version
+// ไฟล์: src/stores/models/invitation.ts - Complete Version
 
 import { createModel } from "@rematch/core";
-import { InvitationType } from "../interfaces/Invitation";
-import { RootModel } from "./index";
+import { RootModel } from "./";
 import axiosVMS from "../../configs/axiosVMS";
-import { message } from "antd";
-import { houseMappingService } from "../../utils/services/houseMappingService";
+import {
+  InvitationType,
+  InvitationRecord,
+  VMSInvitationResponse,
+  InvitationPaginationParams,
+} from "../interfaces/Invitation";
+
+const initialState: InvitationType = {
+  tableData: [],
+  loading: false,
+  total: 0,
+  currentPage: 1,
+  perPage: 10,
+  houseMapping: new Map(),
+};
 
 export const invitation = createModel<RootModel>()({
-  state: {
-    tableData: [],
-    loading: false,
-    total: 0,
-    currentPage: 1,
-    perPage: 10,
-    houseMapping: new Map<string, string>(),
-  } as InvitationType & { houseMapping: Map<string, string> },
+  state: initialState,
   reducers: {
-    updateLoadingState: (state, payload) => ({
+    setLoading: (state, loading: boolean) => ({
       ...state,
-      loading: payload,
+      loading,
     }),
-    updateTableDataState: (state, payload) => ({
+    setInvitationList: (
+      state,
+      payload: {
+        data: InvitationRecord[];
+        total: number;
+        page: number;
+        perPage: number;
+      }
+    ) => ({
       ...state,
-      tableData: payload,
+      tableData: payload.data,
+      total: payload.total,
+      currentPage: payload.page,
+      perPage: payload.perPage,
+      loading: false,
     }),
-    updateTotalState: (state, payload) => ({
+    setHouseMapping: (state, houseMapping: Map<string, string>) => ({
       ...state,
-      total: payload,
+      houseMapping,
     }),
-    updateCurrentPageState: (state, payload) => ({
+    updateInvitation: (state, updatedInvitation: InvitationRecord) => ({
       ...state,
-      currentPage: payload,
+      tableData: state.tableData.map((item) =>
+        item.id === updatedInvitation.id ? updatedInvitation : item
+      ),
     }),
-    updatePerPageState: (state, payload) => ({
+    removeInvitation: (state, invitationId: string) => ({
       ...state,
-      perPage: payload,
+      tableData: state.tableData.filter((item) => item.id !== invitationId),
+      total: state.total - 1,
     }),
-    updateHouseMappingState: (state, payload) => ({
+    addInvitation: (state, newInvitation: InvitationRecord) => ({
       ...state,
-      houseMapping: payload,
+      tableData: [newInvitation, ...state.tableData],
+      total: state.total + 1,
     }),
   },
   effects: (dispatch) => ({
-    async getInvitationList(payload?: { page?: number; perPage?: number }) {
-      dispatch.invitation.updateLoadingState(true);
-
+    async getInvitationList(payload: InvitationPaginationParams) {
       try {
-        const page = payload?.page || 1;
-        const perPage = payload?.perPage || 10;
+        dispatch.invitation.setLoading(true);
+        console.log("📡 Fetching VMS invitations...", payload);
+
+        const params: any = {
+          page: payload.page,
+          perPage: payload.perPage,
+        };
+
+        // เพิ่ม filters ถ้ามี
+        if (payload.filters) {
+          if (payload.filters.active !== undefined) {
+            params.filter = `active=${payload.filters.active}`;
+          }
+          if (payload.filters.type) {
+            params.filter = params.filter
+              ? `${params.filter} && type="${payload.filters.type}"`
+              : `type="${payload.filters.type}"`;
+          }
+          if (payload.filters.guest_name) {
+            params.filter = params.filter
+              ? `${params.filter} && guest_name~"${payload.filters.guest_name}"`
+              : `guest_name~"${payload.filters.guest_name}"`;
+          }
+        }
+
+        // เพิ่ม sorting ถ้ามี
+        if (payload.sortBy) {
+          params.sort =
+            payload.sortOrder === "desc"
+              ? `-${payload.sortBy}`
+              : payload.sortBy;
+        }
 
         const response = await axiosVMS.get(
-          `/api/collections/invitation/records`,
+          "/api/collections/invitation/records",
           {
-            params: {
-              page,
-              perPage,
-            },
+            params,
           }
         );
 
-        if (response.data) {
-          const data = response.data;
-          const items = data.items || [];
+        console.log("✅ VMS invitations response:", response.data);
 
-          // แปลงข้อมูลจาก VMS format เป็น UI format
-          const processedItems = items.map((item: any) => {
-            // VMS API ส่ง license_plate และ area_code แยกออกมา (GET format)
-            // เราต้องสร้าง vehicle_id เพื่อใช้ในตาราง
+        if (response.data && response.data.items) {
+          // แปลง VMSInvitationResponse เป็น InvitationRecord
+          const invitations: InvitationRecord[] = response.data.items.map(
+            (item: VMSInvitationResponse) => ({
+              id: item.id,
+              code: item.code || "",
+              guest_name: item.guest_name,
+              house_id: item.house_id,
+              issuer: item.issuer || "",
+              note: item.note || "",
+              type: item.type,
+              active: item.active,
+              authorized_area: Array.isArray(item.authorized_area)
+                ? item.authorized_area
+                : [],
+              vehicle_id: Array.isArray(item.vehicle_id) ? item.vehicle_id : [], // เก็บ vehicle IDs เดิมไว้
+              start_time: item.start_time,
+              expire_time: item.expire_time,
+              stamped_time: item.stamped_time || "",
+              stamper: item.stamper || "",
+              created: item.created,
+              updated: item.updated,
+            })
+          );
 
-            let vehicleIds: string[] = [];
-
-            // ถ้ามี license_plate อยู่ใน item (flattened format)
-            if (item.license_plate) {
-              // ใช้ license_plate เป็น vehicle_id ชั่วคราวสำหรับแสดงใน UI
-              vehicleIds = [item.license_plate];
-            }
-
-            // ถ้ามี vehicle_id อยู่แล้ว (ในบางกรณี)
-            if (item.vehicle_id && Array.isArray(item.vehicle_id)) {
-              vehicleIds = item.vehicle_id;
-            }
-
-            return {
-              ...item,
-              vehicle_id: vehicleIds, // เพิ่ม vehicle_id สำหรับ UI
-            };
+          dispatch.invitation.setInvitationList({
+            data: invitations,
+            total: response.data.totalItems || 0,
+            page: payload.page,
+            perPage: payload.perPage,
           });
 
-          // ดึง house IDs ทั้งหมดที่มีใน invitation
-          const houseIds = processedItems
-            .map((item: any) => item.house_id)
-            .filter(Boolean);
-
-          // โหลด house mapping
-          if (houseIds.length > 0) {
-            const houseMapping =
-              await houseMappingService.getMultipleHouseAddresses(houseIds);
-            dispatch.invitation.updateHouseMappingState(houseMapping);
-          }
-
-          const totalItems = data.totalItems || processedItems.length || 0;
-
-          dispatch.invitation.updateTableDataState(processedItems);
-          dispatch.invitation.updateTotalState(totalItems);
-          dispatch.invitation.updateCurrentPageState(page);
-          dispatch.invitation.updatePerPageState(perPage);
-
-          message.success(
-            `Loaded ${processedItems.length} invitation records!`
-          );
+          console.log(`✅ Loaded ${invitations.length} invitations`);
         } else {
-          dispatch.invitation.updateTableDataState([]);
-          dispatch.invitation.updateTotalState(0);
-          message.warning("No data received from VMS");
+          dispatch.invitation.setInvitationList({
+            data: [],
+            total: 0,
+            page: payload.page,
+            perPage: payload.perPage,
+          });
         }
       } catch (error: any) {
-        const errorMessage =
-          error.response?.data?.message ||
-          error.message ||
-          "Failed to fetch invitation list";
-
-        message.error(`Error: ${errorMessage}`);
-
-        dispatch.invitation.updateTableDataState([]);
-        dispatch.invitation.updateTotalState(0);
-      } finally {
-        dispatch.invitation.updateLoadingState(false);
+        console.error("❌ Error fetching VMS invitations:", error);
+        dispatch.invitation.setLoading(false);
       }
     },
 
     async refreshHouseMapping() {
       try {
-        await houseMappingService.refreshHouseCache();
+        console.log("🏠 Refreshing house mapping...");
 
-        const { currentPage, perPage } = dispatch.getState().invitation;
-        await dispatch.invitation.getInvitationList({
-          page: currentPage,
-          perPage,
+        // ดึงข้อมูล house จาก state หรือ API
+        const houseState = dispatch.getState().house;
+        let houseData = houseState.tableData;
+
+        if (!houseData || houseData.length === 0) {
+          // ถ้ายังไม่มีข้อมูล house ให้ดึงจาก API
+          await dispatch.house.getHouseList({ page: 1, perPage: 500 });
+          houseData = dispatch.getState().house.tableData;
+        }
+
+        // สร้าง mapping จาก house ID เป็น address
+        const mapping = new Map<string, string>();
+        houseData.forEach((house) => {
+          mapping.set(house.id, house.address);
         });
 
-        message.success("House mapping refreshed successfully!");
+        dispatch.invitation.setHouseMapping(mapping);
+        console.log(
+          `✅ House mapping refreshed with ${mapping.size} addresses`
+        );
       } catch (error) {
-        message.error("Failed to refresh house mapping");
+        console.error("❌ Error refreshing house mapping:", error);
+      }
+    },
+
+    // Helper method สำหรับ update invitation หลังจาก CRUD operations
+    async refreshSingleInvitation(invitationId: string) {
+      try {
+        console.log(`🔄 Refreshing invitation ${invitationId}...`);
+
+        const response = await axiosVMS.get(
+          `/api/collections/invitation/records/${invitationId}`
+        );
+
+        if (response.data) {
+          const updatedInvitation: InvitationRecord = {
+            id: response.data.id,
+            code: response.data.code || "",
+            guest_name: response.data.guest_name,
+            house_id: response.data.house_id,
+            issuer: response.data.issuer || "",
+            note: response.data.note || "",
+            type: response.data.type,
+            active: response.data.active,
+            authorized_area: Array.isArray(response.data.authorized_area)
+              ? response.data.authorized_area
+              : [],
+            vehicle_id: Array.isArray(response.data.vehicle_id)
+              ? response.data.vehicle_id
+              : [],
+            start_time: response.data.start_time,
+            expire_time: response.data.expire_time,
+            stamped_time: response.data.stamped_time || "",
+            stamper: response.data.stamper || "",
+            created: response.data.created,
+            updated: response.data.updated,
+          };
+
+          dispatch.invitation.updateInvitation(updatedInvitation);
+          console.log(`✅ Invitation ${invitationId} refreshed`);
+        }
+      } catch (error) {
+        console.error(`❌ Error refreshing invitation ${invitationId}:`, error);
       }
     },
   }),

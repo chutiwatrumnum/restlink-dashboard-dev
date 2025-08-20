@@ -1,13 +1,12 @@
-// ไฟล์: src/modules/vmsInvitation/components/VMSInvitationFormModal.tsx - Clean Version
+// ไฟล์: src/modules/vmsInvitation/components/VMSInvitationFormModal.tsx - Complete Version
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Form,
   Input,
   Modal,
   DatePicker,
   Select,
-  Switch,
   Row,
   Col,
   Tag,
@@ -50,11 +49,10 @@ const VMSInvitationFormModal = ({
     { label: string; value: string }[]
   >([]);
   const [vehicleOptions, setVehicleOptions] = useState<
-    { label: string; value: string; licensePlate: string }[]
+    { label: string; value: string; licensePlate: string; areaCode: string }[]
   >([]);
-  const [loadingHouses, setLoadingHouses] = useState(false);
-  const [loadingAreas, setLoadingAreas] = useState(false);
-  const [loadingVehicles, setLoadingVehicles] = useState(false);
+  const [loadingData, setLoadingData] = useState(false);
+  const [selectedVehicles, setSelectedVehicles] = useState<string[]>([]);
 
   // Get data from state
   const { tableData: houseData, loading: houseLoading } = useSelector(
@@ -75,36 +73,36 @@ const VMSInvitationFormModal = ({
   const isLoading = createMutation.isPending || updateMutation.isPending;
 
   // Load data when modal opens
-  useEffect(() => {
-    const loadData = async () => {
-      if (!isOpen) return;
+  const loadData = useCallback(async () => {
+    if (!isOpen) return;
 
-      try {
-        setLoadingHouses(true);
-        if (!houseData || houseData.length === 0) {
-          await dispatch.house.getHouseList({ page: 1, perPage: 500 });
-        }
+    setLoadingData(true);
+    try {
+      console.log("📊 Loading form data...");
 
-        setLoadingAreas(true);
-        if (!areaData || areaData.length === 0) {
-          await dispatch.area.getAreaList({ page: 1, perPage: 500 });
-        }
-
-        setLoadingVehicles(true);
-        if (!vehicleData || vehicleData.length === 0) {
-          await dispatch.vehicle.getVehicleList({ page: 1, perPage: 500 });
-        }
-      } catch (error) {
-        // Error handled by individual dispatches
-      } finally {
-        setLoadingHouses(false);
-        setLoadingAreas(false);
-        setLoadingVehicles(false);
+      if (!houseData || houseData.length === 0) {
+        await dispatch.house.getHouseList({ page: 1, perPage: 500 });
       }
-    };
 
-    loadData();
+      if (!areaData || areaData.length === 0) {
+        await dispatch.area.getAreaList({ page: 1, perPage: 500 });
+      }
+
+      if (!vehicleData || vehicleData.length === 0) {
+        await dispatch.vehicle.getVehicleList({ page: 1, perPage: 500 });
+      }
+
+      console.log("✅ Form data loaded");
+    } catch (error) {
+      console.error("❌ Error loading form data:", error);
+    } finally {
+      setLoadingData(false);
+    }
   }, [isOpen, dispatch, houseData, areaData, vehicleData]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   // Convert house data to options
   useEffect(() => {
@@ -114,8 +112,6 @@ const VMSInvitationFormModal = ({
         value: house.id,
       }));
       setHouseOptions(houses);
-    } else {
-      setHouseOptions([]);
     }
   }, [houseData]);
 
@@ -127,8 +123,6 @@ const VMSInvitationFormModal = ({
         value: area.id,
       }));
       setAreaOptions(areas);
-    } else {
-      setAreaOptions([]);
     }
   }, [areaData]);
 
@@ -147,18 +141,17 @@ const VMSInvitationFormModal = ({
           label: `${vehicle.license_plate} (${vehicle.tier})`,
           value: vehicle.id,
           licensePlate: vehicle.license_plate,
+          areaCode: vehicle.area_code || "th-11",
         }));
 
       setVehicleOptions(vehicles);
-    } else {
-      setVehicleOptions([]);
     }
   }, [vehicleData, editData]);
 
   // Pre-fill form for editing
   useEffect(() => {
     if (isOpen && editData) {
-      const vehicleIds = editData.vehicle_id || [];
+      console.log("✏️ Pre-filling form for edit:", editData);
 
       form.setFieldsValue({
         guest_name: editData.guest_name,
@@ -167,58 +160,112 @@ const VMSInvitationFormModal = ({
         start_time: editData.start_time ? dayjs(editData.start_time) : null,
         expire_time: editData.expire_time ? dayjs(editData.expire_time) : null,
         authorized_area: editData.authorized_area || [],
-        vehicle_id: vehicleIds,
+        vehicle_id: editData.vehicle_id || [],
         note: editData.note || "",
-        active: editData.active,
       });
+
+      setSelectedVehicles(editData.vehicle_id || []);
     } else if (isOpen && !editData) {
+      console.log("➕ Resetting form for new creation");
+
       form.resetFields();
       form.setFieldsValue({
         type: "invitation",
-        active: true,
       });
+      setSelectedVehicles([]);
     }
-  }, [isOpen, editData, form, vehicleOptions]);
+  }, [isOpen, editData, form]);
 
-  const handleCancel = () => {
+  const handleCancel = useCallback(() => {
+    console.log("❌ Form cancelled");
     form.resetFields();
+    setSelectedVehicles([]);
     onClose();
+  }, [form, onClose]);
+
+  const handleVehicleChange = (values: string[]) => {
+    setSelectedVehicles(values);
   };
 
-  const handleSubmit = async (values: any) => {
-    try {
-      const payload: VMSInvitationPayload = {
-        guest_name: values.guest_name,
-        house_id: values.house_id,
-        type: values.type || "invitation",
-        start_time: values.start_time
-          ? dayjs(values.start_time).toISOString()
-          : dayjs().toISOString(),
-        expire_time: values.expire_time
-          ? dayjs(values.expire_time).toISOString()
-          : dayjs().add(30, "days").toISOString(),
-        authorized_area: values.authorized_area || [],
-        vehicle_id: values.vehicle_id || [], // จะถูกแปลงใน mutation
-        note: values.note || "",
-        active: values.active !== undefined ? values.active : true,
-      };
-
-      if (isEditing && editData) {
-        const editPayload: VMSInvitationEditPayload = {
-          ...payload,
-          id: editData.id,
-        };
-        await updateMutation.mutateAsync(editPayload);
-      } else {
-        await createMutation.mutateAsync(payload);
+  const handleSubmit = useCallback(
+    async (values: any) => {
+      if (isLoading) {
+        console.warn("⚠️ Already submitting, ignoring...");
+        return;
       }
 
-      refetch();
-      handleCancel();
-    } catch (error) {
-      // Error handled by mutations
-    }
-  };
+      try {
+        console.log("📝 Form submitted with values:", values);
+
+        // สร้าง vehicles array ตาม API spec
+        const vehicles = selectedVehicles
+          .map((vehicleId) => {
+            const vehicleInfo = vehicleOptions.find(
+              (v) => v.value === vehicleId
+            );
+            return {
+              license_plate: vehicleInfo?.licensePlate || "",
+              area_code: vehicleInfo?.areaCode || "th-11",
+            };
+          })
+          .filter((v) => v.license_plate); // เอาเฉพาะที่มี license_plate
+
+        const payload: VMSInvitationPayload = {
+          guest_name: values.guest_name,
+          house_id: values.house_id,
+          type: values.type || "invitation",
+          start_time: values.start_time
+            ? dayjs(values.start_time).toISOString()
+            : dayjs().toISOString(),
+          expire_time: values.expire_time
+            ? dayjs(values.expire_time).toISOString()
+            : dayjs().add(30, "days").toISOString(),
+          authorized_area: values.authorized_area || [],
+          note: values.note || "",
+          vehicles: vehicles.length > 0 ? vehicles : undefined,
+        };
+
+        // ลบ undefined fields
+        Object.keys(payload).forEach((key) => {
+          if (payload[key as keyof VMSInvitationPayload] === undefined) {
+            delete payload[key as keyof VMSInvitationPayload];
+          }
+        });
+
+        console.log("📤 Submitting payload:", JSON.stringify(payload, null, 2));
+
+        if (isEditing && editData) {
+          const editPayload: VMSInvitationEditPayload = {
+            ...payload,
+            id: editData.id,
+          };
+
+          console.log("✏️ Updating invitation...");
+          await updateMutation.mutateAsync(editPayload);
+        } else {
+          console.log("➕ Creating new invitation...");
+          await createMutation.mutateAsync(payload);
+        }
+
+        console.log("✅ Form submission successful");
+        refetch();
+        handleCancel();
+      } catch (error: any) {
+        console.error("❌ Form submission error:", error);
+      }
+    },
+    [
+      isLoading,
+      isEditing,
+      editData,
+      selectedVehicles,
+      vehicleOptions,
+      createMutation,
+      updateMutation,
+      refetch,
+      handleCancel,
+    ]
+  );
 
   return (
     <Modal
@@ -233,7 +280,7 @@ const VMSInvitationFormModal = ({
           <SmallButton
             className="saveButton"
             form={form}
-            formSubmit={form.submit}
+            formSubmit={() => form.submit()}
             message={
               isLoading
                 ? isEditing
@@ -247,14 +294,17 @@ const VMSInvitationFormModal = ({
           />
         </div>,
       ]}
-      confirmLoading={isLoading}>
+      confirmLoading={isLoading}
+      maskClosable={!isLoading}
+      closable={!isLoading}
+      destroyOnClose={true}>
       <Form
         form={form}
         layout="vertical"
         onFinish={handleSubmit}
+        disabled={isLoading}
         initialValues={{
           type: "invitation",
-          active: true,
         }}>
         <Row gutter={[24, 16]}>
           {/* Left Column */}
@@ -275,14 +325,14 @@ const VMSInvitationFormModal = ({
               <Select
                 size="large"
                 placeholder={
-                  loadingHouses || houseLoading
+                  loadingData || houseLoading
                     ? "Loading houses..."
                     : houseOptions.length === 0
                     ? "No houses available"
                     : "Select house"
                 }
                 options={houseOptions}
-                loading={loadingHouses || houseLoading}
+                loading={loadingData || houseLoading}
                 showSearch
                 filterOption={(input, option) =>
                   (option?.label ?? "")
@@ -290,7 +340,7 @@ const VMSInvitationFormModal = ({
                     .includes(input.toLowerCase())
                 }
                 notFoundContent={
-                  loadingHouses || houseLoading ? (
+                  loadingData || houseLoading ? (
                     <div style={{ textAlign: "center", padding: "20px" }}>
                       <Spin size="small" />
                       <div style={{ marginTop: "8px" }}>Loading houses...</div>
@@ -322,14 +372,14 @@ const VMSInvitationFormModal = ({
                 mode="multiple"
                 size="large"
                 placeholder={
-                  loadingAreas || areaLoading
+                  loadingData || areaLoading
                     ? "Loading areas..."
                     : areaOptions.length === 0
                     ? "No areas available"
                     : "Select authorized areas"
                 }
                 options={areaOptions}
-                loading={loadingAreas || areaLoading}
+                loading={loadingData || areaLoading}
                 showSearch
                 filterOption={(input, option) =>
                   (option?.label ?? "")
@@ -337,7 +387,7 @@ const VMSInvitationFormModal = ({
                     .includes(input.toLowerCase())
                 }
                 notFoundContent={
-                  loadingAreas || areaLoading ? (
+                  loadingData || areaLoading ? (
                     <div style={{ textAlign: "center", padding: "20px" }}>
                       <Spin size="small" />
                       <div style={{ marginTop: "8px" }}>Loading areas...</div>
@@ -380,14 +430,15 @@ const VMSInvitationFormModal = ({
                 mode="multiple"
                 size="large"
                 placeholder={
-                  loadingVehicles || vehicleLoading
+                  loadingData || vehicleLoading
                     ? "Loading vehicles..."
                     : vehicleOptions.length === 0
                     ? "No vehicles available"
                     : "Select vehicle license plates"
                 }
                 options={vehicleOptions}
-                loading={loadingVehicles || vehicleLoading}
+                loading={loadingData || vehicleLoading}
+                onChange={handleVehicleChange}
                 showSearch
                 filterOption={(input, option) =>
                   (option?.label ?? "")
@@ -425,7 +476,7 @@ const VMSInvitationFormModal = ({
                   );
                 }}
                 notFoundContent={
-                  loadingVehicles || vehicleLoading ? (
+                  loadingData || vehicleLoading ? (
                     <div style={{ textAlign: "center", padding: "20px" }}>
                       <Spin size="small" />
                       <div style={{ marginTop: "8px" }}>
@@ -460,12 +511,27 @@ const VMSInvitationFormModal = ({
                 showCount
               />
             </Form.Item>
-
-            <Form.Item label="Active" name="active" valuePropName="checked">
-              <Switch />
-            </Form.Item>
           </Col>
         </Row>
+
+        {/* Loading indicator */}
+        {isLoading && (
+          <div
+            style={{
+              textAlign: "center",
+              padding: "16px",
+              background: "#f0f9ff",
+              border: "1px solid #bae6fd",
+              borderRadius: "6px",
+              marginTop: "16px",
+            }}>
+            <Spin size="small" style={{ marginRight: "8px" }} />
+            <span style={{ color: "#0369a1" }}>
+              {isEditing ? "Updating invitation..." : "Creating invitation..."}
+              Please wait...
+            </span>
+          </div>
+        )}
       </Form>
     </Modal>
   );

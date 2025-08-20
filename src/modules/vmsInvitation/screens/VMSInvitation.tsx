@@ -1,11 +1,11 @@
-// ไฟล์: src/modules/vmsInvitation/screens/VMSInvitation.tsx - Improved Vehicle Display
+// ไฟล์: src/modules/vmsInvitation/screens/VMSInvitation.tsx - ใช้ Vehicle Mapping Service
 
 import { useState, useEffect } from "react";
 import { Button, Tag, Tooltip } from "antd";
 import Header from "../../../components/templates/Header";
 import InvitationTable from "../components/InvitationTable";
-import VMSConnectionStatus from "../components/VMSConnectionStatus";
 import VMSInvitationFormModal from "../components/VMSInvitationFormModal";
+import VMSInvitationStatsCards from "../components/VMSInvitationStatsCards";
 import dayjs from "dayjs";
 import { useDispatch, useSelector } from "react-redux";
 import { Dispatch, RootState } from "../../../stores";
@@ -14,7 +14,7 @@ import { InvitationRecord } from "../../../stores/interfaces/Invitation";
 import { EditOutlined, DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import { useDeleteVMSInvitationMutation } from "../../../utils/mutationsGroup/vmsInvitationMutations";
 import { callConfirmModal } from "../../../components/common/Modal";
-import { vmsMappingService } from "../../../utils/services/vmsMappingService";
+import { vehicleMappingService } from "../../../utils/services/vehicleMappingService";
 import "../styles/vmsInvitation.css";
 
 const VMSInvitation = () => {
@@ -30,9 +30,9 @@ const VMSInvitation = () => {
   const [rerender, setRerender] = useState<boolean>(false);
   const [isFormModalOpen, setIsFormModalOpen] = useState<boolean>(false);
   const [editData, setEditData] = useState<InvitationRecord | null>(null);
-  const [vehicleMapping, setVehicleMapping] = useState<Map<string, string>>(
-    new Map()
-  );
+  const [vehicleLicensePlates, setVehicleLicensePlates] = useState<
+    Map<string, string[]>
+  >(new Map());
 
   // Pagination Options
   const pageSizeOptions = [10, 20, 40, 80, 100];
@@ -50,21 +50,85 @@ const VMSInvitation = () => {
     return houseMapping?.get(houseId) || houseId;
   };
 
-  // Improved function to get vehicle license plates
-  const getVehicleLicensePlates = (vehicleIds: string[]): string => {
+  // แปลง vehicle IDs เป็น license plates สำหรับทุก invitation
+  useEffect(() => {
+    const processVehicleMappings = async () => {
+      if (!tableData || tableData.length === 0) return;
+
+      console.log(
+        "🚗 Processing vehicle mappings using vehicleMappingService..."
+      );
+
+      try {
+        // Initialize vehicle mapping service
+        await vehicleMappingService.refreshVehicleCache();
+
+        const mappings = new Map<string, string[]>();
+
+        for (const invitation of tableData) {
+          if (invitation.vehicle_id && invitation.vehicle_id.length > 0) {
+            const licensePlates: string[] = [];
+
+            for (const vehicleId of invitation.vehicle_id) {
+              try {
+                const licensePlate =
+                  await vehicleMappingService.getVehicleLicensePlate(vehicleId);
+                licensePlates.push(licensePlate);
+                console.log(`✅ Mapped ${vehicleId} → ${licensePlate}`);
+              } catch (error) {
+                console.warn(
+                  `⚠️ Could not map vehicle ${vehicleId}, using ID as fallback`
+                );
+                licensePlates.push(vehicleId);
+              }
+            }
+
+            mappings.set(invitation.id, licensePlates);
+          }
+        }
+
+        setVehicleLicensePlates(mappings);
+        console.log("✅ Vehicle mappings processed:", mappings);
+      } catch (error) {
+        console.error("❌ Error processing vehicle mappings:", error);
+      }
+    };
+
+    processVehicleMappings();
+  }, [tableData]);
+
+  // Helper function to get license plates for display
+  const getDisplayLicensePlates = (
+    invitationId: string,
+    vehicleIds: string[]
+  ): string => {
+    // ลองใช้ mapping ที่ประมวลผลแล้วก่อน
+    const mappedPlates = vehicleLicensePlates.get(invitationId);
+
+    if (mappedPlates && mappedPlates.length > 0) {
+      if (mappedPlates.length === 1) {
+        return mappedPlates[0];
+      } else if (mappedPlates.length <= 2) {
+        return mappedPlates.join(", ");
+      } else {
+        return `${mappedPlates.slice(0, 2).join(", ")} +${
+          mappedPlates.length - 2
+        } more`;
+      }
+    }
+
+    // Fallback: ใช้ vehicle IDs เดิม
     if (!vehicleIds || vehicleIds.length === 0) return "-";
 
-    // ถ้า vehicleIds เป็น license plates แล้ว (จากการแปลงใน model)
-    // ให้แสดงตรงๆ
-    const licensePlates = vehicleIds.filter(Boolean);
-
-    if (licensePlates.length === 0) return "-";
-    if (licensePlates.length === 1) return licensePlates[0];
-    if (licensePlates.length <= 2) return licensePlates.join(", ");
-
-    return `${licensePlates.slice(0, 2).join(", ")} +${
-      licensePlates.length - 2
-    } more`;
+    if (vehicleIds.length === 1) {
+      return vehicleIds[0];
+    } else if (vehicleIds.length <= 2) {
+      return vehicleIds.join(", ");
+    } else {
+      return `${vehicleIds.slice(0, 2).join(", ")} +${
+        vehicleIds.length - 2
+      } more`;
+    }
   };
 
   // Functions
@@ -148,24 +212,31 @@ const VMSInvitation = () => {
       dataIndex: "vehicle_id",
       align: "center",
       width: "18%",
-      render: (vehicle_ids) => {
-        const licensePlates = getVehicleLicensePlates(vehicle_ids);
+      render: (vehicle_ids, record) => {
+        const displayText = getDisplayLicensePlates(record.id, vehicle_ids);
+        const mappedPlates = vehicleLicensePlates.get(record.id);
+
+        if (displayText === "-") {
+          return <div style={{ fontSize: "12px", color: "#999" }}>-</div>;
+        }
 
         return (
           <Tooltip
             title={
-              vehicle_ids && vehicle_ids.length > 0
-                ? `License Plates: ${vehicle_ids.join(", ")}`
+              mappedPlates && mappedPlates.length > 0
+                ? `License Plates: ${mappedPlates.join(", ")}`
+                : vehicle_ids && vehicle_ids.length > 0
+                ? `Vehicle IDs: ${vehicle_ids.join(", ")}`
                 : "No vehicles"
             }
             placement="top">
             <div
               style={{
                 fontSize: "12px",
-                color: licensePlates === "-" ? "#999" : "#1890ff",
-                fontWeight: licensePlates === "-" ? "400" : "500",
+                color: "#1890ff",
+                fontWeight: "500",
               }}>
-              {licensePlates}
+              {displayText}
             </div>
           </Tooltip>
         );
@@ -298,6 +369,7 @@ const VMSInvitation = () => {
           await dispatch.area.getAreaList({ page: 1, perPage: 500 });
         }
 
+        // โหลด vehicle data สำหรับ vehicle mapping service
         const currentVehicleData = dispatch.getState().vehicle.tableData;
         if (!currentVehicleData || currentVehicleData.length === 0) {
           await dispatch.vehicle.getVehicleList({ page: 1, perPage: 500 });
@@ -328,15 +400,14 @@ const VMSInvitation = () => {
     <>
       <div className="vms-invitation-header">
         <Header title="VMS Invitations" />
-        <VMSConnectionStatus />
       </div>
+
+      {/* Stats Cards */}
+      <VMSInvitationStatsCards data={tableData} loading={loading} />
 
       <div className="userManagementTopActionGroup">
         <div className="userManagementTopActionLeftGroup">
-          <div style={{ color: "#666", fontSize: "14px" }}>
-            Items: {total} | House Mapping: {houseMapping?.size || 0} addresses
-            loaded
-          </div>
+          {/* เอาข้อมูลส่วนเกินออก */}
         </div>
         <div className="userManagementTopActionRightGroup">
           <Button
