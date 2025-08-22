@@ -1,5 +1,3 @@
-// ไฟล์: src/modules/vmsInvitation/screens/VMSInvitation.tsx - Updated with E-Stamp
-
 import { useState, useEffect } from "react";
 import { Button, Tag, Tooltip, message } from "antd";
 import Header from "../../../components/templates/Header";
@@ -7,6 +5,7 @@ import InvitationTable from "../components/InvitationTable";
 import VMSInvitationFormModal from "../components/VMSInvitationFormModal";
 import VMSInvitationStatsCards from "../components/VMSInvitationStatsCards";
 import VMSInvitationFilters from "../components/VMSInvitationFilters";
+import QRCodeModal from "../../../components/common/QRCodeModal";
 import dayjs from "dayjs";
 import { useDispatch, useSelector } from "react-redux";
 import { Dispatch, RootState } from "../../../stores";
@@ -17,6 +16,7 @@ import {
   DeleteOutlined,
   PlusOutlined,
   StarOutlined,
+  QrcodeOutlined,
 } from "@ant-design/icons";
 import { useDeleteVMSInvitationMutation } from "../../../utils/mutationsGroup/vmsInvitationMutations";
 import { useEStampVMSInvitationMutation } from "../../../utils/mutationsGroup/vmsInvitationEStampMutations";
@@ -28,7 +28,7 @@ import "../styles/vmsInvitation.css";
 interface FilterValues {
   active?: boolean;
   type?: string;
-  searchText?: string; // เปลี่ยนจาก guest_name เป็น searchText
+  searchText?: string;
   stamped?: boolean;
   dateRange?: [dayjs.Dayjs, dayjs.Dayjs] | null;
 }
@@ -48,6 +48,9 @@ const VMSInvitation = () => {
   const [rerender, setRerender] = useState<boolean>(false);
   const [isFormModalOpen, setIsFormModalOpen] = useState<boolean>(false);
   const [editData, setEditData] = useState<InvitationRecord | null>(null);
+  const [isQRModalOpen, setIsQRModalOpen] = useState<boolean>(false);
+  const [selectedInvitation, setSelectedInvitation] =
+    useState<InvitationRecord | null>(null);
   const [vehicleLicensePlates, setVehicleLicensePlates] = useState<
     Map<string, string[]>
   >(new Map());
@@ -59,6 +62,12 @@ const VMSInvitation = () => {
   );
   const [isLoadingHouseMapping, setIsLoadingHouseMapping] = useState(false);
 
+  // State สำหรับ area name mapping
+  const [areaNameMap, setAreaNameMap] = useState<Map<string, string>>(
+    new Map()
+  );
+  const [isLoadingAreaMapping, setIsLoadingAreaMapping] = useState(false);
+
   // Pagination Options
   const pageSizeOptions = [10, 20, 40, 80, 100];
   const PaginationConfig = {
@@ -69,7 +78,69 @@ const VMSInvitation = () => {
     total: total,
   };
 
-  // ฟังก์ชันโหลด house address mapping โดยตรงจาก VMS API
+  // ฟังก์ชันโหลด area name mapping โดยตรงจาก VMS API
+  const loadAreaNameMapping = async () => {
+    if (isLoadingAreaMapping) return;
+
+    setIsLoadingAreaMapping(true);
+    try {
+      console.log("🗺️ Loading area name mapping directly from VMS API...");
+
+      let allAreas: any[] = [];
+      let currentPage = 1;
+      let hasMoreData = true;
+
+      // ดึงข้อมูลทุกหน้าจนหมด
+      while (hasMoreData) {
+        console.log(`📄 Fetching areas page ${currentPage}...`);
+
+        const response = await axiosVMS.get("/api/collections/area/records", {
+          params: {
+            page: currentPage,
+            perPage: 500,
+          },
+        });
+
+        if (response.data?.items && response.data.items.length > 0) {
+          allAreas = [...allAreas, ...response.data.items];
+          console.log(
+            `✅ Page ${currentPage}: ${response.data.items.length} areas`
+          );
+
+          // ตรวจสอบว่ามีหน้าถัดไปหรือไม่
+          const totalPages = response.data.totalPages || 1;
+          hasMoreData = currentPage < totalPages;
+          currentPage++;
+        } else {
+          hasMoreData = false;
+        }
+      }
+
+      console.log(`📊 Total areas loaded: ${allAreas.length}`);
+
+      // สร้าง mapping
+      const mapping = new Map<string, string>();
+
+      allAreas.forEach((area: any) => {
+        mapping.set(area.id, area.name);
+        console.log(`🗺️ Mapped: ${area.id} → ${area.name}`);
+      });
+
+      setAreaNameMap(mapping);
+      console.log(`✅ Area name mapping created: ${mapping.size} entries`);
+
+      // แสดงตัวอย่าง mapping
+      console.log(
+        "🗺️ Sample area mappings:",
+        Array.from(mapping.entries()).slice(0, 5)
+      );
+    } catch (error) {
+      console.error("❌ Error loading area name mapping:", error);
+      message.error("Failed to load area name mapping");
+    } finally {
+      setIsLoadingAreaMapping(false);
+    }
+  };
   const loadHouseAddressMapping = async () => {
     if (isLoadingHouseMapping) return;
 
@@ -133,12 +204,36 @@ const VMSInvitation = () => {
     }
   };
 
-  // โหลด house mapping เมื่อ component mount
+  // โหลด house mapping และ area mapping เมื่อ component mount
   useEffect(() => {
     loadHouseAddressMapping();
+    loadAreaNameMapping();
   }, []);
 
-  // ฟังก์ชันสำหรับ get house address
+  // ฟังก์ชันสำหรับ get area name
+  const getAreaName = (areaId: string): string => {
+    if (!areaId) return "-";
+
+    console.log(`🔍 Looking up area ID: ${areaId}`);
+    console.log(`📋 Available area mappings: ${areaNameMap.size}`);
+
+    // หาจาก mapping
+    const areaName = areaNameMap.get(areaId);
+
+    if (areaName) {
+      console.log(`✅ Found area name: ${areaName}`);
+      return areaName;
+    } else {
+      console.log(`❌ No area name found for ID: ${areaId}`);
+      console.log(
+        `🗂️ Available area IDs:`,
+        Array.from(areaNameMap.keys()).slice(0, 5)
+      );
+
+      // ถ้าไม่เจอ area name ให้แสดง ID แบบย่อ
+      return areaId.length > 10 ? `${areaId.substring(0, 8)}...` : areaId;
+    }
+  };
   const getHouseAddress = (houseId: string): string => {
     if (!houseId) return "-";
 
@@ -284,6 +379,29 @@ const VMSInvitation = () => {
     });
   };
 
+  const onDownloadQR = (record: InvitationRecord) => {
+    // ตรวจสอบว่ามี code หรือไม่
+    if (!record.code || !record.code.trim()) {
+      message.error("ไม่พบรหัสบัตรเชิญสำหรับการสร้าง QR Code");
+      return;
+    }
+
+    // แปลง authorized_area IDs เป็นชื่อ
+    const authorizedAreaNames =
+      record.authorized_area?.map((areaId) => getAreaName(areaId)) || [];
+
+    // เพิ่มข้อมูลที่จำเป็นลงใน record
+    const enhancedRecord = {
+      ...record,
+      house_address: getHouseAddress(record.house_id),
+      vehicle_license_plates: vehicleLicensePlates.get(record.id) || [],
+      authorized_area_names: authorizedAreaNames,
+    };
+
+    setSelectedInvitation(enhancedRecord);
+    setIsQRModalOpen(true);
+  };
+
   const handleFilter = (newFilters: FilterValues) => {
     setFilters(newFilters);
     refetchData();
@@ -296,6 +414,11 @@ const VMSInvitation = () => {
   const handleFormModalClose = () => {
     setIsFormModalOpen(false);
     setEditData(null);
+  };
+
+  const handleQRModalClose = () => {
+    setIsQRModalOpen(false);
+    setSelectedInvitation(null);
   };
 
   // Check if invitation is stamped
@@ -493,7 +616,7 @@ const VMSInvitation = () => {
       title: "Action",
       key: "action",
       align: "center",
-      width: "12%",
+      width: "15%",
       render: (_, record) => (
         <div
           style={{
@@ -535,6 +658,14 @@ const VMSInvitation = () => {
             title={isStamped(record) ? "Already stamped" : "E-stamp invitation"}
             disabled={isStamped(record)}
             size="small"
+          />
+          <Button
+            type="text"
+            icon={<QrcodeOutlined style={{ color: "#722ed1" }} />}
+            onClick={() => onDownloadQR(record)}
+            title="View QR Code"
+            size="small"
+            disabled={!record.code || !record.code.trim()}
           />
         </div>
       ),
@@ -599,7 +730,7 @@ const VMSInvitation = () => {
         columns={columns}
         data={tableData}
         PaginationConfig={PaginationConfig}
-        loading={loading || isLoadingHouseMapping}
+        loading={loading || isLoadingHouseMapping || isLoadingAreaMapping}
         onChangeTable={onChangeTable}
       />
 
@@ -608,6 +739,12 @@ const VMSInvitation = () => {
         onClose={handleFormModalClose}
         editData={editData}
         refetch={refetchData}
+      />
+
+      <QRCodeModal
+        isOpen={isQRModalOpen}
+        onClose={handleQRModalClose}
+        invitation={selectedInvitation}
       />
     </>
   );
