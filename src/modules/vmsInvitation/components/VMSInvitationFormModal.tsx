@@ -1,4 +1,4 @@
-// ไฟล์: src/modules/vmsInvitation/components/VMSInvitationFormModal.tsx - Updated Version with License Plate Input
+// ไฟล์: src/modules/vmsInvitation/components/VMSInvitationFormModal.tsx - Clean Version
 
 import { useState, useEffect, useCallback } from "react";
 import {
@@ -9,10 +9,8 @@ import {
   Select,
   Row,
   Col,
-  Tag,
   Spin,
   Button,
-  Space,
 } from "antd";
 import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
 import { useSelector, useDispatch } from "react-redux";
@@ -29,7 +27,6 @@ import { InvitationRecord } from "../../../stores/interfaces/Invitation";
 import {
   getProvinceOptions,
   searchProvinces,
-  getProvinceName,
 } from "../../../utils/constants/thaiProvinces";
 import dayjs from "dayjs";
 
@@ -65,8 +62,8 @@ const VMSInvitationFormModal = ({
     { label: string; value: string; name: string; code: string }[]
   >([]);
   const [loadingData, setLoadingData] = useState(false);
-
-  // State สำหรับ vehicles input
+  const [formType, setFormType] = useState<string>("invitation");
+  const [selectedHouseDetails, setSelectedHouseDetails] = useState<any>(null);
   const [vehicles, setVehicles] = useState<VehicleInput[]>([]);
 
   // Get data from state
@@ -86,7 +83,6 @@ const VMSInvitationFormModal = ({
 
   // Load province options
   useEffect(() => {
-    console.log("📍 Loading Thai provinces...");
     const provinces = getProvinceOptions();
     setProvinceOptions(provinces);
   }, []);
@@ -97,8 +93,6 @@ const VMSInvitationFormModal = ({
 
     setLoadingData(true);
     try {
-      console.log("📊 Loading form data...");
-
       if (!houseData || houseData.length === 0) {
         await dispatch.house.getHouseList({
           page: 1,
@@ -114,10 +108,8 @@ const VMSInvitationFormModal = ({
           silent: true,
         });
       }
-
-      console.log("✅ Form data loaded");
     } catch (error) {
-      console.error("❌ Error loading form data:", error);
+      console.error("Error loading form data:", error);
     } finally {
       setLoadingData(false);
     }
@@ -149,11 +141,86 @@ const VMSInvitationFormModal = ({
     }
   }, [areaData]);
 
+  // Load house details and set default authorized area
+  const loadHouseDetails = async (houseId: string) => {
+    if (!houseId) {
+      setSelectedHouseDetails(null);
+      return;
+    }
+
+    const houseDetail = houseData.find((house) => house.id === houseId);
+
+    if (houseDetail) {
+      setSelectedHouseDetails(houseDetail);
+
+      if (houseDetail.area && houseDetail.area.trim()) {
+        const houseAreaId = houseDetail.area.trim();
+        const existingArea = areaOptions.find(
+          (option) => option.value === houseAreaId
+        );
+
+        if (existingArea) {
+          // รอ 1 tick เพื่อให้ form render เสร็จก่อน
+          setTimeout(() => {
+            const newAreas = [houseAreaId];
+            form.setFieldsValue({
+              authorized_area: newAreas,
+            });
+          }, 50);
+        }
+      }
+    } else {
+      setSelectedHouseDetails(null);
+    }
+  };
+
+  // Handle house change
+  const handleHouseChange = (houseId: string) => {
+    // เคลียร์ selected house ก่อน
+    setSelectedHouseDetails(null);
+
+    // เคลียร์ authorized areas
+    form.setFieldsValue({
+      authorized_area: [],
+    });
+
+    // รอให้ form update เสร็จ แล้วค่อยโหลด house details
+    setTimeout(() => {
+      if (areaOptions.length === 0 && !areaLoading) {
+        setTimeout(() => {
+          loadHouseDetails(houseId);
+        }, 100);
+      } else {
+        loadHouseDetails(houseId);
+      }
+    }, 10);
+  };
+
+  // Handle type change
+  const handleTypeChange = (type: string) => {
+    setFormType(type);
+    if (type !== "vehicle") {
+      setVehicles([]);
+    }
+  };
+
+  // Get house area info for display
+  const getHouseAreaInfo = () => {
+    if (!selectedHouseDetails || !selectedHouseDetails.area) return null;
+
+    const houseAreaId = selectedHouseDetails.area;
+    const areaOption = areaOptions.find((opt) => opt.value === houseAreaId);
+
+    return {
+      areaId: houseAreaId,
+      areaName: areaOption?.label || `Area ID: ${houseAreaId}`,
+      exists: !!areaOption,
+    };
+  };
+
   // Pre-fill form for editing
   useEffect(() => {
     if (isOpen && editData) {
-      console.log("✏️ Pre-filling form for edit:", editData);
-
       form.setFieldsValue({
         guest_name: editData.guest_name,
         house_id: editData.house_id,
@@ -164,34 +231,35 @@ const VMSInvitationFormModal = ({
         note: editData.note || "",
       });
 
-      // แปลง vehicle_id เป็น vehicles array (ถ้ามี)
+      setFormType(editData.type || "invitation");
+
       if (editData.vehicle_id && editData.vehicle_id.length > 0) {
-        // สำหรับการแก้ไข ถ้า vehicle_id เป็น license plates แล้วให้ใช้ตรงๆ
-        // ถ้าเป็น vehicle IDs ให้ต้องแปลงเป็น license plates
         const vehicleInputs = editData.vehicle_id.map((licensePlateOrId) => ({
-          license_plate: licensePlateOrId, // สมมติว่าเป็น license plate
-          area_code: "th-11", // default value
+          license_plate: licensePlateOrId,
+          area_code: "th-11",
         }));
         setVehicles(vehicleInputs);
-        console.log("✏️ Pre-filled vehicles:", vehicleInputs);
       } else {
         setVehicles([]);
       }
-    } else if (isOpen && !editData) {
-      console.log("➕ Resetting form for new creation");
 
+      // สำหรับ edit mode ไม่ต้องโหลด house details ใหม่ เพราะมี authorized_area แล้ว
+    } else if (isOpen && !editData) {
       form.resetFields();
       form.setFieldsValue({
         type: "invitation",
       });
       setVehicles([]);
+      setFormType("invitation");
+      setSelectedHouseDetails(null);
     }
   }, [isOpen, editData, form]);
 
   const handleCancel = useCallback(() => {
-    console.log("❌ Form cancelled");
     form.resetFields();
     setVehicles([]);
+    setFormType("invitation");
+    setSelectedHouseDetails(null);
     onClose();
   }, [form, onClose]);
 
@@ -217,7 +285,7 @@ const VMSInvitationFormModal = ({
     setVehicles(newVehicles);
   };
 
-  const handleProvinceSearch = (searchText: string, index: number) => {
+  const handleProvinceSearch = (searchText: string) => {
     if (!searchText) {
       setProvinceOptions(getProvinceOptions());
     } else {
@@ -228,24 +296,18 @@ const VMSInvitationFormModal = ({
 
   const handleSubmit = useCallback(
     async (values: any) => {
-      if (isLoading) {
-        console.warn("⚠️ Already submitting, ignoring...");
-        return;
-      }
+      if (isLoading) return;
 
       try {
-        console.log("📝 Form submitted with values:", values);
-        console.log("🚗 Vehicles:", vehicles);
-
-        // กรอง vehicles ที่มี license_plate และสร้าง vehicles array ตาม API spec
-        const validVehicles = vehicles
-          .filter((v) => v.license_plate && v.license_plate.trim())
-          .map((v) => ({
-            license_plate: v.license_plate.trim(),
-            area_code: v.area_code || "th-11",
-          }));
-
-        console.log("✅ Valid vehicles for API:", validVehicles);
+        const validVehicles =
+          formType === "vehicle"
+            ? vehicles
+                .filter((v) => v.license_plate && v.license_plate.trim())
+                .map((v) => ({
+                  license_plate: v.license_plate.trim(),
+                  area_code: v.area_code || "th-11",
+                }))
+            : [];
 
         const payload: VMSInvitationPayload = {
           guest_name: values.guest_name,
@@ -261,34 +323,24 @@ const VMSInvitationFormModal = ({
           note: values.note || "",
         };
 
-        // เพิ่ม vehicles เฉพาะเมื่อมีข้อมูล
-        if (validVehicles.length > 0) {
+        if (formType === "vehicle" && validVehicles.length > 0) {
           payload.vehicles = validVehicles;
         }
-
-        console.log(
-          "📤 Final payload for API:",
-          JSON.stringify(payload, null, 2)
-        );
 
         if (isEditing && editData) {
           const editPayload: VMSInvitationEditPayload = {
             ...payload,
             id: editData.id,
           };
-
-          console.log("✏️ Updating invitation...");
           await updateMutation.mutateAsync(editPayload);
         } else {
-          console.log("➕ Creating new invitation...");
           await createMutation.mutateAsync(payload);
         }
 
-        console.log("✅ Form submission successful");
         refetch();
         handleCancel();
       } catch (error: any) {
-        console.error("❌ Form submission error:", error);
+        console.error("Form submission error:", error);
       }
     },
     [
@@ -296,6 +348,7 @@ const VMSInvitationFormModal = ({
       isEditing,
       editData,
       vehicles,
+      formType,
       createMutation,
       updateMutation,
       refetch,
@@ -370,6 +423,7 @@ const VMSInvitationFormModal = ({
                 options={houseOptions}
                 loading={loadingData || houseLoading}
                 showSearch
+                onChange={handleHouseChange}
                 filterOption={(input, option) =>
                   (option?.label ?? "")
                     .toLowerCase()
@@ -395,6 +449,8 @@ const VMSInvitationFormModal = ({
               <Select
                 size="large"
                 placeholder="Select type"
+                value={formType}
+                onChange={handleTypeChange}
                 options={[
                   { label: "Invitation", value: "invitation" },
                   { label: "Vehicle", value: "vehicle" },
@@ -411,11 +467,14 @@ const VMSInvitationFormModal = ({
                     ? "Loading areas..."
                     : areaOptions.length === 0
                     ? "No areas available"
+                    : selectedHouseDetails && selectedHouseDetails.area
+                    ? "House default area is pre-selected. You can add more or remove it."
                     : "Select authorized areas"
                 }
                 options={areaOptions}
                 loading={loadingData || areaLoading}
                 showSearch
+                allowClear
                 filterOption={(input, option) =>
                   (option?.label ?? "")
                     .toLowerCase()
@@ -435,6 +494,47 @@ const VMSInvitationFormModal = ({
                   )
                 }
               />
+              {selectedHouseDetails &&
+                selectedHouseDetails.area &&
+                (() => {
+                  const houseAreaInfo = getHouseAreaInfo();
+                  return (
+                    houseAreaInfo && (
+                      <div
+                        style={{
+                          fontSize: "12px",
+                          color: houseAreaInfo.exists ? "#1890ff" : "#ff4d4f",
+                          marginTop: "4px",
+                          padding: "8px 12px",
+                          background: houseAreaInfo.exists
+                            ? "#f0f9ff"
+                            : "#fff2f0",
+                          border: `1px solid ${
+                            houseAreaInfo.exists ? "#bae6fd" : "#ffccc7"
+                          }`,
+                          borderRadius: "4px",
+                        }}>
+                        {houseAreaInfo.exists ? (
+                          <>
+                            💡 <strong>House Default Area:</strong> "
+                            {houseAreaInfo.areaName}" from house "
+                            {selectedHouseDetails.address}" has been
+                            pre-selected. You can add more areas or remove this
+                            area as needed.
+                          </>
+                        ) : (
+                          <>
+                            ⚠️ <strong>Area Not Available:</strong> House "
+                            {selectedHouseDetails.address}" has area "
+                            {houseAreaInfo.areaId}" but it's not available in
+                            the current area options. Please select from
+                            available areas.
+                          </>
+                        )}
+                      </div>
+                    )
+                  );
+                })()}
             </Form.Item>
           </Col>
 
@@ -471,171 +571,125 @@ const VMSInvitationFormModal = ({
           </Col>
         </Row>
 
-        {/* Vehicle License Plates Section */}
-        <Row>
-          <Col xs={24}>
-            <div style={{ marginBottom: 16 }}>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 8,
-                  marginBottom: 12,
-                }}>
-                <label style={{ fontWeight: 500, color: "#262626" }}>
-                  Vehicle License Plates
-                </label>
-                <Button
-                  type="dashed"
-                  icon={<PlusOutlined />}
-                  onClick={addVehicle}
-                  size="small"
-                  disabled={isLoading || vehicles.length >= 5}>
-                  Add Vehicle {vehicles.length > 0 && `(${vehicles.length}/5)`}
-                </Button>
-              </div>
-
-              {vehicles.length === 0 ? (
+        {/* Vehicle License Plates Section - แสดงเฉพาะเมื่อ type เป็น vehicle */}
+        {formType === "vehicle" && (
+          <Row>
+            <Col xs={24}>
+              <div style={{ marginBottom: 16 }}>
                 <div
                   style={{
-                    textAlign: "center",
-                    padding: "20px",
-                    border: "1px dashed #d9d9d9",
-                    borderRadius: "6px",
-                    color: "#999",
-                    background: "#fafafa",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    marginBottom: 12,
                   }}>
-                  <div style={{ marginBottom: "8px" }}>🚗</div>
-                  <div>No vehicles added</div>
-                  <div style={{ fontSize: "12px", marginTop: "4px" }}>
-                    Click "Add Vehicle" to add license plates
-                  </div>
+                  <label style={{ fontWeight: 500, color: "#262626" }}>
+                    Vehicle License Plates
+                  </label>
+                  <Button
+                    type="dashed"
+                    icon={<PlusOutlined />}
+                    onClick={addVehicle}
+                    size="small"
+                    disabled={isLoading || vehicles.length >= 5}>
+                    Add Vehicle{" "}
+                    {vehicles.length > 0 && `(${vehicles.length}/5)`}
+                  </Button>
                 </div>
-              ) : (
-                <div style={{ maxHeight: "200px", overflowY: "auto" }}>
-                  {vehicles.map((vehicle, index) => (
-                    <div
-                      key={index}
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 8,
-                        marginBottom: 8,
-                        padding: "12px",
-                        border: "1px solid #f0f0f0",
-                        borderRadius: "6px",
-                        background: "#fafafa",
-                      }}>
-                      {/* License Plate Input */}
-                      <div style={{ flex: 2 }}>
-                        <Input
-                          placeholder="ป้ายทะเบียน"
-                          value={vehicle.license_plate}
-                          onChange={(e) =>
-                            updateVehicle(
-                              index,
-                              "license_plate",
-                              e.target.value
-                            )
-                          }
-                          maxLength={20}
-                          disabled={isLoading}
-                        />
-                      </div>
 
-                      {/* Province Select */}
-                      <div style={{ flex: 3 }}>
-                        <Select
-                          placeholder="เลือกจังหวัด"
-                          value={vehicle.area_code}
-                          onChange={(value) =>
-                            updateVehicle(index, "area_code", value)
-                          }
-                          options={provinceOptions}
-                          showSearch
-                          filterOption={false}
-                          onSearch={(text) => handleProvinceSearch(text, index)}
-                          optionRender={(option) => (
-                            <div
-                              style={{
-                                display: "flex",
-                                justifyContent: "space-between",
-                                alignItems: "center",
-                              }}>
-                              <span>{option.data.name}</span>
-                              <span style={{ color: "#999", fontSize: "12px" }}>
-                                {option.data.code}
-                              </span>
-                            </div>
-                          )}
-                          disabled={isLoading}
-                          style={{ width: "100%" }}
-                        />
-                      </div>
-
-                      {/* Delete Button */}
-                      <Button
-                        type="text"
-                        icon={<DeleteOutlined />}
-                        onClick={() => removeVehicle(index)}
-                        disabled={isLoading}
-                        style={{ color: "#ff4d4f" }}
-                        title="Remove vehicle"
-                      />
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {vehicles.length > 0 && (
-                <div
-                  style={{
-                    fontSize: "12px",
-                    color: "#666",
-                    marginTop: "8px",
-                    padding: "8px 12px",
-                    background: "#f0f9ff",
-                    border: "1px solid #bae6fd",
-                    borderRadius: "4px",
-                  }}>
-                  <strong>ข้อมูลรถยนต์:</strong> {vehicles.length}/5 คัน •{" "}
-                  <strong>ป้ายทะเบียนที่กรอก:</strong>{" "}
-                  {
-                    vehicles.filter(
-                      (v) => v.license_plate && v.license_plate.trim()
-                    ).length
-                  }{" "}
-                  ป้าย
-                  {vehicles.length >= 5 && (
-                    <span style={{ color: "#faad14", marginLeft: "8px" }}>
-                      • ถึงจำนวนสูงสุดแล้ว
-                    </span>
-                  )}
+                {vehicles.length === 0 ? (
                   <div
                     style={{
-                      marginTop: "4px",
-                      fontSize: "11px",
-                      color: "#0369a1",
+                      textAlign: "center",
+                      padding: "20px",
+                      border: "1px dashed #d9d9d9",
+                      borderRadius: "6px",
+                      color: "#999",
+                      background: "#fafafa",
                     }}>
-                    📋 ข้อมูลที่จะส่งไป API:{" "}
-                    {JSON.stringify(
-                      vehicles
-                        .filter(
-                          (v) => v.license_plate && v.license_plate.trim()
-                        )
-                        .map((v) => ({
-                          license_plate: v.license_plate.trim(),
-                          area_code: v.area_code,
-                        })),
-                      null,
-                      1
-                    )}
+                    <div style={{ marginBottom: "8px" }}>🚗</div>
+                    <div>No vehicles added</div>
+                    <div style={{ fontSize: "12px", marginTop: "4px" }}>
+                      Click "Add Vehicle" to add license plates
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
-          </Col>
-        </Row>
+                ) : (
+                  <div style={{ maxHeight: "200px", overflowY: "auto" }}>
+                    {vehicles.map((vehicle, index) => (
+                      <div
+                        key={index}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 8,
+                          marginBottom: 8,
+                          padding: "12px",
+                          border: "1px solid #f0f0f0",
+                          borderRadius: "6px",
+                          background: "#fafafa",
+                        }}>
+                        <div style={{ flex: 2 }}>
+                          <Input
+                            placeholder="ป้ายทะเบียน"
+                            value={vehicle.license_plate}
+                            onChange={(e) =>
+                              updateVehicle(
+                                index,
+                                "license_plate",
+                                e.target.value
+                              )
+                            }
+                            maxLength={20}
+                            disabled={isLoading}
+                          />
+                        </div>
+
+                        <div style={{ flex: 3 }}>
+                          <Select
+                            placeholder="เลือกจังหวัด"
+                            value={vehicle.area_code}
+                            onChange={(value) =>
+                              updateVehicle(index, "area_code", value)
+                            }
+                            options={provinceOptions}
+                            showSearch
+                            filterOption={false}
+                            onSearch={handleProvinceSearch}
+                            optionRender={(option) => (
+                              <div
+                                style={{
+                                  display: "flex",
+                                  justifyContent: "space-between",
+                                  alignItems: "center",
+                                }}>
+                                <span>{option.data.name}</span>
+                                <span
+                                  style={{ color: "#999", fontSize: "12px" }}>
+                                  {option.data.code}
+                                </span>
+                              </div>
+                            )}
+                            disabled={isLoading}
+                            style={{ width: "100%" }}
+                          />
+                        </div>
+
+                        <Button
+                          type="text"
+                          icon={<DeleteOutlined />}
+                          onClick={() => removeVehicle(index)}
+                          disabled={isLoading}
+                          style={{ color: "#ff4d4f" }}
+                          title="Remove vehicle"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </Col>
+          </Row>
+        )}
 
         {/* Loading indicator */}
         {isLoading && (

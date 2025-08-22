@@ -34,7 +34,6 @@ interface FilterValues {
 }
 
 const VMSInvitation = () => {
-  // Variables
   const dispatch = useDispatch<Dispatch>();
   const { loading, tableData, total, currentPage, perPage } = useSelector(
     (state: RootState) => state.invitation
@@ -55,18 +54,13 @@ const VMSInvitation = () => {
     Map<string, string[]>
   >(new Map());
   const [filters, setFilters] = useState<FilterValues>({});
-
-  // State สำหรับ house address mapping
   const [houseAddressMap, setHouseAddressMap] = useState<Map<string, string>>(
     new Map()
   );
-  const [isLoadingHouseMapping, setIsLoadingHouseMapping] = useState(false);
-
-  // State สำหรับ area name mapping
   const [areaNameMap, setAreaNameMap] = useState<Map<string, string>>(
     new Map()
   );
-  const [isLoadingAreaMapping, setIsLoadingAreaMapping] = useState(false);
+  const [isLoadingMapping, setIsLoadingMapping] = useState(false);
 
   // Pagination Options
   const pageSizeOptions = [10, 20, 40, 80, 100];
@@ -78,22 +72,17 @@ const VMSInvitation = () => {
     total: total,
   };
 
-  // ฟังก์ชันโหลด area name mapping โดยตรงจาก VMS API
+  // Load area name mapping
   const loadAreaNameMapping = async () => {
-    if (isLoadingAreaMapping) return;
+    if (isLoadingMapping) return;
 
-    setIsLoadingAreaMapping(true);
+    setIsLoadingMapping(true);
     try {
-      console.log("🗺️ Loading area name mapping directly from VMS API...");
-
       let allAreas: any[] = [];
       let currentPage = 1;
       let hasMoreData = true;
 
-      // ดึงข้อมูลทุกหน้าจนหมด
       while (hasMoreData) {
-        console.log(`📄 Fetching areas page ${currentPage}...`);
-
         const response = await axiosVMS.get("/api/collections/area/records", {
           params: {
             page: currentPage,
@@ -103,11 +92,6 @@ const VMSInvitation = () => {
 
         if (response.data?.items && response.data.items.length > 0) {
           allAreas = [...allAreas, ...response.data.items];
-          console.log(
-            `✅ Page ${currentPage}: ${response.data.items.length} areas`
-          );
-
-          // ตรวจสอบว่ามีหน้าถัดไปหรือไม่
           const totalPages = response.data.totalPages || 1;
           hasMoreData = currentPage < totalPages;
           currentPage++;
@@ -116,46 +100,30 @@ const VMSInvitation = () => {
         }
       }
 
-      console.log(`📊 Total areas loaded: ${allAreas.length}`);
-
-      // สร้าง mapping
       const mapping = new Map<string, string>();
-
       allAreas.forEach((area: any) => {
         mapping.set(area.id, area.name);
-        console.log(`🗺️ Mapped: ${area.id} → ${area.name}`);
       });
 
       setAreaNameMap(mapping);
-      console.log(`✅ Area name mapping created: ${mapping.size} entries`);
-
-      // แสดงตัวอย่าง mapping
-      console.log(
-        "🗺️ Sample area mappings:",
-        Array.from(mapping.entries()).slice(0, 5)
-      );
     } catch (error) {
-      console.error("❌ Error loading area name mapping:", error);
+      console.error("Error loading area name mapping:", error);
       message.error("Failed to load area name mapping");
     } finally {
-      setIsLoadingAreaMapping(false);
+      setIsLoadingMapping(false);
     }
   };
+
   const loadHouseAddressMapping = async () => {
-    if (isLoadingHouseMapping) return;
+    if (isLoadingMapping) return;
 
-    setIsLoadingHouseMapping(true);
+    setIsLoadingMapping(true);
     try {
-      console.log("🏠 Loading house address mapping directly from VMS API...");
-
       let allHouses: any[] = [];
       let currentPage = 1;
       let hasMoreData = true;
 
-      // ดึงข้อมูลทุกหน้าจนหมด
       while (hasMoreData) {
-        console.log(`📄 Fetching houses page ${currentPage}...`);
-
         const response = await axiosVMS.get("/api/collections/house/records", {
           params: {
             page: currentPage,
@@ -165,11 +133,6 @@ const VMSInvitation = () => {
 
         if (response.data?.items && response.data.items.length > 0) {
           allHouses = [...allHouses, ...response.data.items];
-          console.log(
-            `✅ Page ${currentPage}: ${response.data.items.length} houses`
-          );
-
-          // ตรวจสอบว่ามีหน้าถัดไปหรือไม่
           const totalPages = response.data.totalPages || 1;
           hasMoreData = currentPage < totalPages;
           currentPage++;
@@ -178,92 +141,49 @@ const VMSInvitation = () => {
         }
       }
 
-      console.log(`📊 Total houses loaded: ${allHouses.length}`);
-
-      // สร้าง mapping
       const mapping = new Map<string, string>();
-
       allHouses.forEach((house: any) => {
         mapping.set(house.id, house.address);
-        console.log(`🏠 Mapped: ${house.id} → ${house.address}`);
       });
 
       setHouseAddressMap(mapping);
-      console.log(`✅ House address mapping created: ${mapping.size} entries`);
-
-      // แสดงตัวอย่าง mapping
-      console.log(
-        "🏠 Sample mappings:",
-        Array.from(mapping.entries()).slice(0, 5)
-      );
     } catch (error) {
-      console.error("❌ Error loading house address mapping:", error);
+      console.error("Error loading house address mapping:", error);
       message.error("Failed to load house address mapping");
     } finally {
-      setIsLoadingHouseMapping(false);
+      setIsLoadingMapping(false);
     }
   };
 
-  // โหลด house mapping และ area mapping เมื่อ component mount
+  // Load mappings when component mounts
   useEffect(() => {
     loadHouseAddressMapping();
     loadAreaNameMapping();
   }, []);
 
-  // ฟังก์ชันสำหรับ get area name
+  // Get area name
   const getAreaName = (areaId: string): string => {
     if (!areaId) return "-";
-
-    console.log(`🔍 Looking up area ID: ${areaId}`);
-    console.log(`📋 Available area mappings: ${areaNameMap.size}`);
-
-    // หาจาก mapping
     const areaName = areaNameMap.get(areaId);
-
-    if (areaName) {
-      console.log(`✅ Found area name: ${areaName}`);
-      return areaName;
-    } else {
-      console.log(`❌ No area name found for ID: ${areaId}`);
-      console.log(
-        `🗂️ Available area IDs:`,
-        Array.from(areaNameMap.keys()).slice(0, 5)
-      );
-
-      // ถ้าไม่เจอ area name ให้แสดง ID แบบย่อ
-      return areaId.length > 10 ? `${areaId.substring(0, 8)}...` : areaId;
-    }
+    return (
+      areaName || (areaId.length > 10 ? `${areaId.substring(0, 8)}...` : areaId)
+    );
   };
+
+  // Get house address
   const getHouseAddress = (houseId: string): string => {
     if (!houseId) return "-";
-
-    console.log(`🔍 Looking up house ID: ${houseId}`);
-    console.log(`📋 Available mappings: ${houseAddressMap.size}`);
-
-    // หาจาก mapping
     const address = houseAddressMap.get(houseId);
-
-    if (address) {
-      console.log(`✅ Found address: ${address}`);
-      return address;
-    } else {
-      console.log(`❌ No address found for ID: ${houseId}`);
-      console.log(
-        `🗂️ Available IDs:`,
-        Array.from(houseAddressMap.keys()).slice(0, 5)
-      );
-
-      // ถ้าไม่เจอ address ให้แสดง ID แบบย่อ
-      return houseId.length > 10 ? `${houseId.substring(0, 8)}...` : houseId;
-    }
+    return (
+      address ||
+      (houseId.length > 10 ? `${houseId.substring(0, 8)}...` : houseId)
+    );
   };
 
-  // แปลง vehicle IDs เป็น license plates
+  // Process vehicle mappings
   useEffect(() => {
     const processVehicleMappings = async () => {
       if (!tableData || tableData.length === 0) return;
-
-      console.log("🚗 Processing vehicle mappings...");
 
       try {
         await vehicleMappingService.refreshVehicleCache();
@@ -289,14 +209,14 @@ const VMSInvitation = () => {
 
         setVehicleLicensePlates(mappings);
       } catch (error) {
-        console.error("❌ Error processing vehicle mappings:", error);
+        console.error("Error processing vehicle mappings:", error);
       }
     };
 
     processVehicleMappings();
   }, [tableData]);
 
-  // Helper function to get license plates for display
+  // Get license plates for display
   const getDisplayLicensePlates = (
     invitationId: string,
     vehicleIds: string[]
@@ -357,7 +277,6 @@ const VMSInvitation = () => {
   };
 
   const onEStamp = (record: InvitationRecord) => {
-    // ตรวจสอบว่าประทับตราแล้วหรือยัง
     if (record.stamped_time) {
       message.warning("บัตรเชิญนี้ได้รับการประทับตราแล้ว");
       return;
@@ -380,17 +299,14 @@ const VMSInvitation = () => {
   };
 
   const onDownloadQR = (record: InvitationRecord) => {
-    // ตรวจสอบว่ามี code หรือไม่
     if (!record.code || !record.code.trim()) {
       message.error("ไม่พบรหัสบัตรเชิญสำหรับการสร้าง QR Code");
       return;
     }
 
-    // แปลง authorized_area IDs เป็นชื่อ
     const authorizedAreaNames =
       record.authorized_area?.map((areaId) => getAreaName(areaId)) || [];
 
-    // เพิ่มข้อมูลที่จำเป็นลงใน record
     const enhancedRecord = {
       ...record,
       house_address: getHouseAddress(record.house_id),
@@ -672,7 +588,7 @@ const VMSInvitation = () => {
     },
   ];
 
-  // Functions
+  // Table change handler
   const onChangeTable: TableProps<InvitationRecord>["onChange"] = async (
     pagination: any,
     _filters: any,
@@ -688,7 +604,7 @@ const VMSInvitation = () => {
     });
   };
 
-  // Effects
+  // Load data effect
   useEffect(() => {
     (async function () {
       await dispatch.invitation.getInvitationList({
@@ -705,16 +621,12 @@ const VMSInvitation = () => {
         <Header title="VMS Invitations" />
       </div>
 
-      {/* Stats Cards */}
       <VMSInvitationStatsCards data={tableData} loading={loading} />
 
-      {/* Filters */}
       <VMSInvitationFilters onFilter={handleFilter} loading={loading} />
 
       <div className="userManagementTopActionGroup">
-        <div className="userManagementTopActionLeftGroup">
-          {/* เอาปุ่ม refresh ออก */}
-        </div>
+        <div className="userManagementTopActionLeftGroup"></div>
         <div className="userManagementTopActionRightGroup">
           <Button
             type="primary"
@@ -730,7 +642,7 @@ const VMSInvitation = () => {
         columns={columns}
         data={tableData}
         PaginationConfig={PaginationConfig}
-        loading={loading || isLoadingHouseMapping || isLoadingAreaMapping}
+        loading={loading || isLoadingMapping}
         onChangeTable={onChangeTable}
       />
 

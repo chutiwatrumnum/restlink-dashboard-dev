@@ -1,4 +1,4 @@
-// ไฟล์: src/utils/services/vmsMappingService.ts (Updated with Vehicle support)
+// ไฟล์: src/utils/services/vmsMappingService.ts - Clean Version
 
 import { houseMappingService } from "./houseMappingService";
 import { areaMappingService } from "./areaMappingService";
@@ -7,42 +7,27 @@ import { vehicleMappingService } from "./vehicleMappingService";
 class VMSMappingService {
 
     async initializeAllMappings(): Promise<void> {
-        console.log('🚀 Initializing all VMS mappings...');
-
         try {
-            // โหลด mappings ทั้งหมดพร้อมกัน
             await Promise.all([
                 houseMappingService.refreshHouseCache(),
                 areaMappingService.refreshAreaCache(),
                 vehicleMappingService.refreshVehicleCache()
             ]);
-
-            console.log('✅ All VMS mappings initialized successfully');
-            console.log(`📊 Mapping summary:`, {
-                houses: houseMappingService.getCacheSize(),
-                areas: areaMappingService.getCacheSize(),
-                vehicles: vehicleMappingService.getCacheSize()
-            });
-
         } catch (error) {
-            console.error('❌ Failed to initialize VMS mappings:', error);
+            console.error("Error initializing VMS mappings:", error);
             throw error;
         }
     }
 
     async refreshAllMappings(): Promise<void> {
-        console.log('🔄 Refreshing all VMS mappings...');
-
         try {
             await Promise.all([
                 houseMappingService.refreshHouseCache(),
                 areaMappingService.refreshAreaCache(),
                 vehicleMappingService.refreshVehicleCache()
             ]);
-
-            console.log('✅ All VMS mappings refreshed successfully');
         } catch (error) {
-            console.error('❌ Failed to refresh VMS mappings:', error);
+            console.error("Error refreshing VMS mappings:", error);
             throw error;
         }
     }
@@ -51,7 +36,6 @@ class VMSMappingService {
         houseMappingService.clearCache();
         areaMappingService.clearCache();
         vehicleMappingService.clearCache();
-        console.log('🧹 All VMS mapping caches cleared');
     }
 
     getMappingStatus(): {
@@ -75,7 +59,7 @@ class VMSMappingService {
         };
     }
 
-    // === HOUSE UTILITY METHODS ===
+    // House methods
     async getHouseAddress(houseId: string): Promise<string> {
         return houseMappingService.getHouseAddress(houseId);
     }
@@ -84,7 +68,7 @@ class VMSMappingService {
         return houseMappingService.getMultipleHouseAddresses(houseIds);
     }
 
-    // === AREA UTILITY METHODS ===
+    // Area methods
     async getAreaName(areaId: string): Promise<string> {
         return areaMappingService.getAreaName(areaId);
     }
@@ -93,12 +77,11 @@ class VMSMappingService {
         return areaMappingService.getMultipleAreaNames(areaIds);
     }
 
-    // สำหรับ map array ของ area IDs เป็น names
     async mapAreaNamesFromArray(areaIds: string[]): Promise<string[]> {
         return areaMappingService.mapAreaNamesFromArray(areaIds);
     }
 
-    // === VEHICLE UTILITY METHODS ===
+    // Vehicle methods
     async getVehicleLicensePlate(vehicleId: string): Promise<string> {
         return vehicleMappingService.getVehicleLicensePlate(vehicleId);
     }
@@ -107,7 +90,6 @@ class VMSMappingService {
         return vehicleMappingService.getMultipleVehicleLicensePlates(vehicleIds);
     }
 
-    // สำหรับ map array ของ vehicle IDs เป็น license plates
     async mapLicensePlatesFromArray(vehicleIds: string[]): Promise<string[]> {
         return vehicleMappingService.mapLicensePlatesFromArray(vehicleIds);
     }
@@ -136,10 +118,7 @@ class VMSMappingService {
         return vehicleMappingService.getVehicleStats();
     }
 
-    // === COMBINED MAPPING METHODS ===
-    /**
-     * Get comprehensive mapping information for a house
-     */
+    // Combined methods
     async getHouseCompleteInfo(houseId: string): Promise<{
         houseAddress: string;
         vehicles: any[];
@@ -157,7 +136,7 @@ class VMSMappingService {
                 vehicleCount: vehicles.length
             };
         } catch (error) {
-            console.error('❌ Failed to get house complete info:', error);
+            console.error("Error getting house complete info:", error);
             return {
                 houseAddress: houseId,
                 vehicles: [],
@@ -166,17 +145,12 @@ class VMSMappingService {
         }
     }
 
-    /**
-     * Get mapping information for areas with their vehicle counts
-     */
     async getAreaWithVehicleCount(areaId: string): Promise<{
         areaName: string;
         vehicleCount: number;
     }> {
         try {
             const areaName = await this.getAreaName(areaId);
-
-            // Count vehicles in this area
             const allVehicles = vehicleMappingService.getAllVehicleDetails();
             let vehicleCount = 0;
 
@@ -191,7 +165,7 @@ class VMSMappingService {
                 vehicleCount
             };
         } catch (error) {
-            console.error('❌ Failed to get area with vehicle count:', error);
+            console.error("Error getting area with vehicle count:", error);
             return {
                 areaName: areaId,
                 vehicleCount: 0
@@ -199,9 +173,6 @@ class VMSMappingService {
         }
     }
 
-    /**
-     * Get comprehensive statistics for all mappings
-     */
     getComprehensiveStats(): {
         houses: number;
         areas: number;
@@ -217,5 +188,4 @@ class VMSMappingService {
     }
 }
 
-// Export singleton instance
 export const vmsMappingService = new VMSMappingService();

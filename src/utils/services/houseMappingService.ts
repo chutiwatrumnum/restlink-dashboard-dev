@@ -1,11 +1,11 @@
-// แก้ไข src/utils/services/houseMappingService.ts เพื่อปรับปรุงประสิทธิภาพ
+// ไฟล์: src/utils/services/houseMappingService.ts - Clean Version
 
 import axiosVMS from "../../configs/axiosVMS";
 import { HouseRecord } from "../../stores/interfaces/House";
 
 class HouseMappingService {
-    private houseCache: Map<string, HouseRecord> = new Map(); // เก็บข้อมูลเต็ม
-    private addressCache: Map<string, string> = new Map(); // เก็บเฉพาะ address
+    private houseCache: Map<string, HouseRecord> = new Map();
+    private addressCache: Map<string, string> = new Map();
     private isLoading: boolean = false;
     private lastFetchTime: number = 0;
     private readonly CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
@@ -13,17 +13,14 @@ class HouseMappingService {
     async getHouseAddress(houseId: string): Promise<string> {
         if (!houseId) return "-";
 
-        // ตรวจสอบ address cache ก่อน
         if (this.addressCache.has(houseId)) {
             return this.addressCache.get(houseId) || houseId;
         }
 
-        // ถ้ากำลังโหลดอยู่ ให้ return houseId ไปก่อน
         if (this.isLoading) {
             return houseId;
         }
 
-        // ตรวจสอบว่าข้อมูลใน cache หมดอายุหรือไม่
         const now = Date.now();
         if (now - this.lastFetchTime > this.CACHE_DURATION || this.addressCache.size === 0) {
             await this.refreshHouseCache();
@@ -35,17 +32,14 @@ class HouseMappingService {
     async getHouseDetails(houseId: string): Promise<HouseRecord | null> {
         if (!houseId) return null;
 
-        // ตรวจสอบ house cache ก่อน
         if (this.houseCache.has(houseId)) {
             return this.houseCache.get(houseId) || null;
         }
 
-        // ถ้ากำลังโหลดอยู่ ให้ return null ไปก่อน
         if (this.isLoading) {
             return null;
         }
 
-        // ตรวจสอบว่าข้อมูลใน cache หมดอายุหรือไม่
         const now = Date.now();
         if (now - this.lastFetchTime > this.CACHE_DURATION || this.houseCache.size === 0) {
             await this.refreshHouseCache();
@@ -59,13 +53,10 @@ class HouseMappingService {
 
         this.isLoading = true;
         try {
-            console.log('🏠 Refreshing house mapping cache...');
-
             let allHouses: HouseRecord[] = [];
             let currentPage = 1;
             let hasMoreData = true;
 
-            // ดึงข้อมูลทุกหน้าจนหมด
             while (hasMoreData) {
                 const response = await axiosVMS.get('/api/collections/house/records', {
                     params: {
@@ -76,8 +67,6 @@ class HouseMappingService {
 
                 if (response.data?.items && response.data.items.length > 0) {
                     allHouses = [...allHouses, ...response.data.items];
-
-                    // ตรวจสอบว่ามีหน้าถัดไปหรือไม่
                     const totalPages = response.data.totalPages || 1;
                     hasMoreData = currentPage < totalPages;
                     currentPage++;
@@ -86,22 +75,17 @@ class HouseMappingService {
                 }
             }
 
-            // เคลียร์ cache เก่าและสร้างใหม่
             this.houseCache.clear();
             this.addressCache.clear();
 
-            // สร้าง mapping ใหม่
             allHouses.forEach((house: HouseRecord) => {
                 this.houseCache.set(house.id, house);
                 this.addressCache.set(house.id, house.address);
             });
 
             this.lastFetchTime = Date.now();
-            console.log(`✅ House mapping cache refreshed with ${allHouses.length} houses`);
-            console.log('🏠 Sample mappings:', Array.from(this.addressCache.entries()).slice(0, 3));
-
         } catch (error) {
-            console.error('❌ Failed to refresh house mapping cache:', error);
+            console.error("Error refreshing house mapping cache:", error);
         } finally {
             this.isLoading = false;
         }
@@ -110,13 +94,11 @@ class HouseMappingService {
     async getMultipleHouseAddresses(houseIds: string[]): Promise<Map<string, string>> {
         const result = new Map<string, string>();
 
-        // ตรวจสอบว่าต้องโหลดข้อมูลใหม่หรือไม่
         const now = Date.now();
         if (now - this.lastFetchTime > this.CACHE_DURATION || this.addressCache.size === 0) {
             await this.refreshHouseCache();
         }
 
-        // สร้าง mapping สำหรับ houseIds ที่ต้องการ
         houseIds.forEach(houseId => {
             if (houseId) {
                 result.set(houseId, this.addressCache.get(houseId) || houseId);
@@ -127,7 +109,6 @@ class HouseMappingService {
     }
 
     async searchHousesByAddress(searchTerm: string): Promise<HouseRecord[]> {
-        // ตรวจสอบว่าต้องโหลดข้อมูลใหม่หรือไม่
         const now = Date.now();
         if (now - this.lastFetchTime > this.CACHE_DURATION || this.houseCache.size === 0) {
             await this.refreshHouseCache();
@@ -160,17 +141,14 @@ class HouseMappingService {
         return (now - this.lastFetchTime) <= this.CACHE_DURATION && this.addressCache.size > 0;
     }
 
-    // Get all address mappings (สำหรับ debug หรือ display ใน UI)
     getAllAddressMappings(): Map<string, string> {
         return new Map(this.addressCache);
     }
 
-    // Get all house details (สำหรับ debug หรือ display ใน UI)
     getAllHouseDetails(): Map<string, HouseRecord> {
         return new Map(this.houseCache);
     }
 
-    // Get statistics
     getHouseStats(): {
         total: number;
         byArea: Record<string, number>;
@@ -193,12 +171,10 @@ class HouseMappingService {
         return stats;
     }
 
-    // Force refresh (สำหรับใช้ใน UI)
     async forceRefresh(): Promise<void> {
-        this.lastFetchTime = 0; // Reset เพื่อบังคับให้ refresh
+        this.lastFetchTime = 0;
         await this.refreshHouseCache();
     }
 }
 
-// Export singleton instance
 export const houseMappingService = new HouseMappingService();
