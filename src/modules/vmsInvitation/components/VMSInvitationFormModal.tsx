@@ -1,4 +1,4 @@
-// ไฟล์: src/modules/vmsInvitation/components/VMSInvitationFormModal.tsx - Clean Version
+// ไฟล์: src/modules/vmsInvitation/components/VMSInvitationFormModal.tsx - Fixed Version
 
 import { useState, useEffect, useCallback } from "react";
 import {
@@ -65,6 +65,7 @@ const VMSInvitationFormModal = ({
   const [formType, setFormType] = useState<string>("invitation");
   const [selectedHouseDetails, setSelectedHouseDetails] = useState<any>(null);
   const [vehicles, setVehicles] = useState<VehicleInput[]>([]);
+  const [authorizedAreas, setAuthorizedAreas] = useState<string[]>([]); // เพิ่ม state สำหรับจัดการ authorized areas
 
   // Get data from state
   const { tableData: houseData, loading: houseLoading } = useSelector(
@@ -123,7 +124,7 @@ const VMSInvitationFormModal = ({
   useEffect(() => {
     if (houseData && houseData.length > 0) {
       const houses = houseData.map((house) => ({
-        label: `${house.address} (${house.id.substring(0, 8)}...)`,
+        label: house.address, // แสดงแค่ชื่อที่อยู่
         value: house.id,
       }));
       setHouseOptions(houses);
@@ -141,8 +142,11 @@ const VMSInvitationFormModal = ({
     }
   }, [areaData]);
 
-  // Load house details and set default authorized area
-  const loadHouseDetails = async (houseId: string) => {
+  // Load house details and set default authorized area (เฉพาะ create mode)
+  const loadHouseDetails = async (
+    houseId: string,
+    isCreateMode: boolean = true
+  ) => {
     if (!houseId) {
       setSelectedHouseDetails(null);
       return;
@@ -153,39 +157,65 @@ const VMSInvitationFormModal = ({
     if (houseDetail) {
       setSelectedHouseDetails(houseDetail);
 
-      if (houseDetail.area && houseDetail.area.trim()) {
+      // เพิ่ม area ของ house เฉพาะใน create mode เท่านั้น
+      if (isCreateMode && houseDetail.area && houseDetail.area.trim()) {
         const houseAreaId = houseDetail.area.trim();
         const existingArea = areaOptions.find(
           (option) => option.value === houseAreaId
         );
 
         if (existingArea) {
-          const areas = [houseAreaId];
-          form.setFieldValue("authorized_area", areas);
+          // ใน create mode: รีเซ็ตและตั้งค่าแค่ area ของ house ใหม่
+          const newAreas = [houseAreaId];
+          setAuthorizedAreas(newAreas);
+          form.setFieldValue("authorized_area", newAreas);
         } else {
+          // ถ้า area ของ house ไม่มีใน options ให้ clear areas
+          setAuthorizedAreas([]);
           form.setFieldValue("authorized_area", []);
         }
-      } else {
+      } else if (isCreateMode) {
+        // ถ้าเป็น create mode แต่ house ไม่มี area ให้ clear areas
+        setAuthorizedAreas([]);
         form.setFieldValue("authorized_area", []);
+      } else {
+        // ถ้าเป็น edit mode ให้เก็บ authorized areas ปัจจุบันไว้
+        form.setFieldValue("authorized_area", authorizedAreas);
       }
     } else {
       setSelectedHouseDetails(null);
-      form.setFieldValue("authorized_area", []);
+      if (isCreateMode) {
+        // ใน create mode ถ้าไม่เจอ house ให้ clear areas
+        setAuthorizedAreas([]);
+        form.setFieldValue("authorized_area", []);
+      } else {
+        // ใน edit mode ให้เก็บ authorized areas ปัจจุบันไว้
+        form.setFieldValue("authorized_area", authorizedAreas);
+      }
     }
   };
 
   // Handle house change
   const handleHouseChange = (houseId: string) => {
-    form.setFieldValue("authorized_area", []);
+    // ไม่ clear authorized areas เมื่อเปลี่ยน house
     setSelectedHouseDetails(null);
+
+    // ส่ง isCreateMode = true เฉพาะเมื่อไม่ใช่ edit mode
+    const isCreateMode = !editData;
 
     if (areaOptions.length === 0 && !areaLoading) {
       setTimeout(() => {
-        loadHouseDetails(houseId);
+        loadHouseDetails(houseId, isCreateMode);
       }, 100);
     } else {
-      loadHouseDetails(houseId);
+      loadHouseDetails(houseId, isCreateMode);
     }
+  };
+
+  // Handle authorized areas change
+  const handleAuthorizedAreasChange = (selectedAreas: string[]) => {
+    setAuthorizedAreas(selectedAreas);
+    form.setFieldValue("authorized_area", selectedAreas);
   };
 
   // Handle type change
@@ -207,26 +237,39 @@ const VMSInvitationFormModal = ({
       areaId: houseAreaId,
       areaName: areaOption?.label || `Area ID: ${houseAreaId}`,
       exists: !!areaOption,
+      isSelected: authorizedAreas.includes(houseAreaId),
     };
   };
 
   // Pre-fill form for editing
   useEffect(() => {
     if (isOpen && editData) {
+      const editAuthorizedAreas = editData.authorized_area || [];
+
+      // ตั้งค่า authorized areas state ก่อน
+      setAuthorizedAreas(editAuthorizedAreas);
+
       form.setFieldsValue({
         guest_name: editData.guest_name,
         house_id: editData.house_id,
         type: editData.type || "invitation",
         start_time: editData.start_time ? dayjs(editData.start_time) : null,
         expire_time: editData.expire_time ? dayjs(editData.expire_time) : null,
-        authorized_area: editData.authorized_area || [],
+        authorized_area: editAuthorizedAreas,
         note: editData.note || "",
       });
 
       setFormType(editData.type || "invitation");
 
+      // Load house details หลังจากมี areaOptions แล้ว
       if (editData.house_id && areaOptions.length > 0) {
-        loadHouseDetails(editData.house_id);
+        const houseDetail = houseData.find(
+          (house) => house.id === editData.house_id
+        );
+        if (houseDetail) {
+          setSelectedHouseDetails(houseDetail);
+          // ไม่เพิ่ม area ของ house เข้าไปใน edit mode เพราะข้อมูลมีอยู่แล้ว
+        }
       }
 
       if (editData.vehicle_id && editData.vehicle_id.length > 0) {
@@ -246,14 +289,16 @@ const VMSInvitationFormModal = ({
       setVehicles([]);
       setFormType("invitation");
       setSelectedHouseDetails(null);
+      setAuthorizedAreas([]); // reset authorized areas
     }
-  }, [isOpen, editData, form, areaOptions]);
+  }, [isOpen, editData, form, areaOptions, houseData]);
 
   const handleCancel = useCallback(() => {
     form.resetFields();
     setVehicles([]);
     setFormType("invitation");
     setSelectedHouseDetails(null);
+    setAuthorizedAreas([]); // reset authorized areas
     onClose();
   }, [form, onClose]);
 
@@ -313,7 +358,7 @@ const VMSInvitationFormModal = ({
           expire_time: values.expire_time
             ? dayjs(values.expire_time).toISOString()
             : dayjs().add(30, "days").toISOString(),
-          authorized_area: values.authorized_area || [],
+          authorized_area: authorizedAreas, // ใช้ state แทน values
           note: values.note || "",
         };
 
@@ -343,6 +388,7 @@ const VMSInvitationFormModal = ({
       editData,
       vehicles,
       formType,
+      authorizedAreas, // เพิ่ม dependency
       createMutation,
       updateMutation,
       refetch,
@@ -456,22 +502,18 @@ const VMSInvitationFormModal = ({
               <Select
                 mode="multiple"
                 size="large"
-                value={form.getFieldValue("authorized_area") || []}
+                value={authorizedAreas} // ใช้ state แทน form value
                 placeholder={
                   loadingData || areaLoading
                     ? "Loading areas..."
                     : areaOptions.length === 0
                     ? "No areas available"
-                    : selectedHouseDetails && selectedHouseDetails.area
-                    ? "House default area is pre-selected. You can add more or remove it."
                     : "Select authorized areas"
                 }
                 options={areaOptions}
                 loading={loadingData || areaLoading}
                 showSearch
-                onChange={(value) => {
-                  form.setFieldValue("authorized_area", value);
-                }}
+                onChange={handleAuthorizedAreasChange} // ใช้ handler ใหม่
                 filterOption={(input, option) =>
                   (option?.label ?? "")
                     .toLowerCase()
@@ -515,9 +557,26 @@ const VMSInvitationFormModal = ({
                           <>
                             💡 <strong>House Default Area:</strong> "
                             {houseAreaInfo.areaName}" from house "
-                            {selectedHouseDetails.address}" has been
-                            pre-selected. You can add more areas or remove this
-                            area as needed.
+                            {selectedHouseDetails.address}"
+                            {houseAreaInfo.isSelected ? (
+                              <span
+                                style={{ color: "#52c41a", fontWeight: "600" }}>
+                                {" "}
+                                ✓ is selected
+                              </span>
+                            ) : (
+                              <span
+                                style={{ color: "#fa8c16", fontWeight: "600" }}>
+                                {" "}
+                                ⚠ is not selected
+                              </span>
+                            )}
+                            .{" "}
+                            {!editData
+                              ? "Area will be auto-selected when changing house. "
+                              : ""}
+                            You can add more areas or remove this area as
+                            needed.
                           </>
                         ) : (
                           <>
