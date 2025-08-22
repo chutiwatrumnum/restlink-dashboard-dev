@@ -1,4 +1,4 @@
-// แก้ไข VMSInvitation.tsx - เวอร์ชั่นที่ทำงานได้แน่นอน
+// ไฟล์: src/modules/vmsInvitation/screens/VMSInvitation.tsx - Updated with E-Stamp
 
 import { useState, useEffect } from "react";
 import { Button, Tag, Tooltip, message } from "antd";
@@ -6,17 +6,32 @@ import Header from "../../../components/templates/Header";
 import InvitationTable from "../components/InvitationTable";
 import VMSInvitationFormModal from "../components/VMSInvitationFormModal";
 import VMSInvitationStatsCards from "../components/VMSInvitationStatsCards";
+import VMSInvitationFilters from "../components/VMSInvitationFilters";
 import dayjs from "dayjs";
 import { useDispatch, useSelector } from "react-redux";
 import { Dispatch, RootState } from "../../../stores";
 import type { ColumnsType, TableProps } from "antd/es/table";
 import { InvitationRecord } from "../../../stores/interfaces/Invitation";
-import { EditOutlined, DeleteOutlined, PlusOutlined } from "@ant-design/icons";
+import {
+  EditOutlined,
+  DeleteOutlined,
+  PlusOutlined,
+  StarOutlined,
+} from "@ant-design/icons";
 import { useDeleteVMSInvitationMutation } from "../../../utils/mutationsGroup/vmsInvitationMutations";
+import { useEStampVMSInvitationMutation } from "../../../utils/mutationsGroup/vmsInvitationEStampMutations";
 import { callConfirmModal } from "../../../components/common/Modal";
 import { vehicleMappingService } from "../../../utils/services/vehicleMappingService";
 import axiosVMS from "../../../configs/axiosVMS";
 import "../styles/vmsInvitation.css";
+
+interface FilterValues {
+  active?: boolean;
+  type?: string;
+  searchText?: string; // เปลี่ยนจาก guest_name เป็น searchText
+  stamped?: boolean;
+  dateRange?: [dayjs.Dayjs, dayjs.Dayjs] | null;
+}
 
 const VMSInvitation = () => {
   // Variables
@@ -27,6 +42,7 @@ const VMSInvitation = () => {
 
   // Mutations
   const deleteMutation = useDeleteVMSInvitationMutation();
+  const eStampMutation = useEStampVMSInvitationMutation();
 
   // States
   const [rerender, setRerender] = useState<boolean>(false);
@@ -35,6 +51,7 @@ const VMSInvitation = () => {
   const [vehicleLicensePlates, setVehicleLicensePlates] = useState<
     Map<string, string[]>
   >(new Map());
+  const [filters, setFilters] = useState<FilterValues>({});
 
   // State สำหรับ house address mapping
   const [houseAddressMap, setHouseAddressMap] = useState<Map<string, string>>(
@@ -244,6 +261,34 @@ const VMSInvitation = () => {
     });
   };
 
+  const onEStamp = (record: InvitationRecord) => {
+    // ตรวจสอบว่าประทับตราแล้วหรือยัง
+    if (record.stamped_time) {
+      message.warning("บัตรเชิญนี้ได้รับการประทับตราแล้ว");
+      return;
+    }
+
+    callConfirmModal({
+      title: "E-Stamp Invitation",
+      message: `คุณต้องการประทับตราบัตรเชิญสำหรับ "${record.guest_name}" หรือไม่?`,
+      okMessage: "ประทับตรา",
+      cancelMessage: "ยกเลิก",
+      onOk: async () => {
+        try {
+          await eStampMutation.mutateAsync(record.id);
+          refetchData();
+        } catch (error) {
+          // Error handled by mutation
+        }
+      },
+    });
+  };
+
+  const handleFilter = (newFilters: FilterValues) => {
+    setFilters(newFilters);
+    refetchData();
+  };
+
   const refetchData = () => {
     setRerender(!rerender);
   };
@@ -253,13 +298,18 @@ const VMSInvitation = () => {
     setEditData(null);
   };
 
+  // Check if invitation is stamped
+  const isStamped = (record: InvitationRecord): boolean => {
+    return !!(record.stamped_time && record.stamped_time.trim());
+  };
+
   // Table Columns
   const columns: ColumnsType<InvitationRecord> = [
     {
       title: "Guest Name",
       key: "guest_name",
       dataIndex: "guest_name",
-      width: "15%",
+      width: "12%",
       align: "center",
       sorter: {
         compare: (a, b) =>
@@ -272,7 +322,7 @@ const VMSInvitation = () => {
       key: "house_id",
       dataIndex: "house_id",
       align: "center",
-      width: "15%",
+      width: "12%",
       render: (house_id) => {
         const address = getHouseAddress(house_id);
         const isOriginalId = address === house_id || address.includes("...");
@@ -307,7 +357,7 @@ const VMSInvitation = () => {
       key: "vehicle_id",
       dataIndex: "vehicle_id",
       align: "center",
-      width: "18%",
+      width: "15%",
       render: (vehicle_ids, record) => {
         const displayText = getDisplayLicensePlates(record.id, vehicle_ids);
         const mappedPlates = vehicleLicensePlates.get(record.id);
@@ -365,7 +415,7 @@ const VMSInvitation = () => {
       key: "start_time",
       dataIndex: "start_time",
       align: "center",
-      width: "12%",
+      width: "10%",
       sorter: {
         compare: (a, b) =>
           dayjs(a.start_time).valueOf() - dayjs(b.start_time).valueOf(),
@@ -383,7 +433,7 @@ const VMSInvitation = () => {
       key: "expire_time",
       dataIndex: "expire_time",
       align: "center",
-      width: "12%",
+      width: "10%",
       sorter: {
         compare: (a, b) =>
           dayjs(a.expire_time).valueOf() - dayjs(b.expire_time).valueOf(),
@@ -398,29 +448,66 @@ const VMSInvitation = () => {
       },
     },
     {
-      title: "Created",
-      key: "created",
-      dataIndex: "created",
+      title: "Stamped Time",
+      key: "stamped_time",
+      dataIndex: "stamped_time",
       align: "center",
       width: "10%",
-      render: (created) => {
+      sorter: {
+        compare: (a, b) => {
+          if (!a.stamped_time && !b.stamped_time) return 0;
+          if (!a.stamped_time) return 1;
+          if (!b.stamped_time) return -1;
+          return (
+            dayjs(a.stamped_time).valueOf() - dayjs(b.stamped_time).valueOf()
+          );
+        },
+      },
+      render: (stamped_time) => {
+        if (!stamped_time) {
+          return <Tag color="orange">ยังไม่ประทับตรา</Tag>;
+        }
         return (
-          <div>{created ? dayjs(created).format("DD/MM/YYYY HH:mm") : "-"}</div>
+          <div>
+            <Tag color="green" style={{ marginBottom: "4px" }}>
+              ประทับตราแล้ว
+            </Tag>
+            <div style={{ fontSize: "11px", color: "#666" }}>
+              {dayjs(stamped_time).format("DD/MM/YYYY HH:mm")}
+            </div>
+          </div>
         );
       },
+    },
+    {
+      title: "Stamper",
+      key: "stamper",
+      dataIndex: "stamper",
+      align: "center",
+      width: "8%",
+      render: (stamper) => (
+        <div style={{ fontSize: "12px" }}>{stamper || "-"}</div>
+      ),
     },
     {
       title: "Action",
       key: "action",
       align: "center",
-      width: "10%",
+      width: "12%",
       render: (_, record) => (
-        <div style={{ display: "flex", gap: "8px", justifyContent: "center" }}>
+        <div
+          style={{
+            display: "flex",
+            gap: "4px",
+            justifyContent: "center",
+            flexWrap: "wrap",
+          }}>
           <Button
             type="text"
             icon={<EditOutlined style={{ color: "#1890ff" }} />}
             onClick={() => onEdit(record)}
             title="Edit invitation"
+            size="small"
           />
           <Button
             type="text"
@@ -430,6 +517,24 @@ const VMSInvitation = () => {
               deleteMutation.isPending && deleteMutation.variables === record.id
             }
             title="Delete invitation"
+            size="small"
+          />
+          <Button
+            type="text"
+            icon={
+              <StarOutlined
+                style={{
+                  color: isStamped(record) ? "#52c41a" : "#fa8c16",
+                }}
+              />
+            }
+            onClick={() => onEStamp(record)}
+            loading={
+              eStampMutation.isPending && eStampMutation.variables === record.id
+            }
+            title={isStamped(record) ? "Already stamped" : "E-stamp invitation"}
+            disabled={isStamped(record)}
+            size="small"
           />
         </div>
       ),
@@ -448,6 +553,7 @@ const VMSInvitation = () => {
     await dispatch.invitation.getInvitationList({
       page,
       perPage: pageSize,
+      filters,
     });
   };
 
@@ -457,9 +563,10 @@ const VMSInvitation = () => {
       await dispatch.invitation.getInvitationList({
         page: currentPage,
         perPage: perPage,
+        filters,
       });
     })();
-  }, [rerender, dispatch, currentPage, perPage]);
+  }, [rerender, dispatch, currentPage, perPage, filters]);
 
   return (
     <>
@@ -469,6 +576,9 @@ const VMSInvitation = () => {
 
       {/* Stats Cards */}
       <VMSInvitationStatsCards data={tableData} loading={loading} />
+
+      {/* Filters */}
+      <VMSInvitationFilters onFilter={handleFilter} loading={loading} />
 
       <div className="userManagementTopActionGroup">
         <div className="userManagementTopActionLeftGroup">

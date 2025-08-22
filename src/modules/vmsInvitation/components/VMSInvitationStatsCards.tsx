@@ -1,4 +1,4 @@
-// ไฟล์: src/modules/vmsInvitation/components/VMSInvitationStatsCards.tsx - Simple Clean Version
+// ไฟล์: src/modules/vmsInvitation/components/VMSInvitationStatsCards.tsx - Updated with Stamp Data
 
 import React from "react";
 import { Card, Row, Col } from "antd";
@@ -9,6 +9,8 @@ import {
   ExclamationCircleOutlined,
   StopOutlined,
   RiseOutlined,
+  StarOutlined,
+  FileProtectOutlined,
 } from "@ant-design/icons";
 import { InvitationRecord } from "../../../stores/interfaces/Invitation";
 import dayjs from "dayjs";
@@ -56,6 +58,14 @@ const VMSInvitationStatsCards: React.FC<VMSInvitationStatsCardsProps> = ({
       return startTime.isBefore(now) && expireTime.isAfter(now);
     }).length;
 
+    // สถิติการประทับตรา
+    const stamped = data.filter(
+      (item) => item.stamped_time && item.stamped_time.trim()
+    ).length;
+    const unstamped = data.filter(
+      (item) => !item.stamped_time || !item.stamped_time.trim()
+    ).length;
+
     return {
       total,
       active,
@@ -63,12 +73,14 @@ const VMSInvitationStatsCards: React.FC<VMSInvitationStatsCardsProps> = ({
       expired,
       inactive,
       inProgress,
+      stamped,
+      unstamped,
     };
   };
 
   const stats = calculateStats();
 
-  // การ์ดสถิติแบบเรียบง่าย
+  // การ์ดสถิติแบบเรียบง่าย - เพิ่มข้อมูลการ stamp
   const statsCards = [
     {
       title: "ทั้งหมด",
@@ -101,10 +113,22 @@ const VMSInvitationStatsCards: React.FC<VMSInvitationStatsCardsProps> = ({
       color: "#8c8c8c",
     },
     {
-      title: "ปิดใช้งาน",
+      title: "กำลังใช้งาน",
       value: stats.inProgress,
       icon: <RiseOutlined />,
       color: "#722ed1",
+    },
+    {
+      title: "ประทับตราแล้ว",
+      value: stats.stamped,
+      icon: <StarOutlined />,
+      color: "#13c2c2",
+    },
+    {
+      title: "ยังไม่ประทับตรา",
+      value: stats.unstamped,
+      icon: <FileProtectOutlined />,
+      color: "#fa541c",
     },
   ];
 
@@ -112,7 +136,7 @@ const VMSInvitationStatsCards: React.FC<VMSInvitationStatsCardsProps> = ({
     <div style={{ marginBottom: 24 }}>
       <Row gutter={[16, 16]}>
         {statsCards.map((card, index) => (
-          <Col xs={12} sm={8} md={6} lg={4} key={index}>
+          <Col xs={12} sm={8} md={6} lg={3} key={index}>
             <Card
               loading={loading}
               bordered={false}
@@ -164,6 +188,8 @@ const VMSInvitationStatsCards: React.FC<VMSInvitationStatsCardsProps> = ({
           </Col>
         ))}
       </Row>
+
+      {/* เอาส่วนสรุปสถิติการประทับตราออก */}
     </div>
   );
 };

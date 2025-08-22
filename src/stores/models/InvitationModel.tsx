@@ -1,4 +1,4 @@
-// ไฟล์: src/stores/models/invitation.ts - Complete Version
+// ไฟล์: src/stores/models/InvitationModel.tsx - Updated with Filtering Support
 
 import { createModel } from "@rematch/core";
 import { RootModel } from "./";
@@ -9,6 +9,7 @@ import {
   VMSInvitationResponse,
   InvitationPaginationParams,
 } from "../interfaces/Invitation";
+import { vmsInvitationSearchService } from "../../utils/services/vmsInvitationSearchService";
 
 const initialState: InvitationType = {
   tableData: [],
@@ -69,26 +70,128 @@ export const invitation = createModel<RootModel>()({
         dispatch.invitation.setLoading(true);
         console.log("📡 Fetching VMS invitations...", payload);
 
+        // ถ้ามี searchText ให้ใช้ search service
+        if (payload.filters?.searchText && payload.filters.searchText.trim()) {
+          console.log(
+            "🔍 Using search service for:",
+            payload.filters.searchText
+          );
+
+          const searchResults =
+            await vmsInvitationSearchService.searchInvitations(
+              payload.filters.searchText,
+              payload.page,
+              payload.perPage
+            );
+
+          // Apply other filters to search results
+          let filteredResults = searchResults.data;
+
+          if (payload.filters) {
+            // Apply active filter
+            if (payload.filters.active !== undefined) {
+              filteredResults = filteredResults.filter(
+                (item) => item.active === payload.filters.active
+              );
+            }
+
+            // Apply type filter
+            if (payload.filters.type) {
+              filteredResults = filteredResults.filter(
+                (item) => item.type === payload.filters.type
+              );
+            }
+
+            // Apply stamped filter
+            if (payload.filters.stamped !== undefined) {
+              if (payload.filters.stamped) {
+                filteredResults = filteredResults.filter(
+                  (item) => item.stamped_time && item.stamped_time.trim()
+                );
+              } else {
+                filteredResults = filteredResults.filter(
+                  (item) => !item.stamped_time || !item.stamped_time.trim()
+                );
+              }
+            }
+
+            // Apply date range filter
+            if (
+              payload.filters.dateRange &&
+              payload.filters.dateRange.length === 2
+            ) {
+              const [startDate, endDate] = payload.filters.dateRange;
+              const startISO = startDate.startOf("day").toISOString();
+              const endISO = endDate.endOf("day").toISOString();
+
+              filteredResults = filteredResults.filter((item) => {
+                if (!item.start_time) return false;
+                const itemDate = new Date(item.start_time).toISOString();
+                return itemDate >= startISO && itemDate <= endISO;
+              });
+            }
+          }
+
+          dispatch.invitation.setInvitationList({
+            data: filteredResults,
+            total: filteredResults.length,
+            page: payload.page,
+            perPage: payload.perPage,
+          });
+
+          console.log(`✅ Search completed: ${filteredResults.length} results`);
+          return;
+        }
+
+        // ถ้าไม่มี search ให้ใช้ API filter ปกติ
         const params: any = {
           page: payload.page,
           perPage: payload.perPage,
         };
 
-        // เพิ่ม filters ถ้ามี
+        // สร้าง filter string สำหรับ API
+        const filterConditions: string[] = [];
+
         if (payload.filters) {
+          // Active filter
           if (payload.filters.active !== undefined) {
-            params.filter = `active=${payload.filters.active}`;
+            filterConditions.push(`active=${payload.filters.active}`);
           }
+
+          // Type filter
           if (payload.filters.type) {
-            params.filter = params.filter
-              ? `${params.filter} && type="${payload.filters.type}"`
-              : `type="${payload.filters.type}"`;
+            filterConditions.push(`type="${payload.filters.type}"`);
           }
-          if (payload.filters.guest_name) {
-            params.filter = params.filter
-              ? `${params.filter} && guest_name~"${payload.filters.guest_name}"`
-              : `guest_name~"${payload.filters.guest_name}"`;
+
+          // Stamped filter (ตรวจสอบว่า stamped_time มีค่าหรือไม่)
+          if (payload.filters.stamped !== undefined) {
+            if (payload.filters.stamped) {
+              // ประทับตราแล้ว - stamped_time ไม่เป็น null หรือ empty
+              filterConditions.push(`stamped_time!=""&&stamped_time!=null`);
+            } else {
+              // ยังไม่ประทับตรา - stamped_time เป็น null หรือ empty
+              filterConditions.push(`(stamped_time=""||stamped_time=null)`);
+            }
           }
+
+          // Date range filter (ใช้กับ start_time)
+          if (
+            payload.filters.dateRange &&
+            payload.filters.dateRange.length === 2
+          ) {
+            const [startDate, endDate] = payload.filters.dateRange;
+            const startISO = startDate.startOf("day").toISOString();
+            const endISO = endDate.endOf("day").toISOString();
+            filterConditions.push(
+              `start_time>="${startISO}"&&start_time<="${endISO}"`
+            );
+          }
+        }
+
+        // รวม filter conditions
+        if (filterConditions.length > 0) {
+          params.filter = filterConditions.join("&&");
+          console.log("🔍 Applied filters:", params.filter);
         }
 
         // เพิ่ม sorting ถ้ามี
@@ -97,6 +200,9 @@ export const invitation = createModel<RootModel>()({
             payload.sortOrder === "desc"
               ? `-${payload.sortBy}`
               : payload.sortBy;
+        } else {
+          // Default sort by created date (newest first)
+          params.sort = "-created";
         }
 
         const response = await axiosVMS.get(
@@ -141,6 +247,13 @@ export const invitation = createModel<RootModel>()({
           });
 
           console.log(`✅ Loaded ${invitations.length} invitations`);
+
+          // แสดงสถิติ filter
+          if (filterConditions.length > 0) {
+            console.log(
+              `📊 Filter results: ${invitations.length}/${response.data.totalItems} records`
+            );
+          }
         } else {
           dispatch.invitation.setInvitationList({
             data: [],
@@ -222,6 +335,108 @@ export const invitation = createModel<RootModel>()({
         }
       } catch (error) {
         console.error(`❌ Error refreshing invitation ${invitationId}:`, error);
+      }
+    },
+
+    // เพิ่ม method สำหรับ get statistics ตาม filter
+    async getInvitationStats(filters?: any) {
+      try {
+        console.log("📊 Getting invitation statistics...");
+
+        // สร้าง params เหมือนกับ getInvitationList แต่ขอข้อมูลทั้งหมด
+        const params: any = {
+          page: 1,
+          perPage: 1000, // ขอเยอะๆ เพื่อคำนวณ stats
+        };
+
+        const filterConditions: string[] = [];
+
+        if (filters) {
+          if (filters.active !== undefined) {
+            filterConditions.push(`active=${filters.active}`);
+          }
+          if (filters.type) {
+            filterConditions.push(`type="${filters.type}"`);
+          }
+          if (filters.searchText && filters.searchText.trim()) {
+            filterConditions.push(`guest_name~"${filters.searchText.trim()}"`);
+          }
+          if (filters.stamped !== undefined) {
+            if (filters.stamped) {
+              filterConditions.push(`stamped_time!=""&&stamped_time!=null`);
+            } else {
+              filterConditions.push(`(stamped_time=""||stamped_time=null)`);
+            }
+          }
+          if (filters.dateRange && filters.dateRange.length === 2) {
+            const [startDate, endDate] = filters.dateRange;
+            const startISO = startDate.startOf("day").toISOString();
+            const endISO = endDate.endOf("day").toISOString();
+            filterConditions.push(
+              `start_time>="${startISO}"&&start_time<="${endISO}"`
+            );
+          }
+        }
+
+        if (filterConditions.length > 0) {
+          params.filter = filterConditions.join("&&");
+        }
+
+        const response = await axiosVMS.get(
+          "/api/collections/invitation/records",
+          { params }
+        );
+
+        if (response.data && response.data.items) {
+          const invitations = response.data.items;
+          const now = new Date();
+
+          const stats = {
+            total: invitations.length,
+            active: invitations.filter((item: any) => item.active === true)
+              .length,
+            inactive: invitations.filter((item: any) => item.active === false)
+              .length,
+            stamped: invitations.filter(
+              (item: any) => item.stamped_time && item.stamped_time.trim()
+            ).length,
+            unstamped: invitations.filter(
+              (item: any) => !item.stamped_time || !item.stamped_time.trim()
+            ).length,
+            expired: invitations.filter((item: any) => {
+              if (!item.expire_time) return false;
+              return new Date(item.expire_time) < now;
+            }).length,
+            byType: invitations.reduce((acc: any, item: any) => {
+              acc[item.type] = (acc[item.type] || 0) + 1;
+              return acc;
+            }, {}),
+          };
+
+          console.log("📊 Invitation statistics:", stats);
+          return stats;
+        }
+
+        return {
+          total: 0,
+          active: 0,
+          inactive: 0,
+          stamped: 0,
+          unstamped: 0,
+          expired: 0,
+          byType: {},
+        };
+      } catch (error) {
+        console.error("❌ Error getting invitation statistics:", error);
+        return {
+          total: 0,
+          active: 0,
+          inactive: 0,
+          stamped: 0,
+          unstamped: 0,
+          expired: 0,
+          byType: {},
+        };
       }
     },
   }),

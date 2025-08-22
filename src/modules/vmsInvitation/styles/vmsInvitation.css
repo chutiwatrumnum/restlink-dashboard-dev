@@ -1,4 +1,4 @@
-/* ไฟล์: src/modules/vmsInvitation/styles/vmsInvitation.css - เพิ่มเติม */
+/* ไฟล์: src/modules/vmsInvitation/styles/vmsInvitation.css - Updated with Filter Styles */
 
 .userManagementTopActionGroup {
   display: flex;
@@ -64,6 +64,195 @@
 .vms-status-dot.disconnected {
   background-color: #ff4d4f;
 }
+
+/* =================================
+   VMS Invitation Filters Styles
+   ================================= */
+
+.vms-invitation-filters {
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+/* Date Range Filter */
+.filter-date-range {
+  position: relative;
+}
+
+.modern-date-picker {
+  width: 100% !important;
+  height: 44px !important;
+  border-radius: 8px !important;
+  border-color: #d1d5db !important;
+  font-size: 14px !important;
+}
+
+.modern-date-picker:hover {
+  border-color: #3b82f6 !important;
+}
+
+.modern-date-picker.ant-picker-focused {
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1) !important;
+}
+
+.date-picker-icon {
+  color: #6b7280 !important;
+}
+
+/* Search Input */
+.filter-search-wrapper {
+  position: relative;
+}
+
+.modern-search-input {
+  width: 100% !important;
+  height: 44px !important;
+  border-radius: 8px !important;
+  border-color: #d1d5db !important;
+  font-size: 14px !important;
+  padding-left: 40px !important;
+}
+
+.modern-search-input:hover {
+  border-color: #3b82f6 !important;
+}
+
+.modern-search-input:focus {
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1) !important;
+}
+
+.search-prefix-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af;
+  font-size: 16px;
+  z-index: 1;
+}
+
+.search-suffix-button {
+  border: none !important;
+  box-shadow: none !important;
+  height: 32px !important;
+  width: 32px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.search-suffix-icon {
+  color: #6b7280 !important;
+}
+
+/* Select Filters */
+.modern-select {
+  width: 100% !important;
+  height: 44px !important;
+}
+
+.modern-select .ant-select-selector {
+  border-radius: 8px !important;
+  border-color: #d1d5db !important;
+  font-size: 14px !important;
+  height: 44px !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.modern-select .ant-select-selection-placeholder {
+  color: #9ca3af !important;
+  font-size: 14px !important;
+  line-height: 42px !important;
+}
+
+.modern-select .ant-select-selection-search-input {
+  height: 42px !important;
+}
+
+.modern-select .ant-select-arrow {
+  color: #6b7280 !important;
+}
+
+.modern-select:hover .ant-select-selector {
+  border-color: #3b82f6 !important;
+}
+
+.modern-select.ant-select-focused .ant-select-selector {
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1) !important;
+}
+
+/* Clear Button */
+.modern-clear-button {
+  width: 100% !important;
+  height: 44px !important;
+  border-radius: 8px !important;
+  border-color: #d1d5db !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 14px !important;
+}
+
+.modern-clear-button:hover {
+  border-color: #3b82f6 !important;
+  color: #3b82f6 !important;
+}
+
+/* Active Filters */
+.active-filters-container {
+  margin-top: 16px;
+  padding: 12px 16px;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.active-filters-label {
+  font-size: 12px;
+  color: #64748b;
+  margin-bottom: 8px;
+}
+
+.filter-tag {
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  display: inline-block;
+}
+
+.filter-tag-search {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.filter-tag-status {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.filter-tag-type {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.filter-tag-stamp {
+  background: #ede9fe;
+  color: #6b21a8;
+}
+
+.filter-tag-date {
+  background: #fecaca;
+  color: #991b1b;
+}
+
+/* =================================
+   Original VMS Invitation Table Styles
+   ================================= */
 
 .vms-invitation-table .ant-table-thead > tr > th {
   background-color: var(--tableHeadBg-color) !important;
@@ -271,5 +460,22 @@
   .vms-invitation-table .ant-table-tbody > tr > td:last-child div {
     flex-direction: column;
     gap: 4px;
+  }
+
+  /* Mobile filter adjustments */
+  .vms-invitation-filters {
+    padding: 16px;
+  }
+
+  .modern-date-picker,
+  .modern-search-input,
+  .modern-select,
+  .modern-clear-button {
+    height: 40px !important;
+  }
+
+  .filter-tag {
+    font-size: 11px;
+    padding: 3px 6px;
   }
 }

@@ -1,4 +1,4 @@
-// ไฟล์: src/modules/vmsInvitation/components/VMSInvitationFormModal.tsx - Fixed Version (ลด alert ซ้ำซ้อน)
+// ไฟล์: src/modules/vmsInvitation/components/VMSInvitationFormModal.tsx - Updated Version with License Plate Input
 
 import { useState, useEffect, useCallback } from "react";
 import {
@@ -11,7 +11,10 @@ import {
   Col,
   Tag,
   Spin,
+  Button,
+  Space,
 } from "antd";
+import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState, Dispatch } from "../../../stores";
 import { requiredRule } from "../../../configs/inputRule";
@@ -23,6 +26,11 @@ import {
   useUpdateVMSInvitationMutation,
 } from "../../../utils/mutationsGroup/vmsInvitationMutations";
 import { InvitationRecord } from "../../../stores/interfaces/Invitation";
+import {
+  getProvinceOptions,
+  searchProvinces,
+  getProvinceName,
+} from "../../../utils/constants/thaiProvinces";
 import dayjs from "dayjs";
 
 interface VMSInvitationFormModalProps {
@@ -30,6 +38,11 @@ interface VMSInvitationFormModalProps {
   onClose: () => void;
   editData?: InvitationRecord | null;
   refetch: () => void;
+}
+
+interface VehicleInput {
+  license_plate: string;
+  area_code: string;
 }
 
 const VMSInvitationFormModal = ({
@@ -48,11 +61,13 @@ const VMSInvitationFormModal = ({
   const [areaOptions, setAreaOptions] = useState<
     { label: string; value: string }[]
   >([]);
-  const [vehicleOptions, setVehicleOptions] = useState<
-    { label: string; value: string; licensePlate: string; areaCode: string }[]
+  const [provinceOptions, setProvinceOptions] = useState<
+    { label: string; value: string; name: string; code: string }[]
   >([]);
   const [loadingData, setLoadingData] = useState(false);
-  const [selectedVehicles, setSelectedVehicles] = useState<string[]>([]);
+
+  // State สำหรับ vehicles input
+  const [vehicles, setVehicles] = useState<VehicleInput[]>([]);
 
   // Get data from state
   const { tableData: houseData, loading: houseLoading } = useSelector(
@@ -61,18 +76,22 @@ const VMSInvitationFormModal = ({
   const { tableData: areaData, loading: areaLoading } = useSelector(
     (state: RootState) => state.area
   );
-  const { tableData: vehicleData, loading: vehicleLoading } = useSelector(
-    (state: RootState) => state.vehicle
-  );
 
-  // Mutations - แก้ไข: ปิดการแสดง success message ใน mutation เพื่อป้องกันการซ้ำซ้อน
+  // Mutations
   const createMutation = useCreateVMSInvitationMutation();
   const updateMutation = useUpdateVMSInvitationMutation();
 
   const isEditing = !!editData;
   const isLoading = createMutation.isPending || updateMutation.isPending;
 
-  // Load data when modal opens - แก้ไข: ใช้ silent mode เพื่อไม่แสดง success message
+  // Load province options
+  useEffect(() => {
+    console.log("📍 Loading Thai provinces...");
+    const provinces = getProvinceOptions();
+    setProvinceOptions(provinces);
+  }, []);
+
+  // Load data when modal opens
   const loadData = useCallback(async () => {
     if (!isOpen) return;
 
@@ -96,21 +115,13 @@ const VMSInvitationFormModal = ({
         });
       }
 
-      if (!vehicleData || vehicleData.length === 0) {
-        await dispatch.vehicle.getVehicleList({
-          page: 1,
-          perPage: 500,
-          silent: true,
-        });
-      }
-
       console.log("✅ Form data loaded");
     } catch (error) {
       console.error("❌ Error loading form data:", error);
     } finally {
       setLoadingData(false);
     }
-  }, [isOpen, dispatch, houseData, areaData, vehicleData]);
+  }, [isOpen, dispatch, houseData, areaData]);
 
   useEffect(() => {
     loadData();
@@ -138,28 +149,6 @@ const VMSInvitationFormModal = ({
     }
   }, [areaData]);
 
-  // Convert vehicle data to options
-  useEffect(() => {
-    if (vehicleData && vehicleData.length > 0) {
-      const vehicles = vehicleData
-        .filter((vehicle) => {
-          const expireTime = new Date(vehicle.expire_time);
-          const now = new Date();
-          const isActive = expireTime > now;
-          const isInEditData = editData?.vehicle_id?.includes(vehicle.id);
-          return isActive || isInEditData;
-        })
-        .map((vehicle) => ({
-          label: `${vehicle.license_plate} (${vehicle.tier})`,
-          value: vehicle.id,
-          licensePlate: vehicle.license_plate,
-          areaCode: vehicle.area_code || "th-11",
-        }));
-
-      setVehicleOptions(vehicles);
-    }
-  }, [vehicleData, editData]);
-
   // Pre-fill form for editing
   useEffect(() => {
     if (isOpen && editData) {
@@ -172,11 +161,22 @@ const VMSInvitationFormModal = ({
         start_time: editData.start_time ? dayjs(editData.start_time) : null,
         expire_time: editData.expire_time ? dayjs(editData.expire_time) : null,
         authorized_area: editData.authorized_area || [],
-        vehicle_id: editData.vehicle_id || [],
         note: editData.note || "",
       });
 
-      setSelectedVehicles(editData.vehicle_id || []);
+      // แปลง vehicle_id เป็น vehicles array (ถ้ามี)
+      if (editData.vehicle_id && editData.vehicle_id.length > 0) {
+        // สำหรับการแก้ไข ถ้า vehicle_id เป็น license plates แล้วให้ใช้ตรงๆ
+        // ถ้าเป็น vehicle IDs ให้ต้องแปลงเป็น license plates
+        const vehicleInputs = editData.vehicle_id.map((licensePlateOrId) => ({
+          license_plate: licensePlateOrId, // สมมติว่าเป็น license plate
+          area_code: "th-11", // default value
+        }));
+        setVehicles(vehicleInputs);
+        console.log("✏️ Pre-filled vehicles:", vehicleInputs);
+      } else {
+        setVehicles([]);
+      }
     } else if (isOpen && !editData) {
       console.log("➕ Resetting form for new creation");
 
@@ -184,19 +184,46 @@ const VMSInvitationFormModal = ({
       form.setFieldsValue({
         type: "invitation",
       });
-      setSelectedVehicles([]);
+      setVehicles([]);
     }
   }, [isOpen, editData, form]);
 
   const handleCancel = useCallback(() => {
     console.log("❌ Form cancelled");
     form.resetFields();
-    setSelectedVehicles([]);
+    setVehicles([]);
     onClose();
   }, [form, onClose]);
 
-  const handleVehicleChange = (values: string[]) => {
-    setSelectedVehicles(values);
+  // Vehicle management functions
+  const addVehicle = () => {
+    if (vehicles.length < 5) {
+      setVehicles([...vehicles, { license_plate: "", area_code: "th-11" }]);
+    }
+  };
+
+  const removeVehicle = (index: number) => {
+    const newVehicles = vehicles.filter((_, i) => i !== index);
+    setVehicles(newVehicles);
+  };
+
+  const updateVehicle = (
+    index: number,
+    field: keyof VehicleInput,
+    value: string
+  ) => {
+    const newVehicles = [...vehicles];
+    newVehicles[index] = { ...newVehicles[index], [field]: value };
+    setVehicles(newVehicles);
+  };
+
+  const handleProvinceSearch = (searchText: string, index: number) => {
+    if (!searchText) {
+      setProvinceOptions(getProvinceOptions());
+    } else {
+      const filtered = searchProvinces(searchText);
+      setProvinceOptions(filtered);
+    }
   };
 
   const handleSubmit = useCallback(
@@ -208,19 +235,17 @@ const VMSInvitationFormModal = ({
 
       try {
         console.log("📝 Form submitted with values:", values);
+        console.log("🚗 Vehicles:", vehicles);
 
-        // สร้าง vehicles array ตาม API spec
-        const vehicles = selectedVehicles
-          .map((vehicleId) => {
-            const vehicleInfo = vehicleOptions.find(
-              (v) => v.value === vehicleId
-            );
-            return {
-              license_plate: vehicleInfo?.licensePlate || "",
-              area_code: vehicleInfo?.areaCode || "th-11",
-            };
-          })
-          .filter((v) => v.license_plate); // เอาเฉพาะที่มี license_plate
+        // กรอง vehicles ที่มี license_plate และสร้าง vehicles array ตาม API spec
+        const validVehicles = vehicles
+          .filter((v) => v.license_plate && v.license_plate.trim())
+          .map((v) => ({
+            license_plate: v.license_plate.trim(),
+            area_code: v.area_code || "th-11",
+          }));
+
+        console.log("✅ Valid vehicles for API:", validVehicles);
 
         const payload: VMSInvitationPayload = {
           guest_name: values.guest_name,
@@ -234,17 +259,17 @@ const VMSInvitationFormModal = ({
             : dayjs().add(30, "days").toISOString(),
           authorized_area: values.authorized_area || [],
           note: values.note || "",
-          vehicles: vehicles.length > 0 ? vehicles : undefined,
         };
 
-        // ลบ undefined fields
-        Object.keys(payload).forEach((key) => {
-          if (payload[key as keyof VMSInvitationPayload] === undefined) {
-            delete payload[key as keyof VMSInvitationPayload];
-          }
-        });
+        // เพิ่ม vehicles เฉพาะเมื่อมีข้อมูล
+        if (validVehicles.length > 0) {
+          payload.vehicles = validVehicles;
+        }
 
-        console.log("📤 Submitting payload:", JSON.stringify(payload, null, 2));
+        console.log(
+          "📤 Final payload for API:",
+          JSON.stringify(payload, null, 2)
+        );
 
         if (isEditing && editData) {
           const editPayload: VMSInvitationEditPayload = {
@@ -260,22 +285,17 @@ const VMSInvitationFormModal = ({
         }
 
         console.log("✅ Form submission successful");
-
-        // แก้ไข: ย้าย refetch และ handleCancel ไปใน success callback ของ mutation แทน
-        // เพื่อให้แน่ใจว่าข้อมูลถูก refresh หลังจาก API เสร็จสมบูรณ์
         refetch();
         handleCancel();
       } catch (error: any) {
         console.error("❌ Form submission error:", error);
-        // แก้ไข: ไม่แสดง error message ที่นี่ เพราะ mutation จะจัดการให้เอง
       }
     },
     [
       isLoading,
       isEditing,
       editData,
-      selectedVehicles,
-      vehicleOptions,
+      vehicles,
       createMutation,
       updateMutation,
       refetch,
@@ -290,7 +310,7 @@ const VMSInvitationFormModal = ({
       onCancel={handleCancel}
       centered
       width="90%"
-      style={{ maxWidth: 800 }}
+      style={{ maxWidth: 900 }}
       footer={[
         <div key="footer" style={{ textAlign: "right" }}>
           <SmallButton
@@ -440,68 +460,6 @@ const VMSInvitationFormModal = ({
               />
             </Form.Item>
 
-            <Form.Item label="Vehicle License Plates" name="vehicle_id">
-              <Select
-                mode="multiple"
-                size="large"
-                placeholder={
-                  loadingData || vehicleLoading
-                    ? "Loading vehicles..."
-                    : vehicleOptions.length === 0
-                    ? "No vehicles available"
-                    : "Select vehicle license plates"
-                }
-                options={vehicleOptions}
-                loading={loadingData || vehicleLoading}
-                onChange={handleVehicleChange}
-                showSearch
-                filterOption={(input, option) =>
-                  (option?.label ?? "")
-                    .toLowerCase()
-                    .includes(input.toLowerCase())
-                }
-                optionRender={(option) => (
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                    }}>
-                    <span>{option.data.licensePlate}</span>
-                    <Tag size="small" color="blue">
-                      {option.data.label.split("(")[1]?.replace(")", "")}
-                    </Tag>
-                  </div>
-                )}
-                // แก้ไข: ลบ tagRender เพื่อใช้ default tag style เหมือนกับ Authorized Areas
-                notFoundContent={
-                  loadingData || vehicleLoading ? (
-                    <div style={{ textAlign: "center", padding: "20px" }}>
-                      <Spin size="small" />
-                      <div style={{ marginTop: "8px" }}>
-                        Loading vehicles...
-                      </div>
-                    </div>
-                  ) : (
-                    <div style={{ textAlign: "center", padding: "20px" }}>
-                      <div style={{ marginBottom: "8px" }}>🚗</div>
-                      <div>No vehicles found</div>
-                      <div
-                        style={{
-                          fontSize: "12px",
-                          color: "#999",
-                          marginTop: "4px",
-                        }}>
-                        {isEditing
-                          ? "Active vehicles + current selection shown"
-                          : "Only active vehicles are shown"}
-                      </div>
-                    </div>
-                  )
-                }
-              />
-            </Form.Item>
-
             <Form.Item label="Note" name="note">
               <Input.TextArea
                 rows={3}
@@ -510,6 +468,172 @@ const VMSInvitationFormModal = ({
                 showCount
               />
             </Form.Item>
+          </Col>
+        </Row>
+
+        {/* Vehicle License Plates Section */}
+        <Row>
+          <Col xs={24}>
+            <div style={{ marginBottom: 16 }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  marginBottom: 12,
+                }}>
+                <label style={{ fontWeight: 500, color: "#262626" }}>
+                  Vehicle License Plates
+                </label>
+                <Button
+                  type="dashed"
+                  icon={<PlusOutlined />}
+                  onClick={addVehicle}
+                  size="small"
+                  disabled={isLoading || vehicles.length >= 5}>
+                  Add Vehicle {vehicles.length > 0 && `(${vehicles.length}/5)`}
+                </Button>
+              </div>
+
+              {vehicles.length === 0 ? (
+                <div
+                  style={{
+                    textAlign: "center",
+                    padding: "20px",
+                    border: "1px dashed #d9d9d9",
+                    borderRadius: "6px",
+                    color: "#999",
+                    background: "#fafafa",
+                  }}>
+                  <div style={{ marginBottom: "8px" }}>🚗</div>
+                  <div>No vehicles added</div>
+                  <div style={{ fontSize: "12px", marginTop: "4px" }}>
+                    Click "Add Vehicle" to add license plates
+                  </div>
+                </div>
+              ) : (
+                <div style={{ maxHeight: "200px", overflowY: "auto" }}>
+                  {vehicles.map((vehicle, index) => (
+                    <div
+                      key={index}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 8,
+                        marginBottom: 8,
+                        padding: "12px",
+                        border: "1px solid #f0f0f0",
+                        borderRadius: "6px",
+                        background: "#fafafa",
+                      }}>
+                      {/* License Plate Input */}
+                      <div style={{ flex: 2 }}>
+                        <Input
+                          placeholder="ป้ายทะเบียน"
+                          value={vehicle.license_plate}
+                          onChange={(e) =>
+                            updateVehicle(
+                              index,
+                              "license_plate",
+                              e.target.value
+                            )
+                          }
+                          maxLength={20}
+                          disabled={isLoading}
+                        />
+                      </div>
+
+                      {/* Province Select */}
+                      <div style={{ flex: 3 }}>
+                        <Select
+                          placeholder="เลือกจังหวัด"
+                          value={vehicle.area_code}
+                          onChange={(value) =>
+                            updateVehicle(index, "area_code", value)
+                          }
+                          options={provinceOptions}
+                          showSearch
+                          filterOption={false}
+                          onSearch={(text) => handleProvinceSearch(text, index)}
+                          optionRender={(option) => (
+                            <div
+                              style={{
+                                display: "flex",
+                                justifyContent: "space-between",
+                                alignItems: "center",
+                              }}>
+                              <span>{option.data.name}</span>
+                              <span style={{ color: "#999", fontSize: "12px" }}>
+                                {option.data.code}
+                              </span>
+                            </div>
+                          )}
+                          disabled={isLoading}
+                          style={{ width: "100%" }}
+                        />
+                      </div>
+
+                      {/* Delete Button */}
+                      <Button
+                        type="text"
+                        icon={<DeleteOutlined />}
+                        onClick={() => removeVehicle(index)}
+                        disabled={isLoading}
+                        style={{ color: "#ff4d4f" }}
+                        title="Remove vehicle"
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {vehicles.length > 0 && (
+                <div
+                  style={{
+                    fontSize: "12px",
+                    color: "#666",
+                    marginTop: "8px",
+                    padding: "8px 12px",
+                    background: "#f0f9ff",
+                    border: "1px solid #bae6fd",
+                    borderRadius: "4px",
+                  }}>
+                  <strong>ข้อมูลรถยนต์:</strong> {vehicles.length}/5 คัน •{" "}
+                  <strong>ป้ายทะเบียนที่กรอก:</strong>{" "}
+                  {
+                    vehicles.filter(
+                      (v) => v.license_plate && v.license_plate.trim()
+                    ).length
+                  }{" "}
+                  ป้าย
+                  {vehicles.length >= 5 && (
+                    <span style={{ color: "#faad14", marginLeft: "8px" }}>
+                      • ถึงจำนวนสูงสุดแล้ว
+                    </span>
+                  )}
+                  <div
+                    style={{
+                      marginTop: "4px",
+                      fontSize: "11px",
+                      color: "#0369a1",
+                    }}>
+                    📋 ข้อมูลที่จะส่งไป API:{" "}
+                    {JSON.stringify(
+                      vehicles
+                        .filter(
+                          (v) => v.license_plate && v.license_plate.trim()
+                        )
+                        .map((v) => ({
+                          license_plate: v.license_plate.trim(),
+                          area_code: v.area_code,
+                        })),
+                      null,
+                      1
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
           </Col>
         </Row>
 
