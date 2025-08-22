@@ -59,11 +59,26 @@ export const generateQRCodeWithText = async (
     options?: QRCodeGenerationOptions
 ): Promise<string> => {
     try {
-        const qrSize = options?.size || 400;
-        const margin = 40;
-        const textHeight = 280; // เพิ่มความสูงสำหรับข้อมูลเพิ่มเติม
-        const canvasWidth = Math.max(qrSize + (margin * 2), 600); // กว้างขั้นต่ำ 600px
-        const canvasHeight = qrSize + textHeight + (margin * 2);
+        const qrSize = options?.size || 380;
+        const margin = 30;
+
+        // คำนวณความสูงแบบไดนามิก
+        let baseTextHeight = 280; // ความสูงพื้นฐาน
+
+        // เพิ่มความสูงตามจำนวนพื้นที่
+        if (invitationInfo.authorizedAreas.length > 0) {
+            const areasPerColumn = Math.ceil(invitationInfo.authorizedAreas.length / 3); // 3 คอลัมน์
+            baseTextHeight += (areasPerColumn * 22) + 40;
+        }
+
+        // เพิ่มความสูงสำหรับป้ายทะเบียน
+        if (invitationInfo.vehicleLicensePlates.length > 0) {
+            const vehiclesPerColumn = Math.ceil(invitationInfo.vehicleLicensePlates.length / 3); // 3 คอลัมน์
+            baseTextHeight += (vehiclesPerColumn * 22) + 40;
+        }
+
+        const canvasWidth = 600; // ขนาดคงที่เพื่อสมดุล
+        const canvasHeight = qrSize + baseTextHeight + (margin * 2) + 20;
 
         // สร้าง QR Code
         const qrCodeDataURL = await generateQRCodeDataURL(qrData, {
@@ -82,131 +97,136 @@ export const generateQRCodeWithText = async (
         ctx.fillStyle = '#FFFFFF';
         ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
-        // วาดขอบ
-        ctx.strokeStyle = '#E5E5E5';
-        ctx.lineWidth = 2;
-        ctx.strokeRect(10, 10, canvasWidth - 20, canvasHeight - 20);
+        // วาดขอบธรรมดา
+        ctx.strokeStyle = '#E0E0E0';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(15, 15, canvasWidth - 30, canvasHeight - 30);
 
         return new Promise((resolve, reject) => {
             const qrImage = new Image();
             qrImage.onload = () => {
                 // วาด QR Code ตรงกลาง
                 const qrX = (canvasWidth - qrSize) / 2;
-                const qrY = margin;
+                const qrY = margin + 10;
                 ctx.drawImage(qrImage, qrX, qrY, qrSize, qrSize);
 
-                // ตั้งค่าตำแหน่งเริ่มต้นสำหรับข้อความ
+                // ตั้งค่าตำแหน่งเริ่มต้นสำหรับข้อความ (ใต้ QR Code)
                 let textY = qrY + qrSize + 30;
 
-                // วาดเส้นแบ่ง
-                ctx.strokeStyle = '#E0E0E0';
-                ctx.lineWidth = 1;
-                ctx.beginPath();
-                ctx.moveTo(margin, textY);
-                ctx.lineTo(canvasWidth - margin, textY);
-                ctx.stroke();
+                // จัดเรียงข้อมูลแบบ 2 คอลัมน์
+                const leftColumn = 60;
+                const rightColumn = canvasWidth / 2 + 20;
+                const lineHeight = 25;
 
-                textY += 25;
-
-                // ชื่อแขก (หัวข้อใหญ่)
-                ctx.fillStyle = '#000000';
-                ctx.font = 'bold 28px Arial, sans-serif';
-                ctx.textAlign = 'center';
-                ctx.fillText(invitationInfo.guestName, canvasWidth / 2, textY);
-                textY += 35;
-
-                // ที่อยู่บ้าน
-                ctx.font = 'bold 16px Arial, sans-serif';
-                ctx.fillStyle = '#333333';
+                // คอลัมน์ซ้าย - วันเริ่มใช้งาน
                 ctx.textAlign = 'left';
-                const leftMargin = 50;
-                ctx.fillText('🏠 ที่อยู่:', leftMargin, textY);
-                ctx.font = '16px Arial, sans-serif';
-                ctx.fillStyle = '#555555';
-                ctx.fillText(invitationInfo.houseAddress, leftMargin + 80, textY);
-                textY += 25;
-
-                // ประเภท
-                ctx.font = 'bold 16px Arial, sans-serif';
+                ctx.font = 'bold 14px Arial, sans-serif';
                 ctx.fillStyle = '#333333';
-                ctx.fillText('📋 ประเภท:', leftMargin, textY);
-                ctx.font = '16px Arial, sans-serif';
-                ctx.fillStyle = '#555555';
+                const startDate = dayjs(invitationInfo.startTime).format('DD/MM/YYYY HH:mm');
+                ctx.fillText(`เริ่มใช้งาน : ${startDate}`, leftColumn, textY);
+
+                // คอลัมน์ขวา - วันหมดอายุ
+                const expireDate = dayjs(invitationInfo.expireTime).format('DD/MM/YYYY HH:mm');
+                ctx.fillText(`หมดอายุ : ${expireDate}`, rightColumn, textY);
+                textY += lineHeight;
+
+                // คอลัมน์ซ้าย - ชื่อแขก
+                ctx.fillText(`ชื่อแขก : ${invitationInfo.guestName}`, leftColumn, textY);
+
+                // คอลัมน์ขวา - ที่อยู่
+                ctx.fillText(`ที่อยู่ : ${invitationInfo.houseAddress}`, rightColumn, textY);
+                textY += lineHeight;
+
+                // คอลัมน์ซ้าย - ประเภท
                 const typeText = invitationInfo.type === 'invitation' ? 'เชิญ' :
                     invitationInfo.type === 'vehicle' ? 'ยานพาหนะ' : invitationInfo.type;
-                ctx.fillText(typeText, leftMargin + 80, textY);
-                textY += 25;
+                ctx.fillText(`ประเภท : ${invitationInfo.type}`, leftColumn, textY);
+                textY += lineHeight + 15;
+
+                // พื้นที่ที่ได้รับอนุญาต
+                if (invitationInfo.authorizedAreas.length > 0) {
+                    // หัวข้อ
+                    ctx.font = 'bold 16px Arial, sans-serif';
+                    ctx.fillStyle = '#333333';
+                    ctx.fillText('พื้นที่ที่ได้รับอนุญาต :', leftColumn, textY);
+                    textY += 25;
+
+                    ctx.font = '14px Arial, sans-serif';
+                    ctx.fillStyle = '#333333';
+
+                    // แบ่งเป็น 3 คอลัมน์
+                    const col1X = leftColumn;
+                    const col2X = leftColumn + 170;
+                    const col3X = leftColumn + 340;
+
+                    const itemsPerColumn = Math.ceil(invitationInfo.authorizedAreas.length / 3);
+
+                    // คอลัมน์ที่ 1
+                    let col1Y = textY;
+                    for (let i = 0; i < itemsPerColumn && i < invitationInfo.authorizedAreas.length; i++) {
+                        ctx.fillText(`• ${invitationInfo.authorizedAreas[i]}`, col1X, col1Y);
+                        col1Y += 22;
+                    }
+
+                    // คอลัมน์ที่ 2
+                    let col2Y = textY;
+                    for (let i = itemsPerColumn; i < itemsPerColumn * 2 && i < invitationInfo.authorizedAreas.length; i++) {
+                        ctx.fillText(`• ${invitationInfo.authorizedAreas[i]}`, col2X, col2Y);
+                        col2Y += 22;
+                    }
+
+                    // คอลัมน์ที่ 3
+                    let col3Y = textY;
+                    for (let i = itemsPerColumn * 2; i < invitationInfo.authorizedAreas.length; i++) {
+                        ctx.fillText(`• ${invitationInfo.authorizedAreas[i]}`, col3X, col3Y);
+                        col3Y += 22;
+                    }
+
+                    textY += (itemsPerColumn * 22) + 20;
+                }
 
                 // ป้ายทะเบียน (ถ้ามี)
                 if (invitationInfo.vehicleLicensePlates.length > 0) {
+                    // หัวข้อ
                     ctx.font = 'bold 16px Arial, sans-serif';
                     ctx.fillStyle = '#333333';
-                    ctx.fillText('🚗 ป้ายทะเบียน:', leftMargin, textY);
-                    ctx.font = '16px Arial, sans-serif';
-                    ctx.fillStyle = '#555555';
-
-                    const vehicleText = invitationInfo.vehicleLicensePlates.length > 2 ?
-                        `${invitationInfo.vehicleLicensePlates.slice(0, 2).join(', ')} +${invitationInfo.vehicleLicensePlates.length - 2}` :
-                        invitationInfo.vehicleLicensePlates.join(', ');
-
-                    ctx.fillText(vehicleText, leftMargin + 130, textY);
+                    ctx.fillText('ป้ายทะเบียน :', leftColumn, textY);
                     textY += 25;
-                }
-
-                // พื้นที่ที่ได้รับอนุญาต (ถ้ามี)
-                if (invitationInfo.authorizedAreas.length > 0) {
-                    ctx.font = 'bold 16px Arial, sans-serif';
-                    ctx.fillStyle = '#333333';
-                    ctx.fillText('🗺️ พื้นที่อนุญาต:', leftMargin, textY);
-                    textY += 20;
 
                     ctx.font = '14px Arial, sans-serif';
-                    ctx.fillStyle = '#666666';
+                    ctx.fillStyle = '#333333';
 
-                    // แสดงพื้นที่สูงสุด 3 รายการ
-                    const maxAreas = 3;
-                    const displayAreas = invitationInfo.authorizedAreas.slice(0, maxAreas);
+                    // แบ่งเป็น 3 คอลัมน์
+                    const col1X = leftColumn;
+                    const col2X = leftColumn + 170;
+                    const col3X = leftColumn + 340;
 
-                    for (let i = 0; i < displayAreas.length; i++) {
-                        ctx.fillText(`• ${displayAreas[i]}`, leftMargin + 20, textY);
-                        textY += 18;
+                    const itemsPerColumn = Math.ceil(invitationInfo.vehicleLicensePlates.length / 3);
+
+                    // คอลัมน์ที่ 1
+                    let col1Y = textY;
+                    for (let i = 0; i < itemsPerColumn && i < invitationInfo.vehicleLicensePlates.length; i++) {
+                        ctx.fillText(`• ${invitationInfo.vehicleLicensePlates[i]}`, col1X, col1Y);
+                        col1Y += 22;
                     }
 
-                    if (invitationInfo.authorizedAreas.length > maxAreas) {
-                        ctx.fillText(`• และอีก ${invitationInfo.authorizedAreas.length - maxAreas} พื้นที่`, leftMargin + 20, textY);
-                        textY += 20;
-                    } else {
-                        textY += 5;
+                    // คอลัมน์ที่ 2
+                    let col2Y = textY;
+                    for (let i = itemsPerColumn; i < itemsPerColumn * 2 && i < invitationInfo.vehicleLicensePlates.length; i++) {
+                        ctx.fillText(`• ${invitationInfo.vehicleLicensePlates[i]}`, col2X, col2Y);
+                        col2Y += 22;
+                    }
+
+                    // คอลัมน์ที่ 3
+                    let col3Y = textY;
+                    for (let i = itemsPerColumn * 2; i < invitationInfo.vehicleLicensePlates.length; i++) {
+                        ctx.fillText(`• ${invitationInfo.vehicleLicensePlates[i]}`, col3X, col3Y);
+                        col3Y += 22;
                     }
                 }
 
-                // เส้นแบ่งก่อนวันที่
-                ctx.strokeStyle = '#E0E0E0';
-                ctx.lineWidth = 1;
-                ctx.beginPath();
-                ctx.moveTo(margin, textY);
-                ctx.lineTo(canvasWidth - margin, textY);
-                ctx.stroke();
-                textY += 20;
-
-                // วันที่ (จัดตรงกลาง)
-                ctx.textAlign = 'center';
-                ctx.font = 'bold 16px Arial, sans-serif';
-                ctx.fillStyle = '#444444';
-
-                // วันเริ่มต้น
-                const startDate = dayjs(invitationInfo.startTime).format('DD/MM/YYYY HH:mm');
-                ctx.fillText(`⏰ เริ่มใช้งาน: ${startDate}`, canvasWidth / 2, textY);
-                textY += 25;
-
-                // วันหมดอายุ
-                const expireDate = dayjs(invitationInfo.expireTime).format('DD/MM/YYYY HH:mm');
-                const isExpired = dayjs(invitationInfo.expireTime).isBefore(dayjs());
-                ctx.fillStyle = isExpired ? '#ff4d4f' : '#444444';
-                ctx.fillText(`⏳ หมดอายุ: ${expireDate}`, canvasWidth / 2, textY);
-
                 // แปลงเป็น Data URL
-                const finalDataURL = canvas.toDataURL('image/png', 0.9);
+                const finalDataURL = canvas.toDataURL('image/png', 0.95);
                 resolve(finalDataURL);
             };
 
@@ -222,6 +242,7 @@ export const generateQRCodeWithText = async (
         throw error;
     }
 };
+
 
 /**
  * Download QR Code with text overlay

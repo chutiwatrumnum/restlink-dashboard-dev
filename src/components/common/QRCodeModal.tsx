@@ -1,10 +1,9 @@
 // ไฟล์: src/components/common/QRCodeModal.tsx
 
 import React, { useState, useEffect } from "react";
-import { Modal, Button, Spin, message, Card } from "antd";
+import { Modal, Button, Spin, message } from "antd";
 import { DownloadOutlined, QrcodeOutlined } from "@ant-design/icons";
 import {
-  generateQRCodeDataURL,
   generateQRCodeWithText,
   downloadQRCodeWithText,
   generateInvitationQRData,
@@ -136,19 +135,7 @@ const QRCodeModal: React.FC<QRCodeModalProps> = ({
 
   return (
     <Modal
-      title={
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-            fontSize: 18,
-            fontWeight: 600,
-          }}>
-          <QrcodeOutlined style={{ color: "#1890ff" }} />
-          <span>QR Code - {invitation.guest_name}</span>
-        </div>
-      }
+    
       open={isOpen}
       onCancel={handleModalClose}
       centered
@@ -258,78 +245,6 @@ const QRCodeModal: React.FC<QRCodeModalProps> = ({
             </div>
           )}
         </div>
-
-        {/* Invitation Details */}
-        <Card
-          size="small"
-          style={{
-            textAlign: "left",
-            backgroundColor: "#fafafa",
-            border: "1px solid #e8e8e8",
-          }}
-          bodyStyle={{ padding: 16 }}>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "auto 1fr",
-              gap: "8px 16px",
-              fontSize: 13,
-            }}>
-            <strong style={{ color: "#262626" }}>ชื่อแขก:</strong>
-            <span style={{ color: "#595959" }}>{invitation.guest_name}</span>
-
-            <strong style={{ color: "#262626" }}>รหัสบัตรเชิญ:</strong>
-            <span
-              style={{
-                fontFamily: "monospace",
-                fontSize: 11,
-                backgroundColor: "#f0f0f0",
-                padding: "2px 6px",
-                borderRadius: 4,
-                color: "#1890ff",
-                wordBreak: "break-all",
-              }}>
-              {invitation.code}
-            </span>
-
-            <strong style={{ color: "#262626" }}>ประเภท:</strong>
-            <span style={{ color: "#595959" }}>
-              {invitation.type === "invitation" ? "เชิญ" : "ยานพาหนะ"}
-            </span>
-
-            <strong style={{ color: "#262626" }}>สถานะ:</strong>
-            <span
-              style={{
-                color: invitation.active ? "#52c41a" : "#ff4d4f",
-                fontWeight: 500,
-              }}>
-              {invitation.active ? "ใช้งานได้" : "ไม่ใช้งาน"}
-            </span>
-
-            {invitation.start_time && (
-              <>
-                <strong style={{ color: "#262626" }}>เริ่มใช้งาน:</strong>
-                <span style={{ color: "#595959" }}>
-                  {dayjs(invitation.start_time).format("DD/MM/YYYY HH:mm")}
-                </span>
-              </>
-            )}
-
-            {invitation.expire_time && (
-              <>
-                <strong style={{ color: "#262626" }}>หมดอายุ:</strong>
-                <span
-                  style={{
-                    color: dayjs(invitation.expire_time).isBefore(dayjs())
-                      ? "#ff4d4f"
-                      : "#595959",
-                  }}>
-                  {dayjs(invitation.expire_time).format("DD/MM/YYYY HH:mm")}
-                </span>
-              </>
-            )}
-          </div>
-        </Card>
 
         {/* Instructions */}
         <div

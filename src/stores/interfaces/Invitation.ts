@@ -3,6 +3,7 @@
 import dayjs from "dayjs";
 
 export interface InvitationRecord {
+    house_address: string;
     id: string;
     code: string;
     guest_name: string;
@@ -20,6 +21,7 @@ export interface InvitationRecord {
     created: string;
     updated: string;
 }
+
 
 export interface InvitationListResponse {
     page: number;

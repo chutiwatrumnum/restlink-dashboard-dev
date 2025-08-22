@@ -499,7 +499,7 @@
 
 .qr-code-modal .ant-modal-body {
   padding: 24px;
-  background: #fafafa;
+  /* background: #fafafa; */
 }
 
 .qr-code-modal .ant-modal-footer {
