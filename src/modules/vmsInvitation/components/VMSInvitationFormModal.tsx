@@ -160,40 +160,32 @@ const VMSInvitationFormModal = ({
         );
 
         if (existingArea) {
-          // รอ 1 tick เพื่อให้ form render เสร็จก่อน
-          setTimeout(() => {
-            const newAreas = [houseAreaId];
-            form.setFieldsValue({
-              authorized_area: newAreas,
-            });
-          }, 50);
+          const areas = [houseAreaId];
+          form.setFieldValue("authorized_area", areas);
+        } else {
+          form.setFieldValue("authorized_area", []);
         }
+      } else {
+        form.setFieldValue("authorized_area", []);
       }
     } else {
       setSelectedHouseDetails(null);
+      form.setFieldValue("authorized_area", []);
     }
   };
 
   // Handle house change
   const handleHouseChange = (houseId: string) => {
-    // เคลียร์ selected house ก่อน
+    form.setFieldValue("authorized_area", []);
     setSelectedHouseDetails(null);
 
-    // เคลียร์ authorized areas
-    form.setFieldsValue({
-      authorized_area: [],
-    });
-
-    // รอให้ form update เสร็จ แล้วค่อยโหลด house details
-    setTimeout(() => {
-      if (areaOptions.length === 0 && !areaLoading) {
-        setTimeout(() => {
-          loadHouseDetails(houseId);
-        }, 100);
-      } else {
+    if (areaOptions.length === 0 && !areaLoading) {
+      setTimeout(() => {
         loadHouseDetails(houseId);
-      }
-    }, 10);
+      }, 100);
+    } else {
+      loadHouseDetails(houseId);
+    }
   };
 
   // Handle type change
@@ -233,6 +225,10 @@ const VMSInvitationFormModal = ({
 
       setFormType(editData.type || "invitation");
 
+      if (editData.house_id && areaOptions.length > 0) {
+        loadHouseDetails(editData.house_id);
+      }
+
       if (editData.vehicle_id && editData.vehicle_id.length > 0) {
         const vehicleInputs = editData.vehicle_id.map((licensePlateOrId) => ({
           license_plate: licensePlateOrId,
@@ -242,8 +238,6 @@ const VMSInvitationFormModal = ({
       } else {
         setVehicles([]);
       }
-
-      // สำหรับ edit mode ไม่ต้องโหลด house details ใหม่ เพราะมี authorized_area แล้ว
     } else if (isOpen && !editData) {
       form.resetFields();
       form.setFieldsValue({
@@ -253,7 +247,7 @@ const VMSInvitationFormModal = ({
       setFormType("invitation");
       setSelectedHouseDetails(null);
     }
-  }, [isOpen, editData, form]);
+  }, [isOpen, editData, form, areaOptions]);
 
   const handleCancel = useCallback(() => {
     form.resetFields();
@@ -462,6 +456,7 @@ const VMSInvitationFormModal = ({
               <Select
                 mode="multiple"
                 size="large"
+                value={form.getFieldValue("authorized_area") || []}
                 placeholder={
                   loadingData || areaLoading
                     ? "Loading areas..."
@@ -474,7 +469,9 @@ const VMSInvitationFormModal = ({
                 options={areaOptions}
                 loading={loadingData || areaLoading}
                 showSearch
-                allowClear
+                onChange={(value) => {
+                  form.setFieldValue("authorized_area", value);
+                }}
                 filterOption={(input, option) =>
                   (option?.label ?? "")
                     .toLowerCase()
