@@ -1,5 +1,3 @@
-// ไฟล์: src/utils/hooks/useQRCodeDownload.ts - Updated with text overlay
-
 import { useState } from "react";
 import { message } from "antd";
 import { downloadQRCodeWithText, generateInvitationQRData } from "../qrCodeUtils";

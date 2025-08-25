@@ -1,7 +1,4 @@
-// ไฟล์: src/stores/interfaces/Invitation.ts - Updated with Filter Support
-
 import dayjs from "dayjs";
-
 export interface InvitationRecord {
     house_address: string;
     id: string;

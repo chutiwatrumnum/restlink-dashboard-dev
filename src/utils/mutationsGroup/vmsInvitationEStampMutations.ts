@@ -1,5 +1,3 @@
-// ไฟล์: src/utils/mutationsGroup/vmsInvitationEStampMutations.ts
-
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { message } from "antd";
 import axiosVMS from "../../configs/axiosVMS";

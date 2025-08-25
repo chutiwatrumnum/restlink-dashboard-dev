@@ -728,7 +728,7 @@ const SideMenu = ({
               hidden={!access("vms", "view")}>
               <Link to={`${main_link}/vms-vehicle`}>VMS Vehicles</Link>
             </Menu.Item>
-            
+
             <Menu.Item
               key={`${main_link}/vms-visitor`}
               icon={
@@ -738,7 +738,7 @@ const SideMenu = ({
                 />
               }
               hidden={!access("vms", "view")}>
-              <Link to={`${main_link}/vms-visitor`}>VMS Visitors</Link>
+              <Link to={`${main_link}/vms-visitor`}>VMS Visitors Logs</Link>
             </Menu.Item>
             
             <Menu.Item

@@ -1,5 +1,3 @@
-// ไฟล์: src/stores/models/LogAccessModel.tsx
-
 import { createModel } from "@rematch/core";
 import { LogAccessType } from "../interfaces/LogAccess";
 import { RootModel } from "./index";

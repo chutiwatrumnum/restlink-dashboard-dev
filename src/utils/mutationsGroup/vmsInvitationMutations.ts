@@ -1,5 +1,3 @@
-// ไฟล์: src/utils/mutationsGroup/vmsInvitationMutations.ts - แก้ไขเพื่อลด alert ซ้ำซ้อน
-
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { message } from "antd";
 import axiosVMS from "../../configs/axiosVMS";

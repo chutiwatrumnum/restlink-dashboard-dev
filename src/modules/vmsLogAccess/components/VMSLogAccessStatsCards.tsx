@@ -1,5 +1,3 @@
-// File: src/modules/vmsLogAccess/components/VMSLogAccessStatsCards.tsx - English Version
-
 import React from "react";
 import { Card, Row, Col } from "antd";
 import {

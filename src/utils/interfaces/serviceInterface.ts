@@ -1,5 +1,3 @@
-// Service Chat Interface
-
 export interface ServiceChatListDataType {
   messageId: number;
   message: string;

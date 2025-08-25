@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { usePermission } from "../../../utils/hooks/usePermission";
-
 import { Button, Tag, Tooltip } from "antd";
 import Header from "../../../components/templates/Header";
 import VMSVehicleTable from "../components/VMSVehicleTable";

@@ -1,5 +1,3 @@
-// ไฟล์: src/modules/vmsLogPassage/screens/VMSLogPassage.tsx
-
 import { useState, useEffect } from "react";
 import {
   Tag,

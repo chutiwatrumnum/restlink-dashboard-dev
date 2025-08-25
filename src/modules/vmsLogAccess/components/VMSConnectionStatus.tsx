@@ -1,5 +1,3 @@
-// ไฟล์: src/modules/vmsInvitation/components/VMSConnectionStatus.tsx
-
 import React, { useState, useEffect } from "react";
 import { Button, Tag, Tooltip } from "antd";
 import { useSelector } from "react-redux";

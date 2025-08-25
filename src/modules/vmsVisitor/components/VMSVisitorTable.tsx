@@ -1,5 +1,3 @@
-// File: src/modules/vmsVisitor/components/VMSVisitorTable.tsx
-
 import { Table } from "antd";
 import type {
   ColumnsType,

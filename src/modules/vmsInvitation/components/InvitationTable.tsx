@@ -1,5 +1,3 @@
-// ไฟล์: src/modules/vmsInvitation/components/InvitationTable.tsx
-
 import { Table } from "antd";
 import type {
   ColumnsType,

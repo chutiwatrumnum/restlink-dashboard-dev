@@ -1,5 +1,3 @@
-// ไฟล์: src/stores/interfaces/House.ts
-
 export interface HouseRecord {
     id: string;
     address: string;

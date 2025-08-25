@@ -1,5 +1,3 @@
-// ไฟล์: src/stores/models/InvitationModel.tsx - Updated with Filtering Support
-
 import { createModel } from "@rematch/core";
 import { RootModel } from "./";
 import axiosVMS from "../../configs/axiosVMS";

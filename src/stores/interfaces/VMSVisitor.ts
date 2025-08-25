@@ -1,12 +1,11 @@
-// File: src/stores/interfaces/VMSVisitor.ts
-
 export interface VMSVisitorRecord {
     id: string;
     code: string;
     first_name: string;
     last_name: string;
     gender: string;
-    id_card: string;
+    id_card: string; // ชื่อไฟล์รูป ID Card
+    id_card_number?: string; // เลขบัตรประชาชน (ถ้ามี field แยก)
     house_id: string;
     issuer: string;
     authorized_area: string[];
@@ -42,6 +41,8 @@ export interface VMSVisitorStats {
     unstamped: number;
     todayCount: number;
     byHouse: Record<string, number>;
+    withIdCard: number; // จำนวนที่มีรูป ID Card
+    withoutIdCard: number; // จำนวนที่ไม่มีรูป ID Card
 }
 
 // For Filter and Search
@@ -50,6 +51,7 @@ export interface VMSVisitorFilters {
     stamped?: boolean;
     house_id?: string;
     name?: string;
+    hasIdCard?: boolean; // Filter ตามการมีรูป ID Card
     dateRange?: {
         start: string;
         end: string;

@@ -1,5 +1,3 @@
-// ไฟล์: src/stores/models/UserAuthModel.tsx
-
 import { createModel } from "@rematch/core";
 import { message } from "antd";
 import {

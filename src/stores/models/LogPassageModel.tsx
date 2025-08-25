@@ -1,5 +1,3 @@
-// ไฟล์: src/stores/models/LogPassageModel.tsx
-
 import { createModel } from "@rematch/core";
 import { LogPassageType } from "../interfaces/LogPassage";
 import { RootModel } from "./index";

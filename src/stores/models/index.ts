@@ -1,5 +1,3 @@
-// File: src/stores/models/index.ts (Updated with VMSVisitor model)
-
 import { Models } from "@rematch/core";
 import { userAuth } from "./UserAuthModel";
 import { common } from "./CommonModel";

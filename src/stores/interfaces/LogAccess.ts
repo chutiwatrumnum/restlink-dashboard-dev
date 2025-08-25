@@ -1,5 +1,3 @@
-// ไฟล์: src/stores/interfaces/LogAccess.ts
-
 export interface LogAccessRecord {
     id: string;
     created: string;

@@ -1,5 +1,3 @@
-// ไฟล์: src/stores/interfaces/LogPassage.ts
-
 export interface SnapshotInfo {
     license_plate: {
         plate_number: string;

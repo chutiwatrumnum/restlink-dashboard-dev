@@ -1,5 +1,3 @@
-// ไฟล์: src/stores/interfaces/Vehicle.ts
-
 export interface VehicleRecord {
     id: string;
     license_plate: string;

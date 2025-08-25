@@ -1,5 +1,3 @@
-// ไฟล์: src/stores/interfaces/Area.ts
-
 export interface AreaRecord {
     id: string;
     name: string;

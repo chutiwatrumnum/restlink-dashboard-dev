@@ -1,5 +1,3 @@
-// File: src/modules/vmsInvitation/components/VMSInvitationStatsCards.tsx - Updated with English Labels
-
 import React from "react";
 import { Card, Row, Col } from "antd";
 import {

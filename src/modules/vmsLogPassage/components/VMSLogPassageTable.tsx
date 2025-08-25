@@ -1,5 +1,3 @@
-// ไฟล์: src/modules/vmsLogPassage/components/VMSLogPassageTable.tsx
-
 import { Table } from "antd";
 import type {
   ColumnsType,

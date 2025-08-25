@@ -1,5 +1,3 @@
-// ไฟล์: src/modules/vmsLogAccess/screens/VMSLogAccess.tsx
-
 import { useState, useEffect } from "react";
 import { Tag, Tooltip, DatePicker, Select, Input, Space } from "antd";
 import Header from "../../../components/templates/Header";

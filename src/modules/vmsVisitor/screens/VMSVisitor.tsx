@@ -1,5 +1,3 @@
-// File: src/modules/vmsVisitor/screens/VMSVisitor.tsx
-
 import { useState, useEffect } from "react";
 import {
   Tag,
@@ -8,14 +6,17 @@ import {
   Select,
   Input,
   Space,
+  Avatar,
+  Image,
 } from "antd";
+import { UserOutlined } from "@ant-design/icons";
 import Header from "../../../components/templates/Header";
 import VMSVisitorTable from "../components/VMSVisitorTable";
 import VMSVisitorStatsCards from "../components/VMSVisitorStatsCards";
 import dayjs from "dayjs";
 import { useDispatch, useSelector } from "react-redux";
 import { Dispatch, RootState } from "../../../stores";
-import   type { ColumnsType, TableProps } from "antd/es/table";
+import type { ColumnsType, TableProps } from "antd/es/table";
 import { VMSVisitorRecord } from "../../../stores/interfaces/VMSVisitor";
 import { houseMappingService } from "../../../utils/services/houseMappingService";
 import { areaMappingService } from "../../../utils/services/areaMappingService";
@@ -30,6 +31,7 @@ const VMSVisitor = () => {
   const { loading, tableData, total, currentPage, perPage } = useSelector(
     (state: RootState) => state.vmsVisitor
   );
+  const { vmsUrl } = useSelector((state: RootState) => state.userAuth);
 
   // States
   const [rerender, setRerender] = useState<boolean>(false);
@@ -77,6 +79,24 @@ const VMSVisitor = () => {
     return areaNameMap.get(areaId) || areaId;
   };
 
+  // Helper function สำหรับสร้าง URL รูปภาพ
+  const getIDCardImageUrl = (
+    record: VMSVisitorRecord,
+    thumbSize?: string
+  ): string | null => {
+    if (!record.id_card || !vmsUrl) return null;
+
+    // สมมติว่า id_card field เป็นชื่อไฟล์รูป (เช่น "id_card_123.jpg")
+    // ปรับตาม structure ที่แท้จริงของ API
+    const baseUrl = `${vmsUrl}/api/files/visitor/${record.id}/${record.id_card}`;
+
+    if (thumbSize) {
+      return `${baseUrl}?thumb=${thumbSize}`;
+    }
+
+    return baseUrl;
+  };
+
   // Functions
   const refetchData = () => {
     setRerender(!rerender);
@@ -89,6 +109,54 @@ const VMSVisitor = () => {
 
   // Table Columns
   const columns: ColumnsType<VMSVisitorRecord> = [
+    {
+      title: "ID Card",
+      key: "id_card_image",
+      width: "10%",
+      align: "center",
+      render: (_, record) => {
+        const imageUrl = getIDCardImageUrl(record, "80x80");
+        const fullImageUrl = getIDCardImageUrl(record);
+
+        if (imageUrl && fullImageUrl) {
+          return (
+            <div className="visitor-photo-container">
+              <Image
+                width={60}
+                height={60}
+                src={imageUrl}
+                fallback="/default-id-card.png" // รูป fallback เมื่อโหลดไม่ได้
+                placeholder={
+                  <Avatar
+                    size={60}
+                    icon={<UserOutlined />}
+                    className="visitor-avatar-default"
+                  />
+                }
+                preview={{
+                  src: fullImageUrl,
+                  mask: <div className="visitor-photo-preview">View</div>,
+                }}
+                style={{
+                  borderRadius: "8px",
+                  border: "2px solid #f0f0f0",
+                  objectFit: "cover",
+                }}
+                className="visitor-avatar"
+              />
+            </div>
+          );
+        }
+
+        return (
+          <Avatar
+            size={60}
+            icon={<UserOutlined />}
+            className="visitor-avatar-default"
+          />
+        );
+      },
+    },
     {
       title: "Full Name",
       key: "full_name",
@@ -117,21 +185,40 @@ const VMSVisitor = () => {
       ),
     },
     {
-      title: "ID Card",
-      key: "id_card",
-      dataIndex: "id_card",
-      align: "center",
+      title: "ID Card No.",
+      key: "id_card_number",
       width: "12%",
-      render: (id_card) => (
-        <div
-          style={{
-            fontFamily: "monospace",
-            fontSize: "12px",
-            color: "#666",
-          }}>
-          {id_card || "-"}
-        </div>
-      ),
+      align: "center",
+      render: (_, record) => {
+        // ถ้า id_card เป็นรูป ให้แสดงเฉพาะเลขบัตร (ถ้ามี field แยก)
+        // หรือแสดงข้อความว่ามีรูป ID Card
+        const idCardNumber = record.id_card_number || record.id_card;
+
+        if (idCardNumber && !idCardNumber.includes(".")) {
+          // ถ้าเป็นเลขบัตร (ไม่ใช่ชื่อไฟล์)
+          return (
+            <div
+              style={{
+                fontFamily: "monospace",
+                fontSize: "12px",
+                color: "#666",
+              }}>
+              {idCardNumber}
+            </div>
+          );
+        }
+
+        // ถ้าเป็นไฟล์รูป
+        if (getIDCardImageUrl(record)) {
+          return (
+            <Tag color="blue" style={{ fontSize: "10px" }}>
+              Image Available
+            </Tag>
+          );
+        }
+
+        return "-";
+      },
     },
     {
       title: "House Address",
@@ -434,6 +521,18 @@ const VMSVisitor = () => {
             onChange={handleGenderFilter}
             style={{ minWidth: 160 }}
             options={[
+              { value: "male", label: "Male" },
+              { value: "female", label: "Female" },
+            ]}
+          />
+
+          <Select
+            placeholder="Filter by Stamped"
+            allowClear
+            size="large"
+            onChange={handleStampedFilter}
+            style={{ minWidth: 160 }}
+            options={[
               { value: true, label: "Stamped" },
               { value: false, label: "Not Stamped" },
             ]}
@@ -452,4 +551,4 @@ const VMSVisitor = () => {
   );
 };
 
-export default VMSVisitor
+export default VMSVisitor;

@@ -1,5 +1,3 @@
-// ไฟล์: src/utils/qrCodeUtils.ts - Enhanced version with text overlay
-
 import QRCode from 'qrcode';
 import dayjs from 'dayjs';
 
