@@ -1,3 +1,7 @@
+import { useSelector } from "react-redux";
+import { RootState } from "../../../stores";
+import { usePermission } from "../../../utils/hooks/usePermission";
+
 // Components
 import { Button } from "antd";
 // Icons
@@ -14,6 +18,11 @@ type UnitComponentType = {
 };
 
 const UnitComponent = (props: UnitComponentType) => {
+  const permissions = useSelector(
+    (state: RootState) => state.common?.permission
+  );
+  const { access } = usePermission(permissions);
+
   const { unit, onEditClick, onAddMemberClick } = props;
   const { id, roomAddress, unitNo, family, unitOwner } = unit;
 
@@ -32,6 +41,7 @@ const UnitComponent = (props: UnitComponentType) => {
             icon={<EditOutlined className="iconButton" />}
             type="text"
             onClick={onEditClick}
+            disabled={!access("room_management", "edit")}
           />
         ) : null}
       </div>
@@ -75,8 +85,14 @@ const UnitComponent = (props: UnitComponentType) => {
       ) : (
         <div className="flex flex-col justify-center items-start w-full h-full">
           <div
-            className="w-fit h-fit hover:cursor-pointer hover:brightness-90 hover:ease-in-out hover:duration-300"
-            onClick={onAddMemberClick}
+            className={`w-fit h-fit ${
+              access("room_management", "create")
+                ? "hover:cursor-pointer hover:brightness-90 hover:ease-in-out hover:duration-300"
+                : "opacity-50 cursor-not-allowed"
+            }`}
+            onClick={
+              access("room_management", "create") ? onAddMemberClick : undefined
+            }
           >
             <IconLoader
               iconName="addNewMember"

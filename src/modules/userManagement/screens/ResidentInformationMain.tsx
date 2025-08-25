@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { usePagination } from "../../../utils/hooks/usePagination";
+import { usePermission } from "../../../utils/hooks/usePermission";
 
 import { Button, Row, Col } from "antd";
 import Header from "../../../components/templates/Header";
@@ -56,6 +57,11 @@ const ResidentInformationMain = () => {
   const [roomListData, setRoomListData] =
     useState<ResidentInformationDataType>();
 
+  const permissions = useSelector(
+    (state: RootState) => state.common?.permission
+  );
+  const { access } = usePermission(permissions);
+
   const columns: ColumnsType<ResidentInformationDataType> = [
     {
       title: "Name-Surname",
@@ -73,18 +79,18 @@ const ResidentInformationMain = () => {
         );
       },
     },
-    {
-      title: "Room no.",
-      key: "unit",
-      align: "center",
-      width: "7%",
-      sorter: {
-        compare: (a, b) => a.unit.roomAddress.localeCompare(b.unit.roomAddress),
-      },
-      render: (_, record) => {
-        return <div>{record.unit.roomAddress ?? "-"}</div>;
-      },
-    },
+    // {
+    //   title: "Room no.",
+    //   key: "unit",
+    //   align: "center",
+    //   width: "7%",
+    //   sorter: {
+    //     compare: (a, b) => a.unit.roomAddress.localeCompare(b.unit.roomAddress),
+    //   },
+    //   render: (_, record) => {
+    //     return <div>{record.unit.roomAddress ?? "-"}</div>;
+    //   },
+    // },
     {
       title: "Phone no.",
       key: "contact",
@@ -136,34 +142,34 @@ const ResidentInformationMain = () => {
         );
       },
     },
-    // {
-    //   title: "Room list",
-    //   key: "unitList",
-    //   align: "center",
-    //   width: "5%",
-    //   render: (_, record) => {
-    //     return (
-    //       <>
-    //         <Button
-    //           color="primary"
-    //           variant="outlined"
-    //           onClick={() => {
-    //             // console.log(record);
-    //             setRoomListData(record);
-    //             setIsUserRoomListModalOpen(true);
-    //           }}
-    //         >
-    //           Room list
-    //         </Button>
-    //       </>
-    //     );
-    //   },
-    // },
+    {
+      title: "Room list",
+      key: "unitList",
+      align: "center",
+      width: "5%",
+      render: (_, record) => {
+        return (
+          <>
+            <Button
+              color="primary"
+              variant="outlined"
+              onClick={() => {
+                // console.log(record);
+                setRoomListData(record);
+                setIsUserRoomListModalOpen(true);
+              }}
+            >
+              Room list
+            </Button>
+          </>
+        );
+      },
+    },
     {
       title: "Action",
       key: "delete",
       align: "center",
-      width: "7%", // กำหนดความกว้างที่เหมาะสม
+      width: "7%",
       fixed: "right",
       render: (_, record) => {
         return (
@@ -174,14 +180,16 @@ const ResidentInformationMain = () => {
               size="large"
               icon={<EditOutlined />}
               onClick={() => onEdit(record)}
+              disabled={!access("users", "edit")}
             />
-            {/* <Button
+            <Button
               className="iconButton"
               value={record.userId}
               type="text"
               onClick={showDeleteConfirm}
               icon={<DeleteOutlined />}
-            /> */}
+              disabled={!access("users", "delete")}
+            />
           </>
         );
       },
@@ -269,8 +277,6 @@ const ResidentInformationMain = () => {
     // console.log(tableData);
   }, [rerender]);
 
-  const importExcel = ({ currentTarget }: any) => {};
-
   return (
     <>
       <Header title="User Management" />
@@ -309,17 +315,6 @@ const ResidentInformationMain = () => {
             // className="userManagementSearchBox"
             onSearch={onSearch}
           />
-        </Col>
-        <Col span={6}></Col>
-        <Col span={6} style={{ display: "flex", justifyContent: "flex-end" }}>
-          <Button
-            type="text"
-            size="large"
-            style={{ border: "solid", borderColor: "#4995ff" }}
-            onClick={importExcel}
-          >
-            import
-          </Button>
         </Col>
       </Row>
       <ResidentInformationTable

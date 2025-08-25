@@ -72,7 +72,7 @@ export const callConfirmModal = ({
         {title}
       </span>
     ),
-    content: message ? (
+    content: (
       <div className="flex flex-col gap-2 mb-4">
         {alertMessage ? (
           <span className="text-md text-[var(--danger-color)] font-light">
@@ -83,11 +83,11 @@ export const callConfirmModal = ({
           </span>
         ) : (
           <span className="text-md text-[var(--gray-color)] font-light">
-            {message}
+            {message ?? ""}
           </span>
         )}
       </div>
-    ) : null,
+    ),
     footer: (
       <div className="confirmModalFooter">
         <MediumActionButton

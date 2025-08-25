@@ -1,7 +1,12 @@
 import { useState, useEffect } from "react";
-import { Button } from "antd";
+import { Button, message } from "antd";
 import { dataAllMap } from "../../../stores/interfaces/SosWarning";
 import { ModalFormMemberHome } from "./acknowledge/ModalFormMemberHome";
+import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { useGlobal } from "../contexts/Global";
+// import { RootState } from "../../../stores/models";
+import { getSosWarningById, receiveCast } from "../service/api/SOSwarning";
 
 interface AlertMarkers {
     red: any[];
@@ -17,10 +22,14 @@ interface FormWarningSOSProps {
     setDataEmergency: (data: any) => void;
     currentMapMode: 'preview' | 'work-it';
     onClearFilter?: () => void;
-}
+    dataSelectPlan: any;
 
-const FormWarningSOS = ({  dataEmergency, unitHover, unitClick, setDataEmergency, currentMapMode, onClearFilter }: FormWarningSOSProps) => {
-    
+}
+const FormWarningSOS = ({ dataEmergency, unitHover, unitClick, setDataEmergency, 
+    currentMapMode, onClearFilter, dataSelectPlan }: FormWarningSOSProps) => {
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
+    const { uploadedImage, setStatusAcknowledge } = useGlobal();
     // เพิ่ม state สำหรับ animation
     const [filteredCards, setFilteredCards] = useState<Set<string>>(new Set());
     const [isReturningToFull, setIsReturningToFull] = useState<boolean>(false);
@@ -28,6 +37,7 @@ const FormWarningSOS = ({  dataEmergency, unitHover, unitClick, setDataEmergency
     const [hiddenCards, setHiddenCards] = useState<Set<string>>(new Set()); // cards ที่ถูกซ่อนหลัง animation
     const [idMarker, setIdMarker] = useState<string>('');
     
+
     useEffect(() => {
         if(currentMapMode==='preview') { 
             if(unitClick) {                
@@ -35,7 +45,7 @@ const FormWarningSOS = ({  dataEmergency, unitHover, unitClick, setDataEmergency
                 const emergency = dataOriginEmergency.emergency.filter((marker: any) => 
                     marker?.unitId === unitClick || marker?.unitID === unitClick
                 );
-                const deviceWarning = dataOriginEmergency.deviceWarning.filter((marker: any) => 
+                const deviceWarning = dataOriginEmergency.deviceWarning.filter((marker: any) =>
                     marker?.unitId === unitClick || marker?.unitID === unitClick
                 );
 
@@ -46,40 +56,25 @@ const FormWarningSOS = ({  dataEmergency, unitHover, unitClick, setDataEmergency
                 };
                 setDisplayEmergencyData(filteredData);
 
-                console.log('🔍 Filter results:', {
-                    unitClick,
-                    totalEmergency: dataOriginEmergency.emergency.length,
-                    filteredEmergency: emergency.length,
-                    totalDeviceWarning: dataOriginEmergency.deviceWarning.length,
-                    filteredDeviceWarning: deviceWarning.length,
-                    emergencyUnitIds: dataOriginEmergency.emergency.map((m: any) => ({ id: m.id, unitId: m.unitId, unitID: m.unitID })),
-                    deviceWarningUnitIds: dataOriginEmergency.deviceWarning.map((m: any) => ({ id: m.id, unitId: m.unitId, unitID: m.unitID }))
-                });
-                
                 const newFilteredCards = new Set<string>();
                 emergency.forEach((marker: any) => newFilteredCards.add(`red-${marker.id}`));
                 deviceWarning.forEach((marker: any) => newFilteredCards.add(`yellow-${marker.id}`));
                 setFilteredCards(newFilteredCards);
                 setIsReturningToFull(false);
                 setExpandedCards(new Set()); // ล้าง expandedCards เมื่อมี filter ใหม่
-                
+
                 // ไม่ต้องหน่วงเวลา - ให้ animation ทำงานผ่าน CSS transition เท่านั้น
                 // Cards ที่ไม่ผ่าน filter จะหุบเข้าและหายไปตาม CSS duration-1500
             }
             else {
-                console.log('🎯 Clearing filter:', {
-                    dataOriginEmergency,
-                    currentDataEmergency: dataEmergency
-                });
-                
                 // เมื่อยกเลิก click ให้คืนข้อมูลเดิม แต่ไม่ reset filteredCards ทันที
                 if (dataOriginEmergency) {
                     setDisplayEmergencyData(dataOriginEmergency);
-                    
+
                     // สร้าง set ของ cards ใหม่ที่ต้องแสดง animation เข้ามา
                     const currentFilteredCards = new Set(filteredCards);
                     const newCards = new Set<string>();
-                    
+
                     // หา cards ที่ไม่ได้อยู่ใน filtered set (cards ใหม่ที่ต้องแสดง)
                     dataOriginEmergency.emergency.forEach((marker: any) => {
                         const cardId = `red-${marker.id}`;
@@ -87,24 +82,24 @@ const FormWarningSOS = ({  dataEmergency, unitHover, unitClick, setDataEmergency
                             newCards.add(cardId);
                         }
                     });
-                    
+
                     dataOriginEmergency.deviceWarning.forEach((marker: any) => {
                         const cardId = `yellow-${marker.id}`;
                         if (!currentFilteredCards.has(cardId)) {
                             newCards.add(cardId);
                         }
                     });
-                    
+
                     // ตั้งค่า state สำหรับ animation cards ใหม่
                     setIsReturningToFull(true);
-                    
+
                     // หลังจาก animation เสร็จให้ reset state
                     setTimeout(() => {
                         // เพิ่ม cards ใหม่เข้าไปใน expandedCards และล้าง animation states
                         const allCards = new Set<string>();
                         dataOriginEmergency.emergency.forEach((marker: any) => allCards.add(`red-${marker.id}`));
                         dataOriginEmergency.deviceWarning.forEach((marker: any) => allCards.add(`yellow-${marker.id}`));
-                        
+
                         setExpandedCards(allCards);
                         setIsReturningToFull(false);
                         setFilteredCards(new Set()); // ล้าง filteredCards หลังจาก animation เสร็จ
@@ -119,58 +114,54 @@ const FormWarningSOS = ({  dataEmergency, unitHover, unitClick, setDataEmergency
         }
     }, [unitClick])
 
-    
+
     const [removingCards, setRemovingCards] = useState<Set<string>>(new Set());
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const [dataOriginEmergency, setDataOriginEmergency] = useState<any>(dataEmergency);
     const [displayEmergencyData, setDisplayEmergencyData] = useState<any>(dataEmergency);
-    
+
     // Sync dataOriginEmergency และ displayEmergencyData เมื่อ dataEmergency เปลี่ยนจาก parent (เฉพาะการเปลี่ยนแปลงข้อมูลจริงๆ)
     useEffect(() => {
         // อัพเดท dataOriginEmergency เสมอเมื่อมีข้อมูลใหม่จาก API
         setDataOriginEmergency(dataEmergency);
-        
         // อัพเดท displayEmergencyData เฉพาะเมื่อไม่มี filter (unitClick)
         if (!unitClick) {
             setDisplayEmergencyData(dataEmergency);
         }
     }, [dataEmergency, unitClick]);
-    
+
     // useEffect สำหรับจัดการการซ่อน cards หลัง animation จบ
     useEffect(() => {
         if (unitClick && dataOriginEmergency) {
             // เมื่อมี filter ใหม่ ให้ reset hidden cards ทันที
             setHiddenCards(new Set());
-            
+
             // หน่วงเวลา 400ms (ตาม animation duration) แล้วซ่อน cards ที่ไม่ผ่าน filter
             const timer = setTimeout(() => {
                 const newHiddenCards = new Set<string>();
-                
+
                 // หา cards ทั้งหมดที่ไม่ตรงกับ unitClick ปัจจุบัน
                 dataOriginEmergency.emergency.forEach((marker: any) => {
                     if (!(marker?.unitId === unitClick || marker?.unitID === unitClick)) {
                         newHiddenCards.add(`red-${marker.id}`);
                     }
                 });
-                
+
                 dataOriginEmergency.deviceWarning.forEach((marker: any) => {
                     if (!(marker?.unitId === unitClick || marker?.unitID === unitClick)) {
                         newHiddenCards.add(`yellow-${marker.id}`);
                     }
                 });
-                
-
-                
                 setHiddenCards(newHiddenCards);
             }, 400);
-            
+
             return () => clearTimeout(timer);
         } else {
             // เมื่อไม่มี filter ให้แสดง cards ทั้งหมด
             setHiddenCards(new Set());
         }
     }, [unitClick, dataOriginEmergency]);
-    
+
     // เพิ่ม useEffect สำหรับจัดการ click outside
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -178,7 +169,7 @@ const FormWarningSOS = ({  dataEmergency, unitHover, unitClick, setDataEmergency
             if (unitClick && event.target) {
                 const target = event.target as Element;
                 const formElement = target.closest('.form-warning-sos');
-                
+
                 // ถ้า click นอก FormWarningSOS และไม่ใช่ marker บนแผนที่
                 if (!formElement && !target.closest('.leaflet-marker-icon') && !target.closest('.marker-element')) {
                     if (onClearFilter) {
@@ -196,12 +187,39 @@ const FormWarningSOS = ({  dataEmergency, unitHover, unitClick, setDataEmergency
             document.removeEventListener('mousedown', handleClickOutside);
         };
     }, [unitClick, onClearFilter]);
-    const handleAcknowledgeEmergency = async (marker: any) => {
-        console.log(marker,'marker-acknowledge')
-        // console.log(id,'id')
-        // navigate('/security-alarm')
-        // setIdMarker(id)
-        // setIsModalOpen(true)        
+    const handleAcknowledgeEmergency = async (marker: any, type: string) => {
+        
+        let data = await getSosWarningById(marker.id)
+        data.result = {
+            ...data.result,
+            type: type
+        }
+        
+        let step = marker.step
+        if(step >= 1){
+            console.log(uploadedImage,'uploadedImage')
+            await dispatch.sosWarning.setDataEmergencyDetail(data.result)
+            // console.log('True1')
+            // setStatusAcknowledge(true)
+            // navigate('/dashboard/security-alarm') 
+            // message.success('Emergency acknowledged successfully')
+            return
+        }
+        if (data.status) {
+            let dataReceiveCast = await receiveCast(marker.id)
+            if(dataReceiveCast.status){
+                let step = dataReceiveCast?.result?.step
+                data.result.sosEventInfo.step  = step
+                data.result.sosEventInfo.isCompleted = dataReceiveCast?.result?.is_completed
+                data.result.sosEventInfo.event_help_id = dataReceiveCast?.result?.event_help_id
+                await dispatch.sosWarning.setDataEmergencyDetail(data.result)
+                setStatusAcknowledge(true)
+                // navigate('/dashboard/security-alarm') // ปิดการ navigate เพื่อไม่ให้เปลี่ยนหน้า
+                // message.success('Emergency acknowledged successfully')
+            }else{
+                message.error(dataReceiveCast.message)
+            }
+        }    
     }
     // ฟังก์ชันสำหรับตรวจสอบว่า card กำลังถูกลบหรือไม่
     const isCardRemoving = (cardId: string) => {
@@ -209,12 +227,55 @@ const FormWarningSOS = ({  dataEmergency, unitHover, unitClick, setDataEmergency
     };
 
     return <>
-        <ModalFormMemberHome  isModalOpen={isModalOpen} setIsModalOpen={setIsModalOpen} isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} idMarker={idMarker} />
-        <div className={`form-warning-sos p-4 pb-0 w-full h-full flex flex-col 
-            gap-4 overflow-y-auto
-            ${dataOriginEmergency && 
-            dataOriginEmergency.emergency && 
-            dataOriginEmergency.emergency.length === 0 ? ' justify-center' : ''}`}>
+        <ModalFormMemberHome 
+            isModalOpen={isModalOpen} 
+            setIsModalOpen={setIsModalOpen} 
+            isOpen={isModalOpen} 
+            onClose={() => setIsModalOpen(false)} idMarker={idMarker} 
+        />
+        <div>
+            {/* 
+            <Button type="button" onClick={()=>{
+                console.log(dataSelectPlan,'dataSelectPlan')
+                console.log(dataEmergency,'dataEmergency')
+            }}>
+                dataSelectPlan
+            </Button> 
+            */}
+            {/* Summary Cards */}
+            <div className="flex justify-between gap-4  p-4">
+                {/* SOS Card */}
+                <div className="bg-white rounded-2xl  border border-gray-100 flex-1">
+                    <div className="bg-[#D73232] text-white px-4 py-2 rounded-t-2xl text-center">
+                        <span className="font-sarabun font-semibold text-sm">SOS</span>
+                    </div>
+                    <div className="p-6 flex justify-center items-center">
+                        <div className="text-4xl font-bold text-red-600 font-sarabun">
+                            {dataEmergency?.emergency?.length || 0}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Device Issue Card */}
+                <div className="bg-white rounded-2xl  border border-gray-100 flex-1">
+                    <div className="bg-[#FFD54F] text-white px-4 py-2 rounded-t-2xl text-center">
+                        <span className=" whitespace-nowrap text-[#002C55] font-sarabun font-semibold text-sm">Device has an issue</span>
+                    </div>
+                    <div className="p-6 flex justify-center items-center">
+                        <div className="text-4xl font-bold text-blue-900 font-sarabun">
+                        {dataEmergency?.deviceWarning?.length || 0}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div className={`
+            form-warning-sos p-4 pb-4 
+            w-full h-full flex flex-col 
+            gap-4 overflow-y-auto 
+            max-h-[calc(100vh-100px)]
+            mb-4 sm:mb-6 md:mb-8 lg:mb-0`}>
             {dataOriginEmergency && dataOriginEmergency.emergency.map((marker: any, index: any) => {
                 // แปลง time เป็นรูปแบบที่ต้องการ
                 const formatTime = (timeStr: string) => {
@@ -227,10 +288,11 @@ const FormWarningSOS = ({  dataEmergency, unitHover, unitClick, setDataEmergency
                     const seconds = date.getSeconds().toString().padStart(2, '0');
                     return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
                 };
-
-                console.log(marker, 'marker-event')
                 let id = marker?.id
-                let incident = marker?.eventProcess?.[0]?.name || '-'
+                let incident = marker?.type?.nameEn || '-'
+                // marker?.eventProcess?.[0]?.name || '-'
+                let stepName = marker.stepName.nameEn
+                // let incident = marker?.type.nameEn || '-'
                 let createBy = marker?.createdByUser?.givenName || '-'
                 let address = marker?.unit?.roomAddress || '-'
                 let contract = marker?.createdByUser?.contact || marker?.createdByUser?.contact2 || marker?.createdByUser?.contact3 || '-'
@@ -255,10 +317,10 @@ const FormWarningSOS = ({  dataEmergency, unitHover, unitClick, setDataEmergency
                 const isFiltered = unitClick && isMatchingFilter; // เป็น card ที่ถูก filter เฉพาะ
                 const shouldCollapse = unitClick && !isMatchingFilter; // cards ที่ต้องหุบเข้าเมื่อ filter
                 const isNewCard = !unitClick && isReturningToFull && !isMatchingFilter; // cards ใหม่ที่เข้ามาหลังจากยกเลิก click
-                
+
                 // ตรวจสอบว่าควรซ่อน card นี้หรือไม่
                 if (hiddenCards.has(cardId)) return null;
-                
+
                 // กำหนด animation class
                 let animationClass = 'animate-fade-in'; // default
                 if (isRemoving) {
@@ -272,7 +334,7 @@ const FormWarningSOS = ({  dataEmergency, unitHover, unitClick, setDataEmergency
                 } else if (expandedCards.has(cardId)) {
                     animationClass = 'animate-expand-complete'; // cards ที่ animation เสร็จแล้ว
                 }
-                
+
                 return (
                     <div
                         key={cardId}
@@ -284,14 +346,14 @@ const FormWarningSOS = ({  dataEmergency, unitHover, unitClick, setDataEmergency
                         }}
                     >
                         <div className="p-3">
-                            <div className="text-xs mb-1"><span className="font-bold">Incident:</span> {incident}</div>
-                            <div className="text-xs mb-1"><span className="font-bold">Reported by:</span> {createBy}</div>
-                            <div className="text-xs mb-1"><span className="font-bold">Address:</span> {address}</div>
-                            <div className="text-xs mb-1"><span className="font-bold">Emergency Contact:</span> {contract}</div>
-                            <div className="text-xs mb-3"><span className="font-bold">Time:</span> {time}</div>
-                            <Button type="primary" block 
-                            className="rounded bg-[#E74C3C] border-[#E74C3C] hover:bg-[#C0392B] hover:border-[#C0392B]" 
-                            onClick={() => handleAcknowledgeEmergency(marker)}>
+                            <div className="text-md mb-1"><span className="font-medium">Incident:</span> {incident}</div>
+                            <div className="text-md  mb-1"><span className="font-medium">Reported by:</span> {createBy}</div>
+                            <div className="text-md  mb-1"><span className="font-medium">Address:</span> {address}</div>
+                            <div className="text-md  mb-1"><span className="font-medium">Emergency Contact:</span> {contract}</div>
+                            <div className="text-md  mb-3"><span className="font-medium">Time:</span> {time}</div>
+                            <Button type="primary" block
+                                className="rounded bg-[#E74C3C] border-[#E74C3C] hover:bg-[#C0392B] hover:border-[#C0392B]"
+                                onClick={() => handleAcknowledgeEmergency(marker, 'emergency')}>
                                 Acknowledge Emergency
                             </Button>
                         </div>
@@ -312,8 +374,9 @@ const FormWarningSOS = ({  dataEmergency, unitHover, unitClick, setDataEmergency
                     return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
                 };
 
-
-                let incident = marker?.eventProcess?.[0]?.name || '-'
+                let stepName = marker.stepName.nameEn
+                let incident = marker?.type?.nameEn || '-'
+                // marker?.eventProcess?.[0]?.name || '-'
                 let createBy = marker?.createdByUser?.givenName || '-'
                 let address = marker?.unit?.roomAddress || '-'
                 let contract = marker?.createdByUser?.contact || marker?.createdByUser?.contact2 || marker?.createdByUser?.contact3 || marker?.createdByUser?.contact4 || '-'
@@ -329,7 +392,7 @@ const FormWarningSOS = ({  dataEmergency, unitHover, unitClick, setDataEmergency
                 const displayContact = marker.addressUnit?.user?.contact || telNumbers || 'N/A';
                 const cardId = `yellow-${marker.id || index}`;
                 const isRemoving = isCardRemoving(cardId);
-                
+
                 // ตรวจสอบสถานะการ filter และ animation
                 const isMatchingFilter = !unitClick || (marker?.unitId === unitClick || marker?.unitID === unitClick);
                 const shouldShow = isMatchingFilter; // แสดงเมื่อไม่มี filter หรือ card นี้ผ่าน filter
@@ -365,33 +428,30 @@ const FormWarningSOS = ({  dataEmergency, unitHover, unitClick, setDataEmergency
                         }}
                     >
                         <div className="p-3">
-                            <div className="text-xs mb-1"><span className="font-bold">Incident:</span> {incident}</div>
-                            <div className="text-xs mb-1"><span className="font-bold">Reported by:</span> {createBy}</div>
-                            <div className="text-xs mb-1"><span className="font-bold">Address:</span> {address}</div>
-                            <div className="text-xs mb-1"><span className="font-bold">Emergency Contact:</span> {contract}</div>
-                            <div className="text-xs mb-3"><span className="font-bold">Time:</span> {time}</div>
-                            <Button type="primary" block 
-                            className="rounded bg-[#E74C3C] border-[#E74C3C] hover:bg-[#C0392B] hover:border-[#C0392B]"
-                            onClick={() => handleAcknowledgeEmergency(marker.id)}>
+                            <div className="text-md mb-1"><span className="font-medium">Incident:</span> {incident}</div>
+                            <div className="text-md mb-1"><span className="font-medium">Reported by:</span> {createBy}</div>
+                            <div className="text-md mb-1"><span className="font-medium">Address:</span> {address}</div>
+                            <div className="text-md mb-1"><span className="font-medium">Emergency Contact:</span> {contract}</div>
+                            <div className="text-md mb-3"><span className="font-medium">Time:</span> {time}</div>
+                            <Button type="primary" block
+                                className="rounded bg-[#E74C3C] border-[#E74C3C] hover:bg-[#C0392B] hover:border-[#C0392B]"
+                                onClick={() => handleAcknowledgeEmergency(marker, 'DeviceWarning')}>
                                 Acknowledge Emergency
                             </Button>
                         </div>
                     </div>
                 );
             })}
-
-
             {
                 dataEmergency.emergency.length === 0 && dataEmergency.deviceWarning.length === 0 && (
-                    <div className="text-xs font-bold tracking-wide px-3 py-2 flex items-center  gap-2"  
-                    style={{lineHeight: 'normal'}}>
+                    <div className="text-xs font-bold tracking-wide px-3 py-2 
+                    flex justify-center items-center  gap-2"
+                        style={{ lineHeight: 'normal' }}>
                         <span>✅</span>
-                        <span className="pt-1 text-xl">No emergency</span>
+                        <span className="pt-1 text-xl whitespace-nowrap">No emergency</span>
                     </div>
                 )
             }
-
-
         </div>
 
         {/* CSS Animations */}

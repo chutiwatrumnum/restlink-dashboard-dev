@@ -1,3 +1,7 @@
+import { useSelector } from "react-redux";
+import { RootState } from "../../../stores";
+import { usePermission } from "../../../utils/hooks/usePermission";
+
 import { Button, Empty, Tag } from "antd";
 import { ServiceChatListDataType } from "../../../stores/interfaces/Service";
 import {
@@ -42,6 +46,11 @@ const serviceCenterChatManage = ({
     setServiceCenterStatusSelectionList,
   ] = useState<ServiceCenterSelectListType[]>([]);
   const [refresh, setRefresh] = useState(false);
+
+  const permissions = useSelector(
+    (state: RootState) => state.common?.permission
+  );
+  const { access } = usePermission(permissions);
 
   const { data: selectList } = useServiceCenterStatusTypeQuery();
   const {
@@ -163,10 +172,13 @@ const serviceCenterChatManage = ({
             </div>
           </div>
           <Button
-            disabled={data.statusName === "Success" ? true : false}
+            disabled={
+              data.statusName === "Success" || !access("fixing_report", "edit")
+            }
             onClick={() => onEdit()}
             size="large"
-            shape="round">
+            shape="round"
+          >
             <b>Manage</b>
           </Button>
         </div>

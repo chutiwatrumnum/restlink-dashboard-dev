@@ -48,6 +48,7 @@ interface FormVillageLocationProps {
     onMarkerSelect?: (marker: any | null) => void;
     onEditMarkerData?: (data: any) => void;
     dataAllMap: dataAllMap;
+    floorIdGlobal: string;
 }
 
 const FormVillageLocation = ({ 
@@ -73,6 +74,7 @@ const FormVillageLocation = ({
     onMarkerDelete,
     setDataMapAll, 
     onMarkerSelect,
+    floorIdGlobal,
     }: FormVillageLocationProps) => {
     const [form] = Form.useForm();
     const [isFormValid, setIsFormValid] = useState(false);
@@ -88,6 +90,8 @@ const FormVillageLocation = ({
     const isUserInteractingRef = useRef<boolean>(false); // flag รวม เพื่อตรวจสอบว่า user กำลัง interact กับ form หรือเปล่า
     const lastFormUpdateTimeRef = useRef<number>(0);
     const isCancellingRef = useRef<boolean>(false); // flag เพื่อป้องกัน useEffect ทำงานหลังจากกด cancel // เก็บเวลาล่าสุดที่ update form
+    const isConfirmingRef = useRef<boolean>(false); // flag เพื่อป้องกัน racing condition หลัง confirm
+    const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null); // สำหรับ debounce การอัปเดต form
 
 
 
@@ -103,17 +107,19 @@ const FormVillageLocation = ({
 
     // อัพเดทค่าชื่อ และ address ของ marker เมื่อมีการเลือก marker ใหม่
     useEffect(() => {
-        // ถ้ากำลังอยู่ในสถานะ cancelling ให้ skip การ update
-        if (isCancellingRef.current) {
+        // ถ้ากำลังอยู่ในสถานะ cancelling หรือ confirming ให้ skip การ update
+        if (isCancellingRef.current || isConfirmingRef.current) {
+            console.log('⏸️ Skipping form update - cancelling:', isCancellingRef.current, 'confirming:', isConfirmingRef.current);
             return;
         }
 
         // ถ้า selectedMarker เป็น null ให้ skip การ update เพื่อป้องกันการ enable form อีกครั้ง
         if (!selectedMarker) {
+            console.log('⏸️ Skipping form update - no selectedMarker');
             return;
         }
-
-        // เพิ่มการตรวจสอบ hasActiveMarker - ถ้าไม่มี active marker ให้ผ่านไปได้ (เพื่อ unlock marker)
+            
+            // เพิ่มการตรวจสอบ hasActiveMarker - ถ้าไม่มี active marker ให้ผ่านไปได้ (เพื่อ unlock marker)
         // if (!hasActiveMarker) {
         //     console.log('⚠️ hasActiveMarker is false - this could be unlock marker scenario, proceeding anyway');
         // }
@@ -122,9 +128,16 @@ const FormVillageLocation = ({
         const isMarkerChanged = selectedMarker && currentMarkerIdRef.current !== selectedMarker.id;
         // เพิ่มการตรวจสอบการ unlock marker: ถ้า marker ID เดิมแต่เป็นการเลือกใหม่หลังจาก clear หรือ cancel
         const isMarkerReselected = selectedMarker && (
-            currentMarkerIdRef.current === null || // หลังจาก cancel
+            currentMarkerIdRef.current === null || // หลังจาก cancel/confirm
             (currentMarkerIdRef.current !== selectedMarker.id && lastFormUpdateTimeRef.current === 0) // หลังจาก reset
         );
+        
+        console.log('🔄 Marker selection check:');
+        console.log('  - selectedMarker.id:', selectedMarker?.id);
+        console.log('  - currentMarkerIdRef.current:', currentMarkerIdRef.current);
+        console.log('  - isMarkerChanged:', isMarkerChanged);
+        console.log('  - isMarkerReselected:', isMarkerReselected);
+        
         const now = Date.now();
         // ถ้า user กำลัง interact กับ form และไม่ใช่การเปลี่ยน marker หรือ reselect marker ให้ skip การ update
         const hasActiveElement = document.activeElement && document.activeElement.tagName.match(/input|select|textarea/i);
@@ -151,6 +164,7 @@ const FormVillageLocation = ({
             // ไม่ต้อง reset marker ก่อนหน้าเพื่อป้องกัน race condition และความซับซ้อน
             // เฉพาะ reset ข้อมูลภายในนี้เท่านั้น
             lastUserSelectedAddress.current = null;
+            console.log('📝 Setting currentMarkerIdRef to:', selectedMarker.id);
             currentMarkerIdRef.current = selectedMarker.id;
             // Reset interaction flags ทันทีเมื่อเปลี่ยน marker เพื่อให้ form อัพเดทได้
             setIsUserInputting(false);
@@ -188,9 +202,11 @@ const FormVillageLocation = ({
             originalMarkerDataRef.current = allMarkersOriginalDataRef.current[currentMarkerId];
         }
 
-        // Set ค่าจาก marker ลง form  
+        // Set ค่าจาก marker ลง form - ใช้ข้อมูลจาก selectedMarker โดยตรงเสมอ
         if (selectedMarker) {
-            // เก็บข้อมูลต้นฉบับของ marker ถ้ายังไม่เคยเก็บ
+            console.log('🎯 Processing selectedMarker directly (bypassing cache):', selectedMarker);
+            
+            // เก็บข้อมูลต้นฉบับของ marker เฉพาะเมื่อจำเป็น (สำหรับ reset function)
             const currentMarkerId = selectedMarker.id.toString();
             if (!allMarkersOriginalDataRef.current[currentMarkerId]) {
                 const initialAddressData = (selectedMarker as any)?.addressData;
@@ -213,50 +229,76 @@ const FormVillageLocation = ({
                     unitID: (selectedMarker as any)?.unitID
                 };
                 allMarkersOriginalDataRef.current[currentMarkerId] = originalData;
+                console.log('💾 Saved original data for marker:', currentMarkerId, originalData);
             }
 
-            // อัพเดท originalMarkerDataRef ให้ชี้ไปที่ข้อมูลของ marker ปัจจุบัน
+            // อัพเดท originalMarkerDataRef ให้ชี้ไปที่ข้อมูลของ marker ปัจจุบัน (สำหรับ reset function)
             originalMarkerDataRef.current = allMarkersOriginalDataRef.current[currentMarkerId];
 
             const updateFields: any = {};
 
-            // Set address ถ้ามี
-            const addressToUse = (selectedMarker as any)?.unitID || selectedMarker.address;
-            if (addressToUse) {
-                updateFields.address = addressToUse;
+            // Set address ถ้ามี - ใช้ข้อมูลจาก selectedMarker ปัจจุบันโดยตรง (ไม่พึ่งพา cache)
+            const markerUnitID = (selectedMarker as any)?.unitID || selectedMarker.address;
+            console.log('🏠 Current selectedMarker:', selectedMarker);
+            console.log('🏠 Marker unitID from selectedMarker:', markerUnitID);
+            console.log('🏠 Available units:', dataSelectPlan?.unit?.map(u => ({ id: u.id, roomAddress: u.roomAddress })));
+            
+            if (markerUnitID) {
+                // ตรวจสอบว่า unitID ของ marker ตรงกับ unit.id ใน options หรือไม่
+                const matchingUnit = dataSelectPlan?.unit?.find(unit => unit.id == markerUnitID);
+                console.log('🏠 Matching unit for unitID', markerUnitID, ':', matchingUnit);
+                
+                if (matchingUnit) {
+                    updateFields.address = matchingUnit.id;
+                    console.log('✅ Setting address to:', matchingUnit.id, '(', matchingUnit.roomAddress, ')');
+                } else {
+                    // ถ้าไม่เจอ matching unit ให้ลองใช้ unitID ตรงๆ
+                    updateFields.address = markerUnitID;
+                    console.log('⚠️ No matching unit found, using unitID directly:', markerUnitID);
+                }
+            } else {
+                console.log('❌ No unitID found in selectedMarker');
             }
 
             // เอาค่าจาก marker มาใส่ใน input ตรงๆ
             const markerAddressData = (selectedMarker as any)?.addressData;
 
-            // ตรวจสอบ name: ใช้ addressData ก่อน (ข้อมูลจาก API) แล้วค่อยใช้ marker.name
+            // ตรวจสอบ name: ใช้ข้อมูลจาก selectedMarker ปัจจุบันโดยตรง
+            console.log('📝 Setting name from selectedMarker:', selectedMarker.name);
             if (markerAddressData?.user?.givenName || markerAddressData?.givenName) {
                 // มี name จาก addressData (API) ให้ใช้อันนี้ก่อน
                 updateFields.name = markerAddressData.user?.givenName || markerAddressData.givenName;
+                console.log('📝 Using name from addressData:', updateFields.name);
             } else if (selectedMarker.name && selectedMarker.name.trim() !== '') {
                 // ถ้าไม่มี name จาก API แต่ marker มี name อยู่แล้ว
                 // ตรวจสอบว่า marker.name เป็น address หรือไม่ (ถ้าเป็นตัวเลขล้วน ๆ หรือมี pattern ของ address)
                 const isAddressPattern = /^\d+\/\d+$|^\d+$/.test(selectedMarker.name.trim());
                 if (!isAddressPattern) {
                     updateFields.name = selectedMarker.name;
+                    console.log('📝 Using name from selectedMarker:', updateFields.name);
                 } else {
                     updateFields.name = ''; // ถ้าเป็น address pattern ให้เว้นว่าง
+                    console.log('📝 Address pattern detected, clearing name');
                 }
             } else {
                 updateFields.name = ''; // ไม่มีข้อมูล name ให้เว้นว่าง
+                console.log('📝 No name found, clearing');
             }
 
-            // Set tel fields จาก addressData หรือ marker
+            // Set tel fields จาก selectedMarker ปัจจุบันโดยตรง
+            console.log('📞 Setting tel from selectedMarker:', { tel1: selectedMarker.tel1, tel2: selectedMarker.tel2, tel3: selectedMarker.tel3 });
             if (markerAddressData?.user && Object.keys(markerAddressData.user).length > 0) {
                 // มี user data ใน addressData
                 if (markerAddressData.user.contact) updateFields.tel1 = markerAddressData.user.contact;
                 if (markerAddressData.user.contact2) updateFields.tel2 = markerAddressData.user.contact2;
                 if (markerAddressData.user.contact3) updateFields.tel3 = markerAddressData.user.contact3;
+                console.log('📞 Using tel from addressData:', { tel1: updateFields.tel1, tel2: updateFields.tel2, tel3: updateFields.tel3 });
             } else {
-                // ใช้ข้อมูลจาก selectedMarker หรือเคลียร์
+                // ใช้ข้อมูลจาก selectedMarker ปัจจุบันโดยตรง
                 updateFields.tel1 = selectedMarker.tel1 || '';
                 updateFields.tel2 = selectedMarker.tel2 || '';
                 updateFields.tel3 = selectedMarker.tel3 || '';
+                console.log('📞 Using tel from selectedMarker directly:', { tel1: updateFields.tel1, tel2: updateFields.tel2, tel3: updateFields.tel3 });
             }
 
             // Set ค่าลง form - อนุญาตการเปลี่ยน marker เสมอ, ป้องกันแค่การ reset ระหว่าง input
@@ -270,8 +312,21 @@ const FormVillageLocation = ({
 
             if (shouldUpdateForm) {
                 // บังคับ update form ทันทีเมื่อเปลี่ยน marker
+                console.log('📝 Updating form with updateFields:', updateFields);
+                console.log('📝 Current form values before update:', form.getFieldsValue());
                 form.setFieldsValue(updateFields);
+                console.log('📝 Current form values after update:', form.getFieldsValue());
                 lastFormUpdateTimeRef.current = now;
+                
+                // Double-check address field specifically
+                setTimeout(() => {
+                    const currentAddress = form.getFieldValue('address');
+                    console.log('🔍 Address field check - Expected:', updateFields.address, 'Actual:', currentAddress);
+                    if (updateFields.address && currentAddress !== updateFields.address) {
+                        console.log('⚠️ Address mismatch! Forcing update again...');
+                        form.setFieldValue('address', updateFields.address);
+                    }
+                }, 50);
             }
         }
         // ตรวจสอบ validation หลังอัพเดท form (เฉพาะเมื่อไม่ได้ cancel และมี active marker)
@@ -559,6 +614,10 @@ const FormVillageLocation = ({
             okMessage: "Confirm",
             cancelMessage: "Cancel",
             onOk: async () => {
+                // Set flag เพื่อป้องกัน racing condition
+                isConfirmingRef.current = true;
+                console.log('🔒 Set isConfirmingRef to true');
+                
                 // ตรวจสอบ validation ก่อน (เหลือแค่ address)
                 const values = form.getFieldsValue();
                 if (!values.address) {
@@ -583,6 +642,7 @@ const FormVillageLocation = ({
                     const markerData: MarkerProcess = {
                         // villageId: idVillage,
                         planInfoId:  dataAllMap?.planInfoId || '',
+                        floorId: Number(floorIdGlobal)  || null,
                         unitId: Number(values.address), // ใช้ค่าจาก form address ซึ่งจะเป็น unitID
                         markerType: "marker",
                         markerInfo: {
@@ -664,14 +724,34 @@ const FormVillageLocation = ({
                     if (onMarkerSelect) {
                         onMarkerSelect(null);
                     }
+                    
+                    // IMPORTANT: Reset currentMarkerIdRef และ clear cache หลังจาก create เพื่อให้ marker ใหม่ถูกตรวจจับว่าเป็นการเปลี่ยน marker
+                    currentMarkerIdRef.current = null;
+                    // Clear ข้อมูล cache ทั้งหมดเพื่อให้ marker ใหม่ใช้ข้อมูลจริง
+                    allMarkersOriginalDataRef.current = {};
+                    originalMarkerDataRef.current = null;
+                    console.log('🧹 Cleared all marker cache after create');
+                    
+                    // Clear confirming flag
+                    setTimeout(() => {
+                        isConfirmingRef.current = false;
+                        console.log('🔓 Cleared isConfirmingRef after create');
+                    }, 100);
 
                     if (onConfirm) {
                         onConfirm();
                     }
                 } else if (isUpdateMode) {
+                    console.log('🔍 Update mode selectedMarker:', selectedMarker);
+                    console.log('  - ID:', selectedMarker?.id);
+                    console.log('  - Position (x, y):', selectedMarker?.x, selectedMarker?.y);
+                    console.log('  - Original Position (originalX, originalY):', selectedMarker?.originalX, selectedMarker?.originalY);
                     const markerData: MarkerProcess = {
                         markerId: selectedMarker?.id?.toString() || "",
                         unitId: Number(values.address), // ใช้ค่าจาก form address ซึ่งจะเป็น unitID
+                        // selectedMarker?.unitID || Number(values.address),
+                        
+                        floorId: Number(floorIdGlobal) || null,
                         markerType: "marker",
                         markerInfo: {
                             // id: selectedMarker?.id?.toString() || "",
@@ -686,6 +766,7 @@ const FormVillageLocation = ({
                             group: selectedMarker?.group || ""
                         },
                     };
+
                     let data = await updateMarker(markerData)
                     if (data.status) {
                         SuccessModal("แก้ไข Marker สำเร็จ",900)
@@ -747,6 +828,19 @@ const FormVillageLocation = ({
                     if (onMarkerSelect) {
                         onMarkerSelect(null);
                     }
+                    
+                    // IMPORTANT: Reset currentMarkerIdRef และ clear cache หลังจาก update เพื่อให้ marker ใหม่ถูกตรวจจับว่าเป็นการเปลี่ยน marker
+                    currentMarkerIdRef.current = null;
+                    // Clear ข้อมูล cache ทั้งหมดเพื่อให้ marker ใหม่ใช้ข้อมูลจริง
+                    allMarkersOriginalDataRef.current = {};
+                    originalMarkerDataRef.current = null;
+                    console.log('🧹 Cleared all marker cache after update');
+                    
+                    // Clear confirming flag หลังจาก delay เล็กน้อย
+                    setTimeout(() => {
+                        isConfirmingRef.current = false;
+                        console.log('🔓 Cleared isConfirmingRef after update');
+                    }, 100);
 
                     if (onConfirm) {
                         onConfirm();

@@ -12,7 +12,7 @@ const getJuristicRole = async () => {
     let url = `/team-management/invitation/juristic/role`;
     const res = await axios.get(url);
 
-    console.log("Role API Response:", res.data);
+    // console.log("Role API Response:", res.data);
 
     // ตรวจสอบโครงสร้างข้อมูลและแปลงให้เป็นรูปแบบที่ต้องการ
     let roleData = [];

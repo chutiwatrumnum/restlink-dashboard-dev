@@ -4,6 +4,12 @@
   100% { transform: rotate(360deg); }
 }
 
+/* Toast progress bar สีแดง */
+.toast-progress-red {
+  background: #dc2626 !important;
+  background-image: none !important;
+}
+
 .searchBox .ant-btn-default {
   box-shadow: none;
 }

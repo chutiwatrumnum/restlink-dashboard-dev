@@ -1,5 +1,8 @@
 // Hooks
 import { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
+import { RootState } from "../../../stores";
+import { usePermission } from "../../../utils/hooks/usePermission";
 
 // Components
 import { Modal, Tabs, Button } from "antd";
@@ -37,6 +40,10 @@ const RoomManageModal = (props: RoomManageModalProps) => {
   // States
   const [currentMemberIndex, setCurrentMemberIndex] = useState(0);
 
+  const permissions = useSelector(
+    (state: RootState) => state.common?.permission
+  );
+  const { access } = usePermission(permissions);
   // Functions
   const onModalClose = () => {
     setCurrentMemberIndex(0);
@@ -100,6 +107,7 @@ const RoomManageModal = (props: RoomManageModalProps) => {
                   type="primary"
                   size="large"
                   className="w-full"
+                  disabled={access("room_management", "create")}
                 >
                   {`+ Add user`}
                 </Button>

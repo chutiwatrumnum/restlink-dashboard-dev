@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { usePermission } from "../../../utils/hooks/usePermission";
+
 import { Button, Tag, Tooltip, message } from "antd";
 import Header from "../../../components/templates/Header";
 import InvitationTable from "../components/InvitationTable";
@@ -61,6 +63,11 @@ const VMSInvitation = () => {
     new Map()
   );
   const [isLoadingMapping, setIsLoadingMapping] = useState(false);
+
+  const permissions = useSelector(
+    (state: RootState) => state.common?.permission
+  );
+  const { access } = usePermission(permissions);
 
   // Pagination Options
   const pageSizeOptions = [10, 20, 40, 80, 100];
@@ -284,9 +291,9 @@ const VMSInvitation = () => {
 
     callConfirmModal({
       title: "E-Stamp Invitation",
-      message: `คุณต้องการประทับตราบัตรเชิญสำหรับ "${record.guest_name}" หรือไม่?`,
-      okMessage: "ประทับตรา",
-      cancelMessage: "ยกเลิก",
+      message: `Do you need to have the invitation card stamped "${record.guest_name}" for entry? `,
+      okMessage: "Stamp",
+      cancelMessage: "Cancel",
       onOk: async () => {
         try {
           await eStampMutation.mutateAsync(record.id);
@@ -373,7 +380,8 @@ const VMSInvitation = () => {
                 ? `House ID: ${house_id}`
                 : `Address: ${address}\nHouse ID: ${house_id}`
             }
-            placement="top">
+            placement="top"
+          >
             <div
               style={{
                 fontWeight: isOriginalId ? "400" : "600",
@@ -384,7 +392,8 @@ const VMSInvitation = () => {
                 overflow: "hidden",
                 textOverflow: "ellipsis",
                 whiteSpace: "nowrap",
-              }}>
+              }}
+            >
               {address}
             </div>
           </Tooltip>
@@ -414,13 +423,15 @@ const VMSInvitation = () => {
                 ? `Vehicle IDs: ${vehicle_ids.join(", ")}`
                 : "No vehicles"
             }
-            placement="top">
+            placement="top"
+          >
             <div
               style={{
                 fontSize: "12px",
                 color: "#1890ff",
                 fontWeight: "500",
-              }}>
+              }}
+            >
               {displayText}
             </div>
           </Tooltip>
@@ -504,7 +515,7 @@ const VMSInvitation = () => {
       },
       render: (stamped_time) => {
         if (!stamped_time) {
-          return <Tag color="orange">ยังไม่ประทับตรา</Tag>;
+          return <Tag color="orange">Not Stamped</Tag>;
         }
         return (
           <div>
@@ -540,14 +551,17 @@ const VMSInvitation = () => {
             gap: "4px",
             justifyContent: "center",
             flexWrap: "wrap",
-          }}>
-          <Button
+          }}
+        >
+          {/* <Button
             type="text"
             icon={<EditOutlined style={{ color: "#1890ff" }} />}
             onClick={() => onEdit(record)}
             title="Edit invitation"
             size="small"
-          />
+            disabled={!access("vms", "edit")}
+          /> */}
+
           <Button
             type="text"
             icon={<DeleteOutlined style={{ color: "#ff4d4f" }} />}
@@ -557,7 +571,9 @@ const VMSInvitation = () => {
             }
             title="Delete invitation"
             size="small"
+            disabled={!access("vms", "delete")}
           />
+
           <Button
             type="text"
             icon={
@@ -572,16 +588,19 @@ const VMSInvitation = () => {
               eStampMutation.isPending && eStampMutation.variables === record.id
             }
             title={isStamped(record) ? "Already stamped" : "E-stamp invitation"}
-            disabled={isStamped(record)}
+            disabled={!access("vms", "edit") || isStamped(record)}
             size="small"
           />
+
           <Button
             type="text"
             icon={<QrcodeOutlined style={{ color: "#722ed1" }} />}
             onClick={() => onDownloadQR(record)}
             title="View QR Code"
             size="small"
-            disabled={!record.code || !record.code.trim()}
+            disabled={
+              !record.code || !record.code.trim() || !access("vms", "view")
+            }
           />
         </div>
       ),
@@ -632,7 +651,9 @@ const VMSInvitation = () => {
             type="primary"
             icon={<PlusOutlined />}
             onClick={onCreate}
-            className="userManagementExportBtn">
+            className="userManagementExportBtn"
+            disabled={!access("vms", "create")}
+          >
             Add New
           </Button>
         </div>

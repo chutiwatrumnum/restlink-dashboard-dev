@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { usePagination } from "../../../utils/hooks/usePagination";
+import { usePermission } from "../../../utils/hooks/usePermission";
 
 import { Button, Row, Pagination, Tabs, DatePicker } from "antd";
 import { QrcodeOutlined } from "@ant-design/icons";
@@ -106,11 +107,13 @@ const ReservationList = () => {
               type="text"
               icon={<QrcodeOutlined className="iconButton" />}
               onClick={() => onQRClick(record)}
+              disabled={!access("facility", "view")}
             />
             <Button
               onClick={() => showDeleteConfirm(record)}
               type="text"
               icon={<TrashIcon className="iconWidthButton" />}
+              disabled={!access("facility", "delete")}
             />
           </div>
         );
@@ -126,6 +129,11 @@ const ReservationList = () => {
   const [items, setItems] = useState<TabsProps["items"]>([]);
   const [qrData, setQrData] = useState<ReservedRowListDataType>();
   const [search, setSearch] = useState("");
+
+  const permissions = useSelector(
+    (state: RootState) => state.common?.permission
+  );
+  const { access } = usePermission(permissions);
 
   // functions
   const onSearch = (value: string) => {
@@ -256,6 +264,7 @@ const ReservationList = () => {
           message="Create reservation"
           onClick={onCreate}
           className="createReserved"
+          disabled={!access("facility", "create")}
         />
       </div>
       <Tabs defaultActiveKey="0" items={items} onChange={onTabsChange} />

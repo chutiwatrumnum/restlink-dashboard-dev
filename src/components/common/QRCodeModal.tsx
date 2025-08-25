@@ -135,14 +135,13 @@ const QRCodeModal: React.FC<QRCodeModalProps> = ({
 
   return (
     <Modal
-    
       open={isOpen}
       onCancel={handleModalClose}
       centered
       width={500}
       footer={[
         <Button key="close" onClick={handleModalClose} size="large">
-          ปิด
+          Close
         </Button>,
         <Button
           key="download"
@@ -258,8 +257,8 @@ const QRCodeModal: React.FC<QRCodeModalProps> = ({
             color: "#0050b3",
             textAlign: "left",
           }}>
-          <strong>💡 วิธีใช้:</strong> นำ QR Code
-          นี้ไปแสดงที่จุดตรวจสอบเพื่อเข้าใช้งานพื้นที่ที่ได้รับอนุญาต
+          <strong>💡 How to use : </strong>Present this QR Code at the checkpoint
+          to gain access to the authorized area.
         </div>
       </div>
     </Modal>

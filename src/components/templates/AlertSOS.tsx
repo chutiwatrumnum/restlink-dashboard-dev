@@ -1,16 +1,145 @@
 import { useNavigate } from 'react-router-dom';
-import { useEffect, useRef } from 'react';
+import { useState, useEffect, useRef,useCallback } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { Dispatch, RootState } from '../../stores';
+import { io, Socket } from "socket.io-client";
+import { getEmergency,getEventPending } from "../../modules/sosWarning/service/api/SOSwarning";
+import { encryptStorage } from "../../utils/encryptStorage";
+// import { toast } from 'react-toastify';
+import { Button } from 'antd';
+import { ToastContainer,toast } from 'react-toastify';
 
-const AlertSOS = ({showToast,isToastExpanded,handleToggleToast,dataEmergency,handleHideToast}:any) => {
+const AlertSOS = ({isAuth}:any) => {
+  const dispatch = useDispatch<Dispatch>();
+  const [isToastExpanded, setIsToastExpanded] = useState<boolean>(false);
+  const [socket, setSocket] = useState<Socket | null>(null);
+  const [connected, setConnected] = useState(false);
+  const [showToast, setShowToast] = useState<boolean>(false);
+  const [dataEmergency, setDataEmergency] = useState<any>(null);
+  // State สำหรับควบคุม animation
+  const [isVisible, setIsVisible] = useState<boolean>(false);
+  const [isAnimatingOut, setIsAnimatingOut] = useState<boolean>(false);
+ 
+  const notify = () => toast("Problem in your Room");
+  useEffect(() => {
+    if(dataEmergency?.emergency?.length > 0 || dataEmergency?.deviceWarning?.length > 0){
+      dispatch.sosWarning.setShowToast(true);
+    }
+  }, [dataEmergency]);
+
+  // useEffect สำหรับควบคุม animation
+  useEffect(() => {
+    if (showToast) {
+      // แสดง component
+      setIsVisible(true);
+      setIsAnimatingOut(false);
+    } else {
+      // เริ่ม animation fade out
+      setIsAnimatingOut(true);
+      // ซ่อน component หลัง animation เสร็จ (500ms)
+      setTimeout(() => {
+        setIsVisible(false);
+        setIsAnimatingOut(false);
+      }, 500);
+    }
+  }, [showToast]);
+
+  useEffect(() => {
+    async function connectSocket() {
+      const getEmergencyData = async () => {
+        let dataEmergency = await getEventPending();
+        if (dataEmergency.status) {
+          setDataEmergency(dataEmergency.result);
+          // ส่งข้อมูลเริ่มต้นไปยัง Redux store
+          dispatch.sosWarning.setDataEmergency(dataEmergency.result);
+          
+          let haveEmergency = dataEmergency.result.emergency.length > 0;
+          let haveWarning = dataEmergency.result.deviceWarning.length > 0;
+          if (haveEmergency || haveWarning) {
+            setTimeout(() => {
+              setShowToast(true);  
+            }, 500);
+            
+          }
+        }
+      };
+      getEmergencyData();
+
+      const URL ="https://reslink-security-wqi2p.ondigitalocean.app/socket/sos/dashboard";
+      const access_token = encryptStorage.getItem("access_token");
+      const projectID = await encryptStorage.getItem("projectId");
+      const newSocket = io(URL, {
+        reconnection: true,
+        reconnectionAttempts: 2,
+        reconnectionDelay: 1000,
+        reconnectionDelayMax: 2000,
+        timeout: 10000,
+        extraHeaders: {
+          Authorization: `Bearer ${access_token}`,
+          "x-api-key": projectID,
+        },
+      });
+      newSocket.connect();
+      newSocket.on("connect", () => {
+        setConnected(true);
+      });
+
+      newSocket.on("disconnect", () => {
+        setConnected(false);
+      });
+
+      newSocket.on("sos", (data) => {
+        let haveEmergency = data?.events?.emergency?.length > 0;
+        let haveWarning = data?.events?.deviceWarning?.length > 0;
+        let conditionEmergency = haveEmergency || haveWarning;
+ 
+        // อัพเดท Redux store สำหรับให้ SideMenu ใช้
+        if (data?.events) {
+          setDataEmergency(data.events);
+          dispatch.sosWarning.setDataEmergency(data.events);
+        }
+        if(conditionEmergency) {
+          notify();
+          setTimeout(() => {
+            setShowToast(true);
+          }, 500);
+          
+        }
+        else if(data?.events && !haveEmergency && !haveWarning) {
+          setTimeout(() => {
+            setShowToast(false);
+          }, 500);
+        }
+
+      });
+      setSocket(newSocket);
+      return () => {
+        newSocket.close();
+      };
+    }
+
+    // เชื่อมต่อ socket เฉพาะเมื่อ login แล้ว
+    if (isAuth) {
+      connectSocket();
+    }
+  }, []);
+
+
     const navigate = useNavigate();
     const alertRef = useRef<HTMLDivElement>(null);
-
     // ฟังก์ชันสำหรับ navigate ไปยัง add-location
     const handleNavigateToAddLocation = (unitId:string) => {
-        navigate(`/dashboard/add-location?unitId=${unitId}`);
+        navigate(`/dashboard/manage-plan?unitId=${unitId}`);
         // ปิดเฉพาะ dropdown list แต่ไม่ปิดปุ่ม SOS
         handleToggleToast(); // ปิด dropdown
     };
+
+
+  
+    const handleToggleToast = useCallback(() => {
+      setIsToastExpanded((prev) => !prev);
+    }, []);
+
 
     // useEffect สำหรับจับการคลิกนอก component
     useEffect(() => {
@@ -18,7 +147,7 @@ const AlertSOS = ({showToast,isToastExpanded,handleToggleToast,dataEmergency,han
             if (alertRef.current && !alertRef.current.contains(event.target as Node)) {
                 // ถ้าคลิกนอก component และ dropdown กำลังเปิดอยู่ ให้ปิดมัน
                 if (isToastExpanded) {
-                    handleToggleToast();
+                  handleToggleToast();
                 }
             }
         };
@@ -36,8 +165,14 @@ const AlertSOS = ({showToast,isToastExpanded,handleToggleToast,dataEmergency,han
 
     return (
     <>
-    {showToast && (
-        <div ref={alertRef} className="fixed top-20 right-15 z-50 animate-slide-in">
+
+    {isVisible && (
+        <div 
+          ref={alertRef} 
+          className={`fixed top-20 right-15 z-50 transition-all duration-500 ${
+            isAnimatingOut ? 'animate-fade-out' : 'animate-slide-in'
+          }`}
+        >
           {/* เหลือแค่วงกลมสีแดงอย่างเดียว */}
           <div 
             className="w-18 h-18 bg-red-500 rounded-full cursor-pointer 
@@ -46,8 +181,8 @@ const AlertSOS = ({showToast,isToastExpanded,handleToggleToast,dataEmergency,han
             onClick={handleToggleToast}
           >
             {/* แสดงจำนวนแจ้งเตือนรวม */}
-            <div className="text-white text-xs font-bold 
-             flex flex-col  items-center justify-center my-auto h-full
+            <div className="text-white text-xl font-bold 
+             flex flex-col  items-center justify-center my-auto h-full font-sarabun
             ">
               <div>
                 SOS 
@@ -58,17 +193,6 @@ const AlertSOS = ({showToast,isToastExpanded,handleToggleToast,dataEmergency,han
           {/* Dropdown - แสดงเฉพาะเมื่อขยาย */}
           {isToastExpanded && (
             <div className="absolute top-14 right-0 w-80 bg-white shadow-lg rounded-lg border border-gray-200 animate-dropdown-in">
-              {/* <div className="p-3 border-b border-gray-200 flex justify-between items-center">
-                <h3 className="text-sm font-semibold text-gray-800">รายการแจ้งเตือน</h3>
-                <button
-                  onClick={handleHideToast}
-                  className="text-gray-400 hover:text-gray-600 transition-colors"
-                >
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                  </svg>
-                </button>
-              </div> */}
               
               <div className="max-h-80 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
                 <div className="divide-y divide-gray-200">
@@ -103,9 +227,7 @@ const AlertSOS = ({showToast,isToastExpanded,handleToggleToast,dataEmergency,han
                         </div>
                       </div>
                     ))
-                  }
-
-                
+                  }                
                 </div>
               </div>
             </div>
@@ -173,6 +295,27 @@ const AlertSOS = ({showToast,isToastExpanded,handleToggleToast,dataEmergency,han
         }
         .animate-toast-slide-in {
           animation: toastSlideIn 0.4s ease-out forwards;
+        }
+
+        @keyframes fadeOut {
+          from {
+            opacity: 1;
+            transform: translateX(0) scale(1);
+          }
+          to {
+            opacity: 0;
+            transform: translateX(100%) scale(0.8);
+          }
+        }
+
+        .animate-fade-out {
+          animation: fadeOut 0.5s ease-in forwards;
+        }
+
+        /* Toast progress bar สีแดง */
+        .toast-progress-red {
+          background: #dc2626 !important;
+          background-image: none !important;
         }
       `}</style>
 

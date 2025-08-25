@@ -1,8 +1,9 @@
 import { useState } from "react";
 import dayjs from "dayjs";
-import { useDispatch } from "react-redux";
-import { Dispatch } from "../../../stores";
+import { useDispatch, useSelector } from "react-redux";
+import { Dispatch, RootState } from "../../../stores";
 import { usePagination } from "../../../utils/hooks/usePagination";
+import { usePermission } from "../../../utils/hooks/usePermission";
 
 // Components
 import Header from "../../../components/templates/Header";
@@ -28,6 +29,11 @@ const ResidentActivation = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   // Data
+  const permissions = useSelector(
+    (state: RootState) => state.common?.permission
+  );
+  const { access } = usePermission(permissions);
+
   const {
     data: invitationsData,
     isLoading: invitationsLoading,
@@ -115,7 +121,6 @@ const ResidentActivation = () => {
                 <Button
                   type="text"
                   onClick={() => {
-                    // console.log(record.code);
                     dispatch.resident.updateQrCodeState(record.code);
                   }}
                   icon={
@@ -123,6 +128,7 @@ const ResidentActivation = () => {
                       style={{ fontSize: 20, color: "#403d38" }}
                     />
                   }
+                  disabled={!access("team_management", "view")}
                 />
               </Col>
             </Row>
@@ -190,6 +196,7 @@ const ResidentActivation = () => {
           className="userManagementExportBtn"
           message="Add new"
           onClick={onCreate}
+          disabled={!access("team_management", "create")}
         />
       </Flex>
 

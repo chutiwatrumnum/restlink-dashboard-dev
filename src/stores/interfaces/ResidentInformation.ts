@@ -246,4 +246,5 @@ export interface UserRoomListType {
   roleName: string;
   roomAddress: string;
   unitNo: string;
+  floorName: string;
 }

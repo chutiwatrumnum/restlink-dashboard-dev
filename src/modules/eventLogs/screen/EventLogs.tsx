@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { usePagination } from "../../../utils/hooks/usePagination";
+import { usePermission } from "../../../utils/hooks/usePermission";
 
 import Header from "../../../components/templates/Header";
 import { Table } from "antd";
@@ -78,6 +79,7 @@ const EventLogs = () => {
                 onChange={async () => {
                   await switchChange(record);
                 }}
+                disabled={!access("events", "edit")}
               />
             </Col>
           </Row>
@@ -171,7 +173,7 @@ const EventLogs = () => {
       title: "Action",
       dataIndex: "action",
       align: "center",
-      width: "7%",
+      width: "8%",
       fixed: "right",
       render: (_, record) => (
         <>
@@ -182,13 +184,15 @@ const EventLogs = () => {
             }}
             type="text"
             icon={<EditOutlined />}
+            disabled={!access("events", "edit")}
           />
           <Button
             value={record.key}
             type="text"
             icon={<DeleteOutlined />}
             onClick={showDeleteConfirm}
-          ></Button>
+            disabled={!access("events", "delete")}
+          />
         </>
       ),
     },
@@ -201,6 +205,11 @@ const EventLogs = () => {
   const [paramsData, setParamsData] = useState<conditionPage>(params);
   const dispatch = useDispatch<Dispatch>();
   const { RangePicker } = DatePicker;
+
+  const permissions = useSelector(
+    (state: RootState) => state.common?.permission
+  );
+  const { access } = usePermission(permissions);
 
   const onChangeTable: TableProps<dataEventLogsType>["onChange"] = async (
     pagination: any,

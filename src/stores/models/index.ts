@@ -19,6 +19,7 @@ import { maintenanceGuide } from "./MaintenanceGuide";
 import { visitor } from "./visitorModel";
 import { juristic } from "./JuristicModel";
 import { setupProject } from "./SetupProjectModel";
+import { sosWarning } from "./SosWarning";
 import { invitation } from "./InvitationModel";
 import { house } from "./HouseModel";
 import { area } from "./AreaModel";
@@ -45,6 +46,7 @@ export interface RootModel extends Models<RootModel> {
   visitor: typeof visitor;
   juristic: typeof juristic;
   setupProject: typeof setupProject;
+  sosWarning: typeof sosWarning;
   invitation: typeof invitation;
   house: typeof house;
   area: typeof area;
@@ -72,6 +74,7 @@ export const models: RootModel = {
   visitor,
   juristic,
   setupProject,
+  sosWarning,
   invitation,
   house,
   area,
@@ -79,3 +82,4 @@ export const models: RootModel = {
   logAccess,
   logPassage,
 };
+

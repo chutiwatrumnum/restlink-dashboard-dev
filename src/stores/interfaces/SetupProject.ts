@@ -61,22 +61,7 @@ export type DataSetupUnitType = {
 
 
 export interface SetupProjectState {
-    // Project data state
-    projectData: any;
-    // Excel data state
-    excelData: UploadFileSentApiType;
-    // Data setup unit state
-    dataSetupUnit: DataSetupUnitType;
-    uploadedFileName: string;
-    isExcelUploaded: boolean;
-    // Image data state
-    imageFileObject: File | null;
-    uploadedImage: string | null;
-    uploadedImageFileName: string;
-    isImageUploaded: boolean;
-    step: number;
-    ////////////////////////// village
-
+  dataEmergencyDetail:any,
 }
 
 

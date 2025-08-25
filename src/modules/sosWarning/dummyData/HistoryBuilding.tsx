@@ -1,0 +1,36 @@
+// ตัวอย่างข้อมูล dummy data สำหรับ columns ที่กำหนดไว้
+export const historyBuildingData: any[] = [
+  {
+    key: 1,
+    stepWork: "ตรวจสอบหน้างาน",
+    Address: "123/45 อาคาร A ชั้น 2",
+    ReportTime: "2024-06-01 09:30",
+    ReceiveTime: "2024-06-01 10:00",
+    EventType: "ไฟไหม้",
+    NameOwner: "สมชาย ใจดี",
+    NameStaff: "วิศวกร ก.",
+    EventStep: "เสร็จสิ้น",
+  },
+  {
+    key: 2,
+    stepWork: "แจ้งเตือนเหตุ",
+    Address: "456/78 อาคาร B ชั้น 5",
+    ReportTime: "2024-06-02 14:15",
+    ReceiveTime: "2024-06-02 14:45",
+    EventType: "น้ำรั่ว",
+    NameOwner: "สมหญิง สายชล",
+    NameStaff: "ช่างซ่อม ข.",
+    EventStep: "กำลังดำเนินการ",
+  },
+  {
+    key: 3,
+    stepWork: "ประเมินความเสียหาย",
+    Address: "789/12 อาคาร C ชั้น 1",
+    ReportTime: "2024-06-03 08:00",
+    ReceiveTime: "2024-06-03 08:30",
+    EventType: "ไฟดับ",
+    NameOwner: "อนันต์ ทองดี",
+    NameStaff: "เจ้าหน้าที่ ค.",
+    EventStep: "รอดำเนินการ",
+  },
+];

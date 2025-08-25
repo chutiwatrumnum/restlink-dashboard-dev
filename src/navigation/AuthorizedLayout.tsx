@@ -1,6 +1,6 @@
-import { useEffect, useState, useLayoutEffect } from "react";
+import { useEffect, useState, useLayoutEffect,useCallback } from "react";
 import { useOutlet, useLocation } from "react-router-dom";
-import { Layout } from "antd";
+import { Button, Layout } from "antd";
 import { useDispatch, useSelector } from "react-redux";
 import { Dispatch, RootState } from "../stores";
 import { encryptStorage } from "../utils/encryptStorage";
@@ -8,8 +8,9 @@ import SideMenu from "../components/templates/SideMenu";
 import "./styles/authorizedLayout.css";
 import { io, Socket } from "socket.io-client";
 import AlertSOS from "../components/templates/AlertSOS";
-import { getEmergency } from "../modules/sosWarning/service/api/SOSwarning";
+import { getEmergency,getEventPending } from "../modules/sosWarning/service/api/SOSwarning";
 import { useNavigate } from "react-router-dom";
+import SocketRead from "../modules/sosWarning/components/SocketRead";
 
 
 const { Sider, Content } = Layout;
@@ -17,32 +18,31 @@ const { Sider, Content } = Layout;
 function AuthorizedLayout() {
   const navigate = useNavigate();
   const { isAuth } = useSelector((state: RootState) => state.userAuth);
+  // const  showToast  = useSelector((state: RootState) => state.sosWarning.showToast);
   const dispatch = useDispatch<Dispatch>();
   const outlet = useOutlet();
   const location = useLocation(); // เพิ่ม useLocation hook
-
+  
+  // ตัวอย่างการใช้งาน path
+  const currentPath = location.pathname;
   const [collapsed, setCollapsed] = useState(() => {
     const savedState = localStorage.getItem("sideMenuCollapsed");
     return savedState === "true";
   });
   const [socket, setSocket] = useState<Socket | null>(null);
   const [connected, setConnected] = useState(false);
-  const [dataEmergency, setDataEmergency] = useState<any>(null);
-  const [showToast, setShowToast] = useState<boolean>(false);
-  const [isToastExpanded, setIsToastExpanded] = useState<boolean>(false);
+  const [count, setCount] = useState(0);
+  
   const [reload, setReload] = useState(false);
+  const [storePathNotContentLayout, setStorePathNotContentLayout] = useState([
+    '/dashboard/manage-plan'
+  ]);
+
+  // ตรวจสอบว่า current path อยู่ใน list ที่ไม่ต้องใช้ Content layout หรือไม่
+  const shouldUseContentLayout = !storePathNotContentLayout.includes(currentPath);
 
 
 
-
-  const handleHideToast = () => {
-    setShowToast(false);
-    setIsToastExpanded(false);
-  };
-
-  const handleToggleToast = () => {
-    setIsToastExpanded(!isToastExpanded);
-  };
 
   // Listen for menu collapse changes
   useEffect(() => {
@@ -121,93 +121,30 @@ function AuthorizedLayout() {
     checkRedirect();
   }, [isAuth, navigate]);
 
-  useEffect(() => {
-    async function connectSocket() {
-      const getEmergencyData = async () => {
-        let dataEmergency = await getEmergency();
-        if (dataEmergency.status) {
-          setDataEmergency(dataEmergency.result);
-          let haveEmergency = dataEmergency.result.emergency.length > 0;
-          let haveWarning = dataEmergency.result.deviceWarning.length > 0;
-          if (haveEmergency || haveWarning) {
-            setShowToast(true);
-          }
-        }
-      };
-      getEmergencyData();
 
-      const URL ="https://reslink-security-wqi2p.ondigitalocean.app/socket/sos/dashboard";
-      const access_token = encryptStorage.getItem("access_token");
-      const projectID = await encryptStorage.getItem("projectId");
-      const newSocket = io(URL, {
-        reconnection: true,
-        reconnectionAttempts: 2,
-        reconnectionDelay: 1000,
-        reconnectionDelayMax: 2000,
-        timeout: 10000,
-        extraHeaders: {
-          Authorization: `Bearer ${access_token}`,
-          "x-api-key": projectID,
-        },
-      });
-      newSocket.connect();
-      newSocket.on("connect", () => {
-        setConnected(true);
-      });
-
-      newSocket.on("disconnect", () => {
-        setConnected(false);
-      });
-
-      newSocket.on("sos", (data) => {
-        if (data?.marker) {
-          if (data) {
-            if (data.emergency) {
-              setDataEmergency((prev: any) => ({
-                ...prev,
-                emergency: data.emergency,
-                deviceWarning: data.deviceWarning || [],
-              }));
-            }
-          }
-
-          if (data.deviceWarning?.length > 0 || data.emergency?.length > 0) {
-            setShowToast(true);
-          } else {
-            setShowToast(false);
-          }
-        }
-      });
-
-      setSocket(newSocket);
-
-      return () => {
-        newSocket.close();
-      };
-    }
-
-    // เชื่อมต่อ socket เฉพาะเมื่อ login แล้ว
-    if (isAuth) {
-      connectSocket();
-    }
-  }, [isAuth]);
 
   const siderWidth = collapsed ? 80 : 320;
+
+
 
   // ถ้ายังไม่ได้ login ให้แสดง loading หรือ redirect
   if (!isAuth) {
     return <div>Loading...</div>;
   }
+  const LayoutCardWrapContent = () => {
+    return (
+      <Content className="authorizeContentContainer">
+        <div>{outlet}</div>
+      </Content>
+    );
+  };
 
+  const LayoutContent = () => {
+    return <div>{outlet}</div>;
+  };
   return (
     <Layout>
-      <AlertSOS
-        showToast={showToast}
-        isToastExpanded={isToastExpanded}
-        handleToggleToast={handleToggleToast}
-        dataEmergency={dataEmergency}
-        handleHideToast={handleHideToast}
-      />
+      <AlertSOS  isAuth={isAuth} />
       <Sider
         width={320}
         collapsedWidth={80}
@@ -226,14 +163,14 @@ function AuthorizedLayout() {
           onMenuChange={() => {
             setReload(!reload);
           }}
-          dataEmergency={dataEmergency}
+          isAuth={isAuth}
         />
       </Sider>
       <div className="authorizeBG" style={{ left: siderWidth }} />
-      <Layout style={{ marginLeft: siderWidth, transition: "all 0.3s" }}>
-        <Content className="authorizeContentContainer">
-          <div>{outlet}</div>
-        </Content>
+        
+        <Layout style={{ marginLeft: siderWidth, transition: "all 0.3s" }}>  
+          {shouldUseContentLayout && <LayoutCardWrapContent />}
+          {!shouldUseContentLayout && <LayoutContent />}
       </Layout>
     </Layout>
   );

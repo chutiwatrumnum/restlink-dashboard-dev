@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { usePermission } from "../../../utils/hooks/usePermission";
+
 import { Button, Tag, Tooltip } from "antd";
 import Header from "../../../components/templates/Header";
 import VMSVehicleTable from "../components/VMSVehicleTable";
@@ -37,6 +39,11 @@ const VMSVehicle = () => {
   const [areaNameMap, setAreaNameMap] = useState<Map<string, string>>(
     new Map()
   );
+
+  const permissions = useSelector(
+    (state: RootState) => state.common?.permission
+  );
+  const { access } = usePermission(permissions);
 
   // Pagination Options
   const pageSizeOptions = [10, 20, 40, 80, 100];
@@ -187,7 +194,8 @@ const VMSVehicle = () => {
         return (
           <Tooltip
             title={`จังหวัด: ${provinceName}\nรหัส: ${area_code || "th-11"}`}
-            placement="top">
+            placement="top"
+          >
             <Tag
               color={isOriginalCode ? "default" : "blue"}
               className="province-tag-table"
@@ -198,7 +206,8 @@ const VMSVehicle = () => {
                 textOverflow: "ellipsis",
                 whiteSpace: "nowrap",
                 cursor: "pointer",
-              }}>
+              }}
+            >
               {provinceName}
             </Tag>
           </Tooltip>
@@ -218,7 +227,8 @@ const VMSVehicle = () => {
         return (
           <Tooltip
             title={`Address: ${address}\nHouse ID: ${house_id}`}
-            placement="top">
+            placement="top"
+          >
             <div
               style={{
                 fontWeight: isOriginalId ? "400" : "600",
@@ -228,7 +238,8 @@ const VMSVehicle = () => {
                 overflow: "hidden",
                 textOverflow: "ellipsis",
                 whiteSpace: "nowrap",
-              }}>
+              }}
+            >
               {address}
             </div>
           </Tooltip>
@@ -253,13 +264,15 @@ const VMSVehicle = () => {
                     .join(", ")}`
                 : "No authorized areas"
             }
-            placement="top">
+            placement="top"
+          >
             <div
               style={{
                 fontSize: "12px",
                 color: "#1890ff",
                 fontWeight: "500",
-              }}>
+              }}
+            >
               {displayText}
             </div>
           </Tooltip>
@@ -340,6 +353,7 @@ const VMSVehicle = () => {
             icon={<EditOutlined style={{ color: "#1890ff" }} />}
             onClick={() => onEdit(record)}
             title="Edit vehicle"
+            disabled={!access("vms", "edit")}
           />
           <Button
             type="text"
@@ -349,6 +363,7 @@ const VMSVehicle = () => {
               deleteMutation.isPending && deleteMutation.variables === record.id
             }
             title="Delete vehicle"
+            disabled={!access("vms", "delete")}
           />
         </div>
       ),
@@ -398,7 +413,9 @@ const VMSVehicle = () => {
             type="primary"
             icon={<PlusOutlined />}
             onClick={onCreate}
-            className="userManagementExportBtn">
+            className="userManagementExportBtn"
+            disabled={!access("vms", "create")}
+          >
             Add New
           </Button>
         </div>

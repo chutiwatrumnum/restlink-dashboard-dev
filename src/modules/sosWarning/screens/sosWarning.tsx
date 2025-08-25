@@ -1,79 +1,63 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import Header from "../../../components/templates/Header";
 import { ModalFormUpdate } from "../components/ModalFormUpload";
 import FormWarningSOS from "../components/FormWarningSOS";
 import ImageVillage from "../components/ImageVilage";
 import FormVillageLocation from "../components/FormVillageLocation";
 import BuildingCondo from "../components/BuildingCondo";
+import BuildingCondoOld from "../components/BuildingCondoOld";
+import { ModalFormUploadateImagePlan } from "../components/ModalFormUplodateImagePlan";
+import { ModalUploadPlan } from "../components/ModalUploadPlan";
+import SecurityAlarm from "./securityAlarm";
 import { Row, Col, Card, Spin, Button } from "antd";
-import { deletePlanAccount, deleteMarker, getMasterData, getVillageData, getEmergency } from "../service/api/SOSwarning";
+import { deletePlanAccount, deleteMarker, getMasterData, getVillageData, getEmergency, getEventPending } from "../service/api/SOSwarning";
 import { dataSelectPlan, dataAllMap, SelectMarker } from "../../../stores/interfaces/SosWarning";
 import { io, Socket } from 'socket.io-client';
 import { encryptStorage } from "../../../utils/encryptStorage";
 import ConfirmModal from "../../../components/common/ConfirmModal";
 import SuccessModal from "../../../components/common/SuccessModal";
-
-// ฟังก์ชันทดสอบ Token Expiry
-const testTokenExpiry = () => {
-  console.log("🧪 Testing token expiry...");
-
-  // ลบ token ทั้งหมดเพื่อจำลองการหมดอายุ
-  encryptStorage.removeItem("access_token");
-  encryptStorage.removeItem("refreshToken");
-  encryptStorage.removeItem("projectId");
-};
-
-// ฟังก์ชันทดสอบ API call ด้วย token หมดอายุ
-const testApiCall = async () => {
-  try {
-    console.log("🧪 Testing API call...");
-    const result = await getMasterData();
-    console.log("✅ API call successful:", result);
-  } catch (error) {
-    console.log("❌ API call failed:", error);
-  }
-};
-
-// เพิ่ม global functions สำหรับทดสอบใน console
-if (typeof window !== 'undefined') {
-  (window as any).testTokenExpiry = () => {
-    encryptStorage.removeItem("access_token");
-    encryptStorage.removeItem("refreshToken");
-    encryptStorage.removeItem("projectId");
-    localStorage.clear();
-  };
-
-  (window as any).testApiCall = async () => {
-    console.log("🧪 [Console] Testing API call...");
-    try {
-      const result = await getMasterData();
-    } catch (error) {
-      console.log("❌ [Console] API call failed:", error);
-    }
-  };
-
-  (window as any).checkTokens = () => {
-    const accessToken = encryptStorage.getItem("access_token");
-    const refreshToken = encryptStorage.getItem("refreshToken");
-    const projectId = encryptStorage.getItem("projectId");
-  };
+import { useSelector } from "react-redux";
+import { RootState, store } from "../../../stores/";
+import { GlobalProvider } from "../contexts/Global";
+import { useDispatch } from "react-redux";
+// import { toast } from 'react-toastify';
+import Topbar from "../components/imageVillage/Topbar";
+import { isEqual } from 'lodash';
 
 
-}
+const SOSWarning = () => {
+  const dispatch = useDispatch();
+  const { projectData } = useSelector((state: RootState) => state.setupProject, isEqual);
+  const { dataEmergencyDetail } = useSelector((state: RootState) => state.sosWarning, isEqual);
+  // const count = useSelector((state: RootState) => state.sosWarning.count);
+  // ใช้ useRef เพื่อป้องกัน loadFirst ทำงานซ้ำ
+  const hasLoadedFirst = useRef(false);
 
-const WarrantyTracking = () => {
+  // เพิ่ม useRef เพื่อติดตาม previous state ของ dataEmergencyDetail
+  const prevDataEmergencyDetail = useRef(dataEmergencyDetail);
 
+  // ไม่ subscribe sosWarning state เพื่อป้องกัน re-render
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [isModalOpenPlan, setIsModalOpenPlan] = useState<boolean>(false);
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [showWarningCondo, setShowWarningCondo] = useState<boolean | null>(null);
   const imageRef = useRef<HTMLDivElement>(null);
-  const formVillageRef = useRef<HTMLDivElement>(null);
+  const [statusAcknowledge, setStatusAcknowledge] = useState<boolean>(false);
   const [projectName, setProjectName] = useState<string>("");
+  const [openUploadPlan, setOpenUploadPlan] = useState<boolean>(false);
+
+  const formVillageRef = useRef<HTMLDivElement>(null);
+
+
+  // เพิ่ม state เพื่อตรวจสอบว่าได้ duplicate building แล้วหรือยัง
+  const [hasDuplicatedBuildings, setHasDuplicatedBuildings] = useState<boolean>(false);
+
   const [buildingPlan, setBuildingPlan] = useState<{
     condoType: string;
     floor: number;
     numberOfBuilding: number;
+    buildings?: any[];
   } | null>(null);
   const [dataSelectPlan, setDataSelectPlan] = useState<dataSelectPlan>({
     planType: [],
@@ -92,6 +76,15 @@ const WarrantyTracking = () => {
     marker: [],
     zone: []
   });
+
+  // useRef เพื่อเก็บค่าล่าสุดของ dataMapAll สำหรับ Socket
+  const dataMapAllRef = useRef(dataMapAll);
+
+  // อัพเดท ref เมื่อ dataMapAll เปลี่ยน
+  useEffect(() => {
+    dataMapAllRef.current = dataMapAll;
+  }, [dataMapAll]);
+
   // state สำหรับควบคุมว่า FormVillageLocation ควรแสดงหรือไม่ (แยกจาก handleAreaClick)
   const [shouldShowVillageForm, setShouldShowVillageForm] = useState<boolean>(false);
   // state สำหรับควบคุมการแสดง FormWarningSOS (แสดงเฉพาะตอนเปิดหน้าครั้งแรกกับตอนกด cancel)
@@ -104,16 +97,11 @@ const WarrantyTracking = () => {
   const [selectedMarker, setSelectedMarker] = useState<SelectMarker | null>(null);
   const [unitHover, setUnitHover] = useState<number | null>(null);
   const [unitClick, setUnitClick] = useState<number | null>(null);
+  const [floorIdGlobal, setFloorIdGlobal] = useState<string | null>('');
+  const [masterData, setMasterData] = useState<any>(null);
+  const [testA, setTestA] = useState<any>(null);
 
 
-  // Debug selectedMarker changes
-  // useEffect(() => {
-  //   console.log('🔄 selectedMarker state changed:', {
-  //     selectedMarker,
-  //     hasSelectedMarker: !!selectedMarker,
-  //     timestamp: new Date().toISOString()
-  //   });
-  // }, [selectedMarker]);
 
   const [selectedMarkerUpdate, setSelectedMarkerUpdate] = useState<{
     id: string;
@@ -134,14 +122,60 @@ const WarrantyTracking = () => {
   const [markersFullOpacity, setMarkersFullOpacity] = useState<boolean>(false);
   const [dataEmergency, setDataEmergency] = useState<any>(null)
   // State สำหรับ toast
-  const [showToast, setShowToast] = useState<boolean>(false);
   const [isToastExpanded, setIsToastExpanded] = useState<boolean>(false);
   // State สำหรับเก็บสถานะ active marker
   const [hasActiveMarker, setHasActiveMarker] = useState<boolean>(false);
+  // เปลี่ยนจาก state เป็น useRef สำหรับ dataFloor
+  const dataFloorRef = useRef<any>({});
+  // toast
+  // const notify = () => toast("Wow so easy!");
 
   // Loading state
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isLoadingFirst, setIsLoadingFirst] = useState<boolean>(true);
+
   const [loadingText, setLoadingText] = useState<string>("Loading...");
+
+
+  //useMemo
+  let TypeProject = useMemo(() => {
+    let projectType = projectData?.projectType?.nameCode || '';
+    const strType = projectType.split('_');
+    projectType = strType[strType.length - 1];
+    return projectType
+  }, [projectData])
+
+  // let projectDisplayName = useMemo(() => {
+  //   return projectData?.projectName || '';
+  // }, [projectData])
+
+  let filterEmergencyOnFloor = useMemo(() => {
+    if (dataEmergency && dataSelectPlan.unit.length > 0) {
+      let unitIdArray = dataSelectPlan.unit.map((item: any) => item.id)
+      let objOrigin = {}
+      let filterEmergency = dataEmergency?.emergency?.filter((item: any) => unitIdArray.includes(item.unitId))
+      let filterDeviceWarning = dataEmergency?.deviceWarning?.filter((item: any) => unitIdArray.includes(item.unitId))
+      objOrigin = {
+        emergency: filterEmergency,
+        emergencyCount: filterEmergency.length,
+        deviceWarning: filterDeviceWarning,
+        deviceWarningCount: filterDeviceWarning.length
+      }
+      return objOrigin
+    }
+    return {
+      emergency: [],
+      emergencyCount: 0,
+      deviceWarning: [],
+      deviceWarningCount: 0
+    }
+  }, [dataEmergency, dataSelectPlan])
+
+  const dataEmergencyOnTypeProject = useMemo(() => {
+    if (TypeProject === 'condo') return filterEmergencyOnFloor
+    else if (TypeProject === 'village') return dataEmergency
+    return dataEmergency
+  }, [TypeProject, filterEmergencyOnFloor, dataEmergency])
+
   // useEffect เพื่อ refresh map เมื่อ layout เปลี่ยน
   useEffect(() => {
     // ตัดสินใจว่าควรแสดง form ด้านขวาหรือไม่
@@ -156,6 +190,43 @@ const WarrantyTracking = () => {
       }, 350);
     }
   }, [alertMarkers.red.length, alertMarkers.yellow.length, shouldShowVillageForm, currentMapMode]);
+
+  // useEffect เพื่อ refresh map เมื่อเปลี่ยนจาก display none เป็น block
+  useEffect(() => {
+    const currentHasEmergencyData = Object.keys(dataEmergencyDetail).length > 0;
+    const prevHasEmergencyData = Object.keys(prevDataEmergencyDetail.current).length > 0;
+
+    // เฉพาะเมื่อเปลี่ยนจากมีข้อมูลเป็นไม่มีข้อมูล (กลับมาจาก SecurityAlarm)
+    const isReturningFromSecurityAlarm = prevHasEmergencyData && !currentHasEmergencyData;
+
+    if (isReturningFromSecurityAlarm && uploadedImage && villageMapRefreshRef.current) {
+      console.log('Refreshing map after returning from SecurityAlarm');
+
+      // หน่วงเวลาให้ DOM render เสร็จก่อน
+      setTimeout(() => {
+        if (villageMapRefreshRef.current) {
+          villageMapRefreshRef.current();
+        }
+      }, 200);
+
+      // เพิ่มการ refresh อีกครั้งหลังจาก layout stabilize
+      setTimeout(() => {
+        if (villageMapRefreshRef.current) {
+          villageMapRefreshRef.current();
+        }
+      }, 800);
+
+      // อีกครั้งสำหรับให้แน่ใจ
+      setTimeout(() => {
+        if (villageMapRefreshRef.current) {
+          villageMapRefreshRef.current();
+        }
+      }, 1500);
+    }
+
+    // อัพเดท previous state
+    prevDataEmergencyDetail.current = dataEmergencyDetail;
+  }, [dataEmergencyDetail, uploadedImage]);
 
   // ฟังก์ชันสำหรับรับค่า lat/lng จาก VillageMapTS
   const handleLatLngChange = useCallback((latitude: number, longitude: number) => {
@@ -355,6 +426,7 @@ const WarrantyTracking = () => {
 
   // เพิ่มฟังก์ชันสำหรับจัดการ Confirm marker
   const handleConfirmMarker = useCallback(() => {
+    console.log('handleConfirmMarker')
     if (selectedMarker && villageMapConfirmRef.current) {
       // ส่งข้อมูล marker ที่อัพเดทแล้วจาก form ไปยัง VillageMapTS
       villageMapConfirmRef.current(selectedMarker.id, selectedMarker);
@@ -384,64 +456,108 @@ const WarrantyTracking = () => {
     setShouldShowWarningSOS(hasAlertMarkers);
   }, [selectedMarker, villageMapResetRef, alertMarkers]);
 
-  const loadFirst = async () => {
+  const loadFirst = useCallback(async (floorId?: string, buildingDisplay?: any) => {
     try {
-      setIsLoading(true);
-      // setLoadingText("กำลังโหลดข้อมูลหลัก...");
+      console.log('loadFirst')
+      console.log(dataMapAll, 'dataMapAll')
+      console.log(dataEmergencyDetail, 'dataEmergencyDetail')
+      if (Object.keys(dataEmergencyDetail).length > 0) {
+        console.log('return-image')
+        setIsLoadingFirst(false);
+        return
+      }
+      else {
+        setIsLoadingFirst(true);
+      }
 
-      let data = await getMasterData();
+      let dataMaster = await getMasterData();
+      await setMasterData(dataMaster);
+      if (floorId) {
+        await setFloorIdGlobal(floorId || '');
+      }
+      let dataAllMap = await getVillageData(floorId || null);
+      let dataEmergency = await getEventPending();
+      // await getEmergency();
+      let dataBuilding = []
 
-      // setLoadingText("กำลังโหลดข้อมูลแผนที่...");
-      let dataAllMap = await getVillageData();
 
-      // setLoadingText("กำลังโหลดข้อมูลแจ้งเตือน...");
-      let dataEmergency = await getEmergency();
 
       if (dataEmergency.status) {
         setDataEmergency(dataEmergency.result)
       }
-
-      if (data.status) {
-        setDataSelectPlan(data.result);
+      const fnDuplicateBuilding = async () => {
+        if (dataAllMap?.result?.building && Array.isArray(dataAllMap.result.building) && !hasDuplicatedBuildings) {
+          // copy array เดิม
+          let originalBuildings = [...dataAllMap.result.building];
+          // จำนวนรอบที่ต้องการ duplicate (เช่น 10 รอบ)
+          let duplicateTimes = 10;
+          for (let i = 0; i < duplicateTimes; i++) {
+            // ใช้ map เพื่อ clone object (ป้องกันอ้างอิง object เดิม)
+            let duplicated = originalBuildings.map((b: any, idx: number) => ({
+              ...b,
+              // เพิ่ม property ใหม่เพื่อแยกแต่ละรอบ (optional)
+              _dupIndex: i + 1,
+              // หรือจะเปลี่ยน id ให้ไม่ซ้ำ (ถ้ามี id)
+              ...(b.id ? { id: `${b.id}_dup${i + 1}` } : {}),
+              // เปลี่ยน blockName ให้ไม่ซ้ำ
+              blockName: `${b.blockName || 'Building'}_${i + 1}`
+            }));
+            dataAllMap.result.building = dataAllMap.result.building.concat(duplicated);
+          }
+          // ตั้งค่าว่าได้ทำการ duplicate แล้ว
+          await setHasDuplicatedBuildings(true);
+        }
       }
+      // await fnDuplicateBuilding()
+      // ดึง array building ออกมา แล้ว duplicate ข้อมูลเข้าไปใน array เดิมหลายๆรอบ
+      // แต่ทำเพียงครั้งเดียวเท่านั้น/
+
+      const buildingPlan = {
+        condoType: projectData?.projectType?.nameEn || 'condo',
+        floor: 0, // ใช้จำนวนชั้นสูงสุด
+        numberOfBuilding: dataAllMap?.result?.building?.length || 0,
+        buildings: dataAllMap?.result?.building || [] // เพิ่มข้อมูลตึกทั้งหมด
+      }
+
+      setBuildingPlan(buildingPlan)
+      if (dataMaster.status) {
+        let unitStore = {}
+        if (floorId) {
+          let dataFilterFloor = (dataMaster.result.unit || []).filter((item: any) => Number(item.floorId) === Number(floorId))
+          dataFilterFloor = {
+            unit: dataFilterFloor
+          }
+          unitStore = dataFilterFloor
+        }
+        else {
+          unitStore = dataMaster.result
+        }
+        setDataSelectPlan(unitStore as any);
+      }
+
 
       if (dataAllMap.status) {
         dataAllMap.result.marker = dataAllMap.result.marker.marker.map((item: any) => {
           return item
         })
-        if (dataAllMap.result.planImg) {
-          setUploadedImage(dataAllMap.result.planImg)
-        }
-
-        setDataMapAll(dataAllMap.result);
-
-        // เซ็ต uploadedImage และ hasImageData จาก API response
-        if (dataAllMap.result && dataAllMap.result.planImg) {
+        let planImg = dataAllMap?.result?.planImg || dataAllMap?.planImg
+        console.log(dataAllMap, 'dataAllMap')
+        console.log(planImg, 'planImg')
+        await setDataMapAll(dataAllMap.result);
+        if (planImg) {
           setUploadedImage(dataAllMap.result.planImg);
           setHasImageData(true);
-        } else {
-          setHasImageData(false);
         }
-      } else {
-        setHasImageData(false);
       }
-
-      // setLoadingText("เสร็จสิ้น");
-      // เพิ่ม delay เล็กน้อยเพื่อให้ดู smooth
-      setTimeout(() => {
-        setIsLoading(false);
-      }, 500);
+      setIsLoadingFirst(false);
 
     } catch (error) {
-      // console.error('Error loading data:', error);
-      // setLoadingText("เกิดข้อผิดพลาดในการโหลดข้อมูล");
-      setTimeout(() => {
-        setIsLoading(false);
-      }, 1000);
+      setIsLoadingFirst(false);
     }
-  }
+  }, [dataMapAll, dataEmergencyDetail, hasDuplicatedBuildings, projectData, floorIdGlobal]);
 
   useEffect(() => {
+    console.log('before loadFirst')
     loadFirst();
   }, []);
 
@@ -472,53 +588,65 @@ const WarrantyTracking = () => {
         setConnected(false);
       });
 
-      newSocket.on("sos", (data) => {
+      newSocket.on("sos", async (data) => {
+        console.log('SOS-socket')
         // อัพเดทข้อมูลทั้งชุดเมื่อได้รับข้อมูลใหม่
         if (data) {
-          // อัพเดท marker
-          console.log(data, 'data-sos')
-          console.log(data?.events, 'data-events')
-          if (data.marker && Array.isArray(data.marker)) {
-            setDataMapAll(prev => ({
-              ...prev,
-              marker: data.marker
-            }));
+          if (data?.marker?.marker?.length > 0) {
+            if (dataMapAllRef?.current?.planImg) {
+              await setDataMapAll({ ...dataMapAllRef?.current, marker: data?.marker?.marker });
+            }
           }
 
+          // if(floorIdGlobal){
+          let dataAllMap = await getVillageData(floorIdGlobal || null);
+
+          const buildingPlan = {
+            condoType: projectData?.projectType?.nameEn || 'condo',
+            floor: 0, // ใช้จำนวนชั้นสูงสุด
+            numberOfBuilding: dataAllMap?.result?.building?.length || 0,
+            buildings: dataAllMap?.result?.building || [] // เพิ่มข้อมูลตึกทั้งหมด
+          }
+
+          setBuildingPlan(buildingPlan)
+          if (masterData?.status) {
+            let unitStore = {}
+            if (floorIdGlobal) {
+              let dataFilterFloor = (masterData?.result?.unit || []).filter((item: any) => Number(item.floorId) === Number(floorIdGlobal))
+              dataFilterFloor = {
+                unit: dataFilterFloor
+              }
+              unitStore = dataFilterFloor
+            }
+            else {
+              unitStore = masterData?.result
+            }
+            setDataSelectPlan(unitStore as any);
+          }
+          // }
           // อัพเดท emergency
-          if (data.emergency) {
-            setDataEmergency((prev: any) => ({
-              ...prev,
-              emergency: data.emergency,
-              deviceWarning: data.deviceWarning || []
-            }));
+          if (data.events) {
+            await setDataEmergency(data.events);
           }
         }
 
-        if (data.deviceWarning || data.emergency) {
-          setShowToast(true);
-        }
+
+        // loadFirst();
       });
-
-      // newSocket.onAny((eventName, ...args) => {
-      //   console.log('🔍 Received ANY event:', eventName, args);
-      // });
-
       // Debug - Listen for ANY event
       setSocket(newSocket); // เพิ่มบรรทัดนี้
 
 
       // Cleanup เมื่อ component unmount
       return () => {
-        // console.log('🧹 Cleaning up Socket.IO connection');
         newSocket.close();
       };
     }
+
     connectSocket();
   }, []); // Empty dependency array เพื่อให้รันครั้งเดียว
 
   // state สำหรับเช็คว่ามีแผนหรือไม่ (ตัวอย่างนี้ให้แสดง No plan เสมอ)
-  const hasPlan = false;
 
 
 
@@ -625,7 +753,7 @@ const WarrantyTracking = () => {
 
     // แสดง loading เมื่อลบ marker
     setLoadingText("กำลังลบข้อมูล...");
-    setIsLoading(true);
+    // setIsLoading(true);
 
     let data = await deleteMarker(id);
     if (data.status) {
@@ -653,9 +781,9 @@ const WarrantyTracking = () => {
     setSelectedMarker(null);
 
     // ปิด loading
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 500);
+    // setTimeout(() => {
+    //   setIsLoading(false);
+    // }, 500);
   }, [selectedMarker]);
 
   // callback สำหรับลบ marker จำลองเมื่อกด Cancel ใน form
@@ -713,11 +841,11 @@ const WarrantyTracking = () => {
 
   const handleCondoPlanSubmit = (
     condoType: string,
-    floor: number,
+    floor: number | string,
     numberOfBuilding: number,
     projectName: string
   ) => {
-    setBuildingPlan({ condoType, floor, numberOfBuilding });
+    setBuildingPlan({ condoType, floor: Number(floor), numberOfBuilding });
     setIsModalOpen(false);
     setProjectName(projectName);
   };
@@ -725,7 +853,7 @@ const WarrantyTracking = () => {
 
   const confirmDeletePlan = async (id: string) => {
     setLoadingText("กำลังลบแผนที่...");
-    setIsLoading(true);
+    // setIsLoading(true);
 
     let dataDelete = await deletePlanAccount(id);
     if (dataDelete.status) {
@@ -734,7 +862,7 @@ const WarrantyTracking = () => {
       window.location.reload();
     }
     else {
-      setIsLoading(false);
+      // setIsLoading(false);
     }
   }
 
@@ -762,6 +890,11 @@ const WarrantyTracking = () => {
     setHasActiveMarker(isActive);
   };
 
+  // Handler สำหรับรับข้อมูล dataFloor จาก BuildingCondoOld
+  const handleDataFloorChange = (dataFloor: any) => {
+    dataFloorRef.current = dataFloor;
+  };
+
   // Loading Component
   const LoadingComponent = () => (
     <div className="flex flex-col items-center justify-center min-h-[70vh] w-full">
@@ -778,259 +911,387 @@ const WarrantyTracking = () => {
   );
 
   // แสดง Loading เมื่อกำลังโหลดข้อมูล
-  if (isLoading) {
+  if (isLoadingFirst) {
     return (
       <>
         <div className="flex justify-between items-center !mb-5">
-          <Header title="Add location" className="!mb-0" />
+          <Header title="Manage Plan" className="!mb-0" />
         </div>
         <LoadingComponent />
       </>
     );
   }
 
+  // if (statusAcknowledge) {
+  //   return (
+  //     <SecurityAlarm />
+  //   );
+  // }
+
   return (
     <>
-      <ModalFormUpdate
-        dataSelectPlan={dataSelectPlan}
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onUploadSuccess={handleUploadSuccess}
-        isUploading={isUploading}
-        onCondoPlanSubmit={handleCondoPlanSubmit}
-        setProjectName={setProjectName}
-        setPlanType={setPlanType}
-        planType={planType}
-        loadFirst={loadFirst}
-        dataMapAll={dataMapAll}
-      />
-
-      <div className="flex justify-between  items-center !mb-5">
-        <Header title="Add location" className="!mb-0" />
-        <div className="flex gap-3 items-center">
-          {/* ปุ่มทดสอบ Token Expiry */}
-          {/* <div className="flex gap-2">
-             <Button 
-               size="small" 
-               danger 
-               onClick={testTokenExpiry}
-               title="ลบ Token เพื่อทดสอบการหมดอายุ"
-             >
-               🧪 Test Token Expiry
-             </Button>
-             <Button 
-               size="small" 
-               type="primary" 
-               onClick={testApiCall}
-               title="ทดสอบ API Call"
-             >
-               📡 Test API
-             </Button>
-           </div> */}
-
-          {/* Button Group สำหรับสลับโหมด */}
-          {(dataMapAll?.id || uploadedImage) && (
-            <div className="flex border border-gray-300 rounded-lg overflow-hidden bg-white">
-              <button
-                onClick={() => !hasActiveMarker && handleMapModeChange('preview')}
-                disabled={hasActiveMarker}
-                className={`
-                  px-4 py-2 text-sm font-medium transition-all duration-200 h-12 w-40
-                  ${hasActiveMarker
-                    ? 'cursor-not-allowed bg-gray-200 text-gray-400'
-                    : 'cursor-pointer'
-                  }
-                  ${currentMapMode === 'preview'
-                    ? 'bg-blue-500 !text-white shadow-sm'
-                    : hasActiveMarker
-                      ? 'bg-gray-200 text-gray-400'
-                      : 'bg-white text-gray-700 hover:bg-gray-50'
-                  }
-                `}
-                title={hasActiveMarker ? 'มีการแก้ไข marker อยู่ กรุณายืนยันหรือยกเลิกก่อน' : ''}
-              >
-                PREVIEW
-              </button>
-              <button
-                onClick={() => !hasActiveMarker && handleMapModeChange('work-it')}
-                disabled={hasActiveMarker}
-                className={`px-4 py-2 text-sm 
-                  font-medium transition-all duration-200 border-l border-gray-300 h-12 w-40
-                  ${hasActiveMarker
-                    ? 'cursor-not-allowed bg-gray-200 text-gray-400'
-                    : 'cursor-pointer'
-                  }
-                ${currentMapMode === 'work-it'
-                    ? 'bg-blue-500 !text-white shadow-sm'
-                    : hasActiveMarker
-                      ? 'bg-gray-200 text-gray-400'
-                      : 'bg-white text-gray-700 hover:bg-gray-50'
-                  }`}
-                title={hasActiveMarker ? 'มีการแก้ไข marker อยู่ กรุณายืนยันหรือยกเลิกก่อน' : ''}
-              >
-                EDIT
-              </button>
-            </div>
-          )}
+      <div>
+        <div className="relative" style={{
+          zIndex: 2,
+          display: Object.keys(dataEmergencyDetail).length > 0 ? 'block' : 'none'
+        }}
+        >
+          <div className=" h-full min-h-screen ">
+            <SecurityAlarm />
+          </div>
         </div>
-      </div>
+        <div
+          style={{ display: Object.keys(dataEmergencyDetail).length > 0 ? 'none' : 'block' }}
+          className="position-relative" >
+          <GlobalProvider
+            dataAllMap={dataMapAll}
+            setDataAllMap={setDataMapAll}
+            uploadedImage={uploadedImage}
+            setUploadedImage={setUploadedImage}
+            dataEmergency={dataEmergency}
+            setDataEmergency={setDataEmergency}
+            loadFirst={loadFirst}
+            dataSelectPlan={dataSelectPlan}
+            setStatusAcknowledge={setStatusAcknowledge}
+            statusAcknowledge={statusAcknowledge}
+            buildingPlan={buildingPlan}
+            setBuildingPlan={setBuildingPlan}
+          >
+            <div className="min-h-screen  relative !bg-white flex flex-col"
+              style={{ zIndex: '1' }}>
 
-      {/* แสดงผล village */}
-      {uploadedImage && (
-        <div className="" onClick={handleAreaClick}>
-          <Card className="h-full" styles={{ body: { padding: 0 } }}>
-            <Row gutter={0} className="h-full test flex-col sm:flex-row">
-              {/* แผนที่ - ปรับขนาดตามสภาพการแสดง form */}
-              <Col
-                span={24}
-                sm={24}
-                md={24}
-                lg={16}
-                className={`transition-all duration-300 ease-in-out ${
-                  // เพิ่ม animation เมื่อเปลี่ยนขนาด
-                  (alertMarkers.red.length === 0 && alertMarkers.yellow.length === 0 && !shouldShowVillageForm) ||
-                    currentMapMode === 'preview' ? 'lg:w-full' : 'lg:w-2/3'
-                  }`}
-              >
-                <div ref={imageRef}>
-                  <ImageVillage
-                    uploadedImage={uploadedImage || ""}
-                    projectName={projectName}
-                    setShowWarningVillage={handleShowVillageForm}
-                    showWarningVillage={shouldShowVillageForm}
-                    dataSelectPlan={dataSelectPlan}
-                    dataMapAll={dataMapAll}
-                    onLatLngChange={handleLatLngChange}
-                    onMarkerSelect={handleMarkerSelect}
-                    onMarkerNameChange={handleMarkerNameChange}
-                    onMarkerAddressChange={handleMarkerAddressChange}
-                    onMarkerUpdate={handleMarkerUpdate}
-                    selectedMarkerUpdate={selectedMarkerUpdate}
-                    villageMapResetRef={villageMapResetRef}
-                    villageMapUpdateAddressRef={villageMapUpdateAddressRef}
-                    villageMapUpdateTelRef={villageMapUpdateTelRef}
-                    villageMapConfirmRef={villageMapConfirmRef}
-                    villageMapRefreshRef={villageMapRefreshRef}
-                    mapMode={currentMapMode}
-                    onMapModeChange={handleMapModeChange}
-                    onMarkerDeleted={handleMarkerDeleted}
-                    onZoneCreated={handleZoneCreated}
-                    onZoneEdited={handleZoneEdited}
-                    onZoneEditStarted={handleZoneEditStarted}
-                    onNewMarkerCreated={handleNewMarkerCreated}
-                    onAlertMarkersChange={handleAlertMarkersChange}
-                    editMarkerData={editMarkerData}
-                    onEditMarkerData={handleEditMarkerData}
-                    markersLocked={markersLocked}
-                    markersFullOpacity={markersFullOpacity}
-                    setDataMapAll={setDataMapAll}
-                    setDataEmergency={setDataEmergency}
-                    setUnitHover={setUnitHover}
-                    setUnitClick={setUnitClick}
-                    onActiveMarkerChange={handleActiveMarkerChange}
-                  />
-                </div>
-              </Col>
-
-              {/* Form ด้านขวา - แยกเป็น 2 กรณี */}
-              <>
-                {/* กรณีที่ 1: แสดง FormVillageLocation */}
-                {currentMapMode === 'work-it' && (
-                  <Col
-                    span={24}
-                    sm={24}
-                    md={24}
-                    lg={8}
-                    className="animate-slide-in-right"
-                  >
-
-                    <div className="shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.1)] h-full">
-                      <div className="h-full animate-fade-in" ref={formVillageRef}>
-                        <FormVillageLocation
-                          latitude={currentLat}
-                          longitude={currentLng}
-                          selectedMarker={selectedMarker}
-                          onMarkerNameChange={handleMarkerNameChange}
-                          onMarkerAddressChange={handleMarkerAddressChange}
-                          onMarkerTel1Change={handleMarkerTel1Change}
-                          onMarkerTel2Change={handleMarkerTel2Change}
-                          onMarkerTel3Change={handleMarkerTel3Change}
-                          onMarkerUpdate={handleMarkerUpdate}
-                          onConfirm={handleConfirmMarker}
-                          onCancel={handleCancelMarker}
-                          mapMode={currentMapMode}
-                          shouldFocusNameInput={shouldFocusNameInput}
-                          onFocusHandled={() => setShouldFocusNameInput(false)}
-                          dataSelectPlan={dataSelectPlan}
-                          isCreatingMode={isCreatingMode}
-                          planType={planType}
-                          onMarkerDelete={handleCancelMarkerTemp}
-                          idVillage={dataMapAll.id}
-                          setShouldShowVillageForm={setShouldShowVillageForm}
-                          editMarkerData={editMarkerData}
-                          onEditMarkerData={handleEditMarkerData}
-                          setDataMapAll={setDataMapAll}
-                          onMarkerSelect={handleMarkerSelect}
-                          hasActiveMarker={!!selectedMarker}
-                          dataAllMap={dataMapAll}
-                        />
-                      </div>
-                    </div>
-                  </Col>
-                )}
-
-                {currentMapMode === 'preview' && (
-                  <Col
-                    span={24}
-                    sm={24}
-                    md={24}
-                    lg={8}
-                    className="animate-slide-in-right"
-                  >
-                    <div className={`shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.1)] h-full overflow-hidden ${dataEmergency.emergency.length === 0 && dataEmergency.deviceWarning.length === 0 ? 'flex items-center justify-center' : ''}`}>
-                      <div className="animate-fade-in h-full">
-                        <FormWarningSOS
-                          alertMarkers={alertMarkers}
-                          dataMapAll={dataMapAll}
-                          dataEmergency={dataEmergency}
-                          setDataEmergency={setDataEmergency}
-                          unitHover={unitHover}
-                          unitClick={unitClick}
-                          currentMapMode={currentMapMode}
-                          onClearFilter={() => setUnitClick(null)}
-                        />
-                      </div>
-                    </div>
-                  </Col>
-                )}
-              </>
-
-            </Row>
-          </Card>
-        </div>
-      )}
-      {/* แสดงผล condo */}
-      {buildingPlan && (
-        <div className="p-4" onClick={handleAreaClick}>
-          <Card className="h-full" styles={{ body: { padding: 0 } }}>
-            <div ref={imageRef}>
-              <BuildingCondo
-                projectName={projectName}
-                buildingPlan={buildingPlan}
-                showWarningCondo={showWarningCondo}
-                handleCancelCondo={handleCancelCondo}
+              <ModalFormUpdate
+                dataSelectPlan={dataSelectPlan}
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                onUploadSuccess={handleUploadSuccess}
+                isUploading={isUploading}
+                onCondoPlanSubmit={handleCondoPlanSubmit}
+                setProjectName={setProjectName}
+                setPlanType={setPlanType}
+                planType={planType}
+                loadFirst={loadFirst}
                 dataMapAll={dataMapAll}
               />
-            </div>
-          </Card>
-        </div>
-      )}
 
-      {!uploadedImage && !buildingPlan && (
-        <div className="flex flex-col items-center justify-center  min-h-[70vh] w-full text-2xl text-[#403d38]">
-          ไม่มีข้อมูล Plan
+              <ModalFormUploadateImagePlan
+                isModalOpen={isModalOpenPlan}
+                setIsModalOpen={setIsModalOpenPlan}
+                onClose={() => setIsModalOpen(false)}
+              />
+              {
+                openUploadPlan
+              }
+              {
+                TypeProject === 'condo' && !uploadedImage && (
+                  <ModalUploadPlan
+                    isModalOpen={openUploadPlan}
+                    setIsModalOpen={setOpenUploadPlan}
+                    onClose={() => setOpenUploadPlan(false)}
+                  />
+                )
+              }
+
+              <div className="px-6 pt-4">
+                {
+                  uploadedImage && (TypeProject === 'condo') && (
+                    <Button type="primary" className="!h-[42px] !w-[100px]" onClick={() => {
+                      setStatusAcknowledge(false)
+                      setDataMapAll({
+                        id: '',
+                        planInfoId: '',
+                        projectName: '',
+                        planTypeId: 70,
+                        planType: '',
+                        planTypeCondo: '',
+                        floor: '',
+                        planImg: '',
+                        marker: [],
+                        zone: []
+                      })
+                      loadFirst()
+                      dispatch.sosWarning.setDataFloor({});
+                      setUploadedImage(null)
+
+                      // Refresh map หลังจาก data เปลี่ยน
+                      setTimeout(() => {
+                        if (villageMapRefreshRef.current) {
+                          villageMapRefreshRef.current();
+                        }
+                      }, 100);
+                    }}>
+                      Back
+                    </Button>
+                  )
+                }
+              </div>
+              <div className="flex flex-col md:flex-row md:justify-start md:items-center min-h-20 flex-shrink-0 gap-4 md:gap-0 w-full">
+
+                <div className="flex justify-start items-center !py-4 px-6 h-[42px] ">
+                  <div className={`flex  items-center  
+                    ${TypeProject === 'condo' && !uploadedImage ? 'justify-start' : 'justify-start'}`}>
+                    <Header title="Manage Plan" className="!mb-0 !p-0" />
+                    {
+                      TypeProject === 'condo' && !uploadedImage && (
+                        <Button type="primary" className=" !rounded-xl w-[150px] !h-[38px] !ml-6" 
+                        onClick={() => { 
+                          // console.log('SOS-socket') 
+                          setOpenUploadPlan(true)
+                        }}>
+                          Upload Plan
+                        </Button>   
+                      )
+                    }
+                  </div>
+
+                </div>
+
+                <div className="flex flex-col md:flex-row gap-3 
+                items-start md:items-center px-6 md:ms-6 md:px-0 mb-4 md:mb-0 ">
+                  {/* ปุ่มแยกสำหรับสลับโหมด */}
+                  {(dataMapAll?.id || uploadedImage) && (
+                    <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full">
+                      <button
+                        onClick={() => !hasActiveMarker && handleMapModeChange('preview')}
+                        disabled={hasActiveMarker}
+                        className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium transition-all duration-200 h-10 sm:h-12 w-full sm:w-auto md:w-40 rounded-lg
+                  ${hasActiveMarker
+                            ? 'cursor-not-allowed bg-gray-200 text-gray-400'
+                            : 'cursor-pointer'
+                          }
+                  ${currentMapMode === 'preview'
+                            ? 'bg-blue-500 !text-white shadow-sm'
+                            : hasActiveMarker
+                              ? 'bg-gray-200 text-gray-400'
+                              : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
+                          }
+                `}
+                        title={hasActiveMarker ? 'มีการแก้ไข marker อยู่ กรุณายืนยันหรือยกเลิกก่อน' : ''}
+                      >
+                        PREVIEW
+                      </button>
+                      <button
+                        onClick={() => !hasActiveMarker && handleMapModeChange('work-it')}
+                        disabled={hasActiveMarker}
+                        className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium transition-all duration-200 h-10 sm:h-12 w-full sm:w-auto md:w-40 rounded-lg
+                  ${hasActiveMarker
+                            ? 'cursor-not-allowed bg-gray-200 text-gray-400'
+                            : 'cursor-pointer'
+                          }
+                  ${currentMapMode === 'work-it'
+                            ? 'bg-blue-500 !text-white shadow-sm'
+                            : hasActiveMarker
+                              ? 'bg-gray-200 text-gray-400'
+                              : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
+                          }
+                `}
+                        title={hasActiveMarker ? 'มีการแก้ไข marker อยู่ กรุณายืนยันหรือยกเลิกก่อน' : ''}
+                      >
+                        EDIT MARKER
+                      </button>
+                      <button
+                        onClick={() => setIsModalOpenPlan(true)}
+                        disabled={hasActiveMarker}
+                        className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium transition-all duration-200 h-10 sm:h-12 w-full sm:w-auto md:w-40 rounded-lg bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 cursor-pointer"
+                      >
+                        EDIT PLAN
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* แสดงผล village */}
+              {uploadedImage && (
+                <div className="flex-1 overflow-hidden" onClick={handleAreaClick}>
+                  <Card className="h-full" styles={{ body: { padding: 0, height: '100%' } }}>
+                    <Row gutter={0} className="h-full test flex-col sm:flex-row">
+                      {/* แผนที่ - ปรับขนาดตามสภาพการแสดง form */}
+                      <Col
+                        span={24}
+                        sm={24}
+                        md={24}
+                        lg={16}
+                        className={`transition-all duration-300 ease-in-out ${
+                          // เพิ่ม animation เมื่อเปลี่ยนขนาด
+                          (alertMarkers.red.length === 0 && alertMarkers.yellow.length === 0 && !shouldShowVillageForm) ||
+                            currentMapMode === 'preview' ? 'lg:w-full' : 'lg:w-2/3'
+                          }`}
+                      >
+                        <div ref={imageRef}>
+                          <ImageVillage
+                            uploadedImage={uploadedImage || ""}
+                            projectName={projectName}
+                            setShowWarningVillage={handleShowVillageForm}
+                            showWarningVillage={shouldShowVillageForm}
+                            dataSelectPlan={dataSelectPlan}
+                            dataMapAll={dataMapAll}
+                            onLatLngChange={handleLatLngChange}
+                            onMarkerSelect={handleMarkerSelect}
+                            onMarkerNameChange={handleMarkerNameChange}
+                            onMarkerAddressChange={handleMarkerAddressChange}
+                            onMarkerUpdate={handleMarkerUpdate}
+                            selectedMarkerUpdate={selectedMarkerUpdate}
+                            villageMapResetRef={villageMapResetRef}
+                            villageMapUpdateAddressRef={villageMapUpdateAddressRef}
+                            villageMapUpdateTelRef={villageMapUpdateTelRef}
+                            villageMapConfirmRef={villageMapConfirmRef}
+                            villageMapRefreshRef={villageMapRefreshRef}
+                            mapMode={currentMapMode}
+                            onMapModeChange={handleMapModeChange}
+                            onMarkerDeleted={handleMarkerDeleted}
+                            onZoneCreated={handleZoneCreated}
+                            onZoneEdited={handleZoneEdited}
+                            onZoneEditStarted={handleZoneEditStarted}
+                            onNewMarkerCreated={handleNewMarkerCreated}
+                            onAlertMarkersChange={handleAlertMarkersChange}
+                            editMarkerData={editMarkerData}
+                            onEditMarkerData={handleEditMarkerData}
+                            markersLocked={markersLocked}
+                            markersFullOpacity={markersFullOpacity}
+                            setDataMapAll={setDataMapAll}
+                            setDataEmergency={setDataEmergency}
+                            setUnitHover={setUnitHover}
+                            setUnitClick={setUnitClick}
+                            onActiveMarkerChange={handleActiveMarkerChange}
+                            currentDataFloor={dataFloorRef.current}
+                          />
+                        </div>
+                      </Col>
+
+                      {/* Form ด้านขวา - แยกเป็น 2 กรณี */}
+                      <>
+                        {/* กรณีที่ 1: แสดง FormVillageLocation */}
+                        {currentMapMode === 'work-it' && (
+                          <Col
+                            span={24}
+                            sm={24}
+                            md={24}
+                            lg={8}
+                            className="animate-slide-in-right"
+                          >
+
+                            <div className="shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.1)] h-full">
+                              <div className="h-full animate-fade-in" ref={formVillageRef}>
+                                <FormVillageLocation
+                                  latitude={currentLat}
+                                  longitude={currentLng}
+                                  selectedMarker={selectedMarker}
+                                  onMarkerNameChange={handleMarkerNameChange}
+                                  onMarkerAddressChange={handleMarkerAddressChange}
+                                  onMarkerTel1Change={handleMarkerTel1Change}
+                                  onMarkerTel2Change={handleMarkerTel2Change}
+                                  onMarkerTel3Change={handleMarkerTel3Change}
+                                  onMarkerUpdate={handleMarkerUpdate}
+                                  onConfirm={handleConfirmMarker}
+                                  onCancel={handleCancelMarker}
+                                  mapMode={currentMapMode}
+                                  shouldFocusNameInput={shouldFocusNameInput}
+                                  onFocusHandled={() => setShouldFocusNameInput(false)}
+                                  dataSelectPlan={dataSelectPlan}
+                                  isCreatingMode={isCreatingMode}
+                                  planType={planType}
+                                  onMarkerDelete={handleCancelMarkerTemp}
+                                  idVillage={dataMapAll.id}
+                                  setShouldShowVillageForm={setShouldShowVillageForm}
+                                  editMarkerData={editMarkerData}
+                                  onEditMarkerData={handleEditMarkerData}
+                                  setDataMapAll={setDataMapAll}
+                                  onMarkerSelect={handleMarkerSelect}
+                                  hasActiveMarker={!!selectedMarker}
+                                  dataAllMap={dataMapAll}
+                                  floorIdGlobal={floorIdGlobal || ''}
+                                />
+                              </div>
+                            </div>
+                          </Col>
+                        )}
+
+                        {(currentMapMode === 'preview') && (
+                          <Col
+                            span={24}
+                            sm={24}
+                            md={24}
+                            lg={8}
+                            className="animate-slide-in-right !shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.1)]"
+                          >
+                            <div className="animate-fade-in h-full">
+                              <FormWarningSOS
+                                alertMarkers={alertMarkers}
+                                dataMapAll={dataMapAll}
+                                dataEmergency={dataEmergencyOnTypeProject}
+                                setDataEmergency={setDataEmergency}
+                                unitHover={unitHover}
+                                unitClick={unitClick}
+                                currentMapMode={currentMapMode}
+                                onClearFilter={() => setUnitClick(null)}
+                                dataSelectPlan={dataSelectPlan}
+                              />
+                            </div>
+                          </Col>
+                        )}
+                      </>
+
+                    </Row>
+                  </Card>
+                </div>
+              )}
+              {/* แสดงผล condo */}
+              {TypeProject === 'condo' && !uploadedImage && (
+                <div className="flex-1 overflow-hidden" onClick={handleAreaClick}>
+                  <div className="h-full">
+                    <div ref={imageRef} className="h-full">
+                      {/* <Row className="!h-full">
+              <Col span={24}>
+                <Topbar
+                  projectName={projectName}
+                  mode={currentMapMode}
+                  dataMapAll={dataMapAll}
+                />
+                <BuildingCondo></BuildingCondo>
+              </Col>
+            </Row> */}
+
+                      <Row>
+                        <Col
+                          span={24}
+                          sm={24}
+                          md={24}
+                          lg={24}
+                        >
+                          {buildingPlan && (
+                            <BuildingCondoOld
+                              buildingPlan={buildingPlan}
+                              projectName={projectData?.name || ''}
+                              showWarningCondo={showWarningCondo}
+                              handleCancelCondo={handleCancelCondo}
+                              dataMapAll={dataMapAll}
+                              onDataFloorChange={handleDataFloorChange}
+                            />
+                          )}
+                        </Col>
+                      </Row>
+
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {!uploadedImage && !buildingPlan && TypeProject !== 'condo' && (
+                <div
+                  className="flex flex-col items-center justify-center  min-h-[70vh] w-full text-2xl text-[#403d38]">
+                  ไม่มีข้อมูล Plan
+                </div>
+              )}
+            </div>
+
+
+          </GlobalProvider>
         </div>
-      )}
+
+      </div>
+
+
 
 
 
@@ -1081,6 +1342,12 @@ const WarrantyTracking = () => {
           animation: toastSlideIn 0.4s ease-out forwards;
         }
 
+        /* Toast progress bar สีแดง */
+        .toast-progress-red {
+          background: #dc2626 !important;
+          background-image: none !important;
+        }
+
         /* Responsive transitions สำหรับ grid layout */
         .transition-grid {
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -1090,4 +1357,6 @@ const WarrantyTracking = () => {
   );
 };
 
-export default WarrantyTracking;
+export default SOSWarning;
+
+

@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { usePermission } from "../../../utils/hooks/usePermission";
+
 import { Row, Col, Typography, Switch, Button } from "antd";
 import Header from "../../../components/templates/Header";
 import { useDispatch, useSelector } from "react-redux";
@@ -37,6 +39,11 @@ const ReservedFacilities = () => {
   const [editData, setEditData] = useState<ReservationListDataType>();
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
+  const permissions = useSelector(
+    (state: RootState) => state.common?.permission
+  );
+  const { access } = usePermission(permissions);
 
   // functions
 
@@ -150,11 +157,13 @@ const ReservedFacilities = () => {
                     onClick={() => {
                       onDeleteFacility(data.id);
                     }}
+                    disabled={!access("facility", "delete")}
                   />
                   <Button
                     icon={<EditOutlined className="iconButton" />}
                     type="text"
                     onClick={() => onEdit(data)}
+                    disabled={!access("facility", "edit")}
                   />
                 </Row>
               </Row>
@@ -180,7 +189,9 @@ const ReservedFacilities = () => {
                   <Switch
                     checked={data?.locked}
                     onChange={() => onSwitchChange(!data.locked, data.id)}
+                    disabled={!access("facility", "edit")}
                   />
+
                   <span
                     style={{
                       color: whiteLabel.subMenuTextColor,
@@ -220,10 +231,14 @@ const ReservedFacilities = () => {
         })}
         <Col md={12} xl={8}>
           <div
-            onClick={onNewFacility}
-            className="reservedCardContainer flex flex-col justify-center items-center gap-4 hover:brightness-90 cursor-pointer"
+            onClick={access("facility", "create") ? onNewFacility : undefined}
+            className={`reservedCardContainer flex flex-col justify-center items-center gap-4 ${
+              access("facility", "create")
+                ? "hover:brightness-90 cursor-pointer"
+                : "opacity-50 cursor-not-allowed"
+            }`}
           >
-            <PlusIcon style={{ fill: "var(--bg-color)" }} />
+            <PlusIcon color="var(--bg-color)" />
             <span className="text-[var(--bg-color)]">Add new facility</span>
           </div>
         </Col>

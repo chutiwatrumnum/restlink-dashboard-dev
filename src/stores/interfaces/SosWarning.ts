@@ -100,6 +100,7 @@ export interface createPlanCondo {
 
 export interface dataAllMap {
   id: string;
+  building?: any[];
   planInfoId: string;
   projectName: string;
   planTypeId: number;
@@ -116,6 +117,7 @@ export  interface MarkerProcess {
     // villageId: string;
     planInfoId?: string;
     unitId: number;
+    floorId?: number | null;
     markerType: string;
     markerInfo: {
     //   id: string | number | null;
@@ -155,3 +157,15 @@ export interface Member {
     status: "pending" | "success" | "failed";
     failedCount: number;
   } 
+
+  export interface SosWarningState {
+    dataEmergencyDetail:any,
+    dataFloor:any,
+    showToast:boolean,
+    isLoading:boolean,
+    floorIdGlobal:string,
+    test:string,
+    count:number,
+    dataEmergency:any,
+    statusCaseReceiveCast:boolean
+  }

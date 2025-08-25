@@ -1,4 +1,4 @@
-// ไฟล์: src/modules/vmsInvitation/components/VMSInvitationStatsCards.tsx - Updated with Stamp Data
+// File: src/modules/vmsInvitation/components/VMSInvitationStatsCards.tsx - Updated with English Labels
 
 import React from "react";
 import { Card, Row, Col } from "antd";
@@ -24,33 +24,33 @@ const VMSInvitationStatsCards: React.FC<VMSInvitationStatsCardsProps> = ({
   data,
   loading = false,
 }) => {
-  // คำนวณสถิติตามข้อมูลจริงในตาราง
+  // Calculate statistics based on actual table data
   const calculateStats = () => {
     const now = dayjs();
 
     const total = data.length;
 
-    // Active = สถานะ Active ในตาราง
+    // Active = Active status in table
     const active = data.filter((item) => item.active === true).length;
 
-    // รอเริ่มงาน = Active และ start_time ยังไม่ถึง
+    // Pending = Active and start_time not yet reached
     const pending = data.filter((item) => {
       if (!item.active) return false;
       const startTime = dayjs(item.start_time);
       return startTime.isAfter(now);
     }).length;
 
-    // ใกล้หมดอายุ = Active และ expire_time ผ่านไปแล้ว
+    // Near expiry = Active and expire_time has passed
     const expired = data.filter((item) => {
       if (!item.active) return false;
       const expireTime = dayjs(item.expire_time);
       return expireTime.isBefore(now);
     }).length;
 
-    // หมดอายุ = Inactive
+    // Expired = Inactive
     const inactive = data.filter((item) => item.active === false).length;
 
-    // กำลังใช้งาน = Active และอยู่ในช่วงเวลา
+    // In use = Active and within time range
     const inProgress = data.filter((item) => {
       if (!item.active) return false;
       const startTime = dayjs(item.start_time);
@@ -58,7 +58,7 @@ const VMSInvitationStatsCards: React.FC<VMSInvitationStatsCardsProps> = ({
       return startTime.isBefore(now) && expireTime.isAfter(now);
     }).length;
 
-    // สถิติการประทับตรา
+    // Stamp statistics
     const stamped = data.filter(
       (item) => item.stamped_time && item.stamped_time.trim()
     ).length;
@@ -80,52 +80,52 @@ const VMSInvitationStatsCards: React.FC<VMSInvitationStatsCardsProps> = ({
 
   const stats = calculateStats();
 
-  // การ์ดสถิติแบบเรียบง่าย - เพิ่มข้อมูลการ stamp
+  // Simple stats cards - added stamp data
   const statsCards = [
     {
-      title: "ทั้งหมด",
+      title: "Total",
       value: stats.total,
       icon: <UserOutlined />,
       color: "#1890ff",
     },
     {
-      title: "ใช้งานได้",
+      title: "Active",
       value: stats.active,
       icon: <CheckCircleOutlined />,
       color: "#52c41a",
     },
     {
-      title: "รอเริ่มงาน",
+      title: "Pending",
       value: stats.pending,
       icon: <ClockCircleOutlined />,
       color: "#faad14",
     },
     {
-      title: "ใกล้หมดอายุ",
+      title: "Near Expiry",
       value: stats.expired,
       icon: <ExclamationCircleOutlined />,
       color: "#ff4d4f",
     },
     {
-      title: "หมดอายุ",
+      title: "Expired",
       value: stats.inactive,
       icon: <StopOutlined />,
       color: "#8c8c8c",
     },
     {
-      title: "กำลังใช้งาน",
+      title: "In Use",
       value: stats.inProgress,
       icon: <RiseOutlined />,
       color: "#722ed1",
     },
     {
-      title: "ประทับตราแล้ว",
+      title: "Stamped",
       value: stats.stamped,
       icon: <StarOutlined />,
       color: "#13c2c2",
     },
     {
-      title: "ยังไม่ประทับตรา",
+      title: "Not Stamped",
       value: stats.unstamped,
       icon: <FileProtectOutlined />,
       color: "#fa541c",
@@ -188,8 +188,6 @@ const VMSInvitationStatsCards: React.FC<VMSInvitationStatsCardsProps> = ({
           </Col>
         ))}
       </Row>
-
-      {/* เอาส่วนสรุปสถิติการประทับตราออก */}
     </div>
   );
 };

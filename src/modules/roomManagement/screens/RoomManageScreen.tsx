@@ -160,7 +160,7 @@ const RoomManageScreen = () => {
         {/* Section 1 */}
         <section className="flex flex-row justify-between items-center w-full">
           <span className="text-3xl font-normal">
-            {projectData?.projectName}
+            {projectData?.data?.projectName}
           </span>
           <span className="text-3xl font-normal">
             {`Total number of floors ${floorData?.total}`}

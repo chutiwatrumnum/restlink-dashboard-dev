@@ -1,21 +1,51 @@
-import React from 'react';
-import { useEffect } from 'react';
+
+import { useMemo } from 'react';
 import { dataAllMap } from '../../../../stores/interfaces/SosWarning';
 import { Row, Col, Button, Card } from "antd";
+import { useSelector } from 'react-redux';
+import { RootState } from '../../../../stores';
+
 interface TopbarProps {
   projectName: string;
   mode?: 'preview' | 'work-it';
   onModeChange?: (mode: 'preview' | 'work-it') => void;
   dataMapAll: dataAllMap;
+  dataFloorRef?: React.MutableRefObject<any>; // เปลี่ยนเป็น ref
 }
 
-const Topbar = ({ projectName, mode = 'preview', onModeChange, dataMapAll }: TopbarProps) => {
-  // useEffect(() => {
-  //   console.log(dataMapAll,'dataMapAll');
-  // }, [dataMapAll]);
+const Topbar = ({ projectName, mode = 'preview', onModeChange, dataMapAll, dataFloorRef }: TopbarProps) => {
+  const { projectData } = useSelector((state: RootState) => state.setupProject);
+  // ลบการใช้ dataFloor จาก Redux state
+  // const { dataFloor } = useSelector((state: RootState) => state.sosWarning);
   const handleModeChange = (newMode: 'preview' | 'work-it') => {
     onModeChange?.(newMode);
   };
+
+  const typeProject = useMemo(() => {
+    let projectType = projectData?.projectType?.nameCode || '';
+    const strType = projectType.split('_');
+    projectType = strType[strType.length - 1];
+    return projectType;
+  }, [projectData]);
+  
+  const displayBasement = useMemo(() => {
+    const dataFloor = dataFloorRef?.current || {};
+    if (!dataFloor || Object.keys(dataFloor).length === 0) return '-';
+    if (dataFloor.numberOfFloor < 0) {
+      return `B-${dataFloor.floorName}`;
+    } else if (dataFloor.numberOfFloor === 0) {
+      return "-";
+    } else {
+      return dataFloor.floorName;
+    }
+  }, [dataFloorRef?.current]);
+
+  const buildingName = useMemo(() => {
+    const dataFloor = dataFloorRef?.current || {};
+    return dataFloor?.buildingName || '-';
+  }, [dataFloorRef?.current]);
+
+
   return (
     <>
 
@@ -26,67 +56,85 @@ const Topbar = ({ projectName, mode = 'preview', onModeChange, dataMapAll }: Top
           md={24}
           lg={24}
         >
-          <div className="flex flex-row justify-between items-center 
-          p-5 py-3 bg-[#ECF4FF] h-[64px]">
-            <div className="flex justify-between w-full" >
-              <div className="d-flex justify-center align-center w-full">
-                <div className="text-xs text-[#002C55] text-center mr-2">
-                  Project name
+
+          {
+            typeProject === 'village' && (
+              <div className="flex flex-row justify-between items-center 
+              p-5 py-3 bg-[#ECF4FF] h-[64px]">
+                <div className="flex justify-between w-full" >
+                  <div className="d-flex justify-center align-center w-full">
+                    <div className="text-xs text-[#002C55] text-center mr-2">
+                      Project name
+                    </div>
+                    <div className="font-bold text-[#002C55] text-center">{dataMapAll?.projectName || '-'}</div>
+                  </div>
+                  <div className="d-flex justify-center w-full">
+                    <div className="text-xs text-[#002C55] text-center">Plan type</div>
+                    <div className="font-bold text-[#002C55] text-center">Village</div>
+                  </div>
+                  <div className="d-flex justify-center w-full">
+                    <div className="text-xs text-[#002C55] text-center">Condo type</div>
+                    <div className="font-bold text-[#002C55] text-center">-</div>
+                  </div>
+                  <div className="d-flex justify-center w-full">
+                    <div className="text-xs text-[#002C55] text-center">Floor</div>
+                    <div className="font-bold text-[#002C55] text-center">-</div>
+                  </div>
                 </div>
-                <div className="font-bold text-[#002C55] text-center">{dataMapAll.projectName || '-'}</div>
               </div>
-              <div className="d-flex justify-center w-full">
-                <div className="text-xs text-[#002C55] text-center">Plan type</div>
-                <div className="font-bold text-[#002C55] text-center">Village</div>
+            )
+          }
+
+          {
+            typeProject === 'condo' && (
+              <div className="flex flex-row justify-between items-center 
+              p-5 py-3 bg-[#ECF4FF] h-[64px]">
+                <div className="flex justify-between w-full" >
+                  <div className="d-flex justify-center align-center w-full">
+                    <div className="text-xs text-[#002C55] text-center mr-2">
+                      Project name
+                    </div>
+                    <div className="font-bold text-[#002C55] text-center">{dataMapAll?.projectName || '-'}</div>
+                  </div>
+                  <div className="d-flex justify-center w-full">
+                    <div className="text-xs text-[#002C55] text-center">Plan type</div>
+                    <div className="font-bold text-[#002C55] text-center">Condo</div>
+                  </div>
+                  <div className="d-flex justify-center w-full">
+                    <div className="text-xs text-[#002C55] text-center">Condo type</div>
+                    <div className="font-bold text-[#002C55] text-center">
+                      {
+                        projectData?.projectType?.nameEn || '-'
+                      }
+                    </div>
+                  </div>
+                  <div className="d-flex justify-center w-full">
+                    <div className="text-xs text-[#002C55] text-center">Floor</div>
+                    <div className="font-bold text-[#002C55] text-center"
+                      onClick={() => console.log(dataFloorRef?.current, 'dataFloor')}
+                    >
+                      {displayBasement || '-'}
+                    </div>
+                  </div>
+
+                  <div className="d-flex justify-center w-full">
+                    <div className="text-xs text-[#002C55] text-center">
+                      Building
+
+                    </div>
+                    <div
+                      onClick={() => console.log(dataFloorRef?.current, 'dataFloor')}
+                      className="font-bold text-[#002C55] text-center">
+                      {buildingName}
+                    </div>
+                  </div>
+
+                </div>
               </div>
-              <div className="d-flex justify-center w-full">
-                <div className="text-xs text-[#002C55] text-center">Condo type</div>
-                <div className="font-bold text-[#002C55] text-center">-</div>
-              </div>
-              <div className="d-flex justify-center w-full">
-                <div className="text-xs text-[#002C55] text-center">Floor</div>
-                <div className="font-bold text-[#002C55] text-center">-</div>
-              </div>
-            </div>
-          </div>
+            )
+          }
         </Col>
-
-
-        {/* <Col
-          span={12}
-          sm={12}
-          md={12}
-          lg={12}
-        >
-          <div className="flex flex-row justify-end items-center  h-[64px]">
-            <div className="flex bg-white  w-full  h-full">
-              <button
-                onClick={() => handleModeChange('preview')}
-                className={`flex-1 py-2  text-sm font-medium transition-all duration-200 ${mode === 'preview'
-                    ? 'bg-sky-300 !text-white shadow-sm'
-                    : 'text-gray-600 hover:text-[#002C55] hover:bg-gray-50'
-                  }`}
-              >
-                preview
-              </button>
-              <button
-                onClick={() => handleModeChange('work-it')}
-                className={`flex-1 py-2  text-sm font-medium transition-all duration-200 ${mode === 'work-it'
-                    ? 'bg-sky-300 !text-white shadow-sm'
-                    : 'text-gray-600 hover:text-[#002C55] hover:bg-gray-50'
-                  }`}
-              >
-                Edit
-              </button>
-            </div>
-          </div>
-        </Col> */}
-
       </Row>
-
-
-
-
     </>
   );
 };

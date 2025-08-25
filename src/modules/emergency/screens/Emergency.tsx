@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { usePagination } from "../../../utils/hooks/usePagination";
+import { usePermission } from "../../../utils/hooks/usePermission";
 
 import { Button, Row, Pagination } from "antd";
 import Header from "../../../components/templates/Header";
@@ -45,6 +46,11 @@ const Emergency = () => {
   );
   const [search, setSearch] = useState("");
   const [refresh, setRefresh] = useState(false);
+
+  const permissions = useSelector(
+    (state: RootState) => state.common?.permission
+  );
+  const { access } = usePermission(permissions);
 
   // functions
   const onSearch = (value: string) => {
@@ -175,11 +181,13 @@ const Emergency = () => {
               type="text"
               icon={<EditIcon />}
               onClick={() => onEdit(record)}
+              disabled={!access("contact_list", "edit")}
             />
             <Button
               onClick={() => showDeleteConfirm(record)}
               type="text"
               icon={<TrashIcon />}
+              disabled={!access("contact_list", "delete")}
             />
           </>
         );
@@ -207,6 +215,7 @@ const Emergency = () => {
           message="Add Contact list"
           onClick={onCreate}
           className="createAnnouncementBtn"
+          disabled={!access("contact_list", "create")}
         />
       </div>
       <EmergencyTable columns={columns} data={tableData} />

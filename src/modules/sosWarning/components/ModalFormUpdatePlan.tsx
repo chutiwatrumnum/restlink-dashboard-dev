@@ -12,17 +12,19 @@ import {
 import { SosWarningDataType } from "../../../stores/interfaces/SosWarning";
 import IconImagePhoto from "../../../assets/images/IconImagePhoto.png";
 interface ModalFormUpdateProps {
-  isOpen: boolean;
+  isModalOpen: boolean;
+  setIsModalOpen: (isOpen: boolean) => void;
   onClose?: () => void;
   selectedSosWarning?: SosWarningDataType | null;
 }
 
 export const ModalFormUpdatePlan: React.FC<ModalFormUpdateProps> = ({
-  isOpen,
+  isModalOpen,
+  setIsModalOpen,
   onClose,
   selectedSosWarning
 }) => {
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(isOpen);
+
   const [imageUrl, setImageUrl] = useState<string>();
   const [imageBase64, setImageBase64] = useState<string | undefined>();
   const [form] = Form.useForm();
@@ -37,8 +39,8 @@ export const ModalFormUpdatePlan: React.FC<ModalFormUpdateProps> = ({
   };
 
   useEffect(() => {
-    setIsModalOpen(isOpen);
-  }, [isOpen]);
+    setIsModalOpen(isModalOpen);
+  }, [isModalOpen]);
 
   const handleUpload = (info: any) => {
     const file = info.file.originFileObj;

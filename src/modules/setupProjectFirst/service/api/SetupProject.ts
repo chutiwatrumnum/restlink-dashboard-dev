@@ -32,17 +32,12 @@ const getStepCondo = async () => {
 
 const uploadFilePlan = async (formData: FormData) => {
     try {
-
-
         const response = await axios.post(`/sos${version}plan/dashboard/upload`, formData, {
             headers: {
                 'Content-Type': 'multipart/form-data'
             },
             timeout: 30000, // 30 second timeout
         });
-
-
-
         if (response.status === 200 || response.status === 201) {
             let result = { status: true, ...response.data };
             return result;

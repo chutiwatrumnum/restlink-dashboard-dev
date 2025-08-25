@@ -28,6 +28,9 @@ import type { RangePickerProps } from "antd/es/date-picker";
 import "../styles/announcement.css";
 import { ConvertDate } from "../../../utils/helper";
 
+// ⭐ import usePermission
+import { usePermission } from "../../../utils/hooks/usePermission";
+
 const Announcement = () => {
   // variables
   const dispatch = useDispatch<Dispatch>();
@@ -35,23 +38,13 @@ const Announcement = () => {
   const announcementMaxLength = useSelector(
     (state: RootState) => state.announcement.announcementMaxLength
   );
+
   const items: TabsProps["items"] = [
-    {
-      key: "announcement",
-      label: "Announcement",
-      children: null,
-    },
-    {
-      key: "projectNews",
-      label: "Project news",
-      children: null,
-    },
-    {
-      key: "devNews",
-      label: "Developer news",
-      children: null,
-    },
+    { key: "announcement", label: "Announcement", children: null },
+    { key: "projectNews", label: "Project news", children: null },
+    { key: "devNews", label: "Developer news", children: null },
   ];
+
   const {
     curPage,
     perPage,
@@ -73,22 +66,17 @@ const Announcement = () => {
     "projectNews" | "announcement" | "devNews"
   >("announcement");
 
+  const permissions = useSelector(
+    (state: RootState) => state.common?.permission
+  );
+  const { access } = usePermission(permissions);
+
   // functions
-  const onSearch = (value: string) => {
-    setSearch(value);
-  };
+  const onSearch = (value: string) => setSearch(value);
 
-  const onCreate = () => {
-    setIsCreateModalOpen(true);
-  };
-
-  const onCreateOk = () => {
-    setIsCreateModalOpen(false);
-  };
-
-  const onCreateCancel = () => {
-    setIsCreateModalOpen(false);
-  };
+  const onCreate = () => setIsCreateModalOpen(true);
+  const onCreateOk = () => setIsCreateModalOpen(false);
+  const onCreateCancel = () => setIsCreateModalOpen(false);
 
   const onEdit = (record: DataAnnouncementType) => {
     const editData: AnnounceFormDataType = {
@@ -105,11 +93,7 @@ const Announcement = () => {
     setEditData(editData);
     setIsEditModalOpen(true);
   };
-
-  const onEditOk = () => {
-    setIsEditModalOpen(false);
-  };
-
+  const onEditOk = () => setIsEditModalOpen(false);
   const onEditCancel = () => {
     setIsEditModalOpen(false);
     setEditData({});
@@ -119,19 +103,13 @@ const Announcement = () => {
     setEditData(record);
     setIsInfoModalOpen(true);
   };
-
-  const onInfoCancel = () => {
-    setIsInfoModalOpen(false);
-  };
+  const onInfoCancel = () => setIsInfoModalOpen(false);
 
   const onDateSelect = (values: RangePickerProps["value"]) => {
     let start: any, end: any;
     values?.forEach((value, index) => {
-      if (index === 0) {
-        start = value?.format("YYYY-MM");
-      } else {
-        end = value?.format("YYYY-MM");
-      }
+      if (index === 0) start = value?.format("YYYY-MM");
+      else end = value?.format("YYYY-MM");
     });
     setStartDate(start);
     setEndDate(end);
@@ -139,19 +117,17 @@ const Announcement = () => {
 
   const fetchData: VoidFunction = async () => {
     const payload: AnnouncePayloadType = {
-      search: search,
-      curPage: curPage,
-      perPage: perPage,
-      startDate: startDate,
-      endDate: endDate,
-      fetchType: fetchType,
+      search,
+      curPage,
+      perPage,
+      startDate,
+      endDate,
+      fetchType,
     };
     await dispatch.announcement.getTableData(payload);
   };
 
-  const onRefresh: VoidFunction = () => {
-    setRefresh(!refresh);
-  };
+  const onRefresh: VoidFunction = () => setRefresh(!refresh);
 
   const showDeleteConfirm = (value: DataAnnouncementType) => {
     ConfirmModal({
@@ -178,10 +154,10 @@ const Announcement = () => {
       setFetchType(key);
     } else {
       message.error("Something went wrong");
-      console.log(key);
     }
   };
 
+  // ⭐ เพิ่ม disabled check ที่ปุ่ม Actions
   const columns: ColumnsType<DataAnnouncementType> = [
     {
       title: "Image",
@@ -191,14 +167,12 @@ const Announcement = () => {
     },
     {
       title: "Title",
-      // dataIndex: "title",
       key: "title",
       align: "center",
       sorter: (a, b) => a.title.localeCompare(b.title),
       render: ({ title }) => (
         <div
           style={{
-            width: "100%",
             overflow: "hidden",
             whiteSpace: "nowrap",
             textOverflow: "ellipsis",
@@ -224,58 +198,53 @@ const Announcement = () => {
       title: "Start Date",
       key: "startDate",
       align: "center",
-      render: ({ startDate }) => {
-        return <span>{dayjs(startDate).format("DD/MM/YYYY")}</span>;
-      },
+      render: ({ startDate }) => (
+        <span>{dayjs(startDate).format("DD/MM/YYYY")}</span>
+      ),
       sorter: (a, b) => dayjs(a.startDate).unix() - dayjs(b.startDate).unix(),
     },
     {
       title: "Start Time",
       key: "startDate",
       align: "center",
-      render: ({ startDate }) => {
-        return <span>{dayjs(startDate).format("HH:mm")}</span>;
-      },
+      render: ({ startDate }) => (
+        <span>{dayjs(startDate).format("HH:mm")}</span>
+      ),
     },
     {
       title: "End Date",
       key: "endDate",
       align: "center",
-      render: ({ endDate }) => {
-        return <span>{dayjs(endDate).format("DD/MM/YYYY")}</span>;
-      },
+      render: ({ endDate }) => (
+        <span>{dayjs(endDate).format("DD/MM/YYYY")}</span>
+      ),
       sorter: (a, b) => dayjs(a.startDate).unix() - dayjs(b.startDate).unix(),
     },
     {
       title: "End Time",
       key: "endDate",
       align: "center",
-      render: ({ endDate }) => {
-        return <span>{dayjs(endDate).format("HH:mm")}</span>;
-      },
+      render: ({ endDate }) => <span>{dayjs(endDate).format("HH:mm")}</span>,
     },
     {
       title: "Create by",
       key: "createBy",
       align: "center",
-      render: ({ createBy }) => {
-        return (
-          <span>
-            {createBy?.givenName
-              ? `${createBy?.givenName ?? "-"}`
-              : "Removed admin"}
-          </span>
-        );
-      },
+      render: ({ createBy }) => (
+        <span>
+          {createBy?.givenName
+            ? `${createBy?.givenName ?? "-"}`
+            : "Removed admin"}
+        </span>
+      ),
     },
     {
       title: "Create date",
       key: "createdAt",
       align: "center",
-      render: ({ createdAt }) => {
-        // return <span>{dayjs(createdAt).format("DD/MM/YYYY")}</span>;
-        return <span>{dayjs(createdAt).format("DD/MM/YYYY HH:mm")}</span>;
-      },
+      render: ({ createdAt }) => (
+        <span>{dayjs(createdAt).format("DD/MM/YYYY HH:mm")}</span>
+      ),
       sorter: (a, b) => dayjs(a.createdAt).unix() - dayjs(b.createdAt).unix(),
     },
     {
@@ -290,23 +259,28 @@ const Announcement = () => {
             type="text"
             icon={<InfoIcon />}
             onClick={() => onInfoClick(record)}
+            // view
+            disabled={!access("announcement", "view")}
           />
           <Button
             type="text"
             icon={<EditIcon />}
             onClick={() => onEdit(record)}
+            // edit
+            disabled={!access("announcement", "edit")}
           />
           <Button
             onClick={() => showDeleteConfirm(record)}
             type="text"
             icon={<TrashIcon />}
+            // delete
+            disabled={!access("announcement", "delete")}
           />
         </>
       ),
     },
   ];
 
-  // Actions
   useEffect(() => {
     fetchData();
   }, [startDate, endDate, search, curPage, refresh, perPage, fetchType]);
@@ -331,6 +305,8 @@ const Announcement = () => {
           message="Add new"
           onClick={onCreate}
           className="createAnnouncementBtn"
+          // create
+          disabled={!access("announcement", "create")}
         />
       </div>
       <Tabs

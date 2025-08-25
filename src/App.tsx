@@ -52,7 +52,9 @@ import DeviceControl from "./modules/powerManagement/screens/DeviceControl";
 import WarrantyTracking from "./modules/warrantyTracking/screens/WarrantyTracking";
 
 import SOSWarning from "./modules/sosWarning/screens/sosWarning";
-import SOSBuildingPlan from "./modules/sosWarning/screens/sosBuildingPlan";
+import SecurityAlarm from "./modules/sosWarning/screens/securityAlarm";
+import SOSHistoryAlarm from "./modules/sosWarning/screens/sosHistoryAlarm";
+import HistoryBuilding from "./modules/sosWarning/screens/historyBuilding";
 
 import LiveChat from "./modules/chat/screens/ChatRoomScreen";
 
@@ -100,6 +102,11 @@ import VMSLogAccess from "./modules/vmsLogAccess/screens/VMSLogAccess";
 import VMSLogPassage from "./modules/vmsLogPassage/screens/VMSLogPassage";
 
 // components
+
+
+//component Toast
+import { ToastContainer } from 'react-toastify';
+
 
 // data project
 
@@ -351,6 +358,9 @@ function AppRoutes() {
   return (
     <Routes>
       {/* unauthorized_route */}
+
+
+
       <Route element={<UnauthorizedLayout />}>
         <Route index path="/auth" element={<SignInScreen />} />
         <Route path="/recovery" element={<RecoveryScreen />} />
@@ -401,12 +411,13 @@ function AppRoutes() {
         <Route path="houseDocument" element={<PublicFolder />} />
         <Route path="projectInfo" element={<MaintenanceGuideFolder />} />
         {/* Delivery logs */}
-        <Route path="delivery-logs" element={<DeliveryLogs />} />
+        <Route path="parcels" element={<DeliveryLogs />} />
         {/* Warranty tracking */}
         <Route path="warranty-tracking" element={<WarrantyTracking />} />
         {/* SOS warning */}
-        <Route path="add-location" element={<SOSWarning />} />
-        <Route path="building-plan" element={<SOSBuildingPlan />} />
+        <Route path="security-alarm" element={<SecurityAlarm />} />
+        <Route path="history-building" element={<HistoryBuilding />} />
+        <Route path="manage-plan" element={<SOSWarning />} />
         <Route path="event-logs" element={<EventLogs />} />
         <Route path="event-joining-logs" element={<EventJoinLogs />} />
         <Route
@@ -454,11 +465,7 @@ function App() {
     const fetchData = async () => {
       try {
         setIsLoading(true);
-        if (
-          Object.keys(projectData).length === 0 ||
-          projectData === null ||
-          true
-        ) {
+        if (Object.keys(projectData).length === 0 || projectData === null ) {
           await dispatch.setupProject.setDataProject();
           setIsDataProjectReady(true);
         }
@@ -501,6 +508,22 @@ function App() {
       )}
       {isDataProjectReady && <AppWithCustomHooks />}
       {isDataProjectReady && <AppRoutes />}
+      
+      {/* Global ToastContainer */}
+      <ToastContainer 
+        position="top-right"
+        autoClose={7000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+        toastClassName="bg-white text-black"
+        progressClassName="toast-progress-red"
+      />
     </BrowserRouter>
   );
 }

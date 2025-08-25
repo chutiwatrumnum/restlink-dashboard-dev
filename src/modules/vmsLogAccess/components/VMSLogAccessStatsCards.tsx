@@ -1,4 +1,4 @@
-// ไฟล์: src/modules/vmsLogAccess/components/VMSLogAccessStatsCards.tsx
+// File: src/modules/vmsLogAccess/components/VMSLogAccessStatsCards.tsx - English Version
 
 import React from "react";
 import { Card, Row, Col } from "antd";
@@ -63,31 +63,31 @@ const VMSLogAccessStatsCards: React.FC<VMSLogAccessStatsCardsProps> = ({
 
   const statsCards = [
     {
-      title: "ทั้งหมด",
+      title: "Total",
       value: stats.total,
       icon: <DashboardOutlined />,
       color: "#1890ff",
     },
     {
-      title: "สำเร็จ",
+      title: "Success",
       value: stats.success,
       icon: <CheckCircleOutlined />,
       color: "#52c41a",
     },
     {
-      title: "ล้มเหลว",
+      title: "Failed",
       value: stats.failed,
       icon: <CloseCircleOutlined />,
       color: "#ff4d4f",
     },
     {
-      title: "อัตราสำเร็จ",
+      title: "Success Rate",
       value: `${stats.successRate}%`,
       icon: <PercentageOutlined />,
       color: "#faad14",
     },
     {
-      title: "วันนี้",
+      title: "Today",
       value: stats.todayRecords,
       icon: <CalendarOutlined />,
       color: "#722ed1",

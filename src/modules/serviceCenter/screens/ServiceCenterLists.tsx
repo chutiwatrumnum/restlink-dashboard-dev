@@ -1,5 +1,9 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { usePagination } from "../../../utils/hooks/usePagination";
+import { useSelector } from "react-redux";
+import { RootState } from "../../../stores";
+import { usePermission } from "../../../utils/hooks/usePermission";
+
 import { Button, Row, Pagination, Tag, Col, Tabs, Select } from "antd";
 import Header from "../../../components/templates/Header";
 import ServiceCenterTable from "../components/ServiceCenterTable";
@@ -39,34 +43,51 @@ const ServiceCenterLists = () => {
   } = usePagination();
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [editData, setEditData] = useState<ExtendedServiceCenterDataType | null>(null);
+  const [editData, setEditData] =
+    useState<ExtendedServiceCenterDataType | null>(null);
   const [unitNo, setUnitNo] = useState("");
   const [unit, setunitDetail] = useState<unitDetail[]>([]);
-  const [SelectServiceCenterIssueType, setSelectServiceCenterIssueType] = useState<string | undefined>(undefined);
-  const [SelectTabsServiceCenterType, setSelectTabsServiceCenterType] = useState<string | null>(null);
+  const [SelectServiceCenterIssueType, setSelectServiceCenterIssueType] =
+    useState<string | undefined>(undefined);
+  const [SelectTabsServiceCenterType, setSelectTabsServiceCenterType] =
+    useState<string | null>(null);
   const [refresh, setRefresh] = useState(false);
-  const [ServiceCenterList, setServiceCenterStatusList] = useState<TabsProps["items"]>([
+  const [ServiceCenterList, setServiceCenterStatusList] = useState<
+    TabsProps["items"]
+  >([
     {
       label: "All",
       key: "",
     },
   ]);
-  const [ServiceCenterIssueList, setServiceCenterStatusIssueList] = useState<ServiceCenterSelectListType[]>([
+  const [ServiceCenterIssueList, setServiceCenterStatusIssueList] = useState<
+    ServiceCenterSelectListType[]
+  >([
     {
       label: "All",
       value: "",
     },
   ]);
-  const [ServiceCenterStatusSelectionList, setServiceCenterStatusSelectionList] = useState<ServiceCenterSelectListType[]>([]);
+  const [
+    ServiceCenterStatusSelectionList,
+    setServiceCenterStatusSelectionList,
+  ] = useState<ServiceCenterSelectListType[]>([]);
 
   // API Queries
   const { data: selectList, isSuccess } = useServiceCenterStatusTypeQuery();
-  const { data: selectIssueList, isSuccess: isSuccessIssue } = useServiceCenterIssueTypeQuery();
+  const { data: selectIssueList, isSuccess: isSuccessIssue } =
+    useServiceCenterIssueTypeQuery();
+  // ✅ ดึง permission
+  const permissions = useSelector(
+    (state: RootState) => state.common?.permission
+  );
+  const { access } = usePermission(permissions);
 
   const payload: ServiceCenterPayloadType = useMemo(() => {
-    const isSpecialTab = SelectTabsServiceCenterType === "request_close" || 
-                        SelectTabsServiceCenterType === "request_reschedule";
-    
+    const isSpecialTab =
+      SelectTabsServiceCenterType === "request_close" ||
+      SelectTabsServiceCenterType === "request_reschedule";
+
     return {
       serviceTypeId: SelectServiceCenterIssueType,
       curPage: isSpecialTab ? 1 : curPage,
@@ -93,39 +114,40 @@ const ServiceCenterLists = () => {
     if (!serviceCenterData?.data) {
       return { filteredData: [], paginatedData: [], totalFiltered: 0 };
     }
-    
+
     const data = serviceCenterData.data;
     let filtered = data;
-    
+
     switch (SelectTabsServiceCenterType) {
       case "request_close":
         filtered = data.filter((item: ServiceCenterDataType) => {
           const hasCloseRequest = Boolean(item.requestCloseCase) === true;
           const allowedStatuses = [
             "Waiting for confirmation",
-            "Confirm appointment", 
-            "Repairing"
+            "Confirm appointment",
+            "Repairing",
           ];
           const isInAllowedStatus = allowedStatuses.includes(item.statusName);
-          
+
           return hasCloseRequest && isInAllowedStatus;
         });
         break;
-        
+
       case "request_reschedule":
         filtered = data.filter((item: ServiceCenterDataType) => {
           return Boolean(item.requestReSchedule) === true;
         });
         break;
-        
+
       default:
         filtered = data;
         break;
     }
-    
-    const isSpecialTab = SelectTabsServiceCenterType === "request_close" || 
-                        SelectTabsServiceCenterType === "request_reschedule";
-    
+
+    const isSpecialTab =
+      SelectTabsServiceCenterType === "request_close" ||
+      SelectTabsServiceCenterType === "request_reschedule";
+
     if (isSpecialTab) {
       const start = (curPage - 1) * perPage;
       const end = start + perPage;
@@ -133,14 +155,14 @@ const ServiceCenterLists = () => {
       return {
         filteredData: filtered,
         paginatedData: paginated,
-        totalFiltered: filtered.length
+        totalFiltered: filtered.length,
       };
     }
-    
+
     return {
       filteredData: filtered,
       paginatedData: filtered,
-      totalFiltered: serviceCenterData?.total || filtered.length
+      totalFiltered: serviceCenterData?.total || filtered.length,
     };
   }, [serviceCenterData?.data, SelectTabsServiceCenterType, curPage, perPage]);
 
@@ -170,33 +192,44 @@ const ServiceCenterLists = () => {
       try {
         const apiData = await getServiceCenterServiceListQuery(editData.id);
 
-        if (apiData?.appointmentDate && Array.isArray(apiData.appointmentDate)) {
+        if (
+          apiData?.appointmentDate &&
+          Array.isArray(apiData.appointmentDate)
+        ) {
           const selectedAppointment = apiData.appointmentDate.find(
             (item: any) => item.selected === true
           );
           if (selectedAppointment) {
-            editData.appointmentDateConfirmAppointmentID = selectedAppointment.id;
+            editData.appointmentDateConfirmAppointmentID =
+              selectedAppointment.id;
             if (selectedAppointment.startTime && selectedAppointment.endTime) {
               editData.appointmentDateConfirmAppointment = `${selectedAppointment.date} ${selectedAppointment.startTime}-${selectedAppointment.endTime}`;
             } else {
-              editData.appointmentDateConfirmAppointment = selectedAppointment.date;
+              editData.appointmentDateConfirmAppointment =
+                selectedAppointment.date;
             }
           }
           editData.appointmentDate = apiData.appointmentDate;
         } else if (apiData?.appointmentDateSelected) {
-          editData.appointmentDateConfirmAppointment = apiData.appointmentDateSelected;
+          editData.appointmentDateConfirmAppointment =
+            apiData.appointmentDateSelected;
         }
-        
+
         editData.requestCloseCase = Boolean(apiData?.requestCloseCase);
-        editData.requestNewAppointment = Boolean(apiData?.requestNewAppointment);
+        editData.requestNewAppointment = Boolean(
+          apiData?.requestNewAppointment
+        );
         editData.requestReSchedule = Boolean(apiData?.requestReSchedule);
 
         setEditData({ ...editData });
       } catch (error) {
         console.error("Failed to fetch latest data from API:", error);
       }
-      
-      if (editData.requestReSchedule === null || editData.requestReSchedule === undefined) {
+
+      if (
+        editData.requestReSchedule === null ||
+        editData.requestReSchedule === undefined
+      ) {
         editData.requestReSchedule = false;
       }
     },
@@ -236,7 +269,10 @@ const ServiceCenterLists = () => {
     setRefresh(!refresh);
   };
 
-  const onShowSizeChange: PaginationProps["onShowSizeChange"] = (current, pageSize) => {
+  const onShowSizeChange: PaginationProps["onShowSizeChange"] = (
+    current,
+    pageSize
+  ) => {
     setCurPage(current);
     setPerPage(pageSize);
   };
@@ -319,6 +355,7 @@ const ServiceCenterLists = () => {
             type="text"
             icon={<EditIcon />}
             onClick={() => onEdit(record)}
+            disabled={!access("fixing_report", "edit")} // ✅
           />
         ),
       },
@@ -328,7 +365,14 @@ const ServiceCenterLists = () => {
 
   useEffect(() => {
     fetchData();
-  }, [SelectTabsServiceCenterType, curPage, refresh, perPage, isSuccess, isSuccessIssue]);
+  }, [
+    SelectTabsServiceCenterType,
+    curPage,
+    refresh,
+    perPage,
+    isSuccess,
+    isSuccessIssue,
+  ]);
 
   return (
     <>
@@ -360,7 +404,7 @@ const ServiceCenterLists = () => {
         <Col span={6}>{/* Placeholder for future date picker */}</Col>
         <Col span={6} style={{ display: "flex", justifyContent: "flex-end" }}>
           <MediumActionButton
-            disabled={true}
+            disabled={!access("fixing_report", "view")} // ✅ ปรับตามสิทธิ์
             message="Export"
             onClick={() => {}}
           />
@@ -383,7 +427,8 @@ const ServiceCenterLists = () => {
       <Row
         className="announceBottomActionContainer"
         justify="end"
-        align="middle">
+        align="middle"
+      >
         <Pagination
           defaultCurrent={1}
           pageSize={perPage}

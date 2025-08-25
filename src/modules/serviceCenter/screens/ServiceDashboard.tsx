@@ -1,16 +1,12 @@
 import React, { useState } from "react";
-import {
-  Card,
-  Row,
-  Col,
-  Typography,
-  Statistic,
-} from "antd";
-import {
-  CheckCircleOutlined,
-} from "@ant-design/icons";
-import ServiceCenterChart from '../components/seviceCenterchart'
-import { useServiceCenterServiceChartQuery } from '../hooks/index'
+import { useSelector } from "react-redux";
+import { RootState } from "../../../stores";
+import { usePermission } from "../../../utils/hooks/usePermission";
+
+import { Card, Row, Col, Typography, Statistic } from "antd";
+import { CheckCircleOutlined } from "@ant-design/icons";
+import ServiceCenterChart from "../components/seviceCenterchart";
+import { useServiceCenterServiceChartQuery } from "../hooks/index";
 import { StatCardProps } from "../../../stores/interfaces/ServiceCenter";
 import dayjs from "dayjs";
 const { Title } = Typography;
@@ -40,12 +36,16 @@ const iconCard: React.ReactNode[] = [
   <IconLoader iconName="iconServiceCenterSuccess" width={32} />,
   <IconLoader iconName="iconServiceCenterTaskDone" width={32} />,
 ];
-const colorPieChartStatusMonth:string[]=[
-  '#c50001' ,'#feb009','#00a526'
-]
-const colorPieChartStatusType:string[]=[
-  '#047480','#e9a136','#8eb80e','#f23754','#32c7cd','#c97bfa','#ffdc61'
-]
+const colorPieChartStatusMonth: string[] = ["#c50001", "#feb009", "#00a526"];
+const colorPieChartStatusType: string[] = [
+  "#047480",
+  "#e9a136",
+  "#8eb80e",
+  "#f23754",
+  "#32c7cd",
+  "#c97bfa",
+  "#ffdc61",
+];
 const ServiceDashboard = () => {
   const { data } = useServiceCenterServiceChartQuery({
     startMonth: dayjs().format("YYYY-MM"),
@@ -53,6 +53,10 @@ const ServiceDashboard = () => {
   });
 
   const [dateRange, setDateRange] = useState(null);
+  const permissions = useSelector(
+    (state: RootState) => state.common?.permission
+  );
+  const { access } = usePermission(permissions);
 
   const StatCard = ({ title, value, icon, color }: StatCardProps) => (
     <Card className="stat-card-shadow">
@@ -74,7 +78,8 @@ const ServiceDashboard = () => {
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-            }}>
+            }}
+          >
             {icon}
           </div>
         </Col>
@@ -85,7 +90,7 @@ const ServiceDashboard = () => {
   return (
     <>
       <Header title="Fixing Dashboard" />
-      <div style={{minHeight: "100vh" }}>
+      <div style={{ minHeight: "100vh" }}>
         {/* Stats Cards */}
         <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
           {data?.cardStatus?.length! > 0
@@ -130,7 +135,7 @@ const ServiceDashboard = () => {
         </div>
 
         {/* Charts */}
-        <Row gutter={[16, 16]} style={{marginBottom:20}}>
+        <Row gutter={[16, 16]} style={{ marginBottom: 20 }}>
           <Col span={12}>
             <Card title="Monthly service status" className="stat-card-shadow">
               {/* <div

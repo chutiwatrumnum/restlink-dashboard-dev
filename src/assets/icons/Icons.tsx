@@ -1109,6 +1109,31 @@ export const WarrantyTrackingIcon = ({
   );
 };
 
+
+export const HistoryBuildingIcon = ({
+  color = whiteLabel.mainTextColor,
+  className,
+}: IconPropsType) => {
+  return (
+    <svg
+      className={className}
+      width="22"
+      height="22"
+      viewBox="0 0 22 22"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <rect x="3" y="3" width="16" height="16" rx="2" fill="#4995FF" />
+      <rect x="5" y="5" width="12" height="12" rx="1" fill="white"/>
+      <circle cx="11" cy="11" r="4" fill="#4995FF" />
+      <rect x="10.7" y="8.5" width="0.6" height="3" rx="0.3" fill="white"/>
+      <rect x="11" y="11" width="2" height="0.6" rx="0.3" fill="white" transform="rotate(45 11 11)"/>
+    </svg>
+    
+  );
+};
+
+
 export const SOSWarningIcon = ({
   color = whiteLabel.mainTextColor,
   className,
@@ -1133,6 +1158,33 @@ export const SOSWarningIcon = ({
     </svg>
   );
 };
+
+
+
+
+export const SecurityAlarmIcon = ({
+  color = whiteLabel.mainTextColor,
+  className,
+}: IconPropsType) => {
+  return (
+    <svg 
+    className={className}
+    width="18" 
+    height="23" 
+    viewBox="0 0 18 23" 
+    fill="none" 
+    xmlns="http://www.w3.org/2000/svg">
+      <path d="M8.75 0C6.4302 0.00273674 4.20619 0.925488 2.56584 
+      .56584C0.925493 4.20619 0.00274223 6.4302 5.49196e-06 8.75C-0.00212739 10.6456 0.617045 12.4897 1.76273 14C1.76273 14 2.00137 14.3142 2.04035 14.3595L8.75 22.2727L15.4628 14.3556C15.4978 14.3134 15.7373 14 15.7373 14L15.7381 13.9976C16.883 12.4879 17.5018 10.6447 17.5 8.75C17.4973 6.4302 16.5745 4.20619 14.9342 2.56584C13.2938 0.925488 11.0698 0.00273674 8.75 0ZM7.85512 3.97727H9.64489V11.1364H7.85512V3.97727ZM8.75 15.9091C8.51402 15.9091 8.28333 15.8391 8.08711 15.708C7.89089 15.5769 7.73796 15.3905 7.64765 15.1725C7.55734 14.9545 7.53371 14.7146 7.57975 14.4831C7.62579 14.2517 7.73943 14.0391 7.9063 13.8722C8.07317 13.7053 8.28577 13.5917 8.51723 13.5457C8.74868 13.4996 8.98859 13.5232 9.20661 13.6136C9.42464 13.7039 9.61099 13.8568 9.7421 14.053C9.87321 14.2492 9.94319 14.4799 9.94319 14.7159C9.94319 15.0324 9.81748 15.3358 9.59371 15.5596C9.36995 15.7834 9.06646 15.9091 8.75 15.9091Z" 
+      fill="#4995FF"/>
+    </svg>
+    
+  );
+};
+
+
+
+
 
 export const AddLocationIcon = ({
   color = whiteLabel.mainTextColor,

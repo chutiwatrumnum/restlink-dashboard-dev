@@ -1,8 +1,7 @@
-import { Modal, Card } from "antd";
+import { Modal, Card, Empty } from "antd";
 
 import { ResidentInformationDataType } from "../../../../stores/interfaces/ResidentInformation";
 
-import { roomListMockData } from "../../mockData";
 import { getResidentRoomListQuery } from "../../../../utils/queriesGroup/residentQueries";
 
 interface UserRoomListModalType {
@@ -26,8 +25,6 @@ const UserRoomListModal = (props: UserRoomListModalType) => {
     if (onCancel) onCancel();
   };
 
-  // console.log("ROOM LIST DATA : ", data);
-
   return (
     <Modal
       open={isUserRoomListModalOpen}
@@ -47,21 +44,25 @@ const UserRoomListModal = (props: UserRoomListModalType) => {
           </p>
         </div>
         <div className="flex flex-col justify-center items-center w-full gap-4">
-          {roomListData?.map((item, index) => {
-            return (
-              <Card
-                className="w-full"
-                style={{ backgroundColor: "var(--bg-table-color)" }}
-              >
-                <div className="flex flex-col w-full justify-center items-start gap-2">
-                  <span>Unit no. : {item?.unitNo}</span>
-                  <span>Room address : {item?.roomAddress}</span>
-                  <span>Floor : {item?.floor}</span>
-                  <span>Role : {item?.roleName}</span>
-                </div>
-              </Card>
-            );
-          })}
+          {roomListData ? (
+            roomListData?.map((item, index) => {
+              return (
+                <Card
+                  className="w-full"
+                  style={{ backgroundColor: "var(--bg-table-color)" }}
+                >
+                  <div className="flex flex-col w-full justify-center items-start gap-2">
+                    <span>Unit no. : {item?.unitNo}</span>
+                    <span>Room address : {item?.roomAddress}</span>
+                    <span>Floor : {item?.floorName}</span>
+                    <span>Role : {item?.roleName}</span>
+                  </div>
+                </Card>
+              );
+            })
+          ) : (
+            <Empty />
+          )}
         </div>
       </div>
     </Modal>

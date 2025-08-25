@@ -67,6 +67,7 @@ const SignInScreen = () => {
           checkSetupProject();
         }
         else{
+          await reCheckDataProject()
           navigate("/dashboard/profile", { replace: true });
         }
       }
@@ -79,11 +80,18 @@ const SignInScreen = () => {
     const currentPath = location.pathname !== '/auth' ? location.pathname : '/dashboard/profile';
     startGoogleLogin(currentPath);
   };
+  const reCheckDataProject = async () => {
+      const response = await getProject() 
+      if(response.status){
+        dispatch.setupProject.setProjectData(response || {});
+      }
+}
 
 
   const checkSetupProject = async () => {
+    const response = await getProject() 
     if(step !== 3){
-      const response = await getProject() 
+      
       let projectType 
       if(response.status){
         dispatch.setupProject.setProjectData(response || {});
@@ -102,6 +110,10 @@ const SignInScreen = () => {
       }
     }
     else {
+      if(response.status){
+        dispatch.setupProject.setProjectData(response || {});
+      }
+      await reCheckDataProject()
       navigate("/dashboard/profile", { replace: true });
     }
   }

@@ -37,12 +37,23 @@ import {
   conditionPage,
   unitDetail,
 } from "../../../stores/interfaces/DeliveryLogs";
+
+// ⭐ import usePermission
+import { usePermission } from "../../../utils/hooks/usePermission";
+
 const { confirm } = Modal;
 
 const DeliveryLogs = () => {
   const { loading, tableDataDeliveryLog, total } = useSelector(
     (state: RootState) => state.deliveryLogs
   );
+
+  // ⭐ ดึง permission
+  const permissions = useSelector(
+    (state: RootState) => state.common?.permission
+  );
+  const { access } = usePermission(permissions);
+
   const {
     curPage,
     perPage,
@@ -53,7 +64,6 @@ const DeliveryLogs = () => {
     deleteAndHandlePagination,
   } = usePagination();
 
-  // setting pagination Option
   const PaginationConfig = {
     current: curPage,
     pageSize: perPage,
@@ -62,10 +72,12 @@ const DeliveryLogs = () => {
     pageSizeOptions: pageSizeOptions,
     total: total,
   };
+
   let params: conditionPage = {
     perPage: perPage,
     curPage: curPage,
   };
+
   const [rerender, setRerender] = useState<boolean>(true);
   const [dataEdit, setDataEdit] = useState<dataDeliveryLogsType | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -74,14 +86,12 @@ const DeliveryLogs = () => {
   const [unit, setunitDetail] = useState<unitDetail[]>([]);
   const dispatch = useDispatch<Dispatch>();
   const { RangePicker } = DatePicker;
+  const dateFormat = "MMMM,YYYY";
   const customFormat: DatePickerProps["format"] = (value) =>
     `Month : ${value.format(dateFormat)}`;
-  const dateFormat = "MMMM,YYYY";
-
   const { Search } = Input;
-  const scroll: { x?: number | string } = {
-    x: "max-content", // ปรับค่าตามความกว้างรวมของคอลัมน์
-  };
+
+  const scroll: { x?: number | string } = { x: "max-content" };
 
   useEffect(() => {
     (async function () {
@@ -94,8 +104,7 @@ const DeliveryLogs = () => {
   const onChangeTable: TableProps<dataDeliveryLogsType>["onChange"] = async (
     pagination: any,
     filters,
-    sorter: any,
-    extra
+    sorter: any
   ) => {
     const updatedParams = {
       ...paramsData,
@@ -111,6 +120,7 @@ const DeliveryLogs = () => {
 
     await dispatch.deliveryLogs.getTableDataDeliveryLogs(updatedParams);
   };
+
   const onSearch = async (value: string) => {
     params = paramsData;
     params.search = value;
@@ -118,6 +128,7 @@ const DeliveryLogs = () => {
     setParamsData(params);
     await dispatch.deliveryLogs.getTableDataDeliveryLogs(paramsData);
   };
+
   const columns: ColumnsType<dataDeliveryLogsType> = [
     {
       title: "Name",
@@ -132,16 +143,6 @@ const DeliveryLogs = () => {
       dataIndex: "contact",
       align: "center",
     },
-    //   {
-    //     title: "Sender type",
-    //     dataIndex: "senderType",
-    //     align: "center",
-    //     ellipsis: true,
-    //     width: "10%",
-    //     sorter: {
-    //       compare: (a, b) => a.senderType.localeCompare(b.senderType),
-    //     },
-    //   },
     {
       title: "Tracking No.",
       dataIndex: "trackingNumber",
@@ -169,15 +170,13 @@ const DeliveryLogs = () => {
       title: "Create date",
       dataIndex: "createdAt",
       align: "center",
-      render: (_, record) => {
-        return (
-          <div>
-            {record.createdAt !== "-"
-              ? dayjs(record.createdAt).format("DD/MM/YYYY")
-              : "-"}
-          </div>
-        );
-      },
+      render: (_, record) => (
+        <div>
+          {record.createdAt !== "-"
+            ? dayjs(record.createdAt).format("DD/MM/YYYY")
+            : "-"}
+        </div>
+      ),
     },
     {
       title: "From date-time",
@@ -201,44 +200,36 @@ const DeliveryLogs = () => {
       title: "Collected",
       dataIndex: "collected",
       align: "center",
-      width: "auto",
       render: (_, record) => (
-        <>
-          <Row>
-            <Col span={24}>
-              <Checkbox
-                disabled={record.collected}
-                checked={record.collected}
-                value={record.key}
-                onChange={changeCollected}
-              ></Checkbox>
-            </Col>
-          </Row>
-        </>
+        <Checkbox
+          disabled={record.collected || !access("parcels", "edit")}
+          checked={record.collected}
+          value={record.key}
+          onChange={changeCollected}
+        />
       ),
     },
     {
       title: "Action",
-      dataIndex: "action",
       key: "action",
       align: "center",
-      width: 120, // กำหนดความกว้างที่เหมาะสม
       fixed: "right",
+      width: 120,
       render: (_, record) => (
         <>
           <Button
             value={record.key}
-            onClick={async () => {
-              await editButton(record);
-            }}
+            onClick={async () => editButton(record)}
             type="text"
             icon={<EditOutlined />}
+            disabled={!access("parcels", "edit")}
           />
           <Button
             value={record.key}
             type="text"
             icon={<DeleteOutlined />}
             onClick={showDeleteConfirm}
+            disabled={!access("parcels", "delete")}
           />
         </>
       ),
@@ -253,8 +244,6 @@ const DeliveryLogs = () => {
   const showDeleteConfirm = ({ currentTarget }: any) => {
     confirm({
       title: "Are you sure you want to delete this?",
-      icon: null,
-      // content: "Some descriptions",
       okText: "Yes",
       okType: "danger",
       cancelText: "No",
@@ -270,41 +259,22 @@ const DeliveryLogs = () => {
           },
         });
       },
-      onCancel() {
-        console.log("Cancel");
-      },
     });
   };
+
   const changeCollected = async (e: CheckboxChangeEvent) => {
     confirm({
       title: "Are you sure you want to collected this?",
-      icon: null,
       okText: "Yes",
       cancelText: "No",
       centered: true,
       async onOk() {
-        const statusDeleted = await changeCollectedById(e.target.value);
-        if (statusDeleted) {
-          // dispatch.common.updateSuccessModalState({
-          //   open: true,
-          //   text: "Successfully changed",
-          // });
-          // alert("changed successfully");
-        } else {
-          // dispatch.common.updateSuccessModalState({
-          //   open: true,
-          //   status: "error",
-          //   text: "Failed changed",
-          // });
-          // alert("Failed changed");
-        }
+        await changeCollectedById(e.target.value);
         setRerender(!rerender);
-      },
-      onCancel() {
-        console.log("Cancel");
       },
     });
   };
+
   const handleDate = async (e: any) => {
     params = paramsData;
     if (e) {
@@ -318,26 +288,24 @@ const DeliveryLogs = () => {
     params.curPage = 1;
     await dispatch.deliveryLogs.getTableDataDeliveryLogs(paramsData);
   };
+
   const initDataCreate = async () => {
     const dataeblock = await getDataBlock();
     setunitDetail(dataeblock?.dataselectblock as unitDetail[]);
   };
-  const exportEventLogs = ({ currentTarget }: any) => {
+
+  const exportEventLogs = () => {
     confirm({
       title: "Are you sure you want to export file this?",
-      icon: null,
       okText: "Yes",
-      okType: "primary",
       cancelText: "No",
       centered: true,
       async onOk() {
-        const statusSuccess = await dowloadDeliveryLogs();
-      },
-      onCancel() {
-        console.log("Cancel");
+        await dowloadDeliveryLogs();
       },
     });
   };
+
   const onChangeUnit = async (value: string) => {
     params = paramsData;
     params.curPage = 1;
@@ -386,33 +354,36 @@ const DeliveryLogs = () => {
         </Col>
 
         <Col span={6} style={{ display: "flex", justifyContent: "flex-end" }}>
-          {/* <Button
-              type="primary"
-              style={{ marginRight: 10 }}
-              onClick={exportEventLogs}>
-              <VerticalAlignBottomOutlined />
-              Export
-            </Button> */}
-
+          {/* ปุ่ม Export */}
           <Button
             type="primary"
-            onClick={() => {
-              setIsModalCreate(true);
-            }}
+            style={{ marginRight: 10 }}
+            onClick={exportEventLogs}
+            icon={<VerticalAlignBottomOutlined />}
+            disabled={!access("parcels", "view")}
+          >
+            Export
+          </Button>
+
+          {/* ปุ่ม Add new */}
+          <Button
+            type="primary"
+            onClick={() => setIsModalCreate(true)}
+            disabled={!access("parcels", "create")}
           >
             Add new
           </Button>
+
           <CreateAddEventLog
             callBack={(isOpen: boolean, created: boolean) => {
               setIsModalCreate(isOpen);
-              if (created) {
-                setRerender(!rerender);
-              }
+              if (created) setRerender(!rerender);
             }}
             isOpen={isModalCreate}
           />
         </Col>
       </Row>
+
       <Row>
         <Col span={24}>
           <Table
@@ -425,12 +396,11 @@ const DeliveryLogs = () => {
           />
         </Col>
       </Row>
+
       <EditEventLog
         callBack={(isOpen: boolean, saved: boolean) => {
           setIsModalOpen(isOpen);
-          if (saved) {
-            setRerender(!rerender);
-          }
+          if (saved) setRerender(!rerender);
         }}
         isOpen={isModalOpen}
         deliveryLogs={dataEdit}

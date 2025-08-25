@@ -5,7 +5,6 @@ import {
   ChatListDataType,
   ChatDataType,
 } from "../../../stores/interfaces/Chat";
-// import { whiteLabel } from "../../../configs/theme";
 import { socket } from "../../../configs/socket";
 import {
   getChatListQuery,
@@ -24,11 +23,21 @@ import { Row, Col, Dropdown, Button, Menu, Spin, Select } from "antd";
 import "@chatscope/chat-ui-kit-styles/dist/default/styles.min.css";
 import "../styles/chatRoom.css";
 
+// ⭐ import usePermission
+import { usePermission } from "../../../utils/hooks/usePermission";
+
 const ChatRoom = () => {
   // Variables
   const dispatch = useDispatch<Dispatch>();
   const queryClient = useQueryClient();
   const { chatListSortBy } = useSelector((state: RootState) => state.chat);
+
+  // ⭐ ใช้ permission จาก state.common
+  const permissions = useSelector(
+    (state: RootState) => state.common?.permission
+  );
+  const { access } = usePermission(permissions);
+
   const [activeChecker, setActiveChecker] = useState<[string, number]>([
     "",
     -1,
@@ -66,10 +75,7 @@ const ChatRoom = () => {
   });
 
   // Functions
-
   const handleUnitChange = async (value: string, option: any) => {
-    // console.log(value);
-    // console.log(unitsData);
     setRoomAddressSelect(option.roomAddress);
     setUserSelectValue("");
     setShouldFetch(true);
@@ -80,10 +86,6 @@ const ChatRoom = () => {
   };
 
   const onUserSelectByUnit = (userId: string, option: any) => {
-    // console.log(userId);
-    // console.log("option : ", option);
-    // console.log(roomAddressSelect);
-
     setCurrentChat(option);
     setCurrentChatUserID(userId);
     setUserSelectValue(userId);
@@ -92,7 +94,6 @@ const ChatRoom = () => {
 
   const handleMenuClick = (e: any) => {
     dispatch.chat.updateSortByData(e.key);
-    // setChatListSortBy(e.key);
   };
 
   const onUserListSelected = async (item: ChatListDataType, index: number) => {
@@ -194,6 +195,7 @@ const ChatRoom = () => {
                     (option?.roomAddress ?? "").includes(input)
                   }
                   showSearch
+                  disabled={!access("chat", "view")} // ⭐ check permission
                 />
                 <Select
                   size="large"
@@ -204,7 +206,7 @@ const ChatRoom = () => {
                   onChange={onUserSelectByUnit}
                   options={nameByUnitData}
                   fieldNames={{ value: "userId", label: "fullName" }}
-                  disabled={!unitID}
+                  disabled={!unitID || !access("chat", "view")} // ⭐ check permission
                 />
               </Row>
             </Col>
@@ -215,6 +217,7 @@ const ChatRoom = () => {
                   shape="circle"
                   className="adjustButton"
                   icon={<AdjustmentIcon className="adjustIcon" />}
+                  disabled={!access("chat", "view")} // ⭐ check permission
                 />
               </Dropdown>
             </Col>
@@ -251,6 +254,7 @@ const ChatRoom = () => {
           style={{ height: "100%" }}
         >
           <div style={{ position: "relative", height: "100%" }}>
+            {/* ⭐ ส่ง access ไป ChatBoxContainer ให้เช็กตอนส่งข้อความ */}
             <ChatBoxContainer chatData={currentChat} />
           </div>
         </Col>

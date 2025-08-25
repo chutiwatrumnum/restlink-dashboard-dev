@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useRef, useState, MouseEvent, FormEvent, DragEvent, WheelEvent } from "react";
-import { getVillageData, getAddress } from "../../service/api/SOSwarning";
+import {  getAddress } from "../../service/api/SOSwarning";
 import { dataAllMap } from "../../../../stores/interfaces/SosWarning";
 import { dataSelectPlan } from "../../../../stores/interfaces/SosWarning";
 import ConfirmModal from "../../../../components/common/ConfirmModal";
@@ -9,8 +9,7 @@ import SuccessModal from "../../../../components/common/SuccessModal";
 import FailedModal from "../../../../components/common/FailedModal";
 import undoIcon from "../../../../assets/icons/undo.svg";
 import fullScreenIcon from "../../../../assets/icons/fullScreen.png";
-// import redoIcon from "../../../../assets/images/redo-circular-arrow.svg";
-
+// import { ModalFormUpdate } from "../ModalFormUplodateImagePlan";
 
 // TypeScript Types and Interfaces
 interface Position {
@@ -256,8 +255,29 @@ const VillageMap: React.FC<VillageMapProps> = ({
   markersFullOpacity = false, setDataMapAll, setDataEmergency, setUnitHover, setUnitClick, onActiveMarkerChange }) => {
   
   // เพิ่มฟังก์ชันสำหรับการล็อค/ปลดล็อค marker
+  // ฟังก์ชันสำหรับ unlock markers ทั้งหมด
+  const unlockAllMarkers = () => {
+    setMarkers(prevMarkers => 
+      prevMarkers.map(marker => ({ ...marker, isLocked: false }))
+    );
+    
+    // แจ้ง parent component ว่าไม่มี active marker
+    if (onActiveMarkerChange) {
+      onActiveMarkerChange(false);
+    }
+  };
+
+  // ฟังก์ชันสำหรับ lock markers ที่เหลือ เฉพาะ marker ที่ระบุไม่ถูก lock
+  const lockOtherMarkers = (activeMarkerId: number) => {
+    setMarkers(prevMarkers => 
+      prevMarkers.map(marker => ({
+        ...marker,
+        isLocked: marker.id === activeMarkerId ? false : true
+      }))
+    );
+  };
+
   const toggleMarkerLock = (markerId: number) => {
-    console.log(markers,'markers-test1')
     const targetMarker = markers.find(m => m.id === markerId);
     const willBeLocked = targetMarker ? !targetMarker.isLocked : false;
     
@@ -275,6 +295,9 @@ const VillageMap: React.FC<VillageMapProps> = ({
       setClickedMarker(null);
       setHasActiveMarker(false);
       
+      // Unlock markers ทั้งหมดเมื่อยกเลิก active marker
+      unlockAllMarkers();
+      
       // ส่งสัญญาณไปยัง parent component ว่ายกเลิกการเลือก marker
       if (onMarkerSelect) {
         onMarkerSelect(null);
@@ -288,28 +311,46 @@ const VillageMap: React.FC<VillageMapProps> = ({
       setClickedMarker(unlockedMarker);
       if (mapMode === 'work-it') {
         setHasActiveMarker(true);
+        
+        // แจ้ง parent component ว่ามี active marker
+        if (onActiveMarkerChange) {
+          onActiveMarkerChange(true);
+        }
+        
+        // Lock markers ที่เหลือเมื่อ unlock marker เดี่ยว
+        lockOtherMarkers(markerId);
       }
       
       // อัพเดทตำแหน่ง Lat/Lng
       updateLatLngDisplay(targetMarker.x, targetMarker.y, unlockedMarker);
       
-      // ส่งสัญญาณไปยัง parent component ว่ามี marker ใหม่ถูกเลือก พร้อมข้อมูลครบถ้วน (ทันที)
+      // ส่งสัญญาณไปยัง parent component ว่ามี marker ใหม่ถูกเลือก พร้อมข้อมูลครบถ้วน
       if (onMarkerSelect) {
-        // ใช้ข้อมูลจาก originalMarkerBeforeEdit หรือ targetMarker
-        const markerDataToSend = originalMarkerBeforeEdit || targetMarker;
-        const markerToSend = {
-          ...unlockedMarker,
-          name: (markerDataToSend as any).originalName || markerDataToSend.name,
-          roomAddress: (markerDataToSend as any).originalRoomAddress || markerDataToSend.roomAddress,
-          address: (markerDataToSend as any).originalAddress || markerDataToSend.address,
-          tel1: (markerDataToSend as any).originalTel1 || markerDataToSend.tel1,
-          tel2: (markerDataToSend as any).originalTel2 || markerDataToSend.tel2,
-          tel3: (markerDataToSend as any).originalTel3 || markerDataToSend.tel3,
-          addressData: (markerDataToSend as any).originalAddressData || markerDataToSend.addressData,
-          // เพิ่ม unitID สำหรับ form address
-          unitID: markerDataToSend.unitID || (markerDataToSend.address ? Number(markerDataToSend.address) : undefined)
-        };
-        onMarkerSelect(markerToSend, false); // false = ไม่ใช่ marker ใหม่
+        // ใช้ setTimeout เล็กน้อยเพื่อให้ lockOtherMarkers ทำงานเสร็จก่อน แล้วค่อยส่งข้อมูลล่าสุด
+        setTimeout(() => {
+          setMarkers(currentMarkers => {
+            const latestMarker = currentMarkers.find(m => m.id === markerId);
+            if (latestMarker) {
+              // ใช้ข้อมูลจาก originalMarkerBeforeEdit หรือ latestMarker
+              const markerDataToSend = originalMarkerBeforeEdit || latestMarker;
+              const markerToSend = {
+                ...latestMarker,
+                name: (markerDataToSend as any).originalName || markerDataToSend.name,
+                roomAddress: (markerDataToSend as any).originalRoomAddress || markerDataToSend.roomAddress,
+                address: (markerDataToSend as any).originalAddress || markerDataToSend.address,
+                tel1: (markerDataToSend as any).originalTel1 || markerDataToSend.tel1,
+                tel2: (markerDataToSend as any).originalTel2 || markerDataToSend.tel2,
+                tel3: (markerDataToSend as any).originalTel3 || markerDataToSend.tel3,
+                addressData: (markerDataToSend as any).originalAddressData || markerDataToSend.addressData,
+                // เพิ่ม unitID สำหรับ form address
+                unitID: markerDataToSend.unitID || (markerDataToSend.address ? Number(markerDataToSend.address) : undefined)
+              };
+              console.log('🔓 Sending unlocked marker with latest state:', markerToSend);
+              onMarkerSelect(markerToSend, false); // false = ไม่ใช่ marker ใหม่
+            }
+            return currentMarkers; // ไม่เปลี่ยนแปลง state
+          });
+        }, 15);
       }
     } else if (clickedMarker && clickedMarker.id === markerId) {
       // อัพเดทสถานะ locked ของ marker ที่ active อยู่
@@ -415,6 +456,8 @@ const VillageMap: React.FC<VillageMapProps> = ({
   const clickedMarkerRef = useRef<Marker | null>(null);
 
   const [statusQueryString, setStatusQueryString] = useState<boolean>(false);
+
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 
   // sync clickedMarker กับ ref
   useEffect(() => {
@@ -618,8 +661,9 @@ const VillageMap: React.FC<VillageMapProps> = ({
     if (onLatLngChange) {
       onLatLngChange(parseFloat(lat), parseFloat(lng));
     }
-    // ส่งข้อมูล marker ที่เลือกไปยัง parent component
-    if (onMarkerSelect && marker) {
+    // ส่งข้อมูล marker ที่เลือกไปยัง parent component เฉพาะเมื่อไม่ได้ลาก
+    // ป้องกันการส่ง marker data ซ้ำๆ ขณะลากที่อาจทำให้ FormVillageLocation สับสน
+    if (onMarkerSelect && marker && !isDragging) {
       onMarkerSelect(marker);
     }
   };
@@ -899,12 +943,14 @@ const VillageMap: React.FC<VillageMapProps> = ({
     setIsDragging(false);
     setOriginalMarkerPosition(null);
     
-    // รีเซ็ตสถานะ active marker และล็อค marker (รวมกรณี active จาก query string)
+    // Unlock markers ทั้งหมดเมื่อ cancel
+    unlockAllMarkers();
+    
+    // รีเซ็ตสถานะ active marker (รวมกรณี active จาก query string)
     setMarkers(prevMarkers => 
       prevMarkers.map(m => ({
         ...m,
-        isActive: false,
-        isLocked: m.id === markerToCancel.id ? true : m.isLocked // ล็อคเฉพาะ marker ที่ถูก cancel
+        isActive: false
       }))
     );
 
@@ -1024,6 +1070,7 @@ const VillageMap: React.FC<VillageMapProps> = ({
     if (villageMapConfirmRef) {
       villageMapConfirmRef.current = (markerId: number | string, markerData: any) => {
         const numericMarkerId = typeof markerId === 'string' ? parseInt(markerId) : markerId;
+        console.log('🎯 villageMapConfirmRef received markerData:', markerData);
         // อัพเดท marker ด้วยข้อมูลครบถ้วนจาก API
         setMarkers(prevMarkers => {
           const updatedMarkers = prevMarkers.map(marker => {
@@ -1044,8 +1091,9 @@ const VillageMap: React.FC<VillageMapProps> = ({
                 // อัพเดทข้อมูลตำแหน่ง (ถ้ามี)
                 x: markerData.x !== undefined ? markerData.x : marker.x,
                 y: markerData.y !== undefined ? markerData.y : marker.y,
-                originalX: markerData.originalX !== undefined ? markerData.originalX : marker.originalX,
-                originalY: markerData.originalY !== undefined ? markerData.originalY : marker.originalY,
+                // หลังจาก confirm ให้ originalX/Y เป็นตำแหน่งปัจจุบันของ marker (ไม่ใช่จาก markerData)
+                originalX: marker.x, // ใช้ตำแหน่งปัจจุบันของ marker ใน state
+                originalY: marker.y, // ใช้ตำแหน่งปัจจุบันของ marker ใน state
                 // อัพเดทข้อมูลเพิ่มเติมจาก API
                 unitID: markerData.unitID || marker.unitID,
                 roomAddress: markerData.roomAddress || marker.roomAddress || "",
@@ -1116,8 +1164,20 @@ const VillageMap: React.FC<VillageMapProps> = ({
         // Force re-render เพื่อให้ marker กลับไปตำแหน่งที่ถูกต้อง
         setForceRenderKey(prev => prev + 1);
 
-        // รีเซ็ต zoom และ pan ถ้าจำเป็น
-        // resetZoomAndPanVillage();
+        // รีเซ็ต zoom และ pan เพื่อให้ marker กลับสู่ตำแหน่งเดิม
+        setZoomLevel(1);
+        setPanOffset({ x: 0, y: 0 });
+
+        // Force re-calculate marker positions
+        setTimeout(() => {
+          setMarkers(prevMarkers => [...prevMarkers]);
+          setZones(prevZones => [...prevZones]);
+        }, 50);
+
+        // อีกครั้งหลังจาก DOM stable
+        setTimeout(() => {
+          setForceRenderKey(prev => prev + 1);
+        }, 100);
 
       };
     }
@@ -2218,6 +2278,10 @@ const VillageMap: React.FC<VillageMapProps> = ({
     // ล้างการเลือก object เดี่ยว
     setClickedMarker(null);
     setClickedZone(null);
+    setHasActiveMarker(false);
+    
+    // Unlock markers ทั้งหมดเมื่อคลิกนอกพื้นที่
+    unlockAllMarkers();
 
     // แปลงตำแหน่งเมาส์เป็นตำแหน่งบนรูปภาพ
     const currentImageElement = imageRef.current;
@@ -4230,14 +4294,16 @@ const VillageMap: React.FC<VillageMapProps> = ({
           markers: originalPositions
         });
 
-        // อัพเดทกลุ่มของ markers หลังจากลาก
+        // อัพเดทกลุ่มของ markers หลังจากลาก และ lock markers ทั้งหมด
         setMarkers(prevMarkers =>
           prevMarkers.map(marker => {
             if (selectedMarkers.includes(marker.id)) {
               const newZone = zones.find(zone => isPointInZone(marker.x, marker.y, zone));
               return {
                 ...marker,
-                group: newZone ? newZone.name : "Marker"
+                group: newZone ? newZone.name : "Marker",
+                // ถ้าเป็น active marker (clickedMarker) ไม่ต้อง lock หลังจาก group drag
+                isLocked: clickedMarker && clickedMarker.id === marker.id ? false : true
               };
             }
             return marker;
@@ -4288,14 +4354,16 @@ const VillageMap: React.FC<VillageMapProps> = ({
           hasPositionChanged = true;
           historyData.markers = markerPositions;
 
-          // อัพเดทกลุ่มของ markers หลังจากลาก
+          // อัพเดทกลุ่มของ markers หลังจากลาก และ lock markers ทั้งหมด
           setMarkers(prevMarkers =>
             prevMarkers.map(marker => {
               if (selectedMarkers.includes(marker.id)) {
                 const newZone = zones.find(zone => isPointInZone(marker.x, marker.y, zone));
                 return {
                   ...marker,
-                  group: newZone ? newZone.name : "Marker"
+                  group: newZone ? newZone.name : "Marker",
+                  // ถ้าเป็น active marker (clickedMarker) ไม่ต้อง lock หลังจาก mixed drag
+                  isLocked: clickedMarker && clickedMarker.id === marker.id ? false : true
                 };
               }
               return marker;
@@ -4429,16 +4497,34 @@ const VillageMap: React.FC<VillageMapProps> = ({
         const newZone = zones.find(zone => isPointInZone(draggedMarkerData.x, draggedMarkerData.y, zone));
 
         // อัพเดทกลุ่มของ marker และ update originalX, originalY เป็นตำแหน่งใหม่
-        setMarkers(prevMarkers =>
-          prevMarkers.map(marker =>
+        setMarkers(prevMarkers => {
+          const updatedMarkers = prevMarkers.map(marker =>
             marker.id === draggedMarker.id ? { 
               ...marker, 
               group: newZone ? newZone.name : "Marker",
               originalX: marker.x, // อัพเดทตำแหน่งเดิมเป็นตำแหน่งปัจจุบัน
-              originalY: marker.y
+              originalY: marker.y,
+              // ถ้าเป็น active marker (clickedMarker) ไม่ต้อง lock หลังจาก drag
+              isLocked: clickedMarker && clickedMarker.id === draggedMarker.id ? false : true
             } : marker
-          )
-        );
+          );
+          
+          // ส่งข้อมูล marker ที่อัปเดตแล้วไปยัง FormVillageLocation หลังจากลากเสร็จ
+          const updatedMarker = updatedMarkers.find(m => m.id === draggedMarker.id);
+          if (updatedMarker && onMarkerSelect) {
+            console.log('🎯 Sending updated marker after drag:');
+            console.log('  - ID:', updatedMarker.id);
+            console.log('  - Position (x, y):', updatedMarker.x, updatedMarker.y);
+            console.log('  - Original Position (originalX, originalY):', updatedMarker.originalX, updatedMarker.originalY);
+            console.log('  - Full marker object:', updatedMarker);
+            // ใช้ setTimeout เพื่อให้ setIsDragging(false) ทำงานก่อน
+            setTimeout(() => {
+              onMarkerSelect(updatedMarker);
+            }, 100); // ลด delay เหลือ 100ms
+          }
+          
+          return updatedMarkers;
+        });
       }
       setDraggedMarker(null);
       setIsDragging(false);
@@ -4722,6 +4808,7 @@ const VillageMap: React.FC<VillageMapProps> = ({
                 }
                 
                 // เลือก marker ใหม่และตั้งค่า filter
+                console.log(marker,'marker-new')
                 setClickedMarker(marker);
                 // ในโหมด preview ไม่ต้องเปลี่ยน hasActiveMarker เพื่อไม่รบกวนการส่งสถานะ
                 if (setUnitClick) {
@@ -4760,6 +4847,14 @@ const VillageMap: React.FC<VillageMapProps> = ({
               // เฉพาะในโหมด work-it เท่านั้นที่ตั้งค่า hasActiveMarker
               if (mapMode === 'work-it') {
                 setHasActiveMarker(true);
+                
+                // แจ้ง parent component ว่ามี active marker
+                if (onActiveMarkerChange) {
+                  onActiveMarkerChange(true);
+                }
+                
+                // Lock marker ที่เหลือทั้งหมด เมื่อ active marker ใหม่
+                lockOtherMarkers(marker.id);
               }
               // ล้างการเลือกแบบกลุ่ม
               setSelectedMarkers([]);
@@ -4778,7 +4873,21 @@ const VillageMap: React.FC<VillageMapProps> = ({
 
                 // ส่งข้อมูล marker ที่คลิกไปยัง parent component
                 if (onMarkerSelect) {
-                  onMarkerSelect(marker, false); // ส่ง isNewMarker: false สำหรับ marker ที่มีอยู่แล้ว
+                  // ดึงข้อมูล marker ล่าสุดจาก markers state แทนการใช้ parameter marker
+                  setTimeout(() => {
+                    setMarkers(currentMarkers => {
+                      const latestMarker = currentMarkers.find(m => m.id === marker.id);
+                      if (latestMarker) {
+                        console.log('🎯 Sending latest marker from current state:', latestMarker);
+                        onMarkerSelect(latestMarker, false); // ส่งข้อมูล marker ล่าสุดจาก state
+                      } else {
+                        console.log('⚠️ Marker not found in state, sending original:', marker);
+                        onMarkerSelect(marker, false); // fallback
+                      }
+                      return currentMarkers; // ไม่เปลี่ยนแปลง state
+                    });
+                  }, 10); // delay เล็กน้อยเพื่อให้ lockOtherMarkers ทำงานเสร็จก่อน
+                  
                   setLastSelectedMarkerId(marker.id);
                   lastMarkerSelectTimeRef.current = now;
                 }
@@ -4811,7 +4920,7 @@ const VillageMap: React.FC<VillageMapProps> = ({
                                    ${isClickedSingle ? 
                     mapMode === 'preview' 
                       ? "!ring-2 !ring-blue-500 ring-opacity-50" 
-                      : "!ring-2 !ring-red-500 ring-opacity-50" 
+                      : "!ring-2 !ring-blue-500 ring-opacity-50" 
                     : ""} 
                   ${isPending ? "ring-2 ring-green-400 ring-opacity-75 animate-pulse" : ""}
                   ${isEmergencyMarker(displayMarker) && !isPending ? "emergency-marker-glow" : ""}`}
@@ -5525,13 +5634,13 @@ const VillageMap: React.FC<VillageMapProps> = ({
             isDefault: false
           });
         });
-
+        
         // Process markers with address data
-        const markersWithAddressPromises = (dataMapAll.marker || []).map(async (item: any, index: number) => {
+        const markersWithAddressPromises = (dataMapAll?.marker || [])?.map(async (item: any, index: number) => {
 
           const baseMarker = {
             id: item.id || index + 1,
-            name: item.markerInfo.name || `marker-${index + 1}`,
+            name: item.markerInfo.name || `marker-const markersWithAddressPromises = (dataMapAll.marker || []${index + 1}`,
             x: parseFloat(item.markerInfo.position?.x || 0),
             y: parseFloat(item.markerInfo.position?.y || 0),
             originalX: parseFloat(item.markerInfo.position?.x || 0),
@@ -5600,7 +5709,6 @@ const VillageMap: React.FC<VillageMapProps> = ({
   // เพิ่ม useEffect สำหรับ sync emergency data กับ map markers
   useEffect(() => {
     if (!setDataEmergency || !dataMapAll) return;
-
     // ดึงข้อมูล emergency/warning จาก dataMapAll
     const emergencyMarkers = (dataMapAll.marker || []).filter((item: any) => 
       item.status === 'emergency' || item.status === 'warning'
@@ -5648,7 +5756,6 @@ const VillageMap: React.FC<VillageMapProps> = ({
             }
           })
         ]);
-
         // เรียก resetZoomAndPan หลังจาก component พร้อม
         onImageClick ? resetZoomAndPan() : resetZoomAndPanVillage();
 
@@ -5696,6 +5803,10 @@ const VillageMap: React.FC<VillageMapProps> = ({
       // Force re-render เมื่อขนาดเปลี่ยน เพื่อให้ marker คำนวณตำแหน่งใหม่ตาม offset ของรูปภาพ
       setMarkers(prevMarkers => [...prevMarkers]);
       setZones(prevZones => [...prevZones]);
+      
+      // เพิ่มการรีเซ็ต zoom และ pan เมื่อมีการ resize
+      setZoomLevel(1);
+      setPanOffset({ x: 0, y: 0 });
     });
 
     resizeObserver.observe(container);
@@ -5846,11 +5957,15 @@ const VillageMap: React.FC<VillageMapProps> = ({
     setSelectedZones([]);
     setClickedMarker(null);
     setClickedZone(null);
+    setHasActiveMarker(false);
     setIsGroupSelecting(false);
     setGroupSelectionStart(null);
     setGroupSelectionEnd(null);
     setJustFinishedGroupSelection(false);
     setDragReference(null);
+    
+    // Unlock markers ทั้งหมดเมื่อ clear selection
+    unlockAllMarkers();
   };
 
   // เพิ่มฟังก์ชันตรวจสอบว่า marker อยู่ในพื้นที่เลือกหรือไม่
@@ -6420,6 +6535,9 @@ const VillageMap: React.FC<VillageMapProps> = ({
 
   return (
     <div className="relative w-full mx-auto">
+
+      {/* <ModalFormUpdate isModalOpen={isModalOpen} setIsModalOpen={setIsModalOpen} onClose={() => setIsModalOpen(false)} /> */}
+      
       {isLoading ? (
         <div className="flex items-center justify-center">
           <div className="text-center">
@@ -6479,6 +6597,44 @@ const VillageMap: React.FC<VillageMapProps> = ({
 
                   <div className="flex !gap-2">
                    
+                  {/* 
+                  <div className="relative group">
+                      <div className="relative group">
+                       <button 
+                         onClick={() => setIsModalOpen(true)}
+                         className="w-8 h-8 bg-white-500 !text-black p-1 rounded-full !text-lg  transition-all 
+                        duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer 
+                        flex items-center justify-center shadow-md hover:shadow-lg"
+                         title="เปลี่ยนแปลงรูปภาพ (Change Image)"
+                       >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <rect x="3" y="3" width="18" height="14" rx="2" fill="#e5e7eb"/>
+                          <path d="M16.5 7.5a2 2 0 11-4 0 2 2 0 014 0z" fill="#60a5fa"/>
+                          <path d="M3 17l4.5-4.5a2 2 0 012.8 0L17 19" stroke="#2563eb" strokeWidth="2" strokeLinecap="round"/>
+                          <path d="M19.5 19.5l-2-2" stroke="#2563eb" strokeWidth="2" strokeLinecap="round"/>
+                          <rect x="15" y="15" width="6" height="6" rx="1" fill="#fbbf24" transform="rotate(-45 15 15)"/>
+                          <path d="M17 17l2 2" stroke="#fff" strokeWidth="1.5" strokeLinecap="round"/>
+                        </svg>
+                       </button>
+                       <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-75 text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20">
+                         <div className="font-semibold">Reset (Home)</div>
+                         <div className="text-gray-300">Reset Zoom to 100% and return to the center</div>
+                         <div className="text-gray-300">Ctrl/Cmd + 0</div>
+                       </div>
+                     </div>
+                      <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-75 text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20">
+                        <div className="font-semibold">Reset view</div>
+                        <div className="text-gray-300">Return to the original size and position</div>
+                        <div className="text-gray-300">Ctrl/Cmd + 0</div>
+                      </div>
+                  </div> 
+                  */}
+
+
+
+
+
+                   
                     <div className="relative group">
                       <div className="relative group">
                        <button
@@ -6491,14 +6647,14 @@ const VillageMap: React.FC<VillageMapProps> = ({
                         <img src={fullScreenIcon} alt="home" />
                        </button>
                        {/* Tooltip */}
-                       <div className="absolute top-10 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-75 text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20">
+                       <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-75 text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20">
                          <div className="font-semibold">Reset (Home)</div>
                          <div className="text-gray-300">Reset Zoom to 100% and return to the center</div>
                          <div className="text-gray-300">Ctrl/Cmd + 0</div>
                        </div>
                      </div>
                       {/* Tooltip */}
-                      <div className="absolute top-10 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-75 text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20">
+                      <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-75 text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20">
                         <div className="font-semibold">Reset view</div>
                         <div className="text-gray-300">Return to the original size and position</div>
                         <div className="text-gray-300">Ctrl/Cmd + 0</div>
@@ -6528,7 +6684,7 @@ const VillageMap: React.FC<VillageMapProps> = ({
                           📋
                         </button>
                         {/* Tooltip */}
-                        <div className="absolute top-10 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-75 text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20">
+                        <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-75 text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20">
                           <div className="font-semibold">วางรายการ (Paste)</div>
                           <div className="text-gray-300">
                             {(() => {
@@ -6556,7 +6712,7 @@ const VillageMap: React.FC<VillageMapProps> = ({
                         <img src={undoIcon} alt="undo"/>
                       </button>
                       {/* Tooltip */}
-                      <div className="absolute top-10 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-75 text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20 pointer-events-none">
+                      <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-75 text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20 pointer-events-none">
                         <div className="font-semibold">Undo</div>
                         <div className="text-gray-300">Undo the last action</div>
                         <div className="text-gray-300">Ctrl/Cmd + Z</div>
@@ -6582,7 +6738,7 @@ const VillageMap: React.FC<VillageMapProps> = ({
                         {/* <img src={redoIcon} alt="redo" className="w-4 h-4" /> */}
                       </button>
                       {/* Tooltip */}
-                      <div className="absolute top-10 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-75 text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20 pointer-events-none">
+                      <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-75 text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20 pointer-events-none">
                         <div className="font-semibold">Redo</div>
                         <div className="text-gray-300">Redo the last undone action</div>
                         <div className="text-gray-300">Ctrl/Cmd + Shift + Z</div>
@@ -6601,7 +6757,7 @@ const VillageMap: React.FC<VillageMapProps> = ({
                         +
                       </button>
                       {/* Tooltip */}
-                      <div className="absolute top-10 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-75 text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20">
+                      <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-75 text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20">
                         <div className="font-semibold">Zoom In</div>
                         <div className="text-gray-300">Increase the image size</div>
                         <div className="text-gray-300">Ctrl/Cmd + Plus หรือ =</div>
@@ -6619,7 +6775,7 @@ const VillageMap: React.FC<VillageMapProps> = ({
                         -
                       </button>
                       {/* Tooltip */}
-                      <div className="absolute top-10 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-75 text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20">
+                      <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-75 text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20">
                         <div className="font-semibold">Zoom Out</div>
                         <div className="text-gray-300">Decrease the image size</div>
                         <div className="text-gray-300">Ctrl/Cmd + Minus</div>
@@ -6706,7 +6862,7 @@ const VillageMap: React.FC<VillageMapProps> = ({
                 ref={imageRef}
                 src={uploadedImage}
                 alt="แผนที่หมู่บ้าน"
-                className="w-full select-none    !max-h-[600px]  "
+                className="w-full select-none    !max-h-[600px] object-scale-down  !p-4 !md:p-0 "
                 style={{
                   transform: `matrix(${zoomLevel}, 0, 0, ${zoomLevel}, ${panOffset.x}, ${panOffset.y})`,
                   transformOrigin: "0 0"

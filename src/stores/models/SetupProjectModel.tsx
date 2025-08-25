@@ -1,14 +1,12 @@
 import { createModel } from "@rematch/core";
 import { RootModel } from "./index";
-import { ProjectData, SetupProjectState, CondoUnit, Basement, DataSetupUnitType } from "../interfaces/SetupProject";
+import { ProjectData, SetupProjectState, CondoUnit, Basement, DataSetupUnitType } from "../inte-rfaces/SetupProject";
 import { getProject,getStepCondo } from "../../modules/setupProjectFirst/service/api/SetupProject";
+import { encryptStorage } from "../../utils/encryptStorage";
 
 export const setupProject = createModel<RootModel>()({
   state: {
-    //////////////////////////  condo
-    // Project data state
     projectData:{},
-    // Excel data state
     excelData: {
       Condo:[],
       Basement:[]
@@ -25,8 +23,6 @@ export const setupProject = createModel<RootModel>()({
     uploadedImage: null,
     uploadedImageFileName: '',
     isImageUploaded: false,
-
-    ////////////////////////// village
     
 
 
@@ -110,6 +106,7 @@ export const setupProject = createModel<RootModel>()({
     }),
 
 
+
     ////////////////////////// village
 
   },
@@ -127,6 +124,12 @@ export const setupProject = createModel<RootModel>()({
     },
     async setDataProject(){
       try {
+        // เช็ค token ก่อนทำงาน
+        const access_token = await encryptStorage.getItem("access_token");
+        if (!access_token || access_token === "undefined" || access_token === "") {
+          dispatch.setupProject.setProjectData({});
+          return { status: false, message: "No access token" };
+        }
         const response = await getProject();
         if(response.status){
           dispatch.setupProject.setProjectData(response || {});
@@ -136,7 +139,7 @@ export const setupProject = createModel<RootModel>()({
         }
         return response; // return response เพื่อให้ caller รู้ว่าเสร็จแล้ว
       } catch (error) {
-        console.error('Error in setDataProject:', error);
+        console.error('Error in setDataProject: ', error);
         dispatch.setupProject.setProjectData({});
         throw error; // throw error เพื่อให้ caller จัดการได้
       }

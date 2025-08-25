@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { usePagination } from "../../../utils/hooks/usePagination";
+import { usePermission } from "../../../utils/hooks/usePermission";
 
 import Header from "../../../components/templates/Header";
 import { Table } from "antd";
@@ -55,6 +56,11 @@ const EventJoinLogs = () => {
   const scroll: { x?: number | string } = {
     x: "max-content",
   };
+
+  const permissions = useSelector(
+    (state: RootState) => state.common?.permission
+  );
+  const { access } = usePermission(permissions);
 
   const onChangeTable: TableProps<dataEventJoinLogsType>["onChange"] = async (
     pagination: any,
@@ -144,13 +150,15 @@ const EventJoinLogs = () => {
                 await setIsModalOpenInfo(true);
               }
             }}
+            disabled={!access("events", "view")}
           />
           <Button
             value={record.key}
             type="text"
             icon={<DeleteOutlined />}
             onClick={showDeleteConfirm}
-          ></Button>
+            disabled={!access("events", "delete")}
+          />
         </>
       ),
     },

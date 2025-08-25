@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { usePagination } from "../../../utils/hooks/usePagination";
+import { usePermission } from "../../../utils/hooks/usePermission";
+
 import Header from "../../../components/templates/Header";
 import {
   Row,
@@ -77,6 +79,11 @@ const MaintenanceGuideFolder = () => {
     useState<MaintenanceGuideDataType>();
   const [editFileData, setEditFileData] = useState<MaintenanceGuideDataType>();
 
+  const permissions = useSelector(
+    (state: RootState) => state.common?.permission
+  );
+  const { access } = usePermission(permissions);
+
   const columns: ColumnsType<MaintenanceGuideDataType> = [
     {
       title: "Name",
@@ -153,6 +160,7 @@ const MaintenanceGuideFolder = () => {
             type="text"
             icon={<EditOutlined />}
             onClick={() => onEdit(record, index)}
+            disabled={!access("maintenance_guide", "edit")}
           />
           <Button
             className="iconButton"
@@ -160,6 +168,7 @@ const MaintenanceGuideFolder = () => {
             type="text"
             icon={<DeleteOutlined />}
             onClick={() => showDeleteConfirm(record?.id)}
+            disabled={!access("maintenance_guide", "delete")}
           />
         </>
       ),
@@ -359,20 +368,22 @@ const MaintenanceGuideFolder = () => {
               setIsNewFolderOpen(true);
             }}
             icon={<PlusCircleOutlined />}
-            disabled={isLoading}
+            disabled={isLoading || !access("maintenance_guide", "create")}
           >
             New folder
           </Button>
+
           <Button
             type="primary"
             onClick={async () => {
               setIsModalUploadOpen(true);
             }}
             icon={<UploadOutlined />}
-            disabled={isLoading}
+            disabled={isLoading || !access("maintenance_guide", "create")}
           >
             Upload
           </Button>
+
           <UploadMaintenanceGuide
             callBack={async (isOpen: boolean, created: boolean) => {
               setIsModalUploadOpen(isOpen);

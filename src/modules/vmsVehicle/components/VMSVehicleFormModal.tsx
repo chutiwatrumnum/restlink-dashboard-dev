@@ -15,7 +15,7 @@ import {
   getProvinceOptions,
   searchProvinces,
   getProvinceName,
-} from "../../../utils/constants/thaiProvinces"; // เพิ่ม import
+} from "../../../utils/constants/thaiProvinces";
 import dayjs from "dayjs";
 
 interface VMSVehicleFormModalProps {
@@ -43,7 +43,7 @@ const VMSVehicleFormModal = ({
   >([]);
   const [provinceOptions, setProvinceOptions] = useState<
     { label: string; value: string; name: string; code: string }[]
-  >([]); // เพิ่ม state สำหรับ provinces
+  >([]);
   const [loadingData, setLoadingData] = useState(false);
 
   // Get data from state
@@ -147,7 +147,7 @@ const VMSVehicleFormModal = ({
       form.resetFields();
       form.setFieldsValue({
         tier: "staff",
-        area_code: "th-11", // default เป็นสมุทรปราการ
+        area_code: "th-11", // default to Samut Prakan
       });
     }
   }, [isOpen, editData, form]);
@@ -158,7 +158,7 @@ const VMSVehicleFormModal = ({
     onClose();
   }, [form, onClose]);
 
-  // เพิ่ม function สำหรับ search provinces
+  // Function for searching provinces
   const handleProvinceSearch = (searchText: string) => {
     if (!searchText) {
       setProvinceOptions(getProvinceOptions());
@@ -231,7 +231,7 @@ const VMSVehicleFormModal = ({
 
   return (
     <Modal
-      title={isEditing ? "แก้ไขรถยนต์ VMS" : "เพิ่มรถยนต์ VMS"}
+      title={isEditing ? "Edit VMS Vehicle" : "Add VMS Vehicle"}
       open={isOpen}
       onCancel={handleCancel}
       centered
@@ -246,11 +246,11 @@ const VMSVehicleFormModal = ({
             message={
               isLoading
                 ? isEditing
-                  ? "กำลังอัปเดต..."
-                  : "กำลังสร้าง..."
+                  ? "Updating..."
+                  : "Creating..."
                 : isEditing
-                ? "อัปเดต"
-                : "สร้าง"
+                ? "Update"
+                : "Create"
             }
             disabled={isLoading}
           />
@@ -273,24 +273,24 @@ const VMSVehicleFormModal = ({
           {/* Left Column */}
           <Col xs={24} md={12}>
             <Form.Item
-              label="ป้ายทะเบียน"
+              label="License Plate"
               name="license_plate"
               rules={requiredRule}>
               <Input
                 size="large"
-                placeholder="ป้อนป้ายทะเบียนรถ"
+                placeholder="Enter vehicle license plate"
                 maxLength={20}
                 showCount
               />
             </Form.Item>
 
-            <Form.Item label="จังหวัด" name="area_code" rules={requiredRule}>
+            <Form.Item label="Province" name="area_code" rules={requiredRule}>
               <Select
                 size="large"
-                placeholder="เลือกจังหวัด"
+                placeholder="Select province"
                 options={provinceOptions}
                 showSearch
-                filterOption={false} // ใช้ custom search
+                filterOption={false} // Use custom search
                 onSearch={handleProvinceSearch}
                 optionRender={(option) => (
                   <div
@@ -305,7 +305,7 @@ const VMSVehicleFormModal = ({
                     </span>
                   </div>
                 )}
-                // แสดงชื่อจังหวัดใน tag ที่เลือก
+                // Display province name in selected tag
                 tagRender={(props) => {
                   const { value, onClose } = props;
                   const provinceName = getProvinceName(value);
@@ -340,21 +340,21 @@ const VMSVehicleFormModal = ({
                 notFoundContent={
                   <div style={{ textAlign: "center", padding: "20px" }}>
                     <div style={{ marginBottom: "8px" }}>🗾</div>
-                    <div>ไม่พบจังหวัดที่ค้นหา</div>
+                    <div>No provinces found</div>
                   </div>
                 }
               />
             </Form.Item>
 
-            <Form.Item label="บ้าน" name="house_id" rules={requiredRule}>
+            <Form.Item label="House" name="house_id" rules={requiredRule}>
               <Select
                 size="large"
                 placeholder={
                   loadingData || houseLoading
-                    ? "กำลังโหลดบ้าน..."
+                    ? "Loading houses..."
                     : houseOptions.length === 0
-                    ? "ไม่มีบ้านที่ใช้งานได้"
-                    : "เลือกบ้าน"
+                    ? "No available houses"
+                    : "Select house"
                 }
                 options={houseOptions}
                 loading={loadingData || houseLoading}
@@ -368,27 +368,27 @@ const VMSVehicleFormModal = ({
                   loadingData || houseLoading ? (
                     <div style={{ textAlign: "center", padding: "20px" }}>
                       <Spin size="small" />
-                      <div style={{ marginTop: "8px" }}>กำลังโหลดบ้าน...</div>
+                      <div style={{ marginTop: "8px" }}>Loading houses...</div>
                     </div>
                   ) : (
                     <div style={{ textAlign: "center", padding: "20px" }}>
                       <div style={{ marginBottom: "8px" }}>🏠</div>
-                      <div>ไม่พบบ้าน</div>
+                      <div>No houses found</div>
                     </div>
                   )
                 }
               />
             </Form.Item>
 
-            <Form.Item label="ประเภท" name="tier" rules={requiredRule}>
+            <Form.Item label="Type" name="tier" rules={requiredRule}>
               <Select
                 size="large"
-                placeholder="เลือกประเภท"
+                placeholder="Select type"
                 options={[
-                  { label: "เจ้าหน้าที่ (Staff)", value: "staff" },
-                  { label: "ผู้อยู่อาศัย (Resident)", value: "resident" },
+                  { label: "Staff", value: "staff" },
+                  { label: "Resident", value: "resident" },
                   {
-                    label: "ผู้เยี่ยมชม (Invited Visitor)",
+                    label: "Invited Visitor",
                     value: "invited visitor",
                   },
                 ]}
@@ -398,36 +398,36 @@ const VMSVehicleFormModal = ({
 
           {/* Right Column */}
           <Col xs={24} md={12}>
-            <Form.Item label="เวลาเริ่มต้น" name="start_time">
+            <Form.Item label="Start Time" name="start_time">
               <DatePicker
                 size="large"
                 showTime
                 format="DD/MM/YYYY HH:mm"
-                placeholder="เลือกเวลาเริ่มต้น"
+                placeholder="Select start time"
                 style={{ width: "100%" }}
               />
             </Form.Item>
 
-            <Form.Item label="เวลาหมดอายุ" name="expire_time">
+            <Form.Item label="Expiry Time" name="expire_time">
               <DatePicker
                 size="large"
                 showTime
                 format="DD/MM/YYYY HH:mm"
-                placeholder="เลือกเวลาหมดอายุ"
+                placeholder="Select expiry time"
                 style={{ width: "100%" }}
               />
             </Form.Item>
 
-            <Form.Item label="พื้นที่ที่ได้รับอนุญาต" name="authorized_area">
+            <Form.Item label="Authorized Areas" name="authorized_area">
               <Select
                 mode="multiple"
                 size="large"
                 placeholder={
                   loadingData || areaLoading
-                    ? "กำลังโหลดพื้นที่..."
+                    ? "Loading areas..."
                     : areaOptions.length === 0
-                    ? "ไม่มีพื้นที่ที่ใช้งานได้"
-                    : "เลือกพื้นที่ที่ได้รับอนุญาต"
+                    ? "No available areas"
+                    : "Select authorized areas"
                 }
                 options={areaOptions}
                 loading={loadingData || areaLoading}
@@ -441,24 +441,22 @@ const VMSVehicleFormModal = ({
                   loadingData || areaLoading ? (
                     <div style={{ textAlign: "center", padding: "20px" }}>
                       <Spin size="small" />
-                      <div style={{ marginTop: "8px" }}>
-                        กำลังโหลดพื้นที่...
-                      </div>
+                      <div style={{ marginTop: "8px" }}>Loading areas...</div>
                     </div>
                   ) : (
                     <div style={{ textAlign: "center", padding: "20px" }}>
                       <div style={{ marginBottom: "8px" }}>🗺️</div>
-                      <div>ไม่พบพื้นที่</div>
+                      <div>No areas found</div>
                     </div>
                   )
                 }
               />
             </Form.Item>
 
-            <Form.Item label="หมายเหตุ" name="note">
+            <Form.Item label="Note" name="note">
               <Input.TextArea
                 rows={3}
-                placeholder="ป้อนหมายเหตุ (ไม่บังคับ)"
+                placeholder="Enter note (optional)"
                 maxLength={500}
                 showCount
               />
@@ -479,8 +477,8 @@ const VMSVehicleFormModal = ({
             }}>
             <Spin size="small" style={{ marginRight: "8px" }} />
             <span style={{ color: "#0369a1" }}>
-              {isEditing ? "กำลังอัปเดตรถยนต์..." : "กำลังสร้างรถยนต์..."}
-              กรุณารอสักครู่...
+              {isEditing ? "Updating vehicle..." : "Creating vehicle..."}
+              Please wait...
             </span>
           </div>
         )}

@@ -25,7 +25,8 @@ dayjs.extend(timezone);
 const queryClient = new QueryClient();
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
-  <React.StrictMode>
+  // ปิด StrictMode ชั่วคราวเพื่อให้ debug ง่ายขึ้น
+  // <React.StrictMode>
     <ConfigProvider theme={theme} form={{ validateMessages }}>
       <Provider store={store}>
         <QueryClientProvider client={queryClient}>
@@ -35,5 +36,5 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
         </QueryClientProvider>
       </Provider>
     </ConfigProvider>
-  </React.StrictMode>
+  // </React.StrictMode>
 );

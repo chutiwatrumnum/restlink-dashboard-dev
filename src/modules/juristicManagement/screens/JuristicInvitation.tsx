@@ -1,6 +1,6 @@
 import { useState } from "react";
 import dayjs from "dayjs";
-import { encryptStorage } from "../../../utils/encryptStorage";
+import { usePermission } from "../../../utils/hooks/usePermission";
 
 // Queries
 import { getJuristicInvitationsQuery } from "../../../utils/queriesGroup/juristicQueries";
@@ -24,11 +24,12 @@ import type { ColumnsType } from "antd/es/table";
 import { InvitationsDataType } from "../../../stores/interfaces/JuristicManage";
 import type { TabsProps } from "antd";
 import axios from "axios";
+import { RootState } from "../../../stores";
+import { useSelector } from "react-redux";
 
 const JuristicInvitation = () => {
   // Initiate
   const deleteInvitation = useDeleteJuristicInvitationMutation();
-  const projectID = encryptStorage.getItem("projectId");
 
   // States
   const [isActivated, setIsActivated] = useState(false);
@@ -46,6 +47,11 @@ const JuristicInvitation = () => {
     activate: isActivated,
     curPage: curPage,
   });
+
+  const permissions = useSelector(
+    (state: RootState) => state.common?.permission
+  );
+  const { access } = usePermission(permissions);
 
   const items: TabsProps["items"] = [
     {
@@ -162,6 +168,7 @@ const JuristicInvitation = () => {
                   border: "2px solid var(--secondary-color)",
                 }}
                 onClick={() => handleResendInvitation(record.id)}
+                disabled={!access("team_management", "edit")}
               >
                 Resend verify
               </Button>
@@ -188,6 +195,7 @@ const JuristicInvitation = () => {
                   />
                 }
                 title="View Details"
+                disabled={!access("team_management", "edit")}
               />
             </Col>
             <Col>
@@ -202,6 +210,7 @@ const JuristicInvitation = () => {
                   />
                 }
                 title="View Details"
+                disabled={!access("team_management", "delete")}
               />
             </Col>
           </Row>
@@ -325,6 +334,7 @@ const JuristicInvitation = () => {
           className="userManagementExportBtn"
           message="Add new"
           onClick={onCreate}
+          disabled={!access("team_management", "create")}
         />
       </Flex>
 

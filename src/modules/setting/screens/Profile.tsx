@@ -1,4 +1,8 @@
 import { useRef, useState, useEffect } from "react";
+import { useSelector } from "react-redux";
+import { RootState } from "../../../stores";
+import { usePermission } from "../../../utils/hooks/usePermission";
+
 import Header from "../../../components/templates/Header";
 import UploadCircleBtn from "../../../components/group/UploadCircleBtn";
 import MediumButton from "../../../components/common/MediumButton";
@@ -28,6 +32,12 @@ const Profile = () => {
   const [dataProfileDetail, setDataProfileDetail] = useState<any>(null);
   const [edited, setEdited] = useState<boolean>(true);
   const [reRender, setReRender] = useState<boolean>(false);
+
+  const permissions = useSelector(
+    (state: RootState) => state.common?.permission
+  );
+  const { access } = usePermission(permissions);
+
   useEffect(() => {
     (async function () {
       const result = await getDataProfile();
@@ -70,9 +80,9 @@ const Profile = () => {
     }
   };
   const onCancel = async () => {
-     setEdited(true);
-     setPreviewImage(dataProfileDetail.imageProfile);
-     ProfileEditForm.setFieldsValue({ ...dataProfileDetail });
+    setEdited(true);
+    setPreviewImage(dataProfileDetail.imageProfile);
+    ProfileEditForm.setFieldsValue({ ...dataProfileDetail });
   };
   const onImageChanged = (image: string) => {
     setPreviewImage(image);
@@ -90,7 +100,8 @@ const Profile = () => {
           initialValues={{ remember: true }}
           onFinish={onFinish}
           onFinishFailed={onFinishFailed}
-          autoComplete="off">
+          autoComplete="off"
+        >
           <div className="imageProfileContainer">
             <div style={{ position: "relative" }}>
               <Avatar
@@ -115,7 +126,8 @@ const Profile = () => {
                 label={
                   <Text className="textColor semiBoldText">First name</Text>
                 }
-                name="firstName">
+                name="firstName"
+              >
                 <Input
                   disabled={true}
                   size="large"
@@ -130,7 +142,8 @@ const Profile = () => {
                     <Text className="textColor semiBoldText">Mobile no.</Text>
                   }
                   name="contact"
-                  style={{ width: "100%" }}>
+                  style={{ width: "100%" }}
+                >
                   <Input
                     disabled={true}
                     size="large"
@@ -147,7 +160,8 @@ const Profile = () => {
                 label={
                   <Text className="textColor semiBoldText">Last name</Text>
                 }
-                name="lastName">
+                name="lastName"
+              >
                 <Input
                   disabled={true}
                   size="large"
@@ -187,7 +201,8 @@ const Profile = () => {
                 <Form.Item
                   label={<Text className="textColor semiBoldText">Role</Text>}
                   name="roleName"
-                  style={{ width: "100%" }}>
+                  style={{ width: "100%" }}
+                >
                   <Input
                     disabled={true}
                     size="large"
@@ -200,7 +215,8 @@ const Profile = () => {
                     <Text className="textColor semiBoldText">Project Name</Text>
                   }
                   name="projectName"
-                  style={{ width: "100%" }}>
+                  style={{ width: "100%" }}
+                >
                   <Input
                     disabled={true}
                     size="large"
@@ -219,17 +235,19 @@ const Profile = () => {
                   justifyContent: "end",
                   display: "flex",
                   paddingRight: "10px",
-                }}>
+                }}
+              >
                 <MediumActionButton
                   type="default"
                   className="ProfileButton"
                   message={edited == true ? "Edit" : "Cancel"}
                   onClick={onEdit}
+                  disabled={!access("profile", "edit")}
                 />
               </Col>
               <Col span={12} style={{ paddingLeft: "10px" }}>
                 <MediumButton
-                  disabled={edited}
+                  disabled={edited || !access("profile", "edit")}
                   className="forgotButton"
                   message="Save"
                 />

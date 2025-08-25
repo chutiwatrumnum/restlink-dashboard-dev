@@ -1,15 +1,16 @@
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { encryptStorage } from "../../utils/encryptStorage";
+import { useDispatch } from "react-redux";
+import { Dispatch } from "../../stores";
 
-// Services Chat
 const getProjectID = async () => {
   let url = `/my-project`;
   const res = await axios.get(url);
-  // console.log("RES : ", res);
+
   encryptStorage.setItem("projectId", res.data.data.myProjectId);
 
-  return res.data.data;
+  return res.data;
 };
 
 //  Queries Service Chat

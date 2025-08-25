@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { usePagination } from "../../../utils/hooks/usePagination";
+import { usePermission } from "../../../utils/hooks/usePermission";
+
 import Header from "../../../components/templates/Header";
 import {
   Row,
@@ -82,6 +84,11 @@ const PublicFolder = () => {
   const [editFolderData, setEditFolderData] = useState<DocumentDataType>();
   const [editFileData, setEditFileData] = useState<DocumentDataType>();
 
+  const permissions = useSelector(
+    (state: RootState) => state.common?.permission
+  );
+  const { access } = usePermission(permissions);
+
   const columns: ColumnsType<DocumentDataType> = [
     {
       title: "Name",
@@ -158,6 +165,7 @@ const PublicFolder = () => {
             type="text"
             icon={<EditOutlined />}
             onClick={() => onEdit(record, index)}
+            disabled={!access("document_home", "edit")}
           />
           <Button
             className="iconButton"
@@ -165,6 +173,7 @@ const PublicFolder = () => {
             type="text"
             icon={<DeleteOutlined />}
             onClick={() => showDeleteConfirm(record?.id)}
+            disabled={!access("document_home", "delete")}
           />
         </>
       ),
@@ -359,20 +368,22 @@ const PublicFolder = () => {
               setIsNewFolderOpen(true);
             }}
             icon={<PlusCircleOutlined />}
-            disabled={isLoading}
+            disabled={isLoading || !access("document_home", "create")}
           >
             New folder
           </Button>
+
           <Button
             type="primary"
             onClick={() => {
               setIsModalUploadPublic(true);
             }}
             icon={<UploadOutlined />}
-            disabled={isLoading}
+            disabled={isLoading || !access("document_home", "create")}
           >
             Upload
           </Button>
+
           <UploadPublic
             callBack={async (isOpen: boolean, created: boolean) => {
               setIsModalUploadPublic(isOpen);

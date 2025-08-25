@@ -1,6 +1,8 @@
 // ไฟล์: src/modules/juristicManagement/screens/JuristicManage.tsx
 
 import { useState, useEffect } from "react";
+import { usePermission } from "../../../utils/hooks/usePermission";
+
 import { Button } from "antd";
 import Header from "../../../components/templates/Header";
 import DatePicker from "../../../components/common/DatePicker";
@@ -19,6 +21,7 @@ import "../styles/userManagement.css";
 // *** แก้ไขตรงนี้ - ใช้ mutation แทน API function ***
 import { useDeleteJuristicMutation } from "../../../utils/mutationsGroup/juristicMutations";
 import ConfirmModal from "../../../components/common/ConfirmModal";
+import { callConfirmModal } from "../../../components/common/Modal";
 
 const JuristicManage = () => {
   // variables
@@ -52,6 +55,11 @@ const JuristicManage = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editData, setEditData] = useState<JuristicManageDataType | null>(null);
   const [paramsData, setParamsData] = useState<conditionPage>(params);
+
+  const permissions = useSelector(
+    (state: RootState) => state.common?.permission
+  );
+  const { access } = usePermission(permissions);
 
   const columns: ColumnsType<JuristicManageDataType> = [
     {
@@ -160,18 +168,20 @@ const JuristicManage = () => {
               size="large"
               icon={<EditOutlined />}
               onClick={() => onEdit(record)}
+              disabled={!access("team_management", "edit")}
             />
+
             <Button
               className="iconButton"
               value={record.userId}
               type="text"
               onClick={() => showDeleteConfirm(record.userId)}
               icon={<DeleteOutlined />}
-              // *** แสดง loading state ***
               loading={
                 deleteJuristicMutation.isPending &&
                 deleteJuristicMutation.variables === record.userId
               }
+              disabled={!access("team_management", "delete")}
             />
           </>
         );
@@ -225,7 +235,7 @@ const JuristicManage = () => {
 
   // *** แก้ไขฟังก์ชัน delete ให้ใช้ mutation ***
   const showDeleteConfirm = (userId: string) => {
-    ConfirmModal({
+    callConfirmModal({
       title: "Are you sure you want to delete this?",
       okMessage: "Yes",
       cancelMessage: "Cancel",
@@ -259,7 +269,7 @@ const JuristicManage = () => {
     <>
       <Header title="Juristic's information" />
       <div className="userManagementTopActionGroup">
-        <div className="userManagementTopActionLeftGroup">
+        <div className="userManagementTopActionLeftGroup gap-4">
           <DatePicker
             className="userManagementDatePicker"
             onChange={onChange}

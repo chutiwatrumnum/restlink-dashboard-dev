@@ -1,4 +1,4 @@
-// ไฟล์: src/modules/vmsLogPassage/components/VMSLogPassageStatsCards.tsx
+// File: src/modules/vmsLogPassage/components/VMSLogPassageStatsCards.tsx - English Version
 
 import React from "react";
 import { Card, Row, Col } from "antd";
@@ -70,37 +70,37 @@ const VMSLogPassageStatsCards: React.FC<VMSLogPassageStatsCardsProps> = ({
 
   const statsCards = [
     {
-      title: "ทั้งหมด",
+      title: "Total",
       value: stats.total,
       icon: <CarOutlined />,
       color: "#1890ff",
     },
     {
-      title: "ผ่านได้",
+      title: "Allowed",
       value: stats.success,
       icon: <CheckCircleOutlined />,
       color: "#52c41a",
     },
     {
-      title: "ผ่านไม่ได้",
+      title: "Denied",
       value: stats.failed,
       icon: <CloseCircleOutlined />,
       color: "#ff4d4f",
     },
     {
-      title: "อัตราผ่าน",
+      title: "Pass Rate",
       value: `${stats.successRate}%`,
       icon: <PercentageOutlined />,
       color: "#faad14",
     },
     {
-      title: "วันนี้",
+      title: "Today",
       value: stats.todayRecords,
       icon: <CalendarOutlined />,
       color: "#722ed1",
     },
     {
-      title: "รถภายนอก",
+      title: "External Vehicle",
       value: stats.tierStats["external vehicle"] || 0,
       icon: <EnvironmentOutlined />,
       color: "#eb2f96",

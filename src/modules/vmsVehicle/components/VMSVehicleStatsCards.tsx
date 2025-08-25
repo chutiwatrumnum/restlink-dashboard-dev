@@ -1,3 +1,5 @@
+// File: src/modules/vmsVehicle/components/VMSVehicleStatsCards.tsx - English Version
+
 import React from "react";
 import { Card, Row, Col } from "antd";
 import {
@@ -25,10 +27,10 @@ const calculateProvinceStats = (data: VehicleRecord[]) => {
     provinceStats[provinceName] = (provinceStats[provinceName] || 0) + 1;
   });
 
-  // เรียงลำดับตามจำนวนมากที่สุด
+  // Sort by highest count
   const sortedProvinces = Object.entries(provinceStats)
     .sort(([, a], [, b]) => b - a)
-    .slice(0, 5); // เอา 5 จังหวัดแรก
+    .slice(0, 5); // Take top 5 provinces
 
   return sortedProvinces;
 };
@@ -74,37 +76,37 @@ const VMSVehicleStatsCards: React.FC<VMSVehicleStatsCardsProps> = ({
 
   const statsCards = [
     {
-      title: "ทั้งหมด",
+      title: "Total",
       value: stats.total,
       icon: <CarOutlined />,
       color: "#1890ff",
     },
     {
-      title: "ใช้งานได้",
+      title: "Active",
       value: stats.active,
       icon: <CheckCircleOutlined />,
       color: "#52c41a",
     },
     {
-      title: "หมดอายุ",
+      title: "Expired",
       value: stats.expired,
       icon: <StopOutlined />,
       color: "#ff4d4f",
     },
     {
-      title: "เจ้าหน้าที่",
+      title: "Staff",
       value: stats.staff,
       icon: <UserOutlined />,
       color: "#1890ff",
     },
     {
-      title: "ผู้อยู่อาศัย",
+      title: "Resident",
       value: stats.resident,
       icon: <UserOutlined />,
       color: "#52c41a",
     },
     {
-      title: "ผู้เยี่ยมชม",
+      title: "Visitor",
       value: stats.visitor,
       icon: <ClockCircleOutlined />,
       color: "#faad14",

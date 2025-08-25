@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { usePermission } from "../../../utils/hooks/usePermission";
+
 import Header from "../../../components/templates/Header";
 import { Table, Checkbox, Button } from "antd";
 import type { ColumnsType, TableProps } from "antd/es/table";
@@ -47,6 +49,11 @@ const VisitorManagementLog = () => {
   const dispatch = useDispatch<Dispatch>();
   const [paramsData, setParamsData] = useState<conditionPage>(params);
   const [tabsSelected, setTabsSelected] = useState<string>("1");
+  const permissions = useSelector(
+    (state: RootState) => state.common?.permission
+  );
+  const { access } = usePermission(permissions);
+
   const { RangePicker } = DatePicker;
   const customFormat: DatePickerProps["format"] = (value) =>
     `Month : ${value.format(dateFormat)}`;
@@ -119,10 +126,13 @@ const VisitorManagementLog = () => {
             <Row>
               <Col span={24}>
                 <Checkbox
-                  disabled={record.status !== "Pending" ? true : false}
+                  disabled={
+                    record.status !== "Pending" || !access("events", "edit")
+                  }
                   checked={record.approved ? true : false}
                   value={record.key}
-                  onChange={showApprovedChlidID}></Checkbox>
+                  onChange={showApprovedChlidID}
+                />
               </Col>
             </Row>
           </>
@@ -138,10 +148,13 @@ const VisitorManagementLog = () => {
             <Row>
               <Col span={24}>
                 <Checkbox
-                  disabled={record.status !== "Pending" ? true : false}
+                  disabled={
+                    record.status !== "Pending" || !access("events", "delete")
+                  }
                   checked={record.reject ? true : false}
                   value={record.key}
-                  onChange={rejectChildID}></Checkbox>
+                  onChange={rejectChildID}
+                />
               </Col>
             </Row>
           </>
@@ -241,10 +254,13 @@ const VisitorManagementLog = () => {
           <Row>
             <Col span={24}>
               <Checkbox
-                disabled={record.status !== "pending" ? true : false}
+                disabled={
+                  record.status !== "pending" || !access("events", "edit")
+                }
                 checked={record.isApproveAll ? true : false}
                 value={record.key}
-                onChange={showApproved}></Checkbox>
+                onChange={showApproved}
+              />
             </Col>
           </Row>
         </>
@@ -261,10 +277,13 @@ const VisitorManagementLog = () => {
           <Row>
             <Col span={24}>
               <Checkbox
-                disabled={record.status !== "pending" ? true : false}
+                disabled={
+                  record.status !== "pending" || !access("events", "delete")
+                }
                 checked={record.isRejectAll ? true : false}
                 value={record.key}
-                onChange={reject}></Checkbox>
+                onChange={reject}
+              />
             </Col>
           </Row>
         </>
@@ -335,10 +354,10 @@ const VisitorManagementLog = () => {
         let statusApproved: any = false;
         statusApproved = await ApprovedVisitorLogsId(dataApprove, true);
         if (statusApproved) {
-         SuccessModal("Successfully approved");
+          SuccessModal("Successfully approved");
           setRerender(!rerender);
         } else {
-        FailedModal("Failed approved");
+          FailedModal("Failed approved");
         }
       },
       onCancel() {
@@ -366,7 +385,7 @@ const VisitorManagementLog = () => {
         statusApproved = await ApprovedVisitorLogsId(dataApprove, false);
 
         if (statusApproved) {
-                 SuccessModal("Successfully approved");
+          SuccessModal("Successfully approved");
           setRerender(!rerender);
         } else {
           FailedModal("Failed approved");
@@ -396,7 +415,7 @@ const VisitorManagementLog = () => {
         statusRejected = await ApprovedVisitorLogsId(dataReject, true);
 
         if (statusRejected) {
-           SuccessModal("Successfully reject");
+          SuccessModal("Successfully reject");
           setRerender(!rerender);
         } else {
           FailedModal("Failed reject");
@@ -472,7 +491,8 @@ const VisitorManagementLog = () => {
         </Col>
         <Col
           span={10}
-          style={{ display: "flex", justifyContent: "flex-start" }}>
+          style={{ display: "flex", justifyContent: "flex-start" }}
+        >
           <Search
             placeholder="Search by name"
             allowClear
@@ -485,7 +505,9 @@ const VisitorManagementLog = () => {
           <Button
             type="primary"
             style={{ marginRight: 10 }}
-            onClick={dowloadVisitorLogs}>
+            onClick={dowloadVisitorLogs}
+            disabled={!access("events", "view")}
+          >
             <VerticalAlignBottomOutlined />
             Export
           </Button>
