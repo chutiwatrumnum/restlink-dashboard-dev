@@ -100,6 +100,7 @@ import VMSInvitation from "./modules/vmsInvitation/screens/VMSInvitation";
 import VMSVehicle from "./modules/vmsVehicle/screens/VMSVehicle";
 import VMSLogAccess from "./modules/vmsLogAccess/screens/VMSLogAccess";
 import VMSLogPassage from "./modules/vmsLogPassage/screens/VMSLogPassage";
+import VMSVisitor from "./modules/vmsVisitor/screens/VMSVisitor";
 
 // components
 
@@ -359,8 +360,6 @@ function AppRoutes() {
     <Routes>
       {/* unauthorized_route */}
 
-
-
       <Route element={<UnauthorizedLayout />}>
         <Route index path="/auth" element={<SignInScreen />} />
         <Route path="/recovery" element={<RecoveryScreen />} />
@@ -385,6 +384,7 @@ function AppRoutes() {
         <Route path="vms-vehicle" element={<VMSVehicle />} />
         <Route path="vms-log-access" element={<VMSLogAccess />} />
         <Route path="vms-log-passage" element={<VMSLogPassage />} />
+        <Route path="vms-visitor" element={<VMSVisitor />} />
         <Route path="managementMain" element={<ManagementMain />} />
         <Route path="serviceDashboard" element={<ServiceDashboard />} />
         <Route path="serviceCenterLists" element={<ServiceCenterLists />} />

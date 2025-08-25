@@ -1,4 +1,4 @@
-// ไฟล์: src/stores/models/index.ts (Updated with Log models)
+// File: src/stores/models/index.ts (Updated with VMSVisitor model)
 
 import { Models } from "@rematch/core";
 import { userAuth } from "./UserAuthModel";
@@ -26,6 +26,7 @@ import { area } from "./AreaModel";
 import { vehicle } from "./VehicleModel";
 import { logAccess } from "./LogAccessModel";
 import { logPassage } from "./LogPassageModel";
+import { vmsVisitor } from "./VMSVisitorModel"; // Add VMS Visitor
 
 export interface RootModel extends Models<RootModel> {
   userAuth: typeof userAuth;
@@ -53,6 +54,7 @@ export interface RootModel extends Models<RootModel> {
   vehicle: typeof vehicle;
   logAccess: typeof logAccess;
   logPassage: typeof logPassage;
+  vmsVisitor: typeof vmsVisitor;
 }
 
 export const models: RootModel = {
@@ -81,5 +83,5 @@ export const models: RootModel = {
   vehicle,
   logAccess,
   logPassage,
+  vmsVisitor,
 };
-

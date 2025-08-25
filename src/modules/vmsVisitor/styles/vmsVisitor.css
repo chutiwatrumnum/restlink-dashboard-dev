@@ -1,0 +1,330 @@
+/* File: src/modules/vmsVisitor/styles/vmsVisitor.css */
+
+.vms-visitor-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.vms-visitor-header h1 {
+  margin: 0;
+}
+
+.vms-visitor-filters-container {
+  display: block !important;
+  padding-bottom: 15px;
+}
+
+.vms-visitor-table .ant-table-thead > tr > th {
+  background-color: var(--tableHeadBg-color) !important;
+  color: var(--tableHeadText-color) !important;
+  font-weight: var(--font-bold) !important;
+  text-align: center;
+}
+
+.vms-visitor-table .ant-table-tbody > tr > td {
+  text-align: center;
+}
+
+/* Name column styling */
+.vms-visitor-table .ant-table-tbody > tr > td:nth-child(2) {
+  text-align: left !important;
+  font-weight: 600;
+}
+
+/* Photo column styling */
+.visitor-photo-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.visitor-avatar {
+  border: 2px solid #f0f0f0;
+  transition: all 0.3s ease;
+}
+
+.visitor-avatar:hover {
+  border-color: #1890ff;
+  transform: scale(1.05);
+}
+
+.visitor-avatar-default {
+  background-color: #f5f5f5;
+  color: #bfbfbf;
+}
+
+.visitor-photo-preview {
+  padding: 2px !important;
+  height: 20px !important;
+  font-size: 12px !important;
+  line-height: 16px !important;
+  border-radius: 3px;
+  background: rgba(24, 144, 255, 0.1);
+  border: 1px solid rgba(24, 144, 255, 0.2);
+}
+
+.visitor-photo-preview:hover {
+  background: rgba(24, 144, 255, 0.2);
+  border-color: #1890ff;
+}
+
+/* Status tags styling */
+.vms-visitor-table .ant-tag {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+/* Gender tag colors */
+.vms-visitor-table .ant-tag.ant-tag-blue {
+  background-color: #e6f7ff;
+  border-color: #91d5ff;
+  color: #0050b3;
+}
+
+.vms-visitor-table .ant-tag.ant-tag-pink {
+  background-color: #fff0f6;
+  border-color: #ffadd2;
+  color: #c41d7f;
+}
+
+/* Stamped status animations */
+.vms-visitor-table .ant-tag.ant-tag-green {
+  animation: pulse-success 2s infinite;
+}
+
+.vms-visitor-table .ant-tag.ant-tag-orange {
+  animation: pulse-warning 2s infinite;
+}
+
+@keyframes pulse-success {
+  0% { opacity: 1; }
+  50% { opacity: 0.7; }
+  100% { opacity: 1; }
+}
+
+@keyframes pulse-warning {
+  0% { opacity: 1; }
+  50% { opacity: 0.8; }
+  100% { opacity: 1; }
+}
+
+/* Loading overlay */
+.vms-visitor-table .ant-spin-container {
+  min-height: 400px;
+}
+
+/* Stats Cards customization */
+.vms-visitor-stats {
+  margin-bottom: 24px;
+}
+
+/* Tooltip styling */
+.vms-visitor-table .ant-tooltip {
+  max-width: 300px;
+}
+
+/* Note column styling */
+.vms-visitor-table .note-cell {
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.vms-visitor-table .note-cell:hover {
+  color: #1890ff;
+}
+
+/* ID column styling */
+.vms-visitor-table .id-cell {
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  color: #666;
+}
+
+/* Code column styling */
+.vms-visitor-table .code-cell {
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  color: #666;
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 3px;
+  padding: 2px 6px;
+}
+
+/* House address highlighting */
+.vms-visitor-table .house-address-cell {
+  background: rgba(24, 144, 255, 0.05);
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-weight: 600;
+  color: #1890ff;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.vms-visitor-table .house-address-cell:hover {
+  background: rgba(24, 144, 255, 0.1);
+  transform: scale(1.02);
+  transition: all 0.2s ease;
+}
+
+/* House ID fallback styling */
+.vms-visitor-table .house-id-fallback {
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  color: #666;
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 3px;
+  padding: 2px 6px;
+}
+
+/* Image preview modal */
+.ant-image-preview-wrap {
+  z-index: 9999;
+}
+
+.ant-image-preview-img {
+  max-height: 80vh;
+  max-width: 80vw;
+}
+
+/* Custom scrollbar for table */
+.vms-visitor-table .ant-table-body {
+  scrollbar-width: thin;
+  scrollbar-color: #bfbfbf #f0f0f0;
+}
+
+.vms-visitor-table .ant-table-body::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.vms-visitor-table .ant-table-body::-webkit-scrollbar-track {
+  background: #f0f0f0;
+  border-radius: 4px;
+}
+
+.vms-visitor-table .ant-table-body::-webkit-scrollbar-thumb {
+  background: #bfbfbf;
+  border-radius: 4px;
+}
+
+.vms-visitor-table .ant-table-body::-webkit-scrollbar-thumb:hover {
+  background: #999;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+  .vms-visitor-table .ant-table-thead > tr > th,
+  .vms-visitor-table .ant-table-tbody > tr > td {
+    padding: 8px 4px;
+    font-size: 12px;
+  }
+  
+  .vms-visitor-filters-container {
+    padding: 12px;
+  }
+  
+  .visitor-avatar {
+    width: 32px !important;
+    height: 32px !important;
+  }
+}
+
+/* Responsive design for filters */
+@media (max-width: 1200px) {
+  .vms-visitor-filters-container .ant-space {
+    gap: 12px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .vms-visitor-filters-container {
+    padding: 16px 20px;
+  }
+  
+  .vms-visitor-filters-container .ant-space-item {
+    width: 100%;
+  }
+  
+  .vms-visitor-filters-container .ant-picker,
+  .vms-visitor-filters-container .ant-input-search,
+  .vms-visitor-filters-container .ant-select {
+    width: 100% !important;
+    min-width: auto !important;
+  }
+  
+  .vms-visitor-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .visitor-photo-container {
+    transform: scale(0.8);
+  }
+}
+
+/* Area tag styling for multiple areas */
+.vms-visitor-table .area-tag {
+  font-size: 10px !important;
+  max-width: 100px !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  cursor: pointer !important;
+  border-radius: 12px !important;
+}
+
+.vms-visitor-table .area-tag:hover {
+  opacity: 0.8;
+  transform: scale(1.02);
+  transition: all 0.2s ease;
+}
+
+/* Full name highlighting */
+.vms-visitor-table .full-name-cell {
+  background: rgba(24, 144, 255, 0.05);
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-weight: 600;
+  color: #1890ff;
+}
+
+/* Gender icons styling */
+.vms-visitor-table .gender-male {
+  color: #1890ff;
+}
+
+.vms-visitor-table .gender-female {
+  color: #eb2f96;
+}
+
+/* ID Card styling */
+.vms-visitor-table .id-card-cell {
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  color: #666;
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 3px;
+  padding: 2px 6px;
+  letter-spacing: 0.5px;
+}
+
+.vms-visitor-table .id-card-cell:empty::after {
+  content: "-";
+  color: #bfbfbf;
+}
+
+/* Error handling for broken images */
+.visitor-avatar img[style*="display: none"] + .ant-avatar-icon {
+  display: block !important;
+}
