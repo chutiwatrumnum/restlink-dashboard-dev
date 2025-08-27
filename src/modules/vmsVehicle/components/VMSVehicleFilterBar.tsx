@@ -6,6 +6,9 @@ import {
   CalendarOutlined,
 } from "@ant-design/icons";
 import { getProvinceOptions } from "../../../utils/constants/thaiProvinces";
+import {
+  VEHICLE_TYPE_OPTIONS,
+} from "../../../stores/interfaces/Vehicle";
 import dayjs from "dayjs";
 
 const { RangePicker } = DatePicker;
@@ -23,12 +26,6 @@ interface VMSVehicleFiltersProps {
   onFilter: (filters: FilterValues) => void;
   loading?: boolean;
 }
-
-// Vehicle Type Options
-const VEHICLE_TYPE_OPTIONS = [
-  { label: "🚗 รถยนต์", value: "car" },
-  { label: "🏍️ มอเตอร์ไซค์", value: "motorcycle" },
-];
 
 // Tier Options
 const TIER_OPTIONS = [

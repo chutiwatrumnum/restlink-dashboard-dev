@@ -38,6 +38,6 @@ export interface VehicleType {
 export type VehicleTypeOption = 'motorcycle' | 'car';
 
 export const VEHICLE_TYPE_OPTIONS = [
-    { label: 'รถจักรยานยนต์', value: 'motorcycle' },
-    { label: 'รถยนต์', value: 'car' }
+    { label: 'motorcycle', value: 'motorcycle' },
+    { label: 'car', value: 'car' }
 ] as const;

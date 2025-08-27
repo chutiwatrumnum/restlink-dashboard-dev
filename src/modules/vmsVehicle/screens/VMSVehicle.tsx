@@ -228,9 +228,9 @@ const VMSVehicle = () => {
   const getVehicleTypeLabel = (vehicleType: string): string => {
     switch (vehicleType?.toLowerCase()) {
       case "motorcycle":
-        return "🏍️ มอเตอร์ไซค์";
+        return "motorcycle";
       case "car":
-        return "🚗 รถยนต์";
+        return "car";
       default:
         return vehicleType || "-";
     }
@@ -309,12 +309,7 @@ const VMSVehicle = () => {
           style={{ fontSize: "11px" }}>
           {getVehicleTypeLabel(vehicle_type)}
         </Tag>
-      ),
-      filters: [
-        { text: "🚗 รถยนต์", value: "car" },
-        { text: "🏍️ มอเตอร์ไซค์", value: "motorcycle" },
-      ],
-      onFilter: (value: any, record) => record.vehicle_type === value,
+      )
     },
     {
       title: "Color",
