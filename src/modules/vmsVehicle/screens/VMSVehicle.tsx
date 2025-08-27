@@ -1,10 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { usePermission } from "../../../utils/hooks/usePermission";
 import { Button, Tag, Tooltip } from "antd";
 import Header from "../../../components/templates/Header";
 import VMSVehicleTable from "../components/VMSVehicleTable";
 import VMSVehicleFormModal from "../components/VMSVehicleFormModal";
 import VMSVehicleStatsCards from "../components/VMSVehicleStatsCards";
+import VMSVehicleFilterBar from "../components/VMSVehicleFilterBar";
 import dayjs from "dayjs";
 import { useDispatch, useSelector } from "react-redux";
 import { Dispatch, RootState } from "../../../stores";
@@ -17,6 +18,16 @@ import { houseMappingService } from "../../../utils/services/houseMappingService
 import { areaMappingService } from "../../../utils/services/areaMappingService";
 import { getProvinceName } from "../../../utils/constants/thaiProvinces";
 import "../styles/vmsVehicle.css";
+
+interface VMSVehicleFilters {
+  searchText?: string;
+  vehicleType?: string;
+  vehicleColor?: string;
+  tier?: string;
+  province?: string;
+  status?: string;
+  dateRange?: any;
+}
 
 const VMSVehicle = () => {
   // Variables
@@ -38,6 +49,8 @@ const VMSVehicle = () => {
   const [areaNameMap, setAreaNameMap] = useState<Map<string, string>>(
     new Map()
   );
+  // เพิ่ม state สำหรับ filters
+  const [filters, setFilters] = useState<VMSVehicleFilters>({});
 
   const permissions = useSelector(
     (state: RootState) => state.common?.permission
@@ -80,6 +93,81 @@ const VMSVehicle = () => {
 
     loadMappingData();
   }, []);
+
+  // Filter data based on filters
+  const filteredData = useMemo(() => {
+    if (!tableData || tableData.length === 0) return [];
+
+    let filtered = [...tableData];
+
+    // Search by license plate or note
+    if (filters.searchText && filters.searchText.trim()) {
+      const searchTerm = filters.searchText.toLowerCase();
+      filtered = filtered.filter(
+        (item) =>
+          item.license_plate?.toLowerCase().includes(searchTerm) ||
+          item.note?.toLowerCase().includes(searchTerm)
+      );
+    }
+
+    // Filter by vehicle type
+    if (filters.vehicleType) {
+      filtered = filtered.filter(
+        (item) => item.vehicle_type === filters.vehicleType
+      );
+    }
+
+    // Filter by vehicle color
+    if (filters.vehicleColor) {
+      filtered = filtered.filter(
+        (item) => item.vehicle_color === filters.vehicleColor
+      );
+    }
+
+    // Filter by tier
+    if (filters.tier) {
+      filtered = filtered.filter((item) => item.tier === filters.tier);
+    }
+
+    // Filter by province
+    if (filters.province) {
+      filtered = filtered.filter((item) => item.area_code === filters.province);
+    }
+
+    // Filter by status
+    if (filters.status) {
+      const now = dayjs();
+      if (filters.status === "active") {
+        filtered = filtered.filter((item) =>
+          dayjs(item.expire_time).isAfter(now)
+        );
+      } else if (filters.status === "expired") {
+        filtered = filtered.filter((item) =>
+          dayjs(item.expire_time).isBefore(now)
+        );
+      }
+    }
+
+    // Filter by date range
+    if (filters.dateRange && filters.dateRange.length === 2) {
+      const [startDate, endDate] = filters.dateRange;
+      filtered = filtered.filter((item) => {
+        const itemDate = dayjs(item.start_time);
+        return (
+          itemDate.isAfter(startDate.startOf("day")) &&
+          itemDate.isBefore(endDate.endOf("day"))
+        );
+      });
+    }
+
+    return filtered;
+  }, [tableData, filters]);
+
+  // Update pagination config for filtered data
+  const filteredPaginationConfig = {
+    ...PaginationConfig,
+    total: filteredData.length,
+  };
 
   // Helper functions
   const getHouseAddress = (houseId: string): string => {
@@ -125,6 +213,29 @@ const VMSVehicle = () => {
     }
   };
 
+  // เพิ่มฟังก์ชันสำหรับ vehicle type และ color
+  const getVehicleTypeColor = (vehicleType: string): string => {
+    switch (vehicleType?.toLowerCase()) {
+      case "motorcycle":
+        return "orange";
+      case "car":
+        return "blue";
+      default:
+        return "default";
+    }
+  };
+
+  const getVehicleTypeLabel = (vehicleType: string): string => {
+    switch (vehicleType?.toLowerCase()) {
+      case "motorcycle":
+        return "🏍️ มอเตอร์ไซค์";
+      case "car":
+        return "🚗 รถยนต์";
+      default:
+        return vehicleType || "-";
+    }
+  };
+
   // Functions
   const onCreate = () => {
     setEditData(null);
@@ -162,7 +273,13 @@ const VMSVehicle = () => {
     setEditData(null);
   };
 
-  // Table Columns
+  // Handle filters change
+  const handleFiltersChange = (newFilters: VMSVehicleFilters) => {
+    console.log("🔍 Filters changed:", newFilters);
+    setFilters(newFilters);
+  };
+
+  // Table Columns (same as before)
   const columns: ColumnsType<VehicleRecord> = [
     {
       title: "License Plate",
@@ -180,6 +297,83 @@ const VMSVehicle = () => {
         </div>
       ),
     },
+    // เพิ่มคอลัมน์ Vehicle Type
+    {
+      title: "Vehicle Type",
+      key: "vehicle_type",
+      dataIndex: "vehicle_type",
+      align: "center",
+      width: "10%",
+      render: (vehicle_type) => (
+        <Tag
+          color={getVehicleTypeColor(vehicle_type)}
+          style={{ fontSize: "11px" }}>
+          {getVehicleTypeLabel(vehicle_type)}
+        </Tag>
+      ),
+      filters: [
+        { text: "🚗 รถยนต์", value: "car" },
+        { text: "🏍️ มอเตอร์ไซค์", value: "motorcycle" },
+      ],
+      onFilter: (value: any, record) => record.vehicle_type === value,
+    },
+    // เพิ่มคอลัมน์ Vehicle Color
+    {
+      title: "Color",
+      key: "vehicle_color",
+      dataIndex: "vehicle_color",
+      align: "center",
+      width: "8%",
+      render: (vehicle_color) => {
+        if (!vehicle_color) return "-";
+
+        const colorMap: Record<
+          string,
+          { bg: string; text: string; label: string }
+        > = {
+          white: { bg: "#ffffff", text: "#000000", label: "ขาว" },
+          black: { bg: "#000000", text: "#ffffff", label: "ดำ" },
+          silver: { bg: "#c0c0c0", text: "#000000", label: "เงิน" },
+          gray: { bg: "#808080", text: "#ffffff", label: "เทา" },
+          red: { bg: "#ff0000", text: "#ffffff", label: "แดง" },
+          blue: { bg: "#0000ff", text: "#ffffff", label: "น้ำเงิน" },
+          green: { bg: "#008000", text: "#ffffff", label: "เขียว" },
+          yellow: { bg: "#ffff00", text: "#000000", label: "เหลือง" },
+          orange: { bg: "#ffa500", text: "#000000", label: "ส้ม" },
+          purple: { bg: "#800080", text: "#ffffff", label: "ม่วง" },
+          brown: { bg: "#a52a2a", text: "#ffffff", label: "น้ำตาล" },
+          gold: { bg: "#ffd700", text: "#000000", label: "ทอง" },
+          other: { bg: "#f0f0f0", text: "#000000", label: "อื่นๆ" },
+        };
+
+        const colorInfo = colorMap[vehicle_color] || colorMap.other;
+
+        return (
+          <div
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+              fontSize: "11px",
+            }}>
+            <div
+              style={{
+                width: "16px",
+                height: "16px",
+                borderRadius: "50%",
+                backgroundColor: colorInfo.bg,
+                border:
+                  vehicle_color === "white" ? "1px solid #d9d9d9" : "none",
+                boxShadow: "0 1px 2px rgba(0,0,0,0.1)",
+              }}
+            />
+            <span style={{ fontSize: "11px", color: "#666" }}>
+              {colorInfo.label}
+            </span>
+          </div>
+        );
+      },
+    },
     {
       title: "จังหวัด",
       key: "area_code",
@@ -193,8 +387,7 @@ const VMSVehicle = () => {
         return (
           <Tooltip
             title={`จังหวัด: ${provinceName}\nรหัส: ${area_code || "th-11"}`}
-            placement="top"
-          >
+            placement="top">
             <Tag
               color={isOriginalCode ? "default" : "blue"}
               className="province-tag-table"
@@ -205,8 +398,7 @@ const VMSVehicle = () => {
                 textOverflow: "ellipsis",
                 whiteSpace: "nowrap",
                 cursor: "pointer",
-              }}
-            >
+              }}>
               {provinceName}
             </Tag>
           </Tooltip>
@@ -226,8 +418,7 @@ const VMSVehicle = () => {
         return (
           <Tooltip
             title={`Address: ${address}\nHouse ID: ${house_id}`}
-            placement="top"
-          >
+            placement="top">
             <div
               style={{
                 fontWeight: isOriginalId ? "400" : "600",
@@ -237,8 +428,7 @@ const VMSVehicle = () => {
                 overflow: "hidden",
                 textOverflow: "ellipsis",
                 whiteSpace: "nowrap",
-              }}
-            >
+              }}>
               {address}
             </div>
           </Tooltip>
@@ -263,15 +453,13 @@ const VMSVehicle = () => {
                     .join(", ")}`
                 : "No authorized areas"
             }
-            placement="top"
-          >
+            placement="top">
             <div
               style={{
                 fontSize: "12px",
                 color: "#1890ff",
                 fontWeight: "500",
-              }}
-            >
+              }}>
               {displayText}
             </div>
           </Tooltip>
@@ -369,19 +557,14 @@ const VMSVehicle = () => {
     },
   ];
 
-  // Table change handler
+  // Table change handler - ใช้ filtered data
   const onChangeTable: TableProps<VehicleRecord>["onChange"] = async (
     pagination: any,
     _filters: any,
     sorter: any
   ) => {
-    const page = pagination?.current || currentPage;
-    const pageSize = pagination?.pageSize || perPage;
-
-    await dispatch.vehicle.getVehicleList({
-      page,
-      perPage: pageSize,
-    });
+    // สำหรับ client-side filtering ไม่ต้องเรียก API ใหม่
+    console.log("Table pagination changed:", pagination);
   };
 
   // Effects
@@ -400,12 +583,38 @@ const VMSVehicle = () => {
         <Header title="VMS Vehicles" />
       </div>
 
-      {/* Stats Cards */}
-      <VMSVehicleStatsCards data={tableData} loading={loading} />
+      {/* Stats Cards - ใช้ filtered data */}
+      <VMSVehicleStatsCards data={filteredData} loading={loading} />
+
+      {/* Filter Bar */}
+      <VMSVehicleFilterBar
+        onFiltersChange={handleFiltersChange}
+        loading={loading}
+        data={tableData}
+      />
 
       <div className="userManagementTopActionGroup">
         <div className="userManagementTopActionLeftGroup">
-          {/* Search and filters can be added here */}
+          {/* แสดงจำนวนผลลัพธ์ที่กรองแล้ว */}
+          {Object.keys(filters).length > 0 && (
+            <div
+              style={{
+                fontSize: "14px",
+                color: "#666",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+              }}>
+              <span>
+                Showing {filteredData.length} of {tableData.length} vehicles
+              </span>
+              {filteredData.length !== tableData.length && (
+                <Tag color="blue" style={{ fontSize: "11px" }}>
+                  Filtered
+                </Tag>
+              )}
+            </div>
+          )}
         </div>
         <div className="userManagementTopActionRightGroup">
           <Button
@@ -413,17 +622,17 @@ const VMSVehicle = () => {
             icon={<PlusOutlined />}
             onClick={onCreate}
             className="userManagementExportBtn"
-            disabled={!access("vms", "create")}
-          >
+            disabled={!access("vms", "create")}>
             Add New
           </Button>
         </div>
       </div>
 
+      {/* ใช้ filtered data แทน tableData */}
       <VMSVehicleTable
         columns={columns}
-        data={tableData}
-        PaginationConfig={PaginationConfig}
+        data={filteredData}
+        PaginationConfig={filteredPaginationConfig}
         loading={loading}
         onChangeTable={onChangeTable}
       />

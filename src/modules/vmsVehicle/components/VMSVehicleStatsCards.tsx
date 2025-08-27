@@ -60,6 +60,12 @@ const VMSVehicleStatsCards: React.FC<VMSVehicleStatsCardsProps> = ({
       (item) => item.tier === "invited visitor"
     ).length;
 
+    // เพิ่มสถิติตาม vehicle_type
+    const cars = data.filter((item) => item.vehicle_type === "car").length;
+    const motorcycles = data.filter(
+      (item) => item.vehicle_type === "motorcycle"
+    ).length;
+
     return {
       total,
       active,
@@ -67,6 +73,8 @@ const VMSVehicleStatsCards: React.FC<VMSVehicleStatsCardsProps> = ({
       staff,
       resident,
       visitor,
+      cars,
+      motorcycles,
     };
   };
 
@@ -90,6 +98,19 @@ const VMSVehicleStatsCards: React.FC<VMSVehicleStatsCardsProps> = ({
       value: stats.expired,
       icon: <StopOutlined />,
       color: "#ff4d4f",
+    },
+    // เพิ่มการ์ดสำหรับ vehicle type
+    {
+      title: "Cars",
+      value: stats.cars,
+      icon: <CarOutlined />,
+      color: "#1890ff",
+    },
+    {
+      title: "Motorcycles",
+      value: stats.motorcycles,
+      icon: <CarOutlined />,
+      color: "#ff8c00",
     },
     {
       title: "Staff",
@@ -115,7 +136,7 @@ const VMSVehicleStatsCards: React.FC<VMSVehicleStatsCardsProps> = ({
     <div style={{ marginBottom: 24 }}>
       <Row gutter={[16, 16]}>
         {statsCards.map((card, index) => (
-          <Col xs={12} sm={8} md={6} lg={4} key={index}>
+          <Col xs={12} sm={8} md={6} lg={4} xl={3} key={index}>
             <Card
               loading={loading}
               bordered={false}

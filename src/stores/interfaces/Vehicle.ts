@@ -2,6 +2,8 @@ export interface VehicleRecord {
     id: string;
     license_plate: string;
     area_code: string;
+    vehicle_color?: string; // เพิ่มสี
+    vehicle_type?: string; // เพิ่มประเภท (motorcycle | car)
     authorized_area: string[];
     house_id: string;
     invitation_id: string;
@@ -31,3 +33,11 @@ export interface VehicleType {
     currentPage: number;
     perPage: number;
 }
+
+// เพิ่ม type สำหรับ vehicle type options
+export type VehicleTypeOption = 'motorcycle' | 'car';
+
+export const VEHICLE_TYPE_OPTIONS = [
+    { label: 'รถจักรยานยนต์', value: 'motorcycle' },
+    { label: 'รถยนต์', value: 'car' }
+] as const;

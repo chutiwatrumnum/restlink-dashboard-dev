@@ -2,10 +2,12 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { message } from "antd";
 import axiosVMS from "../../configs/axiosVMS";
 
-// Interface ตาม API spec จาก Postman collection
+// อัพเดต Interface ตาม API spec
 export interface VMSVehiclePayload {
     license_plate: string;
     area_code: string;
+    vehicle_color?: string; // เพิ่มสี
+    vehicle_type?: string; // เพิ่มประเภท
     tier: string;
     start_time: string;
     expire_time: string;
@@ -29,7 +31,7 @@ export const useCreateVMSVehicleMutation = () => {
             console.log('🚗 Creating VMS Vehicle');
             console.log('📥 Payload received:', payload);
 
-            // สร้าง payload ตาม API spec จาก Postman
+            // สร้าง payload ตาม API spec
             const apiPayload: any = {
                 license_plate: payload.license_plate,
                 area_code: payload.area_code,
@@ -39,6 +41,16 @@ export const useCreateVMSVehicleMutation = () => {
                 authorized_area: payload.authorized_area || [],
                 house_id: payload.house_id
             };
+
+            // เพิ่ม vehicle_color ถ้ามี
+            if (payload.vehicle_color && payload.vehicle_color.trim()) {
+                apiPayload.vehicle_color = payload.vehicle_color.trim();
+            }
+
+            // เพิ่ม vehicle_type ถ้ามี
+            if (payload.vehicle_type) {
+                apiPayload.vehicle_type = payload.vehicle_type;
+            }
 
             // เพิ่ม note ถ้ามี
             if (payload.note && payload.note.trim()) {
@@ -103,6 +115,17 @@ export const useUpdateVMSVehicleMutation = () => {
                 house_id: updateData.house_id
             };
 
+            // เพิ่ม vehicle_color ถ้ามี
+            if (updateData.vehicle_color && updateData.vehicle_color.trim()) {
+                apiPayload.vehicle_color = updateData.vehicle_color.trim();
+            }
+
+            // เพิ่ม vehicle_type ถ้ามี
+            if (updateData.vehicle_type) {
+                apiPayload.vehicle_type = updateData.vehicle_type;
+            }
+
+            // เพิ่ม note ถ้ามี
             if (updateData.note && updateData.note.trim()) {
                 apiPayload.note = updateData.note.trim();
             }

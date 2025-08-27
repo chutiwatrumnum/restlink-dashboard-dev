@@ -10,7 +10,10 @@ import {
   useCreateVMSVehicleMutation,
   useUpdateVMSVehicleMutation,
 } from "../../../utils/mutationsGroup/vmsVehicleMutations";
-import { VehicleRecord } from "../../../stores/interfaces/Vehicle";
+import {
+  VehicleRecord,
+  VEHICLE_TYPE_OPTIONS,
+} from "../../../stores/interfaces/Vehicle";
 import {
   getProvinceOptions,
   searchProvinces,
@@ -24,6 +27,23 @@ interface VMSVehicleFormModalProps {
   editData?: VehicleRecord | null;
   refetch: () => void;
 }
+
+// Color options สำหรับรถ
+const COLOR_OPTIONS = [
+  { label: "ขาว", value: "white" },
+  { label: "ดำ", value: "black" },
+  { label: "เงิน", value: "silver" },
+  { label: "เทา", value: "gray" },
+  { label: "แดง", value: "red" },
+  { label: "น้ำเงิน", value: "blue" },
+  { label: "เขียว", value: "green" },
+  { label: "เหลือง", value: "yellow" },
+  { label: "ส้ม", value: "orange" },
+  { label: "ม่วง", value: "purple" },
+  { label: "น้ำตาล", value: "brown" },
+  { label: "ทอง", value: "gold" },
+  { label: "อื่นๆ", value: "other" },
+];
 
 const VMSVehicleFormModal = ({
   isOpen,
@@ -134,6 +154,8 @@ const VMSVehicleFormModal = ({
       form.setFieldsValue({
         license_plate: editData.license_plate,
         area_code: editData.area_code || "th-11",
+        vehicle_color: editData.vehicle_color || "",
+        vehicle_type: editData.vehicle_type || "car",
         house_id: editData.house_id,
         tier: editData.tier || "staff",
         start_time: editData.start_time ? dayjs(editData.start_time) : null,
@@ -148,6 +170,7 @@ const VMSVehicleFormModal = ({
       form.setFieldsValue({
         tier: "staff",
         area_code: "th-11", // default to Samut Prakan
+        vehicle_type: "car", // default to car
       });
     }
   }, [isOpen, editData, form]);
@@ -181,6 +204,8 @@ const VMSVehicleFormModal = ({
         const payload: VMSVehiclePayload = {
           license_plate: values.license_plate,
           area_code: values.area_code || "th-11",
+          vehicle_color: values.vehicle_color || "",
+          vehicle_type: values.vehicle_type || "car",
           house_id: values.house_id,
           tier: values.tier || "staff",
           start_time: values.start_time
@@ -268,6 +293,7 @@ const VMSVehicleFormModal = ({
         initialValues={{
           tier: "staff",
           area_code: "th-11",
+          vehicle_type: "car",
         }}>
         <Row gutter={[24, 16]}>
           {/* Left Column */}
@@ -290,7 +316,7 @@ const VMSVehicleFormModal = ({
                 placeholder="Select province"
                 options={provinceOptions}
                 showSearch
-                filterOption={false} // Use custom search
+                filterOption={false}
                 onSearch={handleProvinceSearch}
                 optionRender={(option) => (
                   <div
@@ -305,7 +331,6 @@ const VMSVehicleFormModal = ({
                     </span>
                   </div>
                 )}
-                // Display province name in selected tag
                 tagRender={(props) => {
                   const { value, onClose } = props;
                   const provinceName = getProvinceName(value);
@@ -343,6 +368,32 @@ const VMSVehicleFormModal = ({
                     <div>No provinces found</div>
                   </div>
                 }
+              />
+            </Form.Item>
+
+            <Form.Item label="Vehicle Color" name="vehicle_color">
+              <Select
+                size="large"
+                placeholder="Select vehicle color"
+                options={COLOR_OPTIONS}
+                allowClear
+                showSearch
+                filterOption={(input, option) =>
+                  (option?.label ?? "")
+                    .toLowerCase()
+                    .includes(input.toLowerCase())
+                }
+              />
+            </Form.Item>
+
+            <Form.Item
+              label="Vehicle Type"
+              name="vehicle_type"
+              rules={requiredRule}>
+              <Select
+                size="large"
+                placeholder="Select vehicle type"
+                options={VEHICLE_TYPE_OPTIONS}
               />
             </Form.Item>
 
