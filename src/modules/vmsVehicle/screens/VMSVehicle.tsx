@@ -18,12 +18,15 @@ import { houseMappingService } from "../../../utils/services/houseMappingService
 import { areaMappingService } from "../../../utils/services/areaMappingService";
 import { getProvinceName } from "../../../utils/constants/thaiProvinces";
 import "../styles/vmsVehicle.css";
+import {
+  getVehicleBrandLabel,
+  getColorDisplayInfo,
+} from "../../../utils/constants/thaiVehicleOptions";
 
-// Import the FilterValues interface from VMSVehicleFilterBar
 interface FilterValues {
   vehicleType?: string;
-  vehicleColor?: string;
-  tier?: string;
+  vehicleBrand?: string; // เพิ่มใหม่
+  vehicleColor?: string; // เปลี่ยนจาก tier
   province?: string;
   status?: string;
   searchText?: string;
@@ -118,16 +121,18 @@ const VMSVehicle = () => {
       );
     }
 
+    // Filter by vehicle brand - ใหม่
+    if (filters.vehicleBrand) {
+      filtered = filtered.filter(
+        (item) => item.vehicle_brand === filters.vehicleBrand
+      );
+    }
+
     // Filter by vehicle color
     if (filters.vehicleColor) {
       filtered = filtered.filter(
         (item) => item.vehicle_color === filters.vehicleColor
       );
-    }
-
-    // Filter by tier
-    if (filters.tier) {
-      filtered = filtered.filter((item) => item.tier === filters.tier);
     }
 
     // Filter by province
@@ -309,7 +314,42 @@ const VMSVehicle = () => {
           style={{ fontSize: "11px" }}>
           {getVehicleTypeLabel(vehicle_type)}
         </Tag>
-      )
+      ),
+    },
+    {
+      title: "Brand",
+      key: "vehicle_brand",
+      dataIndex: "vehicle_brand",
+      align: "center",
+      width: "10%",
+      render: (vehicle_brand) => {
+        if (!vehicle_brand) return "-";
+
+        const brandLabel = getVehicleBrandLabel(vehicle_brand);
+
+        return (
+          <div
+            style={{
+              fontSize: "12px",
+              color: "#1890ff",
+              fontWeight: "500",
+              maxWidth: "80px",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+            title={brandLabel}>
+            {brandLabel}
+          </div>
+        );
+      },
+      sorter: {
+        compare: (a, b) => {
+          const brandA = getVehicleBrandLabel(a.vehicle_brand || "");
+          const brandB = getVehicleBrandLabel(b.vehicle_brand || "");
+          return brandA.localeCompare(brandB);
+        },
+      },
     },
     {
       title: "Color",
@@ -320,26 +360,7 @@ const VMSVehicle = () => {
       render: (vehicle_color) => {
         if (!vehicle_color) return "-";
 
-        const colorMap: Record<
-          string,
-          { bg: string; text: string; label: string }
-        > = {
-          white: { bg: "#ffffff", text: "#000000", label: "ขาว" },
-          black: { bg: "#000000", text: "#ffffff", label: "ดำ" },
-          silver: { bg: "#c0c0c0", text: "#000000", label: "เงิน" },
-          gray: { bg: "#808080", text: "#ffffff", label: "เทา" },
-          red: { bg: "#ff0000", text: "#ffffff", label: "แดง" },
-          blue: { bg: "#0000ff", text: "#ffffff", label: "น้ำเงิน" },
-          green: { bg: "#008000", text: "#ffffff", label: "เขียว" },
-          yellow: { bg: "#ffff00", text: "#000000", label: "เหลือง" },
-          orange: { bg: "#ffa500", text: "#000000", label: "ส้ม" },
-          purple: { bg: "#800080", text: "#ffffff", label: "ม่วง" },
-          brown: { bg: "#a52a2a", text: "#ffffff", label: "น้ำตาล" },
-          gold: { bg: "#ffd700", text: "#000000", label: "ทอง" },
-          other: { bg: "#f0f0f0", text: "#000000", label: "อื่นๆ" },
-        };
-
-        const colorInfo = colorMap[vehicle_color] || colorMap.other;
+        const colorInfo = getColorDisplayInfo(vehicle_color);
 
         return (
           <div
@@ -365,6 +386,13 @@ const VMSVehicle = () => {
             </span>
           </div>
         );
+      },
+      sorter: {
+        compare: (a, b) => {
+          const colorA = a.vehicle_color || "";
+          const colorB = b.vehicle_color || "";
+          return colorA.localeCompare(colorB);
+        },
       },
     },
     {
@@ -449,7 +477,6 @@ const VMSVehicle = () => {
             placement="top">
             <div
               style={{
-                fontSize: "12px",
                 color: "#1890ff",
                 fontWeight: "500",
               }}>

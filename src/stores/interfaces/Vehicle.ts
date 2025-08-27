@@ -2,7 +2,8 @@ export interface VehicleRecord {
     id: string;
     license_plate: string;
     area_code: string;
-    vehicle_color?: string; // เพิ่มสี
+    vehicle_color?: string;
+    vehicle_brand?: string; // เพิ่มใหม่
     vehicle_type?: string; // เพิ่มประเภท (motorcycle | car)
     authorized_area: string[];
     house_id: string;

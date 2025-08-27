@@ -8,6 +8,7 @@ export interface VMSVehiclePayload {
     area_code: string;
     vehicle_color?: string; // เพิ่มสี
     vehicle_type?: string; // เพิ่มประเภท
+    vehicle_brand?: string;
     tier: string;
     start_time: string;
     expire_time: string;
@@ -45,6 +46,11 @@ export const useCreateVMSVehicleMutation = () => {
             // เพิ่ม vehicle_color ถ้ามี
             if (payload.vehicle_color && payload.vehicle_color.trim()) {
                 apiPayload.vehicle_color = payload.vehicle_color.trim();
+            }
+
+            // เพิ่ม vehicle_brand ถ้ามี
+            if (payload.vehicle_brand && payload.vehicle_brand.trim()) {
+                apiPayload.vehicle_brand = payload.vehicle_brand.trim();
             }
 
             // เพิ่ม vehicle_type ถ้ามี
@@ -118,6 +124,11 @@ export const useUpdateVMSVehicleMutation = () => {
             // เพิ่ม vehicle_color ถ้ามี
             if (updateData.vehicle_color && updateData.vehicle_color.trim()) {
                 apiPayload.vehicle_color = updateData.vehicle_color.trim();
+            }
+
+            // เพิ่ม vehicle_brand ถ้ามี
+            if (updateData.vehicle_brand && updateData.vehicle_brand.trim()) {
+                apiPayload.vehicle_brand = updateData.vehicle_brand.trim();
             }
 
             // เพิ่ม vehicle_type ถ้ามี

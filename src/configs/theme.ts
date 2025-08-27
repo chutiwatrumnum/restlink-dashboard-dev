@@ -54,7 +54,7 @@ export const theme: object = {
     colorText: "#3F3F3F",
     colorInfo: "#3F3F3F",
     colorLink: "#3F3F3F",
-    fontFamily: "Kanit",
+    fontFamily: "Sarabun",
   },
 };
 

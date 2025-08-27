@@ -19,6 +19,13 @@ import {
   searchProvinces,
   getProvinceName,
 } from "../../../utils/constants/thaiProvinces";
+import {
+  VEHICLE_COLOR_OPTIONS,
+  VEHICLE_BRAND_OPTIONS,
+  getVehicleColorOptions,
+  getVehicleBrandOptions,
+  searchVehicleBrands,
+} from "../../../utils/constants/thaiVehicleOptions";
 import dayjs from "dayjs";
 
 interface VMSVehicleFormModalProps {
@@ -27,23 +34,6 @@ interface VMSVehicleFormModalProps {
   editData?: VehicleRecord | null;
   refetch: () => void;
 }
-
-// Color options สำหรับรถ
-const COLOR_OPTIONS = [
-  { label: "ขาว", value: "white" },
-  { label: "ดำ", value: "black" },
-  { label: "เงิน", value: "silver" },
-  { label: "เทา", value: "gray" },
-  { label: "แดง", value: "red" },
-  { label: "น้ำเงิน", value: "blue" },
-  { label: "เขียว", value: "green" },
-  { label: "เหลือง", value: "yellow" },
-  { label: "ส้ม", value: "orange" },
-  { label: "ม่วง", value: "purple" },
-  { label: "น้ำตาล", value: "brown" },
-  { label: "ทอง", value: "gold" },
-  { label: "อื่นๆ", value: "other" },
-];
 
 const VMSVehicleFormModal = ({
   isOpen,
@@ -64,6 +54,12 @@ const VMSVehicleFormModal = ({
   const [provinceOptions, setProvinceOptions] = useState<
     { label: string; value: string; name: string; code: string }[]
   >([]);
+  const [brandOptions, setBrandOptions] = useState<
+    { label: string; value: string }[]
+  >([]);
+  const [colorOptions, setColorOptions] = useState<
+    { label: string; value: string }[]
+  >([]);
   const [loadingData, setLoadingData] = useState(false);
 
   // Get data from state
@@ -81,11 +77,21 @@ const VMSVehicleFormModal = ({
   const isEditing = !!editData;
   const isLoading = createMutation.isPending || updateMutation.isPending;
 
-  // Load province options
+  // Load options
   useEffect(() => {
-    console.log("📍 Loading Thai provinces...");
+    console.log("📍 Loading vehicle options...");
+
+    // Load provinces
     const provinces = getProvinceOptions();
     setProvinceOptions(provinces);
+
+    // Load vehicle brands
+    const brands = getVehicleBrandOptions();
+    setBrandOptions(brands);
+
+    // Load vehicle colors
+    const colors = getVehicleColorOptions();
+    setColorOptions(colors);
   }, []);
 
   // Load data when modal opens
@@ -155,6 +161,7 @@ const VMSVehicleFormModal = ({
         license_plate: editData.license_plate,
         area_code: editData.area_code || "th-11",
         vehicle_color: editData.vehicle_color || "",
+        vehicle_brand: editData.vehicle_brand || "", // เพิ่มใหม่
         vehicle_type: editData.vehicle_type || "car",
         house_id: editData.house_id,
         tier: editData.tier || "staff",
@@ -191,6 +198,16 @@ const VMSVehicleFormModal = ({
     }
   };
 
+  // Function for searching brands
+  const handleBrandSearch = (searchText: string) => {
+    if (!searchText) {
+      setBrandOptions(getVehicleBrandOptions());
+    } else {
+      const filtered = searchVehicleBrands(searchText);
+      setBrandOptions(filtered);
+    }
+  };
+
   const handleSubmit = useCallback(
     async (values: any) => {
       if (isLoading) {
@@ -205,6 +222,7 @@ const VMSVehicleFormModal = ({
           license_plate: values.license_plate,
           area_code: values.area_code || "th-11",
           vehicle_color: values.vehicle_color || "",
+          vehicle_brand: values.vehicle_brand || "", // เพิ่มใหม่
           vehicle_type: values.vehicle_type || "car",
           house_id: values.house_id,
           tier: values.tier || "staff",
@@ -261,7 +279,7 @@ const VMSVehicleFormModal = ({
       onCancel={handleCancel}
       centered
       width="90%"
-      style={{ maxWidth: 800 }}
+      style={{ maxWidth: 900 }}
       footer={[
         <div key="footer" style={{ textAlign: "right" }}>
           <SmallButton
@@ -371,11 +389,29 @@ const VMSVehicleFormModal = ({
               />
             </Form.Item>
 
+            <Form.Item label="Vehicle Brand" name="vehicle_brand">
+              <Select
+                size="large"
+                placeholder="Select vehicle brand"
+                options={brandOptions}
+                allowClear
+                showSearch
+                filterOption={false}
+                onSearch={handleBrandSearch}
+                notFoundContent={
+                  <div style={{ textAlign: "center", padding: "20px" }}>
+                    <div style={{ marginBottom: "8px" }}>🚗</div>
+                    <div>No brands found</div>
+                  </div>
+                }
+              />
+            </Form.Item>
+
             <Form.Item label="Vehicle Color" name="vehicle_color">
               <Select
                 size="large"
                 placeholder="Select vehicle color"
-                options={COLOR_OPTIONS}
+                options={colorOptions}
                 allowClear
                 showSearch
                 filterOption={(input, option) =>
@@ -388,8 +424,7 @@ const VMSVehicleFormModal = ({
 
             <Form.Item
               label="Vehicle Type"
-              name="vehicle_type"
-              rules={requiredRule}>
+              name="vehicle_type">
               <Select
                 size="large"
                 placeholder="Select vehicle type"
