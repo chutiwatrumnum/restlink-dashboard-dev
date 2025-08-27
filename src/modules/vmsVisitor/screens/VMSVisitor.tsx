@@ -184,42 +184,42 @@ const VMSVisitor = () => {
         </Tag>
       ),
     },
-    {
-      title: "ID Card No.",
-      key: "id_card_number",
-      width: "12%",
-      align: "center",
-      render: (_, record) => {
-        // ถ้า id_card เป็นรูป ให้แสดงเฉพาะเลขบัตร (ถ้ามี field แยก)
-        // หรือแสดงข้อความว่ามีรูป ID Card
-        const idCardNumber = record.id_card_number || record.id_card;
+    // {
+    //   title: "ID Card No.",
+    //   key: "id_card_number",
+    //   width: "12%",
+    //   align: "center",
+    //   render: (_, record) => {
+    //     // ถ้า id_card เป็นรูป ให้แสดงเฉพาะเลขบัตร (ถ้ามี field แยก)
+    //     // หรือแสดงข้อความว่ามีรูป ID Card
+    //     const idCardNumber = record.id_card_number || record.id_card;
 
-        if (idCardNumber && !idCardNumber.includes(".")) {
-          // ถ้าเป็นเลขบัตร (ไม่ใช่ชื่อไฟล์)
-          return (
-            <div
-              style={{
-                fontFamily: "monospace",
-                fontSize: "12px",
-                color: "#666",
-              }}>
-              {idCardNumber}
-            </div>
-          );
-        }
+    //     if (idCardNumber && !idCardNumber.includes(".")) {
+    //       // ถ้าเป็นเลขบัตร (ไม่ใช่ชื่อไฟล์)
+    //       return (
+    //         <div
+    //           style={{
+    //             fontFamily: "monospace",
+    //             fontSize: "12px",
+    //             color: "#666",
+    //           }}>
+    //           {idCardNumber}
+    //         </div>
+    //       );
+    //     }
 
-        // ถ้าเป็นไฟล์รูป
-        if (getIDCardImageUrl(record)) {
-          return (
-            <Tag color="blue" style={{ fontSize: "10px" }}>
-              Image Available
-            </Tag>
-          );
-        }
+    //     // ถ้าเป็นไฟล์รูป
+    //     if (getIDCardImageUrl(record)) {
+    //       return (
+    //         <Tag color="blue" style={{ fontSize: "10px" }}>
+    //           Image Available
+    //         </Tag>
+    //       );
+    //     }
 
-        return "-";
-      },
-    },
+    //     return "-";
+    //   },
+    // },
     {
       title: "House Address",
       key: "house_id",
@@ -311,37 +311,37 @@ const VMSVisitor = () => {
         );
       },
     },
-    {
-      title: "Code",
-      key: "code",
-      dataIndex: "code",
-      align: "center",
-      width: "12%",
-      render: (code) => {
-        if (!code) return "-";
+    // {
+    //   title: "Code",
+    //   key: "code",
+    //   dataIndex: "code",
+    //   align: "center",
+    //   width: "12%",
+    //   render: (code) => {
+    //     if (!code) return "-";
 
-        const displayCode =
-          code.length > 12 ? `${code.substring(0, 12)}...` : code;
+    //     const displayCode =
+    //       code.length > 12 ? `${code.substring(0, 12)}...` : code;
 
-        return (
-          <Tooltip title={code} placement="top">
-            <div
-              style={{
-                fontFamily: "monospace",
-                fontSize: "11px",
-                color: "#666",
-                maxWidth: "100px",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-                cursor: "pointer",
-              }}>
-              {displayCode}
-            </div>
-          </Tooltip>
-        );
-      },
-    },
+    //     return (
+    //       <Tooltip title={code} placement="top">
+    //         <div
+    //           style={{
+    //             fontFamily: "monospace",
+    //             fontSize: "11px",
+    //             color: "#666",
+    //             maxWidth: "100px",
+    //             overflow: "hidden",
+    //             textOverflow: "ellipsis",
+    //             whiteSpace: "nowrap",
+    //             cursor: "pointer",
+    //           }}>
+    //           {displayCode}
+    //         </div>
+    //       </Tooltip>
+    //     );
+    //   },
+    // },
     {
       title: "Note",
       key: "note",
