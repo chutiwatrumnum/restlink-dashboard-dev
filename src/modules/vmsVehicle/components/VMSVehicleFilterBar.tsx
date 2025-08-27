@@ -1,5 +1,5 @@
 import React from "react";
-import { Row, Col, Select, Input, DatePicker, Button, Space } from "antd";
+import { Row, Col, Select, Input, DatePicker, Button } from "antd";
 import {
   SearchOutlined,
   ClearOutlined,
@@ -12,7 +12,6 @@ const { RangePicker } = DatePicker;
 
 interface FilterValues {
   vehicleType?: string;
-  vehicleColor?: string;
   tier?: string;
   province?: string;
   status?: string;
@@ -29,23 +28,6 @@ interface VMSVehicleFiltersProps {
 const VEHICLE_TYPE_OPTIONS = [
   { label: "🚗 รถยนต์", value: "car" },
   { label: "🏍️ มอเตอร์ไซค์", value: "motorcycle" },
-];
-
-// Color Options
-const COLOR_OPTIONS = [
-  { label: "ขาว", value: "white" },
-  { label: "ดำ", value: "black" },
-  { label: "เงิน", value: "silver" },
-  { label: "เทา", value: "gray" },
-  { label: "แดง", value: "red" },
-  { label: "น้ำเงิน", value: "blue" },
-  { label: "เขียว", value: "green" },
-  { label: "เหลือง", value: "yellow" },
-  { label: "ส้ม", value: "orange" },
-  { label: "ม่วง", value: "purple" },
-  { label: "น้ำตาล", value: "brown" },
-  { label: "ทอง", value: "gold" },
-  { label: "อื่นๆ", value: "other" },
 ];
 
 // Tier Options
@@ -105,25 +87,24 @@ const VMSVehicleFilters: React.FC<VMSVehicleFiltersProps> = ({
   const provinceOptions = getProvinceOptions();
 
   return (
-    <div className="vms-vehicle-filters">
+    <div className="vms-vehicle-filters" style={{ marginBottom: 24 }}>
       <Row gutter={[16, 16]} align="middle">
         {/* Date Range Filter */}
-        <Col xs={24} sm={12} md={6} lg={4}>
-          <div className="filter-date-range">
-            <RangePicker
-              value={filters.dateRange}
-              onChange={handleDateRangeChange}
-              format="DD/MM/YYYY"
-              placeholder={["Start Date", "End Date"]}
-              disabled={loading}
-              className="modern-date-picker"
-              suffixIcon={<CalendarOutlined className="date-picker-icon" />}
-            />
-          </div>
+        <Col xs={24} sm={8} md={5} lg={4} xl={4}>
+          <RangePicker
+            value={filters.dateRange}
+            onChange={handleDateRangeChange}
+            format="DD/MM/YYYY"
+            placeholder={["Start Date", "End Date"]}
+            disabled={loading}
+            className="modern-date-picker"
+            suffixIcon={<CalendarOutlined className="date-picker-icon" />}
+            style={{ width: "100%" }}
+          />
         </Col>
 
         {/* Search Input */}
-        <Col xs={24} sm={12} md={8} lg={6}>
+        <Col xs={24} sm={8} md={6} lg={5} xl={4}>
           <div className="filter-search-wrapper">
             <Input
               className="modern-search-input"
@@ -147,7 +128,7 @@ const VMSVehicleFilters: React.FC<VMSVehicleFiltersProps> = ({
         </Col>
 
         {/* Vehicle Type Filter */}
-        <Col xs={24} sm={12} md={5} lg={4}>
+        <Col xs={12} sm={6} md={4} lg={3} xl={4}>
           <Select
             placeholder="Filter by Vehicle Type"
             value={filters.vehicleType}
@@ -156,28 +137,12 @@ const VMSVehicleFilters: React.FC<VMSVehicleFiltersProps> = ({
             disabled={loading}
             className="modern-select"
             options={VEHICLE_TYPE_OPTIONS}
-          />
-        </Col>
-
-        {/* Vehicle Color Filter */}
-        <Col xs={24} sm={12} md={5} lg={4}>
-          <Select
-            placeholder="Filter by Color"
-            value={filters.vehicleColor}
-            onChange={(value) => handleFilterChange("vehicleColor", value)}
-            allowClear
-            disabled={loading}
-            className="modern-select"
-            options={COLOR_OPTIONS}
-            showSearch
-            filterOption={(input, option) =>
-              (option?.label ?? "").toLowerCase().includes(input.toLowerCase())
-            }
+            style={{ width: "100%" }}
           />
         </Col>
 
         {/* Tier Filter */}
-        <Col xs={24} sm={12} md={4} lg={3}>
+        <Col xs={12} sm={6} md={4} lg={3} xl={3}>
           <Select
             placeholder="Filter by Tier"
             value={filters.tier}
@@ -186,11 +151,12 @@ const VMSVehicleFilters: React.FC<VMSVehicleFiltersProps> = ({
             disabled={loading}
             className="modern-select"
             options={TIER_OPTIONS}
+            style={{ width: "100%" }}
           />
         </Col>
 
         {/* Province Filter */}
-        <Col xs={24} sm={12} md={5} lg={4}>
+        <Col xs={12} sm={6} md={4} lg={3} xl={3}>
           <Select
             placeholder="Filter by Province"
             value={filters.province}
@@ -219,11 +185,12 @@ const VMSVehicleFilters: React.FC<VMSVehicleFiltersProps> = ({
                 </span>
               </div>
             )}
+            style={{ width: "100%" }}
           />
         </Col>
 
         {/* Status Filter */}
-        <Col xs={24} sm={12} md={4} lg={3}>
+        <Col xs={12} sm={6} md={4} lg={3} xl={3}>
           <Select
             placeholder="Filter by Status"
             value={filters.status}
@@ -232,82 +199,23 @@ const VMSVehicleFilters: React.FC<VMSVehicleFiltersProps> = ({
             disabled={loading}
             className="modern-select"
             options={STATUS_OPTIONS}
+            style={{ width: "100%" }}
           />
         </Col>
 
         {/* Clear Button */}
-        <Col xs={24} sm={12} md={3} lg={2}>
+        <Col xs={24} sm={4} md={3} lg={2} xl={3}>
           <Button
             icon={<ClearOutlined />}
             onClick={handleClearFilters}
             disabled={loading}
             className="modern-clear-button"
-            title="Clear all filters">
+            title="Clear all filters"
+            style={{ width: "100%" }}>
             Clear
           </Button>
         </Col>
       </Row>
-
-      {/* Active Filters Display */}
-      {Object.keys(filters).some(
-        (key) => filters[key as keyof FilterValues] !== undefined
-      ) && (
-        <div className="active-filters-container">
-          <div className="active-filters-label">Active Filters:</div>
-          <Space wrap size={[8, 4]}>
-            {searchInput && (
-              <span className="filter-tag filter-tag-search">
-                Search: {searchInput}
-              </span>
-            )}
-            {filters.vehicleType && (
-              <span className="filter-tag filter-tag-type">
-                Type:{" "}
-                {
-                  VEHICLE_TYPE_OPTIONS.find(
-                    (opt) => opt.value === filters.vehicleType
-                  )?.label
-                }
-              </span>
-            )}
-            {filters.vehicleColor && (
-              <span className="filter-tag filter-tag-color">
-                Color:{" "}
-                {
-                  COLOR_OPTIONS.find(
-                    (opt) => opt.value === filters.vehicleColor
-                  )?.label
-                }
-              </span>
-            )}
-            {filters.tier && (
-              <span className="filter-tag filter-tag-tier">
-                Tier: {filters.tier}
-              </span>
-            )}
-            {filters.province && (
-              <span className="filter-tag filter-tag-province">
-                Province:{" "}
-                {
-                  provinceOptions.find((opt) => opt.value === filters.province)
-                    ?.name
-                }
-              </span>
-            )}
-            {filters.status && (
-              <span className="filter-tag filter-tag-status">
-                Status: {filters.status}
-              </span>
-            )}
-            {filters.dateRange && (
-              <span className="filter-tag filter-tag-date">
-                Date: {filters.dateRange[0].format("DD/MM/YY")} -{" "}
-                {filters.dateRange[1].format("DD/MM/YY")}
-              </span>
-            )}
-          </Space>
-        </div>
-      )}
     </div>
   );
 };

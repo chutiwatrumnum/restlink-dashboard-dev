@@ -19,14 +19,15 @@ import { areaMappingService } from "../../../utils/services/areaMappingService";
 import { getProvinceName } from "../../../utils/constants/thaiProvinces";
 import "../styles/vmsVehicle.css";
 
-interface VMSVehicleFilters {
-  searchText?: string;
+// Import the FilterValues interface from VMSVehicleFilterBar
+interface FilterValues {
   vehicleType?: string;
   vehicleColor?: string;
   tier?: string;
   province?: string;
   status?: string;
-  dateRange?: any;
+  searchText?: string;
+  dateRange?: [dayjs.Dayjs, dayjs.Dayjs] | null;
 }
 
 const VMSVehicle = () => {
@@ -49,8 +50,8 @@ const VMSVehicle = () => {
   const [areaNameMap, setAreaNameMap] = useState<Map<string, string>>(
     new Map()
   );
-  // เพิ่ม state สำหรับ filters
-  const [filters, setFilters] = useState<VMSVehicleFilters>({});
+  // Updated filter state to match VMSVehicleFilterBar interface
+  const [filters, setFilters] = useState<FilterValues>({});
 
   const permissions = useSelector(
     (state: RootState) => state.common?.permission
@@ -213,7 +214,6 @@ const VMSVehicle = () => {
     }
   };
 
-  // เพิ่มฟังก์ชันสำหรับ vehicle type และ color
   const getVehicleTypeColor = (vehicleType: string): string => {
     switch (vehicleType?.toLowerCase()) {
       case "motorcycle":
@@ -273,13 +273,13 @@ const VMSVehicle = () => {
     setEditData(null);
   };
 
-  // Handle filters change
-  const handleFiltersChange = (newFilters: VMSVehicleFilters) => {
+  // Handle filters change - Updated to match VMSVehicleFilterBar interface
+  const handleFiltersChange = (newFilters: FilterValues) => {
     console.log("🔍 Filters changed:", newFilters);
     setFilters(newFilters);
   };
 
-  // Table Columns (same as before)
+  // Table Columns
   const columns: ColumnsType<VehicleRecord> = [
     {
       title: "License Plate",
@@ -297,7 +297,6 @@ const VMSVehicle = () => {
         </div>
       ),
     },
-    // เพิ่มคอลัมน์ Vehicle Type
     {
       title: "Vehicle Type",
       key: "vehicle_type",
@@ -317,7 +316,6 @@ const VMSVehicle = () => {
       ],
       onFilter: (value: any, record) => record.vehicle_type === value,
     },
-    // เพิ่มคอลัมน์ Vehicle Color
     {
       title: "Color",
       key: "vehicle_color",
@@ -586,35 +584,12 @@ const VMSVehicle = () => {
       {/* Stats Cards - ใช้ filtered data */}
       <VMSVehicleStatsCards data={filteredData} loading={loading} />
 
-      {/* Filter Bar */}
-      <VMSVehicleFilterBar
-        onFiltersChange={handleFiltersChange}
-        loading={loading}
-        data={tableData}
-      />
+      {/* Filter Bar - Updated to use correct prop name */}
+      <VMSVehicleFilterBar onFilter={handleFiltersChange} loading={loading} />
 
       <div className="userManagementTopActionGroup">
         <div className="userManagementTopActionLeftGroup">
-          {/* แสดงจำนวนผลลัพธ์ที่กรองแล้ว */}
-          {Object.keys(filters).length > 0 && (
-            <div
-              style={{
-                fontSize: "14px",
-                color: "#666",
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-              }}>
-              <span>
-                Showing {filteredData.length} of {tableData.length} vehicles
-              </span>
-              {filteredData.length !== tableData.length && (
-                <Tag color="blue" style={{ fontSize: "11px" }}>
-                  Filtered
-                </Tag>
-              )}
-            </div>
-          )}
+          {/* Left side content removed */}
         </div>
         <div className="userManagementTopActionRightGroup">
           <Button
