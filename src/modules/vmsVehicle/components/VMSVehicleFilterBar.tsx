@@ -179,7 +179,7 @@ const VMSVehicleFilters: React.FC<VMSVehicleFiltersProps> = ({
         {/* Province Filter */}
         <Col xs={12} sm={6} md={4} lg={3} xl={3}>
           <Select
-            placeholder="Province"
+            placeholder="County"
             value={filters.province}
             onChange={(value) => handleFilterChange("province", value)}
             allowClear

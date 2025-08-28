@@ -6,6 +6,7 @@ import {
   postJoinMutation,
 } from "../../utils/mutationsGroup/authMutations";
 import LOGO from "../../assets/images/SignInLogo.png";
+import LOGO_MAIN from "../../assets/images/LogoNexres.png";
 import type { AccessTokenType } from "../../stores/interfaces/Auth";
 import "./styles/signIn.css";
 import { getAuthCode, startGoogleLogin, getIntendedDestination, isOAuthCallback, cleanOAuthUrl } from "../../utils/googleAuth";
@@ -133,7 +134,6 @@ const SignInScreen = () => {
   // Handle email/password login
   const onFinish = async (values: LoginFormData) => {
     setLoading(true);
-    console.log('onFinish')
     try {
       const result = await dispatch.userAuth.loginEffects({
         username: values.username,
@@ -181,7 +181,6 @@ const SignInScreen = () => {
     const errorDescription = urlParams.get('error_description');
     
     if (error) {
-      console.error('OAuth Error:', error, errorDescription);
       callFailedModal(`Google OAuth Error: ${error} - ${errorDescription}`);
       // ทำความสะอาด URL
       cleanOAuthUrl();
@@ -207,11 +206,10 @@ const SignInScreen = () => {
             {/* Logo and Title */}
             <div className="signin-header">
               <div className="logo-container">
-                <img src={LOGO} alt="Logo Brand" className="logo-brand" />
+                <img src={LOGO_MAIN} alt="Logo Brand" className="logo-brand" />
               </div>
-
               <Title level={2} className="signin-title">
-                Login
+                Project Login
               </Title>
             </div>
 
@@ -225,7 +223,7 @@ const SignInScreen = () => {
               onFinishFailed={onFinishFailed}
               autoComplete="off">
               {/* Google Sign In Button */}
-              <Button
+              {/* <Button
                 onClick={handleLogin}
                 type="primary"
                 htmlType="button"
@@ -239,7 +237,7 @@ const SignInScreen = () => {
 
               <div className="signin-divider">
                 <span>Or sign in with email</span>
-              </div>
+              </div> */}
 
               {/* Email Input */}
               <Form.Item
@@ -314,20 +312,14 @@ const SignInScreen = () => {
 
             {/* Main Text */}
             <div className="main-text">
-              <img src={LOGO} alt="Logo Brand" className="logo-brand" />
+              <img src={LOGO} alt="Logo Brand" className="logo-brand-left" />
             </div>
           </div>
         </Col>
       </Row>
 
-      <SignUpModal
-        onOk={onSignUpOk}
-        onClose={() => {}}
-      />
-      <ConfirmDetailModal
-        onOk={onJoinConfirm}
-        onClose={() => {}}
-      />
+      <SignUpModal onOk={onSignUpOk} onClose={() => {}} />
+      <ConfirmDetailModal onOk={onJoinConfirm} onClose={() => {}} />
     </div>
   );
 };

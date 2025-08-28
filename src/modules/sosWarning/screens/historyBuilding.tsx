@@ -26,10 +26,18 @@ import type { TabsProps } from "antd";
 import { useDispatch } from "react-redux";
 import { Dispatch } from "../../../stores";
 import { useNavigate } from "react-router-dom";
+import { usePermission } from "../../../utils/hooks/usePermission";
+import { useSelector } from "react-redux";
+import { RootState } from "../../../stores";
+
 const HistoryBuilding = () => {
     const dispatch = useDispatch<Dispatch>();
     const navigate = useNavigate();
     const { curPage, perPage, pageSizeOptions, setCurPage, setPerPage } = usePagination();
+
+    const permissions = useSelector(
+        (state: RootState) => state.common?.permission
+      );
 
     const [eventStore, setEventStore] = useState<any[]>([])
     const [curentPage, setCurentPage] = useState<number>(1)
@@ -69,7 +77,7 @@ const HistoryBuilding = () => {
         ...pageSizeOptions,
     });
     
-
+    const { access } = usePermission(permissions);
 
     const loadFilter = async(dataFilter:any)=>{
         let filterObject ={
@@ -196,6 +204,11 @@ const HistoryBuilding = () => {
 
     const changeTab = (key: string) => {
         setStep(key)
+        setCurPage(1)
+        setPaginationConfig((prev) => ({
+            ...prev,
+            current: 1,
+        }))
     }
 
     // ฟังก์ชันสำหรับ search
@@ -423,7 +436,7 @@ const HistoryBuilding = () => {
 
     const columns: ColumnsType<any> = [
         {
-            title: "step work",
+            title: "สเต็ปงาน",
             dataIndex: "stepWork",
             align: "center",
             width: 120,
@@ -431,14 +444,19 @@ const HistoryBuilding = () => {
                 <Row>
                   <Col span={24} className="!flex !justify-center !items-center !mb-0">
                     <img src={IconStep} 
-                    onClick={()=>handleReceiveCast(record)}
-                    alt="IconStep" className="cursor-pointer" />
+                    onClick={()=>{
+                        if(access('sos_security', 'edit')){
+                            handleReceiveCast(record)
+                        }
+                    }}
+                    alt="IconStep" className={` 
+                    ${!access('sos_security', 'edit') ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`} />
                   </Col>
                 </Row>
             ),
         },
         {
-          title: "No",
+          title: "ลำดับ",
           dataIndex: "key",
           align: "center",
           width: 120,
@@ -459,14 +477,14 @@ const HistoryBuilding = () => {
           },
         },    
         {
-          title: "Address",
+          title: "บ้านเลขที่",
           dataIndex: "Address",
           align: "center",
           width: 200,
-          ...getColumnSearchProps("Address", "Address"),
+          ...getColumnSearchProps("Address", "บ้านเลขที่"),
         },
         {
-          title: "Report Time",
+          title: "เวลาแจ้งเหตุ",
           dataIndex: "ReportTime",
           align: "center",
           width: 180,
@@ -484,7 +502,7 @@ const HistoryBuilding = () => {
           ),
         },
         {
-          title: "Receive Time",
+          title: "เวลารับเคส",
           dataIndex: "ReceiveTime",
           align: "center",
           width: 180,
@@ -502,7 +520,7 @@ const HistoryBuilding = () => {
           ),
         },
         {
-          title: "Event Type",
+          title: "ประเภทเหตุการณ์",
           dataIndex: "EventType",
           align: "center",
           width: 180,
@@ -519,30 +537,30 @@ const HistoryBuilding = () => {
             ),
         },
         {
-          title: "Name Owner",
+          title: "ชื่อเจ้าของบ้าน",
           align: "center",
           dataIndex: "NameOwner",
           width: 200,
-          ...getColumnSearchProps("NameOwner", "Name Owner"),
+          ...getColumnSearchProps("NameOwner", "ชื่อเจ้าของบ้าน"),
         },
         {
-          title: "Name Staff",
+          title: "ชือเจ้าหน้าที่ รปภ.",
           align: "center",
           dataIndex: "NameStaff",
-          width: 150,
-          ...getColumnSearchProps("NameStaff", "Name Staff"),
+          width: 180,
+          ...getColumnSearchProps("NameStaff", "ชือเจ้าหน้าที่ รปภ."),
         },
 
         {
-            title: "Contract Staff",
+            title: "เบอร์โทรศัพท์",
             align: "center",
             dataIndex: "ContractStaff",
             width: 180,
-            ...getColumnSearchProps("ContractStaff", "Contract Staff"),
+            ...getColumnSearchProps("ContractStaff", "เบอร์โทรศัพท์"),
           },
 
         {
-            title: "Event Step",
+            title: "รายงานเหตุการณ์",
             align: "center",
             dataIndex: "EventStep",
             width: 150,
@@ -560,7 +578,7 @@ const HistoryBuilding = () => {
     
     
     return (
-        <div>
+        <div>            
             <div className="flex justify-between items-center !mb-5">
                 <Header title="History Building" className="!mb-0" />
             </div>

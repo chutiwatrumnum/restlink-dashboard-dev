@@ -16,7 +16,6 @@ export const ListMember = ({ member, count, idMarker, setIsModalOpen }: ListMemb
         }
         let res = await readIssueEmergency(data)
         if (res.status) {
-            console.log(res,'res-test')
             let eventId = res.result.eventId
             let dataComplete = {
                 eventId: eventId

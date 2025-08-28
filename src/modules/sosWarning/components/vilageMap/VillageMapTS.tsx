@@ -9,6 +9,10 @@ import SuccessModal from "../../../../components/common/SuccessModal";
 import FailedModal from "../../../../components/common/FailedModal";
 import undoIcon from "../../../../assets/icons/undo.svg";
 import fullScreenIcon from "../../../../assets/icons/fullScreen.png";
+import { usePermission } from "../../../../utils/hooks/usePermission";
+import { useSelector } from "react-redux";
+import { RootState } from "../../../../stores";
+import { message } from "antd";
 // import { ModalFormUpdate } from "../ModalFormUplodateImagePlan";
 
 // TypeScript Types and Interfaces
@@ -252,8 +256,12 @@ const VillageMap: React.FC<VillageMapProps> = ({
   villageMapUpdateTelRef, villageMapConfirmRef, villageMapRefreshRef, mapMode = 'work-it', 
   onMarkerDeleted, onZoneCreated, onZoneEdited, onZoneEditStarted, 
   onNewMarkerCreated, onUploadImage, onAlertMarkersChange, 
-  markersFullOpacity = false, setDataMapAll, setDataEmergency, setUnitHover, setUnitClick, onActiveMarkerChange }) => {
-  
+  markersFullOpacity = false, setDataMapAll, setDataEmergency, setUnitHover, 
+  setUnitClick, onActiveMarkerChange }) => {
+    const permissions = useSelector(
+        (state: RootState) => state.common?.permission
+      );
+    const { access } = usePermission(permissions);
   // เพิ่มฟังก์ชันสำหรับการล็อค/ปลดล็อค marker
   // ฟังก์ชันสำหรับ unlock markers ทั้งหมด
   const unlockAllMarkers = () => {
@@ -281,6 +289,7 @@ const VillageMap: React.FC<VillageMapProps> = ({
     const targetMarker = markers.find(m => m.id === markerId);
     const willBeLocked = targetMarker ? !targetMarker.isLocked : false;
     
+    // อัพเดทสถานะ locked ของ marker
     setMarkers(prevMarkers =>
       prevMarkers.map(marker =>
         marker.id === markerId
@@ -291,20 +300,83 @@ const VillageMap: React.FC<VillageMapProps> = ({
     
     // ถ้าเป็น marker ที่กำลัง active อยู่และจะถูก lock
     if (clickedMarker && clickedMarker.id === markerId && willBeLocked) {
+      // รีเซ็ตตำแหน่ง marker กลับไปตำแหน่งก่อนเริ่มลาก (ถ้ายังไม่ confirm)
+      let resetX = targetMarker ? targetMarker.x : 0;
+      let resetY = targetMarker ? targetMarker.y : 0;
+      if (originalMarkerBeforeEdit && originalMarkerBeforeEdit.id === markerId) {
+        resetX = originalMarkerBeforeEdit.x;
+        resetY = originalMarkerBeforeEdit.y;
+      } else if (targetMarker) {
+        resetX = targetMarker.originalX ?? targetMarker.x;
+        resetY = targetMarker.originalY ?? targetMarker.y;
+      }
+
+      setMarkers(prevMarkers => 
+        prevMarkers.map(marker => 
+          marker.id === markerId 
+            ? { ...marker, x: resetX, y: resetY, isLocked: true } 
+            : marker
+        )
+      );
+
       // ยกเลิกการ active marker
       setClickedMarker(null);
       setHasActiveMarker(false);
-      
-      // Unlock markers ทั้งหมดเมื่อยกเลิก active marker
-      unlockAllMarkers();
-      
+
       // ส่งสัญญาณไปยัง parent component ว่ายกเลิกการเลือก marker
       if (onMarkerSelect) {
         onMarkerSelect(null);
       }
+
+      // แจ้ง parent component ว่าไม่มี active marker
+      if (onActiveMarkerChange) {
+        onActiveMarkerChange(false);
+      }
+
+      return;
     } 
     else if (!willBeLocked && targetMarker) {
       // ถ้าเป็นการปลดล็อค (unlock) ให้ active marker ตัวนั้นทันที
+      
+      // ถ้ามี marker active อยู่และเป็นตัวอื่น ให้ reset ตำแหน่งก่อน
+      if (clickedMarker && clickedMarker.id !== markerId) {
+        console.log('🔄 Unlocking different marker, resetting previous marker');
+        
+        // ใช้ originalMarkerBeforeEdit เพื่อ reset กลับไปยังตำแหน่งก่อนเริ่มลาก
+        if (originalMarkerBeforeEdit && originalMarkerBeforeEdit.id === clickedMarker.id) {
+          console.log('🔄 Found originalMarkerBeforeEdit for previous marker (toggle)');
+          console.log('🔄 Reset to position:', originalMarkerBeforeEdit.x, originalMarkerBeforeEdit.y);
+          
+          // reset marker กลับไปยังตำแหน่งก่อนเริ่มลาก
+          setMarkers(prevMarkers =>
+            prevMarkers.map(m => 
+              m.id === clickedMarker.id 
+                ? { ...m, x: originalMarkerBeforeEdit.x, y: originalMarkerBeforeEdit.y }
+                : m
+            )
+          );
+        } else {
+          console.log('🔄 No originalMarkerBeforeEdit found for previous marker (toggle), using fallback');
+          
+          // fallback: ใช้ originalX/Y
+          const previousMarker = markers.find(m => m.id === clickedMarker.id);
+          if (previousMarker) {
+            const hasBeenMoved = previousMarker.x !== previousMarker.originalX || previousMarker.y !== previousMarker.originalY;
+            
+            if (hasBeenMoved) {
+              console.log('🔄 Fallback (toggle): resetting to originalX/Y:', previousMarker.originalX, previousMarker.originalY);
+              setMarkers(prevMarkers =>
+                prevMarkers.map(m => 
+                  m.id === clickedMarker.id 
+                    ? { ...m, x: m.originalX, y: m.originalY }
+                    : m
+                )
+              );
+            }
+          }
+        }
+      }
+      
       const unlockedMarker = { ...targetMarker, isLocked: false };
       
       // ตั้งให้เป็น active marker (เฉพาะในโหมด work-it)
@@ -843,7 +915,7 @@ const VillageMap: React.FC<VillageMapProps> = ({
   }, [markers, onAlertMarkersChange]);
 
   // ฟังก์ชัน cancel สำหรับคืนค่า marker กลับสู่สภาพเดิม
-  const cancelMarkerEdit = () => {    
+  const cancelMarkerEdit = (options?: { unlockAll?: boolean }) => {    
     // หาข้อมูล marker ที่จะ cancel
     const markerToCancel = clickedMarker || editMarkerData;
     if (!markerToCancel) {
@@ -943,8 +1015,10 @@ const VillageMap: React.FC<VillageMapProps> = ({
     setIsDragging(false);
     setOriginalMarkerPosition(null);
     
-    // Unlock markers ทั้งหมดเมื่อ cancel
-    unlockAllMarkers();
+    // Unlock markers ทั้งหมดเมื่อ cancel (ค่าเริ่มต้น true เว้นแต่ส่ง flag เป็น false)
+    if (!options || options.unlockAll !== false) {
+      unlockAllMarkers();
+    }
     
     // รีเซ็ตสถานะ active marker (รวมกรณี active จาก query string)
     setMarkers(prevMarkers => 
@@ -985,13 +1059,13 @@ const VillageMap: React.FC<VillageMapProps> = ({
       villageMapResetRef.current = (markerId: number | string) => {
         // ถ้าไม่ได้ส่ง markerId มา หรือ markerId เป็น "cancel" ให้ใช้ cancelMarkerEdit
         if (!markerId || markerId === "cancel") {
-          cancelMarkerEdit();
+          cancelMarkerEdit({ unlockAll: false });
           return;
         }
 
         // ถ้ามี clickedMarker และ markerId ตรงกัน ให้ใช้ cancelMarkerEdit แทนการลบ
         if (clickedMarker && (clickedMarker.id === markerId || clickedMarker.id.toString() === markerId.toString())) {
-          cancelMarkerEdit();
+          cancelMarkerEdit({ unlockAll: false });
           return;
         }
 
@@ -2237,6 +2311,10 @@ const VillageMap: React.FC<VillageMapProps> = ({
   // จัดการการคลิกที่ภาพ (สร้าง marker หรือ zone อัตโนมัติ)
   const handleImageClick = async (e: MouseEvent) => {
     // ตรวจสอบโมด - ถ้าเป็น preview ไม่อนุญาตให้วาง marker หรือ zone
+    if(!access('sos_security', 'create')){
+      message.error('You do not have permission to create marker')
+      return;
+    }
     if (mapMode === 'preview') {
       return;
     }
@@ -2273,6 +2351,23 @@ const VillageMap: React.FC<VillageMapProps> = ({
       setHasDragged(false);
       setJustFinishedGroupSelection(false);
       return;
+    }
+
+    // ถ้ามี marker active อยู่ ให้ reset ตำแหน่งก่อนที่จะล้างการเลือก
+    if (clickedMarker) {
+      
+      // ใช้ originalMarkerBeforeEdit เพื่อ reset กลับไปยังตำแหน่งก่อนเริ่มลาก
+      if (originalMarkerBeforeEdit && originalMarkerBeforeEdit.id === clickedMarker.id) {
+        
+        // reset marker กลับไปยังตำแหน่งก่อนเริ่มลาก
+        setMarkers(prevMarkers =>
+          prevMarkers.map(m => 
+            m.id === clickedMarker.id 
+              ? { ...m, x: originalMarkerBeforeEdit.x, y: originalMarkerBeforeEdit.y }
+              : m
+          )
+        );
+      }
     }
 
     // ล้างการเลือก object เดี่ยว
@@ -2393,7 +2488,6 @@ const VillageMap: React.FC<VillageMapProps> = ({
           const zoneName = generateZoneName(detectedAreaType, bounds);
           const pixelInfo = bounds.pixelCount ? ` (${bounds.pixelCount.toLocaleString()} pixels)` : "";
 
-          // console.log(`🏗️ สร้าง Zone: ${zoneName}${pixelInfo} - ประเภท: ${detectedAreaType}`);
 
           // เลือกสีตามลักษณะของพื้นที่ (รองรับพื้นที่เล็กมาก)
           let zoneColor = "blue"; // สีเริ่มต้น
@@ -2803,6 +2897,10 @@ const VillageMap: React.FC<VillageMapProps> = ({
         }
         // เพิ่ม shortcut สำหรับลบ objects ที่เลือก
         if (e.key === "Delete" && (selectedMarkers.length > 0 || selectedZones.length > 0 || clickedMarker || clickedZone)) {
+          if(!access('sos_security', 'delete')){
+            message.error('You do not have permission to delete')
+            return
+          }
           e.preventDefault();
           deleteSelectedObjects();
         }
@@ -4512,11 +4610,6 @@ const VillageMap: React.FC<VillageMapProps> = ({
           // ส่งข้อมูล marker ที่อัปเดตแล้วไปยัง FormVillageLocation หลังจากลากเสร็จ
           const updatedMarker = updatedMarkers.find(m => m.id === draggedMarker.id);
           if (updatedMarker && onMarkerSelect) {
-            console.log('🎯 Sending updated marker after drag:');
-            console.log('  - ID:', updatedMarker.id);
-            console.log('  - Position (x, y):', updatedMarker.x, updatedMarker.y);
-            console.log('  - Original Position (originalX, originalY):', updatedMarker.originalX, updatedMarker.originalY);
-            console.log('  - Full marker object:', updatedMarker);
             // ใช้ setTimeout เพื่อให้ setIsDragging(false) ทำงานก่อน
             setTimeout(() => {
               onMarkerSelect(updatedMarker);
@@ -4808,7 +4901,6 @@ const VillageMap: React.FC<VillageMapProps> = ({
                 }
                 
                 // เลือก marker ใหม่และตั้งค่า filter
-                console.log(marker,'marker-new')
                 setClickedMarker(marker);
                 // ในโหมด preview ไม่ต้องเปลี่ยน hasActiveMarker เพื่อไม่รบกวนการส่งสถานะ
                 if (setUnitClick) {
@@ -4832,15 +4924,41 @@ const VillageMap: React.FC<VillageMapProps> = ({
                 return;
               }
 
-              // ตรวจสอบว่ามี active marker อยู่แล้วหรือไม่ (ป้องกันการ active marker หลายตัว)
+              // ถ้ามี marker active อยู่และเป็นตัวอื่น ให้ reset ตำแหน่งก่อน
               if (hasActiveMarker && clickedMarker && clickedMarker.id !== marker.id) {
-                return;
+                
+                // ทำการ reset marker ก่อนหน้าทันที โดยใช้ข้อมูลจาก clickedMarker ที่มีอยู่
+                
+                // หา marker ก่อนหน้าใน markers array เพื่อเทียบ
+                const previousMarkerInArray = markers.find(m => m.id === clickedMarker.id);
+                if (previousMarkerInArray) {
+                  
+                  // ตรวจสอบว่า marker ถูกลากจากตำแหน่งเดิมหรือไม่
+                  const hasBeenMoved = previousMarkerInArray.x !== previousMarkerInArray.originalX || previousMarkerInArray.y !== previousMarkerInArray.originalY;
+                  
+                  if (hasBeenMoved) {
+                    
+                    // reset marker ใช้ originalX/Y ของตัวเอง
+                    setMarkers(prevMarkers =>
+                      prevMarkers.map(m => 
+                        m.id === clickedMarker.id 
+                          ? { ...m, x: m.originalX, y: m.originalY }
+                          : m
+                      )
+                    );
+                  }
+                }
+                
+                // ตอนนี้ให้ผ่านไปยัง active marker ใหม่ได้ แทนที่จะ return
+                // ไม่ return เพื่อให้สามารถ active marker ใหม่ได้
               }
             
             // ถ้าไม่ได้กำลังลาก ให้เลือก marker นี้ (เฉพาะโหมด work-it)
             if (!isDragging && !hasDragged) {
-              // เก็บข้อมูลเดิมของ marker ก่อนการแก้ไข
+              
+              // เก็บข้อมูลเดิมของ marker ใหม่ที่กำลังจะ active
               setOriginalMarkerBeforeEdit({ ...marker });
+              
               
               setClickedMarker(marker);
               setClickedZone(null);
@@ -4878,10 +4996,8 @@ const VillageMap: React.FC<VillageMapProps> = ({
                     setMarkers(currentMarkers => {
                       const latestMarker = currentMarkers.find(m => m.id === marker.id);
                       if (latestMarker) {
-                        console.log('🎯 Sending latest marker from current state:', latestMarker);
                         onMarkerSelect(latestMarker, false); // ส่งข้อมูล marker ล่าสุดจาก state
                       } else {
-                        console.log('⚠️ Marker not found in state, sending original:', marker);
                         onMarkerSelect(marker, false); // fallback
                       }
                       return currentMarkers; // ไม่เปลี่ยนแปลง state
@@ -5104,7 +5220,11 @@ const VillageMap: React.FC<VillageMapProps> = ({
               {/* <div> { JSON.stringify(displayMarker) } </div> */}
                               <div className="flex space-x-1 mt-1 gap-2">
                   <button 
-                    className="text-blue-300 text-xs hover:text-white hover:cursor-pointer transition-colors"
+                    disabled={!access('sos_security', 'edit')}
+                    className={`text-blue-300 text-xs hover:text-white 
+                    hover:cursor-pointer transition-colors
+                    ${!access('sos_security', 'edit') ? 'opacity-50' : ''}`}
+                    
                     title={displayMarker.isLocked ? "ปลดล็อค Marker" : "ล็อค Marker"}
                     onMouseDown={(e) => {
                       e.preventDefault();
@@ -5122,7 +5242,19 @@ const VillageMap: React.FC<VillageMapProps> = ({
                     {displayMarker.isLocked ? "🔒" : "🔓"}
                   </button>
                   <button 
-                    className="text-blue-300 text-xs hover:text-white hover:cursor-pointer transition-colors"
+                      disabled={
+                        !access('sos_security', 'delete') && 
+                        !access('sos_security', 'edit')
+                      }
+                      className={`text-blue-300 text-xs hover:text-white 
+                      hover:cursor-pointer transition-colors
+                      ${
+                        !access('sos_security', 'delete') && 
+                        !access('sos_security', 'edit')
+                        ? 'opacity-50'
+                        : ''
+                      }
+                      `}
                     title="รีเซ็ตตำแหน่ง Marker"
                     onMouseDown={(e) => {
                       e.preventDefault();
@@ -5131,7 +5263,8 @@ const VillageMap: React.FC<VillageMapProps> = ({
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
-                      cancelMarkerEdit();
+                      // ไม่ปลดล็อก marker อื่นเมื่อกดปุ่มรีเซ็ตจาก tooltip
+                      cancelMarkerEdit({ unlockAll: false });
                     }}
                     onDragStart={(e) => {
                       e.preventDefault();
@@ -5140,7 +5273,14 @@ const VillageMap: React.FC<VillageMapProps> = ({
                     🔄
                   </button>
                   <button 
-                    className="text-red-300 text-xs hover:text-red-100 hover:cursor-pointer transition-colors"
+
+                    disabled={
+                      !access('sos_security', 'delete')
+                    }
+                    className={`text-red-300 text-xs hover:text-red-100 
+                    hover:cursor-pointer transition-colors
+                    ${!access('sos_security', 'delete') ? 'opacity-50' : ''}
+                    `}
                     title="ลบ Marker"
                     onMouseDown={(e) => {
                       e.preventDefault();

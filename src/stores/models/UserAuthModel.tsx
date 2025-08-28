@@ -110,11 +110,8 @@ export const userAuth = createModel<RootModel>()({
               if (projectData.roleName) {
                 encryptStorage.setItem("roleName", projectData.roleName);
               }
-
               // อัพเดท state
               dispatch.userAuth.updateVmsState(vmsData);
-
-              console.log("VMS Data saved:", vmsData);
             }
           }
         } catch (error) {

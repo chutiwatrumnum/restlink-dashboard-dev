@@ -12,14 +12,10 @@ const ChooseContractPerson = ({ statusContract, setStatusContract }: { statusCon
         let eventId = dataEmergencyDetail.sosEventInfo.id
         let data = await chooseContractOfficer(eventId,obj)
         if(data.status){
-
-
-
             setStatusContract("callOfficer")
         }
     };
     const helpOptions = useMemo(() => {
-        console.log(dataEmergencyDetail,'dataEmergencyDetail')
         let choices = dataEmergencyDetail?.sosEventHelpProtocol[1]?.choices || []
         if(choices){
             return choices.map((item:any) => {

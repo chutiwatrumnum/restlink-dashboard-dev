@@ -6,11 +6,10 @@ import { getVillageData } from "../service/api/SOSwarning";
 import { CondoProvider } from "../contexts/Condo";
 import Building from "./buildingCondo/Building";
 import { useGlobal } from "../contexts/Global";
-let BuildingCondo = () => {
+let BuildingCondo = ({ onDataFloorChange }: { onDataFloorChange?: (dataFloor: any) => void }) => {
     const [dataBuilding,setDataBuilding] = useState<any>(null);
     const { dataEmergency } = useGlobal();
     useEffect(()=>{
-        console.log(dataEmergency,'dataEmergency-condo')
         let getDataBuilding = async () => {
             let data = await getVillageData();
             if(data.status){
@@ -86,7 +85,7 @@ let BuildingCondo = () => {
     },[dataEmergency])
     return (
         <CondoProvider dataBuilding={dataBuilding}>
-            <Building></Building>
+            <Building onDataFloorChange={onDataFloorChange}></Building>
         </CondoProvider>
     )
 }

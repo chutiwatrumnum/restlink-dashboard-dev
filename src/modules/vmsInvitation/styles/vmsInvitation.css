@@ -264,11 +264,7 @@
 }
 
 /* Code column styling */
-.vms-invitation-table .ant-table-tbody > tr > td:nth-child(2) {
-  font-family: 'Courier New', monospace;
-  font-size: 11px;
-  color: #666;
-}
+
 
 /* House Address column styling */
 .vms-invitation-table .ant-table-tbody > tr > td:nth-child(3) {
@@ -584,7 +580,6 @@
 }
 
 .invitation-code-display {
-  font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
   font-size: 11px;
   background: #e9ecef;
   padding: 4px 8px;

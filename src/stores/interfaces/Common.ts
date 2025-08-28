@@ -53,6 +53,7 @@ export type PermissionNameCode =
   | "fixing_report_chat"
   | "fixing_report"
   | "facility"
+  | "sos_security"
   | "events"
   | "document_home"
   | "contact_list"

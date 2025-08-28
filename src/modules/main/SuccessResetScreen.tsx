@@ -1,6 +1,6 @@
 import { Col, Typography } from "antd";
 
-import LOGO from "../../assets/images/Reslink-Logo.png";
+import LOGO from "../../assets/images/LogoNexres.png";
 
 import "./styles/successResetScreen.css";
 

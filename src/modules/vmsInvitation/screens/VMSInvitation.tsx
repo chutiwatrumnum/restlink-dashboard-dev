@@ -381,18 +381,7 @@ const VMSInvitation = () => {
             }
             placement="top"
           >
-            <div
-              style={{
-                fontWeight: isOriginalId ? "400" : "600",
-                color: isOriginalId ? "#666" : "#1890ff",
-                fontSize: isOriginalId ? "11px" : "13px",
-                cursor: "pointer",
-                maxWidth: "120px",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-              }}
-            >
+            <div>
               {address}
             </div>
           </Tooltip>
@@ -410,7 +399,7 @@ const VMSInvitation = () => {
         const mappedPlates = vehicleLicensePlates.get(record.id);
 
         if (displayText === "-") {
-          return <div style={{ fontSize: "12px", color: "#999" }}>-</div>;
+          return <div>-</div>;
         }
 
         return (
@@ -426,7 +415,6 @@ const VMSInvitation = () => {
           >
             <div
               style={{
-                fontSize: "12px",
                 color: "#1890ff",
                 fontWeight: "500",
               }}
@@ -535,7 +523,7 @@ const VMSInvitation = () => {
       align: "center",
       width: "8%",
       render: (stamper) => (
-        <div style={{ fontSize: "12px" }}>{stamper || "-"}</div>
+        <div>{stamper || "-"}</div>
       ),
     },
     {

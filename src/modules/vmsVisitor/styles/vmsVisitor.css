@@ -182,7 +182,6 @@
 
 /* ID column styling */
 .vms-visitor-table .id-card-number-cell {
-  font-family: 'Courier New', monospace;
   font-size: 11px;
   color: #666;
   background: rgba(0, 0, 0, 0.02);
@@ -192,7 +191,6 @@
 
 /* Code column styling */
 .vms-visitor-table .code-cell {
-  font-family: 'Courier New', monospace;
   font-size: 11px;
   color: #666;
   background: rgba(0, 0, 0, 0.02);
@@ -222,7 +220,6 @@
 
 /* House ID fallback styling */
 .vms-visitor-table .house-id-fallback {
-  font-family: 'Courier New', monospace;
   font-size: 11px;
   color: #666;
   background: rgba(0, 0, 0, 0.02);
@@ -407,7 +404,6 @@
 .vms-visitor-table .id-card-number-cell:empty::after {
   content: "-";
   color: #bfbfbf;
-  font-family: inherit;
 }
 
 /* Error handling for broken images */

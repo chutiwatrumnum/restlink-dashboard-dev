@@ -328,10 +328,10 @@ const VMSVehicleFormModal = ({
               />
             </Form.Item>
 
-            <Form.Item label="Province" name="area_code" rules={requiredRule}>
+            <Form.Item label="County" name="area_code" rules={requiredRule}>
               <Select
                 size="large"
-                placeholder="Select province"
+                placeholder="Select county"
                 options={provinceOptions}
                 showSearch
                 filterOption={false}
@@ -422,9 +422,7 @@ const VMSVehicleFormModal = ({
               />
             </Form.Item>
 
-            <Form.Item
-              label="Vehicle Type"
-              name="vehicle_type">
+            <Form.Item label="Vehicle Type" name="vehicle_type">
               <Select
                 size="large"
                 placeholder="Select vehicle type"

@@ -297,7 +297,7 @@ const VMSVehicle = () => {
           (a.license_plate || "").localeCompare(b.license_plate || ""),
       },
       render: (license_plate) => (
-        <div style={{ fontWeight: "600", color: "#1890ff" }}>
+        <div style={{ fontWeight: "600"}}>
           {license_plate || "-"}
         </div>
       ),
@@ -311,7 +311,7 @@ const VMSVehicle = () => {
       render: (vehicle_type) => (
         <Tag
           color={getVehicleTypeColor(vehicle_type)}
-          style={{ fontSize: "11px" }}>
+          style={{ fontSize: "15px" }}>
           {getVehicleTypeLabel(vehicle_type)}
         </Tag>
       ),
@@ -330,10 +330,6 @@ const VMSVehicle = () => {
         return (
           <div
             style={{
-              fontSize: "12px",
-              color: "#1890ff",
-              fontWeight: "500",
-              maxWidth: "80px",
               overflow: "hidden",
               textOverflow: "ellipsis",
               whiteSpace: "nowrap",
@@ -396,7 +392,7 @@ const VMSVehicle = () => {
       },
     },
     {
-      title: "จังหวัด",
+      title: "County",
       key: "area_code",
       dataIndex: "area_code",
       align: "center",
@@ -407,19 +403,11 @@ const VMSVehicle = () => {
 
         return (
           <Tooltip
-            title={`จังหวัด: ${provinceName}\nรหัส: ${area_code || "th-11"}`}
+            title={`County: ${provinceName}\ code : ${area_code || "th-11"}`}
             placement="top">
             <Tag
               color={isOriginalCode ? "default" : "blue"}
-              className="province-tag-table"
-              style={{
-                fontSize: "11px",
-                maxWidth: "100px",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-                cursor: "pointer",
-              }}>
+              className="province-tag-table">
               {provinceName}
             </Tag>
           </Tooltip>
@@ -442,9 +430,6 @@ const VMSVehicle = () => {
             placement="top">
             <div
               style={{
-                fontWeight: isOriginalId ? "400" : "600",
-                color: isOriginalId ? "#666" : "#1890ff",
-                fontSize: isOriginalId ? "11px" : "13px",
                 maxWidth: "120px",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
@@ -475,11 +460,7 @@ const VMSVehicle = () => {
                 : "No authorized areas"
             }
             placement="top">
-            <div
-              style={{
-                color: "#1890ff",
-                fontWeight: "500",
-              }}>
+            <div>
               {displayText}
             </div>
           </Tooltip>

@@ -99,7 +99,9 @@ const AlertSOS = ({isAuth}:any) => {
           dispatch.sosWarning.setDataEmergency(data.events);
         }
         if(conditionEmergency) {
-          notify();
+          if(data.action == 'OPEN_EMERGENCY'){
+            notify();
+          }
           setTimeout(() => {
             setShowToast(true);
           }, 500);

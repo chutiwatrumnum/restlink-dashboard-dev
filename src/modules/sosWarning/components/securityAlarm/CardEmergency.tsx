@@ -108,9 +108,9 @@ const CardEmergency = () => {
                 {/* Main Content - Row Layout */}
                 <Row gutter={[16, 16]} className="flex-1">
                     {/* Left Column - Household Members List + Action Steps */}
-                    <Col xs={24} lg={16} className="flex">
+                    <Col xs={24} lg={16} className="flex !pe-0">
                         <div className="bg-white rounded-lg flex-1 min-h-[400px] lg:h-[calc(100vh-220px)] flex flex-col overflow-hidden">
-                            <Row className="!h-full flex-1">
+                            <Row className="!h-full flex-1 !py-4">
                                 {/* Household Members List */}
                                 <Col
                                     xs={24}
@@ -145,7 +145,7 @@ const CardEmergency = () => {
                     </Col>
 
                     {/* Right Column - Door Sensors */}
-                    <Col xs={24} lg={8} className="flex">
+                    <Col xs={24} lg={8} className="flex !ps-0">
                         <div className=" h-full bg-white rounded-lg flex-1 min-h-[400px] lg:h-[calc(100vh-220px)] overflow-hidden">
                             <DeviceList doorSensors={doorSensors} />
                         </div>

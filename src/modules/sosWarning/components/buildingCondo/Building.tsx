@@ -30,7 +30,7 @@ interface Building {
 // คอมโพเนนต์ไอคอนสัญญาณเตือนภัยพร้อมแอนิเมชัน
 
 
-const Building = () => {
+const Building = ({ onDataFloorChange }: { onDataFloorChange?: (dataFloor: any) => void }) => {
     const projectData = useSelector((state: RootState) => state.setupProject.projectData);
     const { dataBuilding } = useCondo();
     const { loadFirst } = useGlobal();
@@ -58,8 +58,12 @@ const Building = () => {
             ...dataFloor,
             buildingName: building.name
         }
-        // dispatch.sosWarning.setDataFloor(objFloor);
+        dispatch.sosWarning.setDataFloor(objFloor);
         loadFirst(dataFloor.floorId.toString(),buildingDisplay);
+        // แจ้ง parent เพื่ออัปเดต Topbar ผ่าน ref
+        if (onDataFloorChange) {
+            onDataFloorChange(objFloor);
+        }
     }
 
     const buildingDisplay = useMemo(() => {

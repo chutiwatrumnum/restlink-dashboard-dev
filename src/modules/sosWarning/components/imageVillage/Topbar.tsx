@@ -29,21 +29,21 @@ const Topbar = ({ projectName, mode = 'preview', onModeChange, dataMapAll, dataF
   }, [projectData]);
   
   const displayBasement = useMemo(() => {
-    const dataFloor = dataFloorRef?.current || {};
-    if (!dataFloor || Object.keys(dataFloor).length === 0) return '-';
-    if (dataFloor.numberOfFloor < 0) {
-      return `B-${dataFloor.floorName}`;
-    } else if (dataFloor.numberOfFloor === 0) {
+    const current = dataFloorRef?.current || {};
+    if (!current || Object.keys(current).length === 0) return '-';
+    if (current.numberOfFloor < 0) {
+      return `B-${current.floorName}`;
+    } else if (current.numberOfFloor === 0) {
       return "-";
     } else {
-      return dataFloor.floorName;
+      return current.floorName;
     }
-  }, [dataFloorRef?.current]);
+  }, [dataFloorRef?.current?.floorName, dataFloorRef?.current?.numberOfFloor]);
 
   const buildingName = useMemo(() => {
-    const dataFloor = dataFloorRef?.current || {};
-    return dataFloor?.buildingName || '-';
-  }, [dataFloorRef?.current]);
+    const current = dataFloorRef?.current || {};
+    return current?.buildingName || '-';
+  }, [dataFloorRef?.current?.buildingName]);
 
 
   return (

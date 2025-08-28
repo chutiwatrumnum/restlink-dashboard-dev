@@ -13,7 +13,7 @@ import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import type { FormInstance } from "antd/es/form";
 import { ResetPasswordPayloadType } from "../../stores/interfaces/User";
 
-import LOGO from "../../assets/images/Reslink-Logo.png";
+import LOGO from "../../assets/images/LogoNexres.png";
 
 import "./styles/forgotPassword.css";
 

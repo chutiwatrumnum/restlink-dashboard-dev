@@ -119,8 +119,7 @@ const VMSLogPassage = () => {
         <div
           style={{
             fontWeight: "600",
-            color: "#1890ff",
-            fontFamily: "monospace",
+            color: "#000",
           }}>
           {license_plate || "-"}
         </div>
@@ -184,18 +183,7 @@ const VMSLogPassage = () => {
           <Tooltip
             title={`Address: ${address}\nHouse ID: ${house_id}`}
             placement="top">
-            <div
-              style={{
-                fontSize: isOriginalId ? "11px" : "12px",
-                color: isOriginalId ? "#666" : "#1890ff",
-                fontWeight: isOriginalId ? "400" : "600",
-                fontFamily: isOriginalId ? "monospace" : "inherit",
-                maxWidth: "120px",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-                cursor: "pointer",
-              }}>
+            <div>
               {address}
             </div>
           </Tooltip>
@@ -250,9 +238,6 @@ const VMSLogPassage = () => {
           <Tooltip title={note} placement="top">
             <div
               style={{
-                fontSize: "12px",
-                color: "#666",
-                maxWidth: "150px",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
                 whiteSpace: "nowrap",

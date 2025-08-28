@@ -35,7 +35,6 @@
 
 /* License Plate column styling */
 .vms-log-passage-table .ant-table-tbody > tr > td:first-child {
-  font-family: 'Courier New', monospace;
   font-size: 13px;
   font-weight: 600;
 }
@@ -122,7 +121,6 @@
 /* ID column styling */
 .vms-log-access-table .id-cell,
 .vms-log-passage-table .id-cell {
-  font-family: 'Courier New', monospace;
   font-size: 11px;
   color: #666;
 }
@@ -229,7 +227,6 @@
   border-radius: 4px;
   padding: 4px 8px;
   font-weight: 600;
-  font-family: 'Courier New', monospace;
   color: #1890ff;
 }
 
@@ -255,7 +252,6 @@
 
 /* House ID fallback styling (when address not found) */
 .vms-log-passage-table .house-id-fallback {
-  font-family: 'Courier New', monospace;
   font-size: 11px;
   color: #666;
   background: rgba(0, 0, 0, 0.02);

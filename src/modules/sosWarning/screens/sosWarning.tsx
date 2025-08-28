@@ -20,6 +20,7 @@ import { useSelector } from "react-redux";
 import { RootState, store } from "../../../stores/";
 import { GlobalProvider } from "../contexts/Global";
 import { useDispatch } from "react-redux";
+import { usePermission } from "../../../utils/hooks/usePermission";
 // import { toast } from 'react-toastify';
 import Topbar from "../components/imageVillage/Topbar";
 import { isEqual } from 'lodash';
@@ -29,6 +30,15 @@ const SOSWarning = () => {
   const dispatch = useDispatch();
   const { projectData } = useSelector((state: RootState) => state.setupProject, isEqual);
   const { dataEmergencyDetail } = useSelector((state: RootState) => state.sosWarning, isEqual);
+
+  const permissions = useSelector(
+    (state: RootState) => state.common?.permission
+  );
+  const { access } = usePermission(permissions);
+
+
+
+
   // const count = useSelector((state: RootState) => state.sosWarning.count);
   // ใช้ useRef เพื่อป้องกัน loadFirst ทำงานซ้ำ
   const hasLoadedFirst = useRef(false);
@@ -176,6 +186,11 @@ const SOSWarning = () => {
     return dataEmergency
   }, [TypeProject, filterEmergencyOnFloor, dataEmergency])
 
+
+  const numberBuilding = useMemo(() => {
+    return buildingPlan?.buildings?.length || 0
+  }, [buildingPlan])
+
   // useEffect เพื่อ refresh map เมื่อ layout เปลี่ยน
   useEffect(() => {
     // ตัดสินใจว่าควรแสดง form ด้านขวาหรือไม่
@@ -200,8 +215,6 @@ const SOSWarning = () => {
     const isReturningFromSecurityAlarm = prevHasEmergencyData && !currentHasEmergencyData;
 
     if (isReturningFromSecurityAlarm && uploadedImage && villageMapRefreshRef.current) {
-      console.log('Refreshing map after returning from SecurityAlarm');
-
       // หน่วงเวลาให้ DOM render เสร็จก่อน
       setTimeout(() => {
         if (villageMapRefreshRef.current) {
@@ -426,7 +439,6 @@ const SOSWarning = () => {
 
   // เพิ่มฟังก์ชันสำหรับจัดการ Confirm marker
   const handleConfirmMarker = useCallback(() => {
-    console.log('handleConfirmMarker')
     if (selectedMarker && villageMapConfirmRef.current) {
       // ส่งข้อมูล marker ที่อัพเดทแล้วจาก form ไปยัง VillageMapTS
       villageMapConfirmRef.current(selectedMarker.id, selectedMarker);
@@ -456,13 +468,9 @@ const SOSWarning = () => {
     setShouldShowWarningSOS(hasAlertMarkers);
   }, [selectedMarker, villageMapResetRef, alertMarkers]);
 
-  const loadFirst = useCallback(async (floorId?: string, buildingDisplay?: any) => {
+  const loadFirst = useCallback(async (floorId?: string) => {
     try {
-      console.log('loadFirst')
-      console.log(dataMapAll, 'dataMapAll')
-      console.log(dataEmergencyDetail, 'dataEmergencyDetail')
       if (Object.keys(dataEmergencyDetail).length > 0) {
-        console.log('return-image')
         setIsLoadingFirst(false);
         return
       }
@@ -473,7 +481,7 @@ const SOSWarning = () => {
       let dataMaster = await getMasterData();
       await setMasterData(dataMaster);
       if (floorId) {
-        await setFloorIdGlobal(floorId || '');
+        await dispatch.sosWarning.setFloorIdGlobal(floorId || '');
       }
       let dataAllMap = await getVillageData(floorId || null);
       let dataEmergency = await getEventPending();
@@ -541,8 +549,6 @@ const SOSWarning = () => {
           return item
         })
         let planImg = dataAllMap?.result?.planImg || dataAllMap?.planImg
-        console.log(dataAllMap, 'dataAllMap')
-        console.log(planImg, 'planImg')
         await setDataMapAll(dataAllMap.result);
         if (planImg) {
           setUploadedImage(dataAllMap.result.planImg);
@@ -557,7 +563,6 @@ const SOSWarning = () => {
   }, [dataMapAll, dataEmergencyDetail, hasDuplicatedBuildings, projectData, floorIdGlobal]);
 
   useEffect(() => {
-    console.log('before loadFirst')
     loadFirst();
   }, []);
 
@@ -589,7 +594,6 @@ const SOSWarning = () => {
       });
 
       newSocket.on("sos", async (data) => {
-        console.log('SOS-socket')
         // อัพเดทข้อมูลทั้งชุดเมื่อได้รับข้อมูลใหม่
         if (data) {
           if (data?.marker?.marker?.length > 0) {
@@ -940,10 +944,18 @@ const SOSWarning = () => {
             <SecurityAlarm />
           </div>
         </div>
+        {/* <div>
+          <Button className="relative" style={{ zIndex: 1000 }} onClick={() => {
+            console.log(buildingPlan, 'buildingPlan')
+          }}>
+            test
+          </Button>
+        </div> */}
         <div
           style={{ display: Object.keys(dataEmergencyDetail).length > 0 ? 'none' : 'block' }}
           className="position-relative" >
           <GlobalProvider
+            dataMapAll={dataMapAll}
             dataAllMap={dataMapAll}
             setDataAllMap={setDataMapAll}
             uploadedImage={uploadedImage}
@@ -959,6 +971,47 @@ const SOSWarning = () => {
           >
             <div className="min-h-screen  relative !bg-white flex flex-col"
               style={{ zIndex: '1' }}>
+              {/* <div>
+                  <Button 
+                  onClick={() => {
+                    console.log(permissions,'permissions')
+                  }}
+                  >
+                    permission
+                  </Button>
+                </div>
+                <div>
+                  <Button onClick={() => {
+                    console.log(permissions,'permissions')
+                     let dataPermission = JSON.parse(JSON.stringify(permissions))
+                     if(dataPermission.length > 0) {
+                      dataPermission[7].allowAdd = true
+                      dataPermission[7].allowView = true
+                      dataPermission[7].allowEdit = false
+                      dataPermission[7].allowDelete = false
+                      dispatch.common.updatePermission(dataPermission)
+                     }
+                  }}>
+                    change permission
+                  </Button>
+
+
+                  <Button onClick={() => {
+                    console.log(permissions,'permissions')
+                     let dataPermission = JSON.parse(JSON.stringify(permissions))
+                     if(dataPermission.length > 0) {
+                      dataPermission[7].allowAdd = true
+                      dataPermission[7].allowView = true
+                      dataPermission[7].allowEdit = true
+                      dataPermission[7].allowDelete = true
+                      dispatch.common.updatePermission(dataPermission)
+                     }
+                  }}>
+                    change permission2
+                  </Button>
+
+                </div> */}
+
 
               <ModalFormUpdate
                 dataSelectPlan={dataSelectPlan}
@@ -1033,13 +1086,15 @@ const SOSWarning = () => {
                     <Header title="Manage Plan" className="!mb-0 !p-0" />
                     {
                       TypeProject === 'condo' && !uploadedImage && (
-                        <Button type="primary" className=" !rounded-xl w-[150px] !h-[38px] !ml-6" 
-                        onClick={() => { 
-                          // console.log('SOS-socket') 
-                          setOpenUploadPlan(true)
-                        }}>
+                        <Button
+                          type="primary"
+                          className=" !rounded-xl w-[150px] !h-[38px] !ml-6"
+                          disabled={!access('sos_security', 'edit')}
+                          onClick={() => {
+                            setOpenUploadPlan(true)
+                          }}>
                           Upload Plan
-                        </Button>   
+                        </Button>
                       )
                     }
                   </div>
@@ -1241,36 +1296,45 @@ const SOSWarning = () => {
                 <div className="flex-1 overflow-hidden" onClick={handleAreaClick}>
                   <div className="h-full">
                     <div ref={imageRef} className="h-full">
-                      {/* <Row className="!h-full">
-              <Col span={24}>
-                <Topbar
-                  projectName={projectName}
-                  mode={currentMapMode}
-                  dataMapAll={dataMapAll}
-                />
-                <BuildingCondo></BuildingCondo>
-              </Col>
-            </Row> */}
+                      {
+                        numberBuilding <= 2 && (
+                          <Row className="!h-full">
+                            <Col span={24}>
+                              <Topbar
+                                projectName={projectName}
+                                mode={currentMapMode}
+                                dataMapAll={dataMapAll}
+                                dataFloorRef={dataFloorRef}
+                              />
+                              <BuildingCondo onDataFloorChange={handleDataFloorChange}></BuildingCondo>
+                            </Col>
+                          </Row>
+                        )
+                      }
 
-                      <Row>
-                        <Col
-                          span={24}
-                          sm={24}
-                          md={24}
-                          lg={24}
-                        >
-                          {buildingPlan && (
-                            <BuildingCondoOld
-                              buildingPlan={buildingPlan}
-                              projectName={projectData?.name || ''}
-                              showWarningCondo={showWarningCondo}
-                              handleCancelCondo={handleCancelCondo}
-                              dataMapAll={dataMapAll}
-                              onDataFloorChange={handleDataFloorChange}
-                            />
-                          )}
-                        </Col>
-                      </Row>
+                      {
+                        numberBuilding > 2 && (
+                          <Row>
+                            <Col
+                              span={24}
+                              sm={24}
+                              md={24}
+                              lg={24}
+                            >
+                              {buildingPlan && (
+                                <BuildingCondoOld
+                                  buildingPlan={buildingPlan}
+                                  projectName={projectData?.name || ''}
+                                  showWarningCondo={showWarningCondo}
+                                  handleCancelCondo={handleCancelCondo}
+                                  dataMapAll={dataMapAll}
+                                  onDataFloorChange={handleDataFloorChange}
+                                />
+                              )}
+                            </Col>
+                          </Row>
+                        )
+                      }
 
                     </div>
                   </div>

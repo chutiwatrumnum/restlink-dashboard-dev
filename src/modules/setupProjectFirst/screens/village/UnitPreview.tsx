@@ -39,7 +39,6 @@ const UploadPlan = () => {
     const handleFinishSetup = async () => {
         try {
             if (!uploadedImage) {
-                console.error('No image to upload');
                 return;
             }
             // Upload file
@@ -50,7 +49,6 @@ const UploadPlan = () => {
             if (dataPlan.status) {
                 idPlan = dataPlan.result.id
             } else {
-                console.error('Upload failed:', dataPlan);
                 FailedModal('Upload plan failed',1500)
                 return 
             }

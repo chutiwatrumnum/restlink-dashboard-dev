@@ -96,7 +96,7 @@ const uploadPlan = async (imgFile: File, onProgressUpdate?: (progressPercent: nu
     try {
         const formData = new FormData();
         formData.append('imgFile', imgFile);
-        const response = await axios.post(`/sos${version}dashboard/upload-plan`, formData, {
+        const response = await axios.post(`/sos${version}plan/dashboard/upload`, formData, {
             headers: {
                 'Content-Type': 'multipart/form-data'
             },
@@ -118,9 +118,44 @@ const uploadPlan = async (imgFile: File, onProgressUpdate?: (progressPercent: nu
     }
 }
 
+
+    
+
+
+    const updatePlanPlural = async (data: any) => {
+        try {
+            const response = await axios.put(`/sos${version}plan/dashboard/img/by-floor`, data);
+            if (response.status === 200 || response.status === 201) {
+                let result = { status: true, ...response.data }
+                return result
+            }
+            else return { status: false, data: null }
+    
+        } catch (error) {
+            console.error(error);
+            return { status: false, data: null }
+        }
+    }
+
+    const updatePlanSingular = async (data: any) => {
+        try {
+            const response = await axios.put(`/sos${version}plan/dashboard/img`, data);
+            if (response.status === 200 || response.status === 201) {
+                let result = { status: true, ...response.data }
+                return result
+            }
+            else return { status: false, data: null }
+        } catch (error) {
+            console.error(error);
+            return { status: false, data: null }
+        }
+    }
+
+
+
 const createVillage = async (data: any) => {
     try {
-        const response = await axios.post(`/sos/dashboard/village`, data);
+        const response = await axios.post(`/sos${version}dashboard/village`, data);
         if (response.status === 200 || response.status === 201) {
             let result = { status: true, ...response.data }
             return result
@@ -384,6 +419,8 @@ export {
     getMasterData,
     getVillageData,
     uploadPlan,
+    updatePlanPlural,
+    updatePlanSingular,
     createVillage,
     createMarker,
     deleteMarker,

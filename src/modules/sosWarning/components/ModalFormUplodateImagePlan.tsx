@@ -8,6 +8,10 @@ import {
 import { WarrantyDetailsType } from "../../../stores/interfaces/Warranty";
 import SuccessModal from "../../../components/common/SuccessModal";
 import Content from "./ModalformUpdatePImagePlan/Context";
+import { updatePlanSingular } from "../service/api/SOSwarning";
+import { useSelector } from "react-redux";
+
+import { useGlobal } from "../contexts/Global";
 
 interface ModalFormUpdateProps {
   isModalOpen: boolean;
@@ -23,20 +27,27 @@ export const ModalFormUploadateImagePlan: React.FC<ModalFormUpdateProps> = ({
   selectedWarranty 
 }) => {
 //   const [isModalOpen, setIsModalOpen] = useState<boolean>(isOpen);
-
+const { dataMapAll ,loadFirst } = useGlobal();
+const floorIdGlobal = useSelector((state:any)=>state.sosWarning.floorIdGlobal)
   useEffect(() => {
     setIsModalOpen(isModalOpen);
   }, [isModalOpen]);
 
  
-  const handleSave = () => {
-    console.log("handleSave");
-    setIsModalOpen(false);
-    SuccessModal("เปลี่ยน Plan สำเร็จ")
+  const handleSave = async (idUploadPlan:string) => {
+    let objUpdate = {
+      "newPlanId": idUploadPlan,
+      "planInfoId": dataMapAll?.planInfoId
+    }
+    let dataUpdatePlan = await updatePlanSingular(objUpdate)
+    if(dataUpdatePlan.status){
+      await loadFirst(floorIdGlobal)
+      setIsModalOpen(false);
+      SuccessModal("เปลี่ยน Plan สำเร็จ")
+    }
   }
 
   const handleCancel = () => {
-    console.log("handleCancel");
     setIsModalOpen(false);
   }
 

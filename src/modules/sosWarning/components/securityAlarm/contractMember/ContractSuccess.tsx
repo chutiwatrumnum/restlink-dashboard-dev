@@ -37,7 +37,7 @@ const ContractSuccess = () => {
                 onClick={handleGoBack}
                 className="w-full !text-white bg-green-500 
                 !rounded-xl
-                text-white rounded-xl py-4 px-6 text-base font-medium 
+                text-white rounded-xl py-3 px-6 text-base font-medium 
                 cursor-pointer transition-colors duration-200 outline-none
                  hover:bg-green-600 active:bg-green-700 font-sarabun"
                 type="button"

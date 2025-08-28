@@ -5,7 +5,7 @@ import { useRef } from "react";
 import { exportComponentAsJPEG } from "react-component-export-image";
 import { ReservedRowListDataType } from "../../../stores/interfaces/Facilities";
 import QR_LOGO from "../../../assets/images/QRLogo.png";
-import LOGO from "../../../assets/images/Reslink-Logo.png";
+import LOGO from "../../../assets/images/LogoNexres.png";
 import SuccessModal from "../../../components/common/SuccessModal";
 import dayjs from "dayjs";
 

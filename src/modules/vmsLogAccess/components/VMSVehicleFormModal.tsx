@@ -284,7 +284,7 @@ const VMSVehicleFormModal = ({
               />
             </Form.Item>
 
-            <Form.Item label="จังหวัด" name="area_code" rules={requiredRule}>
+            <Form.Item label="County" name="area_code" rules={requiredRule}>
               <Select
                 size="large"
                 placeholder="เลือกจังหวัด"

@@ -14,7 +14,6 @@ const SetupProject = () => {
     let projectType = projectData?.projectType?.nameCode || '';
     const strType = projectType.split('_');
     projectType = strType[strType.length - 1];
-    console.log(projectType,'projectType')
     if(projectType === 'village'){
       navigate("/setup-project/upload-plan")
     }

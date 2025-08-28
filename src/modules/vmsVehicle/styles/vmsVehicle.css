@@ -51,7 +51,6 @@
 
 /* License Plate column styling */
 .vms-vehicle-table .ant-table-tbody > tr > td:first-child {
-  font-family: 'Courier New', monospace;
   font-size: 13px;
   font-weight: 600;
 }
@@ -204,7 +203,6 @@
 .vms-vehicle-form-modal .province-option .province-code {
   font-size: 12px;
   color: #8c8c8c;
-  font-family: 'Courier New', monospace;
 }
 
 /* Province tag styling */

@@ -3,6 +3,7 @@ import Officer from "../../../../../assets/images/Officer.png";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../../../../stores";
 import { closeJob } from "../../../service/api/SOSwarning";
+import officerIcon from "../../../../../assets/icons/officerIcon.png";
 const CallOfficerSuccess = ({ statusContract, setStatusContract }: { statusContract: string, setStatusContract: (status: string) => void }) => {
     const dispatch = useDispatch();
     const { dataEmergencyDetail } = useSelector((state: RootState) => state.sosWarning);
@@ -18,7 +19,6 @@ const CallOfficerSuccess = ({ statusContract, setStatusContract }: { statusContr
             dataEventInfo.sosEventInfo.sosCallHistories =  [...dataEmergencyDetail.sosEventInfo.sosCallHistories, {
                 createdAt: new Date().toISOString(),
             }]
-            console.log(dataEventInfo,'dataEventInfo')
             dispatch.sosWarning.setDataEmergencyDetail(dataEventInfo)
             setStatusContract("form")
         }
@@ -37,11 +37,9 @@ const CallOfficerSuccess = ({ statusContract, setStatusContract }: { statusContr
             </p>
 
             {/* Officer Icon */}
-                <div className="w-32 h-32 bg-blue-500 rounded-full flex items-center justify-center ">
-                    <div className="p-15 rounded-full bg-[#4995FF] flex items-center justify-center">
-                        <img src={Officer} alt="Officer" className="w-[96px]" />
-                    </div>
-                </div>
+                {/* <div className="w-32 h-32 bg-blue-500 rounded-full flex items-center justify-center "> */}
+                        <img src={officerIcon} alt="Officer" className="w-[96px]" />
+                {/* </div> */}
             {/* Officer Label */}
             <h2 className="text-xl font-medium text-gray-500 text-center mb-12 font-sarabun !mt-6 !mb-8">
                 Policeman 191

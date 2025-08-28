@@ -3,10 +3,12 @@ import { Button, message } from "antd";
 import { dataAllMap } from "../../../stores/interfaces/SosWarning";
 import { ModalFormMemberHome } from "./acknowledge/ModalFormMemberHome";
 import { useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useGlobal } from "../contexts/Global";
 // import { RootState } from "../../../stores/models";
 import { getSosWarningById, receiveCast } from "../service/api/SOSwarning";
+import { usePermission } from "../../../utils/hooks/usePermission";
+import { RootState } from "../../../stores";
 
 interface AlertMarkers {
     red: any[];
@@ -28,7 +30,11 @@ interface FormWarningSOSProps {
 const FormWarningSOS = ({ dataEmergency, unitHover, unitClick, setDataEmergency, 
     currentMapMode, onClearFilter, dataSelectPlan }: FormWarningSOSProps) => {
     const dispatch = useDispatch();
-    const navigate = useNavigate();
+    const permissions = useSelector(
+        (state: RootState) => state.common?.permission
+      );
+    const { access } = usePermission(permissions);
+    // const navigate = useNavigate();
     const { uploadedImage, setStatusAcknowledge } = useGlobal();
     // เพิ่ม state สำหรับ animation
     const [filteredCards, setFilteredCards] = useState<Set<string>>(new Set());
@@ -351,7 +357,10 @@ const FormWarningSOS = ({ dataEmergency, unitHover, unitClick, setDataEmergency,
                             <div className="text-md  mb-1"><span className="font-medium">Address:</span> {address}</div>
                             <div className="text-md  mb-1"><span className="font-medium">Emergency Contact:</span> {contract}</div>
                             <div className="text-md  mb-3"><span className="font-medium">Time:</span> {time}</div>
-                            <Button type="primary" block
+                            <Button 
+                            type="primary" 
+                            block
+                            disabled={!access('sos_security', 'edit')}
                                 className="rounded bg-[#E74C3C] border-[#E74C3C] hover:bg-[#C0392B] hover:border-[#C0392B]"
                                 onClick={() => handleAcknowledgeEmergency(marker, 'emergency')}>
                                 Acknowledge Emergency
@@ -434,6 +443,7 @@ const FormWarningSOS = ({ dataEmergency, unitHover, unitClick, setDataEmergency,
                             <div className="text-md mb-1"><span className="font-medium">Emergency Contact:</span> {contract}</div>
                             <div className="text-md mb-3"><span className="font-medium">Time:</span> {time}</div>
                             <Button type="primary" block
+                            disabled={!access('sos_security', 'edit')}
                                 className="rounded bg-[#E74C3C] border-[#E74C3C] hover:bg-[#C0392B] hover:border-[#C0392B]"
                                 onClick={() => handleAcknowledgeEmergency(marker, 'DeviceWarning')}>
                                 Acknowledge Emergency

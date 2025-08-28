@@ -57,7 +57,7 @@ import {
 // APIs
 import { getProjectIDQuery } from "../../utils/queriesGroup/authQueries";
 
-import MENU_LOGO from "../../assets/images/Reslink-Logo.png";
+import MENU_LOGO from "../../assets/images/LogoNexres.png";
 import "../styles/sideMenu.css";
 
 // Custom CSS สำหรับ badge animations
@@ -237,9 +237,9 @@ const SideMenu = ({
       <div className="sideMenuHeader">
         <div className="sideMenuLogo">
           {!collapsed ? (
-            <img src={MENU_LOGO} alt="Reslink Logo" />
+            <img src={MENU_LOGO} alt="LogoNexres" />
           ) : (
-            <div className="collapsedLogo">R</div>
+            <div className="collapsedLogo">N</div>
           )}
         </div>
         <button className="collapseToggle" onClick={toggleCollapsed}>
@@ -304,7 +304,7 @@ const SideMenu = ({
               <Link to={`${main_link}/juristicManage`}>Juristic list</Link>
             </Menu.Item>
 
-            <Menu.Item
+            {/* <Menu.Item
               key={`${main_link}/staffManage`}
               icon={
                 <StaffMenuIcon
@@ -314,7 +314,7 @@ const SideMenu = ({
               }
               hidden={!access("team_management", "view")}>
               <Link to={`${main_link}/staffManage`}>Staff management</Link>
-            </Menu.Item>
+            </Menu.Item> */}
 
             <Menu.Item
               key={`${main_link}/juristicTeamPermission`}
@@ -740,7 +740,7 @@ const SideMenu = ({
               hidden={!access("vms", "view")}>
               <Link to={`${main_link}/vms-visitor`}>VMS Visitors Logs</Link>
             </Menu.Item>
-            
+
             <Menu.Item
               key={`${main_link}/vms-log-access`}
               icon={

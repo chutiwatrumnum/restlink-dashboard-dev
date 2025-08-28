@@ -5,18 +5,20 @@ import { useState, useMemo } from "react";
 import { useGlobal } from "../../contexts/Global";
 const { Dragger } = Upload;
 const { Option } = Select;
+import { uploadPlan } from "../../service/api/SOSwarning";
 
 const Content = ({
   handleSave,
   handleCancel
 }: {
-  handleSave: () => void;
+  handleSave: (idUploadPlan:string,blockId:number,floorId:number[]) => void;
   handleCancel: () => void;
 }) => {
   const [form] = Form.useForm();
   const [selectedBuilding, setSelectedBuilding] = useState<string>('');
-  const [selectedFloors, setSelectedFloors] = useState<string[]>([]);
+  const [selectedFloors, setSelectedFloors] = useState<number[]>([]);
   const [fileList, setFileList] = useState<any[]>([]);
+  const [idUploadPlan, setIdUploadPlan] = useState<string>('');
 
   // ใช้ try-catch เพื่อจัดการ error
   let buildingPlan: any = null;
@@ -39,11 +41,11 @@ const Content = ({
     { value: 'floor4', label: 'Floor 4' },
   ];
 
-  const handleFloorChange = (value: string[]) => {
+  const handleFloorChange = (value: number[]) => {
     setSelectedFloors(value);
   };
 
-  const removeFloor = (removedFloor: string) => {
+  const removeFloor = (removedFloor: number) => {
     const newFloors = selectedFloors.filter(floor => floor !== removedFloor);
     setSelectedFloors(newFloors);
     form.setFieldsValue({ floors: newFloors });
@@ -76,8 +78,21 @@ const Content = ({
 
       return false; // ป้องกันการ upload อัตโนมัติ
     },
-    onChange: (info: any) => {
-      setFileList(info.fileList);
+    onChange: async (info: any) => {
+      console.log(info,'info-upload-plan')
+      
+      let file = info?.fileList[0] || null
+      if(file){
+        let dataUploadPlan = await uploadPlan(info.file)
+        console.log(dataUploadPlan,'dataUploadPlan-upload-plan')
+        if(dataUploadPlan.status){
+          setIdUploadPlan(dataUploadPlan.result.id)
+        }
+        // let formData = new FormData()
+        // formData.append('file', info.fileList[0])
+        // console.log(formData,'formData')
+        setFileList(info.fileList);
+      }
     },
     onDrop(e: any) {
       console.log('Dropped files', e.dataTransfer.files);
@@ -115,6 +130,15 @@ const Content = ({
     <>
 
       <Form form={form} layout="vertical">
+        
+        {/* <Button onClick={() => {
+          // console.log(selectedBuilding,'selectedBuilding')
+          console.log(buildingPlan,'buildingPlan')
+        }}>
+          click
+        </Button>  */}
+       
+
         <Row gutter={16}>
           <Col span={24}>
             <Form.Item
@@ -299,7 +323,7 @@ const Content = ({
       </Form>
 
       <div className="flex justify-end mt-4">
-        <Button className="w-40 !me-4" type="primary" onClick={handleSave}>
+        <Button className="w-40 !me-4" type="primary" onClick={() => handleSave(idUploadPlan,buildingPlan?.buildings[selectedBuilding].blockId,selectedFloors)}>
           Upload
         </Button>
         <Button className="w-40" type="default" onClick={resetForm}>

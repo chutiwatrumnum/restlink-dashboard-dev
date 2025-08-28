@@ -2,7 +2,9 @@ import {  useEffect } from "react";
 import CreateModal from "../../../components/common/FormModal";
 
 import SuccessModal from "../../../components/common/SuccessModal";
+import FailedModal from "../../../components/common/FailedModal";
 import Content from "./uploadPlanMultiple/Content";
+import { updatePlanPlural } from "../service/api/SOSwarning";
 
 interface ModalFormUpdateProps {
   isModalOpen: boolean;
@@ -23,10 +25,28 @@ export const ModalUploadPlan: React.FC<ModalFormUpdateProps> = ({
   }, [isModalOpen]);
 
  
-  const handleSave = () => {
-    console.log("handleSave");
-    setIsModalOpen(false);
-    SuccessModal("เปลี่ยน Plan สำเร็จ")
+  const handleSave = async (idUploadPlan:string,blockId:number,floorId:number[]) => {
+    // console.log("handleSave");
+    // console.log(idUploadPlan,'idUploadPlan')
+    // console.log(blockId,'blockId')
+    // console.log(floorId,'floorId')
+    // return 
+    if(idUploadPlan && blockId && floorId.length > 0){
+        let dataChangePlan = {
+            "newPlanId": idUploadPlan,
+            "blockId": blockId,
+            "floorId": floorId
+        }
+        let responseChangePlan = await updatePlanPlural(dataChangePlan)
+        if(responseChangePlan.status){
+            setIsModalOpen(false);
+            SuccessModal("เปลี่ยน Plan สำเร็จ")
+        }
+    }
+    else {
+        FailedModal("เปลี่ยน Plan ไม่สำเร็จ",700)
+    }
+
   }
 
   const handleCancel = () => {

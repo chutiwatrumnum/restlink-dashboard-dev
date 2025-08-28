@@ -116,7 +116,8 @@
 }
 
 .ant-modal-confirm-confirm .ant-modal-body {
-  height: 150px;
+  height: 20%;
+    margin-bottom: 10%;
 }
 
 .ant-modal-confirm-body-wrapper {

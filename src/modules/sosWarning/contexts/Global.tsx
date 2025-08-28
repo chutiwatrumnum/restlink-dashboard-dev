@@ -15,6 +15,8 @@ interface GlobalContextType {
   setStatusAcknowledge: (status: boolean) => void,
   buildingPlan: any
   setBuildingPlan: (data: any) => void
+  dataMapAll: any
+  setDataMapAll: (data: any) => void
 }
 
 // สร้าง Context
@@ -35,6 +37,8 @@ interface GlobalProviderProps {
   setStatusAcknowledge: (status: boolean) => void,
   buildingPlan: any
   setBuildingPlan: (data: any) => void
+  dataMapAll: any
+  setDataMapAll: (data: any) => void
 }
 
 export const GlobalProvider: React.FC<GlobalProviderProps> = ({ 
@@ -50,7 +54,9 @@ export const GlobalProvider: React.FC<GlobalProviderProps> = ({
   statusAcknowledge,
   setStatusAcknowledge,
   buildingPlan,
-  setBuildingPlan
+  setBuildingPlan,
+  dataMapAll,
+  setDataMapAll
 }) => {
   return (
     <GlobalContext.Provider value={{ 
@@ -65,7 +71,9 @@ export const GlobalProvider: React.FC<GlobalProviderProps> = ({
       statusAcknowledge,
       setStatusAcknowledge,
       buildingPlan,
-      setBuildingPlan
+      setBuildingPlan,
+      dataMapAll,
+      setDataMapAll
     }}>
       {children}
     </GlobalContext.Provider>

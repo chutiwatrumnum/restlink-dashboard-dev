@@ -12,8 +12,6 @@ import SuccessModal from "../../../components/common/SuccessModal";
 const SecurityAlarm = () => {
     const dispatch = useDispatch();
     const { dataEmergencyDetail } = useSelector((state: RootState) => state.sosWarning);
-    const navigate = useNavigate();
-
     let processReceiveCase = async (member: any,status:boolean)=>{
         let contact = member.user.contact
         let contact2 = member.user.contact2
@@ -43,7 +41,6 @@ const SecurityAlarm = () => {
         if(data.status){
             if(status) {
                 let dataCallCustomer = data.result
-                console.log(dataCallCustomer,'dataCallCustomer')
                 let dataEventInfo =  JSON.parse(JSON.stringify(dataEmergencyDetail))
                 dataEventInfo.sosEventInfo.step = dataCallCustomer.step
                 dataEventInfo.sosEventInfo.isCompleted = dataCallCustomer.is_completed
@@ -52,7 +49,6 @@ const SecurityAlarm = () => {
                     createdAt: new Date().toISOString(),
                 }]
                 // dataCallCustomer.sosCallHistories
-                console.log(dataEventInfo,'dataEventInfo')
                 dispatch.sosWarning.setDataEmergencyDetail(dataEventInfo)
                 SuccessModal("ติดต่อลูกบ้านสำเร็จ")
             }
@@ -63,12 +59,15 @@ const SecurityAlarm = () => {
             message.error(data.message)
         }
     }
-    const handleCallCustomer = async (member: any,status:boolean) => {
+    const handleCallCustomer = async (member: any,status:boolean,setCallTime:any) => {
         ConfirmModal({
             title : "ยินยันติดต่อลูกบ้าน",
             okMessage : status ? "ติดต่อลูกบ้านสำเร็จ" : "ติดต่อลูกบ้านไม่สำเร็จ",
             cancelMessage : "ยกเลิก",
-            onOk : () => processReceiveCase(member,status),
+            onOk : () => {
+                processReceiveCase(member,status)
+                setCallTime(new Date().toISOString())
+            },
             onCancel : () => {
                 console.log('ยกเลิก')
             },

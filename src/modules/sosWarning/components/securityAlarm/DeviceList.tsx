@@ -56,11 +56,13 @@ const DeviceList = ({ doorSensors }: { doorSensors: any }) => {
 
             {deviceDisplay.length > 0 && (
                 <div className="w-full h-full py-4 md:py-6 lg:py-0">
-                    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 
-                    overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 h-full">
+                    <div className="
+                    bg-white rounded-2xl 
+                    overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 
+                    scrollbar-track-gray-100 h-full">
                                         {deviceDisplay.map((device: any, indexParent: number) => (
                                             <>
-                                                <div key={indexParent} className="border-m-3 border-gray-100 border-b">
+                                                <div key={indexParent} className="">
                                                     {/* Sensor Header */}
                                                     <div className="p-3 sm:p-4 md:p-5 lg:p-6">
                                                         <div className="flex items-center gap-2 sm:gap-3 md:gap-4">
