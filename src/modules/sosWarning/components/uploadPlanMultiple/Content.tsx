@@ -174,12 +174,12 @@ const Content = ({
             <Form.Item
               label="Floor"
               name="floors"
-              rules={[{ required: true, message: 'กรุณาเลือกชั้น' }]}
+              rules={[{ required: true, message: 'Please select floor(s)' }]}
             >
               <Select
                 disabled={!selectedBuilding.toString()}
                 mode="multiple"
-                placeholder="เลือกชั้น"
+                placeholder="Please select floor(s)"
                 style={{ width: '100%' }}
                 onChange={handleFloorChange}
                 value={selectedFloors}
@@ -210,7 +210,7 @@ const Content = ({
 
 
             <div style={{ color: '#666', fontSize: '12px', marginBottom: 16 }}>
-              กรุณาเลือกชั้นที่ต้องการอัปโหลดแปลน ระบบจะสร้างแฟ้มเอกสารสำหรับแต่ละชั้นโดยอัตโนมัติ
+              Please select the floors you want to upload plans for. The system will automatically create a document folder for each floor.
             </div>
           </Col>
         </Row>

@@ -50,10 +50,10 @@ const SecurityAlarm = () => {
                 }]
                 // dataCallCustomer.sosCallHistories
                 dispatch.sosWarning.setDataEmergencyDetail(dataEventInfo)
-                SuccessModal("ติดต่อลูกบ้านสำเร็จ")
+                SuccessModal("Contacted the resident successfully")
             }
             else {
-                message.success('ส่งข้อมูลสำเร็จ')
+                message.success('Contacted the resident successfully')
             }
         }else{
             message.error(data.message)
@@ -61,15 +61,15 @@ const SecurityAlarm = () => {
     }
     const handleCallCustomer = async (member: any,status:boolean,setCallTime:any) => {
         ConfirmModal({
-            title : "ยินยันติดต่อลูกบ้าน",
-            okMessage : status ? "ติดต่อลูกบ้านสำเร็จ" : "ติดต่อลูกบ้านไม่สำเร็จ",
-            cancelMessage : "ยกเลิก",
+            title : "Confirm contact resident",
+            okMessage : "Confirm",
+            cancelMessage : "Cancel",
             onOk : () => {
                 processReceiveCase(member,status)
                 setCallTime(new Date().toISOString())
             },
             onCancel : () => {
-                console.log('ยกเลิก')
+                console.log('Cancel')
             },
         })
     };
@@ -84,7 +84,7 @@ const SecurityAlarm = () => {
     }
     return (
         <SecurityAlarmProvider handleCallCustomer={handleCallCustomer}>
-            <div className="!h-full">
+            <div className="min-h-screen lg:h-screen overflow-auto lg:overflow-hidden pb-4 lg:pb-6 rounded-b-2xl">
                 {typeEmergency[dataEmergencyDetail.type as keyof typeof typeEmergency]}
             </div>
         </SecurityAlarmProvider>

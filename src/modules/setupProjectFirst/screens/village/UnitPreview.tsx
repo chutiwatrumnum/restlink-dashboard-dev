@@ -134,7 +134,7 @@ const UploadPlan = () => {
     ];
 
     return (
-        <div className="h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6 flex flex-col relative font-sarabun">
+        <div className="h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6 flex flex-col relative ">
             {/* Progress Steps */}
             <ProgressStep stepValue={2} progressSteps={3} />
             {/* Title */}

@@ -48,26 +48,31 @@ const ContractForm = ({ statusContract, setStatusContract }: { statusContract: s
     };
 
     return (
-            <div className="w-full h-full flex flex-col justify-center items-center p-6 pb-0  !mx-auto ">
-                <div className="w-full text-[18px] font-semibold text-[#1a365d] mb-6 leading-snug text-left lg:text-center">
+            <div className="w-full h-full flex flex-col justify-start items-start p-0 sm:p-0  lg:p-6 pb-0  !mx-auto ">
+                <div className="w-full !text-3xl font-semibold text-[#1a365d] mb-6 leading-snug text-left lg:text-center">
                     Call back to inform the residents 
                 </div>
 
                 <div className="mb-6 w-full">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-md font-medium text-gray-700 mb-2">
                         Additional notes
                     </label>
                     <textarea
-                         value={additionalNotes}
-                         onChange={(e) => setAdditionalNotes(e.target.value)}
-                         placeholder="Input Additional notes"
-                         className="w-full 
-                         h-[120px] p-3 border border-gray-200 
-                         rounded-lg text-sm text-gray-700 resize-none font-sarabun 
-                         outline-none 
-                         transition-colors duration-200  
-                         focus:border-blue-600"
-                     />
+                        value={additionalNotes}
+                        onChange={(e) => setAdditionalNotes(e.target.value)}
+                        placeholder="Input Additional notes"
+                        className="w-full 
+                        h-[150px] p-3 border-1"
+                        style={{
+                            borderColor: '#C6C8C9',
+                            color: '#374151',
+                            borderRadius: '0.5rem',
+                            fontSize: '0.875rem',
+                            resize: 'none',
+                            outline: 'none',
+                            transition: 'border-color 0.2s',
+                        }}
+                    />
                 </div>
 
                 {/* <button
@@ -76,14 +81,14 @@ const ContractForm = ({ statusContract, setStatusContract }: { statusContract: s
                    className="
                    !mb-6
                    w-full bg-[#1a365d] !text-white rounded-xl py-[14px] px-5 text-[16px] font-semibold cursor-pointer transition-colors duration-200 outline-none hover:bg-[#2c5282] active:bg-[#1a202c]
-                    font-sarabun disabled:opacity-50 disabled:cursor-not-allowed"
+                     disabled:opacity-50 disabled:cursor-not-allowed"
                    type="button"
                 >
                    Success
                 </button> */}
                 <Button
                     type="primary"
-                    className="w-full !rounded-xl !mb-6 !md:mb-0"
+                    className="w-full !h-[40px] !rounded-xl !mb-6 !md:mb-0"
                     onClick={handleSuccess}
                 >
                     Success

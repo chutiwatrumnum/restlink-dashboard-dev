@@ -27,28 +27,28 @@ const CallOfficerSuccess = ({ statusContract, setStatusContract }: { statusContr
     return (
         <div className="w-full h-full flex flex-col justify-center items-center p-6">
             {/* Process Steps Title */}
-            <h1 className="text-2xl font-semibold text-[#1a365d] text-center mb-3 font-sarabun">
+            <h1 className="!text-3xl !font-semibold !text-[#1a365d] !text-center !mb-3 ">
                 Process Steps
             </h1>
             
             {/* Subtitle */}
-            <p className="text-base text-gray-500 text-center font-sarabun">
+            <p className="text-base text-[#929292] text-center !text-2xl font-semibold ">
                 Call to contact the staff.
             </p>
 
             {/* Officer Icon */}
                 {/* <div className="w-32 h-32 bg-blue-500 rounded-full flex items-center justify-center "> */}
-                        <img src={officerIcon} alt="Officer" className="w-[96px]" />
+                        <img src={officerIcon} alt="Officer" className="w-[200px]" />
                 {/* </div> */}
             {/* Officer Label */}
-            <h2 className="text-xl font-medium text-gray-500 text-center mb-12 font-sarabun !mt-6 !mb-8">
+            <h2 className="!text-3xl !font-medium !text-[#929292] !text-center !mb-12  !mt-6 !mb-8">
                 Policeman 191
             </h2>
 
             {/* Success Button */}
             <button
                 onClick={handleSuccess}
-                className="w-full max-w-sm bg-[#1a365d] !text-white rounded-xl py-4 px-6 text-base font-semibold cursor-pointer transition-colors duration-200 outline-none hover:bg-[#2c5282] active:bg-[#1a202c] font-sarabun"
+                className="w-full max-w-sm bg-[#1a365d] !text-white rounded-xl py-4 px-6 text-base font-semibold cursor-pointer transition-colors duration-200 outline-none hover:bg-[#2c5282] active:bg-[#1a202c] "
                 type="button"
             >
                 Success

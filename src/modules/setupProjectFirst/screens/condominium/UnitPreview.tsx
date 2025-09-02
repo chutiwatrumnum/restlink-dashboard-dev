@@ -161,7 +161,7 @@ const UnitPreview = () => {
 
     return (
         <div className="h-screen bg-gradient-to-br from-blue-50 
-        to-indigo-100 p-6 flex flex-col relative font-sarabun min-h-screen overflow-hidden ">
+        to-indigo-100 p-6 flex flex-col relative  min-h-screen overflow-hidden ">
             <ProgressStep stepValue={1} progressSteps={3} />
             {/* ส่วนหัว */}
             <Row justify="center" className="text-center mb-8">

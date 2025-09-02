@@ -212,7 +212,9 @@ const Content = ({
                     >
                         <div className="flex flex-col items-center justify-center w-full h-[400px]">
                             <span className="text-lg text-gray-500">Upload Image</span>
-                            <span className="text-sm text-gray-400 mt-2">คลิกหรือลากไฟล์มาวางที่นี่</span>
+                            <span className="text-sm text-gray-400 mt-2">
+                                Click or drag and drop files here
+                            </span>
                         </div>
                     </Upload.Dragger>
                 ) : (

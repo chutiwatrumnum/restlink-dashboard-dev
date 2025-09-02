@@ -253,10 +253,10 @@ const FormWarningSOS = ({ dataEmergency, unitHover, unitClick, setDataEmergency,
                 {/* SOS Card */}
                 <div className="bg-white rounded-2xl  border border-gray-100 flex-1">
                     <div className="bg-[#D73232] text-white px-4 py-2 rounded-t-2xl text-center">
-                        <span className="font-sarabun font-semibold text-sm">SOS</span>
+                        <span className=" font-semibold text-sm">SOS</span>
                     </div>
                     <div className="p-6 flex justify-center items-center">
-                        <div className="text-4xl font-bold text-red-600 font-sarabun">
+                        <div className="text-4xl font-bold text-red-600 ">
                             {dataEmergency?.emergency?.length || 0}
                         </div>
                     </div>
@@ -265,10 +265,10 @@ const FormWarningSOS = ({ dataEmergency, unitHover, unitClick, setDataEmergency,
                 {/* Device Issue Card */}
                 <div className="bg-white rounded-2xl  border border-gray-100 flex-1">
                     <div className="bg-[#FFD54F] text-white px-4 py-2 rounded-t-2xl text-center">
-                        <span className=" whitespace-nowrap text-[#002C55] font-sarabun font-semibold text-sm">Device has an issue</span>
+                        <span className=" whitespace-nowrap text-[#002C55]  font-semibold text-sm">Device has an issue</span>
                     </div>
                     <div className="p-6 flex justify-center items-center">
-                        <div className="text-4xl font-bold text-blue-900 font-sarabun">
+                        <div className="text-4xl font-bold text-blue-900 ">
                         {dataEmergency?.deviceWarning?.length || 0}
                         </div>
                     </div>

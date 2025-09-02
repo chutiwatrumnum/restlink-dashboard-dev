@@ -43,7 +43,7 @@ const floorIdGlobal = useSelector((state:any)=>state.sosWarning.floorIdGlobal)
     if(dataUpdatePlan.status){
       await loadFirst(floorIdGlobal)
       setIsModalOpen(false);
-      SuccessModal("เปลี่ยน Plan สำเร็จ")
+      SuccessModal("Plan Changed Successfully")
     }
   }
 

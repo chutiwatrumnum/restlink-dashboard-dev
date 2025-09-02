@@ -541,7 +541,7 @@ const UploadFloorPlan = () => {
     return (
         <div className="bg-gradient-to-br from-blue-50 
         to-indigo-100 p-6 pb-0 flex flex-col 
-        relative font-sarabun min-h-screen overflow-hidden ">
+        relative  min-h-screen overflow-hidden ">
 
 
 

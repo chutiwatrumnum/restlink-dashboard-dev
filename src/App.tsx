@@ -14,7 +14,7 @@ import { getStepCondo } from "./modules/setupProjectFirst/service/api/SetupProje
 import { useRouteChange } from "./utils/hooks";
 import { useNavigate } from "react-router-dom";
 
-// import { encryptStorage } from "./utils/encryptStorage";
+import { encryptStorage } from "./utils/encryptStorage";
 // import { useDispatch, useSelector } from "react-redux";
 // import { Dispatch, RootState } from "./stores";
 // import { getProjectIDQuery } from "./utils/queriesGroup/authQueries";
@@ -82,7 +82,7 @@ import RecoveryScreen from "./modules/main/RecoveryScreen";
 import ResetPassword from "./modules/main/ResetPassword";
 import SuccessResetScreen from "./modules/main/SuccessResetScreen";
 import ParcelDashboard from "./modules/parcelDashboard/screen/ParcelDashboard";
-import ParcelDeliverLogs from "./modules/parcelDeliveryLogs/screen/parcelDeliverLogs";
+// Removed unused and case-sensitive conflicting import for ParcelDeliverLogs
 
 import SetupProject from "./modules/setupProjectFirst/screens/SetupProject";
 // village
@@ -119,11 +119,23 @@ function AppWithCustomHooks() {
   return null;
 }
 
+// Guard for setup-project routes
+function SetupProjectGuard() {
+  const { step } = useSelector((state: RootState) => state.setupProject);
+
+  if (step === 3) {
+    return <Navigate to="/dashboard/profile" replace />;
+  }
+
+  return <SetupProjectLayout />;
+}
+
 // Route Guard Component ที่เช็คเงื่อนไขก่อน render Routes
 function AppRoutes() {
   const { projectData, step } = useSelector(
     (state: RootState) => state.setupProject
   );
+  const { isAuth } = useSelector((state: RootState) => state.userAuth);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
@@ -136,9 +148,11 @@ function AppRoutes() {
     const checkRouteAccess = async () => {
       const currentPath = location.pathname;
 
-      let currentStep = step;
-      if (step === 0) {
-        currentStep = await dispatch.setupProject.getStepCondoModel();
+      let currentStep = Number(step);
+      // console.log(step,'step')
+      if (!currentStep) {
+        const fetchedStep = await dispatch.setupProject.getStepCondoModel();
+        currentStep = Number(fetchedStep);
       }
 
       // กำหนด layout type ของ route ปัจจุบัน
@@ -156,8 +170,33 @@ function AppRoutes() {
         currentLayoutType = "unauthorized";
       }
 
+      // จัดการ setup-project: ถ้า step===3 ให้กลับ dashboard ก่อน จากนั้นค่อยเช็ค token
+      if (currentLayoutType === "setup-project") {
+        if (currentStep === 3) {
+          navigate('/dashboard/profile', { replace: true });
+          return;
+        }
+        const access_token = await encryptStorage.getItem("access_token");
+        if (!access_token || access_token === "undefined" || access_token === "") {
+          navigate('/auth', { replace: true });
+          return;
+        }
+      }
+
+      // ถ้า step === 3 ให้เข้า dashboard ทันทีจากทุกที่ (ยกเว้นหน้า unauthorized เช่น /auth)
+      if (currentStep === 3 && currentLayoutType !== "unauthorized") {
+        if (!currentPath.includes("/dashboard")) {
+          navigate('/dashboard/profile', { replace: true });
+          return;
+        }
+        setPreviousLayoutType(currentLayoutType);
+        setRouteState("allow");
+        return;
+      }
+
       if (currentLayoutType === "dashboard") {
         if (currentStep === 3) {
+          navigate('/dashboard/profile', { replace: true });
           setRouteState("allow");
           return;
         }
@@ -166,7 +205,8 @@ function AppRoutes() {
       // ถ้า navigate ภายใน layout เดียวกัน ให้ skip การเช็คและ allow ทันที
       if (
         previousLayoutType === currentLayoutType &&
-        currentLayoutType !== ""
+        currentLayoutType !== "" &&
+        currentStep !== 3
       ) {
         setRouteState("allow");
 
@@ -174,15 +214,16 @@ function AppRoutes() {
       }
 
       setRouteState("checking");
-
-      if (!projectData) {
+      if (!projectData || Object.keys(projectData).length === 0) {
+        console.log('projectData',projectData)
         // อัพเดท previous layout type เฉพาะเมื่อ allow
         setPreviousLayoutType(currentLayoutType);
         setRouteState("allow");
         return;
       }
-
-      let projectType = projectData?.projectType?.nameCode || "";
+      console.log(projectData,'projectData')
+      let projectType = (projectData as any)?.projectType?.nameCode || "";
+      console.log(projectType,'projectType')
       // ถ้าเป็น unauthorized routes ให้ผ่านได้
       if (
         currentPath.includes("/auth") ||
@@ -199,9 +240,10 @@ function AppRoutes() {
       if (projectType) {
         const strType = projectType.split("_");
         projectType = strType[strType.length - 1];
+        console.log(projectType,'projectType')
         // เช็คเงื่อนไขสำหรับ dashboard routes ก่อน (เพื่อป้องกัน UI flash)
         if (currentPath.includes("/dashboard")) {
-          if (projectType === "condo") {
+          if (projectType === "condo" && currentStep !== 3) {
             const objStep = {
               1: "/setup-project/get-start",
               2: "/setup-project/upload-floor-plan",
@@ -216,7 +258,8 @@ function AppRoutes() {
             setPreviousLayoutType(currentLayoutType);
             setRouteState("allow");
             return;
-          } else if (projectType === "village") {
+          } 
+          else if (projectType === "village" && currentStep !== 3) {
             let currentStep = step;
             if (currentStep === 0) {
               currentStep = await dispatch.setupProject.getStepCondoModel();
@@ -244,8 +287,10 @@ function AppRoutes() {
         }
 
         // เช็คเงื่อนไขสำหรับ setup-project routes
-        else if (currentPath.includes("/setup-project")) {
+        else if (currentPath.includes("/setup-project") &&  currentStep != 3) {
+          console.log(projectType,'projectType')
           if (projectType === "condo") {
+            console.log('success-true')
             const currentStep = await dispatch.setupProject.getStepCondoModel();
             let storePathCondo = [
               "/setup-project/upload-plan",
@@ -253,6 +298,12 @@ function AppRoutes() {
               "/setup-project/unit-preview",
             ];
             const currentRoutePath = location.pathname;
+            // อนุญาตให้คงอยู่หน้า get-start ไม่ redirect อัตโนมัติ
+            if (currentRoutePath === "/setup-project/get-start" && currentStep === 1) {
+              setPreviousLayoutType(currentLayoutType);
+              setRouteState("allow");
+              return;
+            }
             if (storePathCondo.includes(currentRoutePath)) {
               navigate("/setup-project/get-start", { replace: true });
               return;
@@ -284,6 +335,12 @@ function AppRoutes() {
               "/setup-project/upload-floor-plan",
             ];
             const currentRoutePath = location.pathname;
+            // อนุญาตให้คงอยู่หน้า get-start ไม่ redirect อัตโนมัติ
+            if (currentRoutePath === "/setup-project/get-start" && currentStep === 1) {
+              setPreviousLayoutType(currentLayoutType);
+              setRouteState("allow");
+              return;
+            }
             if (storePathCondo.includes(currentRoutePath)) {
               navigate("/setup-project/get-start", { replace: true });
               return;
@@ -313,6 +370,12 @@ function AppRoutes() {
               "/setup-project/upload-floor-plan",
             ];
             const currentRoutePath = location.pathname;
+            // อนุญาตให้คงอยู่หน้า get-start ไม่ redirect อัตโนมัติ
+            if (currentRoutePath === "/setup-project/get-start" && currentStep === 1) {
+              setPreviousLayoutType(currentLayoutType);
+              setRouteState("allow");
+              return;
+            }
             if (storePathCondo.includes(currentRoutePath)) {
               // ไม่ update previousLayoutType เพราะจะ redirect
               navigate("/setup-project/upload-plan", { replace: true });
@@ -340,6 +403,10 @@ function AppRoutes() {
           setRouteState("allow");
           return;
         }
+        else if (currentStep == 3 && currentLayoutType !== "unauthorized") {
+          navigate('/dashboard/profile', { replace: true });
+          return;
+        }
       }
 
       // สำหรับ route อื่นๆ ที่ไม่เข้าเงื่อนไขข้างต้น ให้ผ่านได้
@@ -348,7 +415,7 @@ function AppRoutes() {
     };
 
     checkRouteAccess();
-  }, [location.pathname, projectData, step, dispatch, navigate]);
+  }, [location.pathname, projectData, step, dispatch, navigate, isAuth]);
 
   // ไม่ render อะไรเลยระหว่างเช็ค
   if (routeState === "checking") {
@@ -435,7 +502,7 @@ function AppRoutes() {
       </Route>
 
       {/* setup project first */}
-      <Route path="setup-project" element={<SetupProjectLayout />}>
+      <Route path="setup-project" element={<SetupProjectGuard />}>
         {/* village */}
         <Route path="get-start" element={<SetupProject />} />
         <Route path="upload-plan" element={<UploadPlan />} />
@@ -458,6 +525,7 @@ function AppRoutes() {
 function App() {
   const dispatch = useDispatch();
   const { projectData } = useSelector((state: RootState) => state.setupProject);
+  const { isAuth } = useSelector((state: RootState) => state.userAuth);
   const [isDataProjectReady, setIsDataProjectReady] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -465,6 +533,11 @@ function App() {
     const fetchData = async () => {
       try {
         setIsLoading(true);
+        // หากยังไม่ล็อกอิน ให้ข้ามการยิง API project
+        if (!isAuth) {
+          setIsDataProjectReady(true);
+          return;
+        }
         if (Object.keys(projectData).length === 0 || projectData === null ) {
           await dispatch.setupProject.setDataProject();
           setIsDataProjectReady(true);
@@ -477,7 +550,7 @@ function App() {
       }
     };
     fetchData();
-  }, []);
+  }, [isAuth]);
 
   return (
     <BrowserRouter>

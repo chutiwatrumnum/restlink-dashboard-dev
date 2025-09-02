@@ -28,7 +28,7 @@ const ContractSuccess = () => {
             
             {/* Success Message */}
             <h2 className="text-xl font-medium text-[#38BE43] 
-            text-center font-sarabun mb-8">
+            text-center  !m-8 !mt-0">
                 Completed successfully
             </h2>
 
@@ -39,7 +39,7 @@ const ContractSuccess = () => {
                 !rounded-xl
                 text-white rounded-xl py-3 px-6 text-base font-medium 
                 cursor-pointer transition-colors duration-200 outline-none
-                 hover:bg-green-600 active:bg-green-700 font-sarabun"
+                 hover:bg-green-600 active:bg-green-700 "
                 type="button"
             >
                 Press to go back

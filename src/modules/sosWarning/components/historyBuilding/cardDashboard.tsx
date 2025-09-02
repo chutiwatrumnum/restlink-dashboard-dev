@@ -31,17 +31,17 @@ const DashboardCard: React.FC<DashboardCardProps> = ({  index, title, count, ico
                 className={` flex items-center justify-center  `}
             >
                 <div className="text-white text-xl">
-                    {icon}
+                    {icon || '-'}
                 </div>
             </div>
             
             {/* Content Section */}
             <div className="ms-auto">
                 <div className="text-gray-600 text-sm mb-1 !text-xl">
-                    {title}
+                    {title || '-'}
                 </div>
                 <div className="text-end text-3xl font-bold text-gray-800">
-                    {count}
+                    {count || 0}
                 </div>
             </div>
         </div>
@@ -51,30 +51,30 @@ const DashboardCard: React.FC<DashboardCardProps> = ({  index, title, count, ico
 const CardDashboard = ({summaryStore , setStep}:{summaryStore:any, setStep:any}) => {
     const dashboardData = [
         {
-            title: "เคสทั้งหมด",
+            title: "All Cases",
             count: summaryStore.total,
             icon: <img src={CaseAll} className=" " alt="CaseAll" />,
             bgColor: "bg-blue-500",
             iconColor: "#3b82f6"
         },
         {
-            title: "มีเหตุการณ์เกิดขึ้น",
+            title: "Emergency Events",
             count: summaryStore.emergency,
             icon: <img src={CaseEvent} className=" " alt="CaseEvent" />,
             bgColor: "bg-red-500", 
             iconColor: "#ef4444"
         },
         {   
-            title: "ปัญหาอุปกรณ์",
+            title: "Device Issues",
             count: summaryStore.deviceIssue,
             icon: <img src={CaseDevice} className=" " alt="CaseDevice" />,
             bgColor: "bg-orange-500",
             iconColor: "#f97316"
         },
         {
-            title: "ยืนยันการจัดงาน",
+            title: "Confirmed Completed",
             count: summaryStore.complete,
-                icon: <img src={CaseConfirm} className="" alt="CaseConfirm" />,
+            icon: <img src={CaseConfirm} className="" alt="CaseConfirm" />,
             bgColor: "bg-green-500",
             iconColor: "#22c55e"
         }

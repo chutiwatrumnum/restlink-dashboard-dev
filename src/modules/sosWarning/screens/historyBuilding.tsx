@@ -54,15 +54,15 @@ const HistoryBuilding = () => {
     TabsProps["items"]
   >([
     {
-      label: "ทั้งหมด",
+      label: "All",
       key: "",
     },
     {
-        label: "รอดำเนินการ",
+        label: "Pending",
         key: "0",
     },
     {
-        label: "ดำเนินการสำเร็จ",
+        label: "Completed",
         key: "4",
     }
   ]);
@@ -436,7 +436,7 @@ const HistoryBuilding = () => {
 
     const columns: ColumnsType<any> = [
         {
-            title: "สเต็ปงาน",
+            title: "Step",
             dataIndex: "stepWork",
             align: "center",
             width: 120,
@@ -456,7 +456,7 @@ const HistoryBuilding = () => {
             ),
         },
         {
-          title: "ลำดับ",
+          title: "No.",
           dataIndex: "key",
           align: "center",
           width: 120,
@@ -477,14 +477,14 @@ const HistoryBuilding = () => {
           },
         },    
         {
-          title: "บ้านเลขที่",
+          title: "House No.",
           dataIndex: "Address",
           align: "center",
           width: 200,
           ...getColumnSearchProps("Address", "บ้านเลขที่"),
         },
         {
-          title: "เวลาแจ้งเหตุ",
+          title: "Report Time",
           dataIndex: "ReportTime",
           align: "center",
           width: 180,
@@ -502,7 +502,7 @@ const HistoryBuilding = () => {
           ),
         },
         {
-          title: "เวลารับเคส",
+          title: "Receive Time",
           dataIndex: "ReceiveTime",
           align: "center",
           width: 180,
@@ -520,7 +520,7 @@ const HistoryBuilding = () => {
           ),
         },
         {
-          title: "ประเภทเหตุการณ์",
+          title: "Event Type",
           dataIndex: "EventType",
           align: "center",
           width: 180,
@@ -537,14 +537,14 @@ const HistoryBuilding = () => {
             ),
         },
         {
-          title: "ชื่อเจ้าของบ้าน",
+          title: "Owner Name",
           align: "center",
           dataIndex: "NameOwner",
           width: 200,
           ...getColumnSearchProps("NameOwner", "ชื่อเจ้าของบ้าน"),
         },
         {
-          title: "ชือเจ้าหน้าที่ รปภ.",
+          title: "Security Staff Name",
           align: "center",
           dataIndex: "NameStaff",
           width: 180,
@@ -552,7 +552,7 @@ const HistoryBuilding = () => {
         },
 
         {
-            title: "เบอร์โทรศัพท์",
+            title: "Phone Number",
             align: "center",
             dataIndex: "ContractStaff",
             width: 180,
@@ -560,7 +560,7 @@ const HistoryBuilding = () => {
           },
 
         {
-            title: "รายงานเหตุการณ์",
+            title: "Event Report",
             align: "center",
             dataIndex: "EventStep",
             width: 150,

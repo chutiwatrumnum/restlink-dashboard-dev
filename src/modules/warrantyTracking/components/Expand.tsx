@@ -21,10 +21,10 @@ export const ExpandedRowRender = (props: ExpandTableProps) => {
 
   const onDelete = async (record: WarrantyDetailsType) => {
     await ConfirmModal({
-      message: "ยืนยันลบข้อมูล",
-      title: "ยืนยันลบการรับรองอุปกรณ์นี้",
-      okMessage: "ยืนยัน",
-      cancelMessage: "ยกเลิก",
+      message: "Confirm deletion",
+      title: "Confirm deleting this device warranty",
+      okMessage: "Confirm",
+      cancelMessage: "Cancel",
       onOk: async () => {
         await new Promise((resolve) => {
           setTimeout(resolve, 300);

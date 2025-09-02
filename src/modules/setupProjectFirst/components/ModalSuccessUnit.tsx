@@ -25,7 +25,7 @@ const SetupSuccessModal: React.FC<SetupSuccessModalProps> = ({ isOpen, onClose }
             className="setup-success-modal"
             width={400}
         >
-            <div className="flex flex-col items-center text-center p-6 font-sarabun">
+            <div className="flex flex-col items-center text-center p-6 ">
                 <div className="mb-4">
                     <CheckCircleFilled style={{ fontSize: '64px', color: '#38BE43' }} />
                 </div>

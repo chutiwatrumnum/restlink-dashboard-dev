@@ -1,11 +1,11 @@
-import { useEffect } from 'react';
-
 import { useSelector } from 'react-redux';
-
+import { Button } from 'antd';
 import React, { useMemo } from 'react';
 import './tepStep.css';
 import { RootState } from '../../../../stores';
-import { Button } from 'antd';
+import { useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { dispatch } from '../../../../stores';
 
 interface StepData {
   title: string;
@@ -20,113 +20,141 @@ interface TepStepProps {
 }
 
 const TepStep: React.FC<TepStepProps> = ({ currentStep = 1 }) => {
-    const { dataEmergencyDetail } = useSelector((state: RootState) => 
-        state.sosWarning);
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
+    const { dataEmergencyDetail, statusCaseReceiveCast } = useSelector((state: RootState) => state.sosWarning);
   const [stepsEmergency, setStepsEmergency] = React.useState<StepData[]>([
     {
-      title: 'รับเคส',
+      title: 'Step 1',
       time: '00:00:00',
-      description: 'รับเคสจากระบบ',
+      description: 'Description of the procedure',
       isCompleted: currentStep > 1,
       isActive: currentStep === 1
     },
     {
-      title: 'โทรติดต่อลูกค้า',
+      title: 'Step 2',
       time: '00:00:00',
-      description: 'โทรติดต่อลูกค้า',
+      description: 'Call the operator',
       isCompleted: currentStep > 2,
       isActive: currentStep === 2
     },
     {
-      title: 'ปิดงาน',
+      title: 'Step 3',
       time: '00:00:00',
-      description: 'ปิดงาน',
+      description: 'Follow up on the results',
       isCompleted: currentStep > 3,
       isActive: currentStep === 3
     },
     {
-      title: 'ปิดเคส',
+      title: 'Step 4',
       time: '00:00:00',
-      description: 'ปิดเคส',
+      description: 'Completed',
       isCompleted: currentStep > 4,
       isActive: currentStep === 4
     }
   ]);
   const [stepsDeviceWarning, setStepsDeviceWarning] = React.useState<StepData[]>([
     {
-      title: 'รับเคส',
+      title: 'Step 1',
       time: '00:00:01',
-      description: 'รับเคสจากระบบ',
+      description: 'Description of the procedure',
       isCompleted: currentStep > 1,
       isActive: currentStep === 1
     },
     {
-      title: 'โทรติดต่อลูกค้า',
+      title: 'Step 2',
       time: '00:00:00',
-      description: 'โทรติดต่อลูกค้า',
+      description: 'Call the operator',
       isCompleted: currentStep > 2,
       isActive: currentStep === 2
     },
     {
-      title: 'ปิดงาน',
+      title: 'Step 3',
       time: '00:00:00',
-      description: 'ปิดงาน',
+      description: 'Follow up on the results',
       isCompleted: currentStep > 3,
       isActive: currentStep === 3
     },
   ]);
  
-  const stepsWithTime = useMemo(() => {
-    let dataObj = {
+  const stepsWithTime: StepData[] = useMemo(() => {
+    const dataObj: Record<'emergency' | 'DeviceWarning', StepData[]> = {
       emergency: stepsEmergency,
       DeviceWarning: stepsDeviceWarning
     };
-    let dataTime = JSON.parse(JSON.stringify(dataObj[dataEmergencyDetail?.type as keyof typeof dataObj]));
+    let dataTime: StepData[] = JSON.parse(JSON.stringify(dataObj[dataEmergencyDetail?.type as keyof typeof dataObj] || []));
 
+    dataTime = dataTime.map((item: StepData, index: number) => {
+      const date = new Date(dataEmergencyDetail?.sosEventInfo?.sosCallHistories?.[index]?.createdAt);
+      const hours = date.getHours();
+      const minutes = date.getMinutes();
+      const seconds = date.getSeconds();
 
-    dataTime = dataTime.map((item: any, index: number) => {
-      let date = new Date(dataEmergencyDetail?.sosEventInfo?.sosCallHistories[index]?.createdAt);
-      let hours = date.getHours();
-      let minutes = date.getMinutes();
-      let seconds = date.getSeconds();
-
-      // ตรวจสอบว่า hours, minutes, seconds ไม่เป็น NaN
       if (!isNaN(hours) && !isNaN(minutes) && !isNaN(seconds)) {
-        let strHours = hours.toString().padStart(2, '0');
-        let strMinutes = minutes.toString().padStart(2, '0');
-        let strSeconds = seconds.toString().padStart(2, '0');
+        const strHours = hours.toString().padStart(2, '0');
+        const strMinutes = minutes.toString().padStart(2, '0');
+        const strSeconds = seconds.toString().padStart(2, '0');
         item.time = `${strHours}:${strMinutes}:${strSeconds}`;
       } else {
         item.time = '00:00:00';
       }
+
+      // อัปเดตสถานะขั้นตอนตาม currentStep ปัจจุบัน
+      item.isActive = currentStep === index + 1;
+      item.isCompleted = currentStep > index + 1;
       return item;
     });
     return dataTime;
-  }, [dataEmergencyDetail, stepsEmergency, stepsDeviceWarning]);
+  }, [dataEmergencyDetail, stepsEmergency, stepsDeviceWarning, currentStep]);
+
+
+  const handleBack = () => {
+    if (statusCaseReceiveCast) {
+        dispatch.sosWarning.setDataEmergencyDetail({})
+        navigate('/dashboard/history-building')
+    } else {
+        dispatch.sosWarning.setDataEmergencyDetail({})
+    }
+  }
+
 
   return (
-    <div className="tep-step-container">
-      <div className="steps-wrapper">
-        {stepsWithTime.map((step, index) => (
-          <div key={index} className="step-item">
-            <div className={`step-circle ${step.isActive ? 'active' : ''} ${step.isCompleted ? 'completed' : ''}`}>
+    <>
+
+
+
+      <div className="tep-step-container">
+        <div className="w-full md:w-auto">
+          <Button
+              type="primary"
+              className="w-full !font-semibold !rounded-xl lg:w-[100px] !h-[40px] !bg-[#3C8BF1] !mb-4  md:mb-0"
+              onClick={handleBack}
+          >
+              Back
+          </Button>
+        </div>
+        <div className="steps-wrapper">
+          {stepsWithTime.map((step: StepData, index: number) => (
+            <div key={index} className="step-item">
+              <div className={`step-circle ${step.isActive ? 'active' : ''} ${step.isCompleted ? 'completed' : ''}`}>
+              </div>
+              
+              
+              <div className="step-content">
+                <h3 className="step-title">{step.title}</h3>
+                <div className="step-time">{step.time}</div>
+                <p className="step-description">{step.description}</p>
+              </div>
+              
+              
+              {index < stepsWithTime.length - 1 && (
+                <div className={`step-connector ${currentStep > index + 1 ? 'completed' : ''}`}></div>
+              )}
             </div>
-            
-            
-            <div className="step-content">
-              <h3 className="step-title">{step.title}</h3>
-              <div className="step-time">{step.time}</div>
-              <p className="step-description">{step.description}</p>
-            </div>
-            
-            
-            {index < stepsEmergency.length - 1 && (
-              <div className={`step-connector ${currentStep > index + 1 ? 'completed' : ''}`}></div>
-            )}
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

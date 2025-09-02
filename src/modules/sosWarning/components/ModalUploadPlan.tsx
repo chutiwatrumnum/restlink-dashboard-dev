@@ -5,7 +5,6 @@ import SuccessModal from "../../../components/common/SuccessModal";
 import FailedModal from "../../../components/common/FailedModal";
 import Content from "./uploadPlanMultiple/Content";
 import { updatePlanPlural } from "../service/api/SOSwarning";
-
 interface ModalFormUpdateProps {
   isModalOpen: boolean;
   setIsModalOpen: (isOpen: boolean) => void;
@@ -40,11 +39,11 @@ export const ModalUploadPlan: React.FC<ModalFormUpdateProps> = ({
         let responseChangePlan = await updatePlanPlural(dataChangePlan)
         if(responseChangePlan.status){
             setIsModalOpen(false);
-            SuccessModal("เปลี่ยน Plan สำเร็จ")
+            SuccessModal("Plan Changed Successfully")
         }
     }
     else {
-        FailedModal("เปลี่ยน Plan ไม่สำเร็จ",700)
+        FailedModal("Failed to change plan",700)
     }
 
   }

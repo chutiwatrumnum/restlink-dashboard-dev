@@ -730,7 +730,7 @@ const FormVillageLocation = ({
 
                     let data = await updateMarker(markerData)
                     if (data.status) {
-                        SuccessModal("แก้ไข Marker สำเร็จ",900)
+                        SuccessModal("Marker Updated Successfully",900)
                         // สร้าง updatedMarker object ที่มีค่า originalX และ originalY เป็นตำแหน่งปัจจุบัน
                         if (selectedMarker && selectedMarker.x !== undefined && 
                             selectedMarker.y !== undefined) {

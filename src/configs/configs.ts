@@ -19,7 +19,7 @@ const APP_VERSION_CODE_PROD = "1.0.0";
 
 const API_URL_OBJECT = {
   uat: "https://reslink-uat-rdpnc.ondigitalocean.app/api/v1.0",
-  prod: "https://the-stage-mindscape-app-jmsaf.ondigitalocean.app/api/v1.0",
+  prod: "https://api-prod.nexrestech.com/api/v1.0",
   dev: "https://reslink-dev-gcf3p.ondigitalocean.app/api/v1.0",
 };
 

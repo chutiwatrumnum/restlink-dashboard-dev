@@ -9,7 +9,7 @@ import "../../styles/SetupProject.css";
 const UploadPlan = () => {
 
     return (
-        <div className="h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6 flex flex-col relative font-sarabun">
+        <div className="h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6 flex flex-col relative ">
             <ProgressStep stepValue={0} progressSteps={3} />
             <div className="text-center  ">
                 <h1 className="text-2xl font-semibold text-gray-800">Upload property plan</h1>

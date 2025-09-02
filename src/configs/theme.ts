@@ -74,7 +74,7 @@ export const whiteLabel: WhiteLabelType = {
   // Semantic Colors
   dangerColor: "#AD1B20",
   warningColor: "#FAC63B",
-  successColor: "#63A164",
+  successColor: "#38BE43",
 
   // Text colors
   mainTextColor: "#3F3F3F",

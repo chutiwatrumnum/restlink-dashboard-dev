@@ -68,9 +68,12 @@ function AuthorizedLayout() {
           access_token === "undefined" ||
           access_token === ""
         ) {
-          console.log("❌ No access token found");
+          // console.log("❌ No access token found");
           throw "access_token not found";
         }
+
+        // ดึง project data ก่อนทำอย่างอื่นเสมอ
+        await dispatch.setupProject.setDataProject();
 
         // ถ้า isAuth เป็น true แล้ว แสดงว่าเพิ่ง login มา ไม่ต้อง refresh token
         if (isAuth) {
@@ -86,12 +89,13 @@ function AuthorizedLayout() {
         }
 
         // Token valid - initialize app
+        await dispatch.setupProject.setDataProject();
         await dispatch.common.fetchUnitOptions();
         dispatch.userAuth.updateAuthState(true);
 
         return true;
       } catch (error) {
-        console.log("❌ Auth check failed:", error);
+        // console.log("❌ Auth check failed:", error);
         dispatch.userAuth.onLogout();
         navigate("/auth", { replace: true });
         return false;

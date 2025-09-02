@@ -2,7 +2,7 @@ import React, { createContext, useContext, ReactNode } from 'react';
 
 // สร้าง interface สำหรับ context value
 interface SecurityAlarmContextType {
-  handleCallCustomer: (membre: any,status:boolean) => void;
+  handleCallCustomer: (membre: any, status: boolean, setCallTime: (time: any) => void) => void | Promise<void>;
 }
 
 // สร้าง Context
@@ -11,7 +11,7 @@ const SecurityAlarmContext = createContext<SecurityAlarmContextType | undefined>
 // สร้าง Provider component
 interface SecurityAlarmProviderProps {
   children: ReactNode;
-  handleCallCustomer: (member: any,status:boolean) => void;
+  handleCallCustomer: (member: any, status: boolean, setCallTime: (time: any) => void) => void | Promise<void>;
 }
 
 export const SecurityAlarmProvider: React.FC<SecurityAlarmProviderProps> = ({ 

@@ -121,7 +121,7 @@ export const userAuth = createModel<RootModel>()({
 
         try {
           // ลองเรียก profile API (ถ้ามี)
-          const userData = await axios.get("/mcst/profile");
+          const userData = await axios.get("/user/profile");
           if (userData.data && userData.data.result) {
             encryptStorage.setItem("userData", userData.data.result);
           }

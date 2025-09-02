@@ -4,7 +4,7 @@ import { encryptStorage } from "../utils/encryptStorage";
 const URL = "https://reslink-dev-gcf3p.ondigitalocean.app/chat";
 const access_token = encryptStorage.getItem("access_token");
 
-export const socket = io(URL, {
+export const socket = io(URL, { autoConnect: false,
   reconnection: true,
   reconnectionAttempts: 2,
   reconnectionDelay: 1000,

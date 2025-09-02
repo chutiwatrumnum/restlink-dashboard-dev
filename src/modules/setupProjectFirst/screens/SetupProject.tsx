@@ -6,14 +6,24 @@ import logoProject from "../../../assets/images/setupProject/LogoProject.png";
 import { useNavigate } from "react-router-dom";
 import { useDispatch,useSelector } from "react-redux";
 import { RootState } from "../../../stores";
+import { getProject } from "../service/api/SetupProject";
 const SetupProject = () => {
   const navigate = useNavigate();
   const { projectData } = useSelector((state: RootState) => state.setupProject);
+  const dispatch = useDispatch();
+  const setTypeRedirect = async ()=>{
+    
+    if(projectData && Object.keys(projectData).length === 0){
+      const response = await getProject() 
+      if(response.status){
+        await dispatch.setupProject.setProjectData(response || {});
+      }
+    }
 
-  const setTypeRedirect = ()=>{
     let projectType = projectData?.projectType?.nameCode || '';
     const strType = projectType.split('_');
     projectType = strType[strType.length - 1];
+    console.log(projectType,'projectType')
     if(projectType === 'village'){
       navigate("/setup-project/upload-plan")
     }

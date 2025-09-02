@@ -75,11 +75,11 @@ const ListMember = () => {
 
             <div className="h-full flex flex-col">
                 {/* Header */}
-                <div className="p-6 px-0 border-gray-100 flex-shrink-0">
-                    <div className="w-full text-2xl text-[#3C8BF1] mb-3 !font-semibold font-sarabun">
+                <div className="pt-6 pb-4 px-0 border-gray-100 flex-shrink-0">
+                    <div className="w-full text-2xl text-[#3C8BF1] mb-3 !font-semibold ">
                         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
-                            <span className="text-left"> List of household members </span>
-                            <div className="w-full md:w-auto">
+                            <span className="text-left !text-3xl font-semibold "> List of household members </span>
+                            {/* <div className="w-full md:w-auto">
                                 <Button
                                     type="primary"
                                     className="w-full !rounded-xl lg:w-[150px]"
@@ -87,12 +87,12 @@ const ListMember = () => {
                                 >
                                     Back
                                 </Button>
-                            </div>
+                            </div> */}
                         </div>
                     </div>
                     <div className="flex items-center text-gray-500">
-                        <img src={HomeBlue} alt="HomeBlue" className="mr-6" />
-                        <span className="text-sm text-xl text-[#929292] font-semibold font-sarabun">
+                        <img src={HomeBlue} alt="HomeBlue" className="mr-10" />
+                        <span className="text-sm !text-2xl text-[#929292] font-semibold ">
                             {dataEmergencyDetail?.sosEventInfo?.unit?.roomAddress || '-'}
                         </span>
                     </div>
@@ -100,21 +100,22 @@ const ListMember = () => {
 
                 {/* Members List */}
                 <div className="divide-y divide-gray-100 flex-1 overflow-y-auto">
-                    {listMembersContract.map((member: any, index: number) => (
-                        <Content
-                            key={member.id}
-                            member={member}
-                            handleCallCustomer={handleCallCustomer}
-                            convertDate={convertDate}
-                            index={index}
-                        />
-                    )
-                    )
+                    {
+                        listMembersContract.map((member: any, index: number) => (
+                            <Content
+                                key={member.id}
+                                member={member}
+                                handleCallCustomer={handleCallCustomer}
+                                convertDate={convertDate}
+                                index={index}
+                            />
+                        )
+                        )
                     }
 
                     {listMembersContract.length === 0 && (
                         <div className="flex justify-center items-center h-full">
-                            <div className="text-gray-500 text-sm font-medium font-sarabun !text-lg">
+                            <div className="text-gray-500 text-sm font-medium  !text-lg">
                                 ไม่มีข้อมูลสมาชิก
                             </div>
                         </div>

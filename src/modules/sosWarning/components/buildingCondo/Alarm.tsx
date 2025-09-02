@@ -7,7 +7,7 @@ const AlarmIcon = ({nameAlarm}:{nameAlarm:string}) => {
                         text-white
                         alarm-bell-body text-normal flex items-center 
                         justify-center 
-                        text-xs font-sarabun text-center font-bold
+                        text-xs  text-center font-bold
                         absolute inset-0
                     ">
                         {nameAlarm}

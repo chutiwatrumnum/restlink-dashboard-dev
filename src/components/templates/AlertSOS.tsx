@@ -46,6 +46,11 @@ const AlertSOS = ({isAuth}:any) => {
 
   useEffect(() => {
     async function connectSocket() {
+      // guard: ยังไม่ล็อกอินหรือไม่มี token ให้ return
+      const token = await encryptStorage.getItem("access_token");
+      if (!isAuth || !token || token === "undefined" || token === "") {
+        return;
+      }
       const getEmergencyData = async () => {
         let dataEmergency = await getEventPending();
         if (dataEmergency.status) {
@@ -121,10 +126,8 @@ const AlertSOS = ({isAuth}:any) => {
     }
 
     // เชื่อมต่อ socket เฉพาะเมื่อ login แล้ว
-    if (isAuth) {
-      connectSocket();
-    }
-  }, []);
+    connectSocket();
+  }, [isAuth]);
 
 
     const navigate = useNavigate();
@@ -184,7 +187,7 @@ const AlertSOS = ({isAuth}:any) => {
           >
             {/* แสดงจำนวนแจ้งเตือนรวม */}
             <div className="text-white text-xl font-bold 
-             flex flex-col  items-center justify-center my-auto h-full font-sarabun
+             flex flex-col  items-center justify-center my-auto h-full 
             ">
               <div>
                 SOS 

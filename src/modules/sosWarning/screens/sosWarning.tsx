@@ -862,7 +862,7 @@ const SOSWarning = () => {
     let dataDelete = await deletePlanAccount(id);
     if (dataDelete.status) {
       setLoadingText("ลบแผนที่สำเร็จ กำลังรีเฟรชหน้า...");
-      await SuccessModal("ลบแผนที่สำเร็จ", 1000);
+      await SuccessModal("Plan Deleted Successfully", 1000);
       window.location.reload();
     }
     else {
@@ -873,10 +873,10 @@ const SOSWarning = () => {
   const deletePlan = async () => {
     let id = dataMapAll?.id || '';
     ConfirmModal({
-      title: "ยืนยันลบแผนที่",
+      title: "Confirm Delete Plan",
       message: "",
-      okMessage: "ลบ",
-      cancelMessage: "ยกเลิก",
+      okMessage: "Delete",
+      cancelMessage: "Cancel",
       onOk: () => confirmDeletePlan(id),
       onCancel: () => { }
     });
@@ -1348,11 +1348,8 @@ const SOSWarning = () => {
                 </div>
               )}
             </div>
-
-
           </GlobalProvider>
         </div>
-
       </div>
 
 

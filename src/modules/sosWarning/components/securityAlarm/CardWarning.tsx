@@ -92,12 +92,10 @@ const SecurityAlarm = () => {
     };
 
     return (
-        <div className="min-h-screen lg:h-screen font-sarabun flex flex-col lg:overflow-hidden">
+        <div className="min-h-screen lg:h-screen flex flex-col overflow-auto lg:overflow-hidden">
             <div className="flex-1 flex flex-col p-4 md:p-6 lg:p-6">
                 {/* Stepper */}
-                <div className="mb-8">
                     <TepStep currentStep={dataEmergencyDetail.sosEventInfo.step} />
-                </div>
 
                 {/* Main Content - Row Layout */}
                 {/* <div className="text-end mb-4 w-full sm:w-full md:w-auto">
@@ -111,25 +109,25 @@ const SecurityAlarm = () => {
                         Back
                     </Button>
                 </div> */}
-                <Row gutter={[16, 16]} className="flex-1">
+                <Row gutter={[16, 16]} className="flex-1 ">
                     {/* Left Column - Household Members List + Action Steps */}
                     <Col xs={24} lg={16} className="flex">
-                        <div className="bg-white rounded-lg flex-1 min-h-[400px] lg:h-[calc(100vh-220px)] flex flex-col overflow-hidden">
-                            <Row className="!h-full flex-1">
+                        <div className="bg-white rounded-lg flex-1 min-h-[400px] lg:h-[calc(100vh-256px)] flex flex-col overflow-hidden">
+                            <Row className="!h-full !py-4 flex-1">
                                 {/* Household Members List */}
                                 <Col 
                                     xs={24} 
                                     sm={24} 
                                     md={24} 
-                                    lg={checkEnableContract ? 14 : 24} 
-                                    xl={checkEnableContract ? 14 : 24}
-                                    className={`h-full ${checkEnableContract ? 'lg:border-r-2 lg:border-[#C6C8C9]' : ''}`}>
+                                    lg={14} 
+                                    xl={14}
+                                    className={`h-full lg:border-r-2 lg:border-[#C6C8C9]`}>
                                     <div className="px-4 h-full overflow-y-auto">
                                         <ListMember/>
                                     </div>
+                                    <div className="block lg:hidden border-b-2 border-[#C6C8C9] mx-4 mt-2"></div>
                                 </Col>
-                                {
-                                    checkEnableContract && (
+
                                         <Col 
                                             xs={24} 
                                             sm={24} 
@@ -138,18 +136,18 @@ const SecurityAlarm = () => {
                                             xl={10}
                                             className="h-full">
                                             <div className="h-full overflow-y-auto px-4 lg:px-0">
-                                                <ContractMember statusContract={statusContract} setStatusContract={setStatusContract}></ContractMember>
+                                                <ContractMember 
+                                                checkEnableContract={checkEnableContract}
+                                                statusContract={statusContract} setStatusContract={setStatusContract}></ContractMember>
                                             </div>
                                         </Col>
-                                    )
-                                }
                             </Row>
                         </div>
                     </Col>
 
                     {/* Right Column - Door Sensors */}
                     <Col xs={24} lg={8} className="flex">
-                        <div className="bg-white rounded-lg flex-1 min-h-[400px] lg:h-[calc(100vh-220px)] overflow-hidden">
+                        <div className="flex-1 min-h-[400px] lg:h-[calc(100vh-256px)] overflow-hidden">
                             <DeviceList doorSensors={doorSensors} />
                         </div>
                     </Col>

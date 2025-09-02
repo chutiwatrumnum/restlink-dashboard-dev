@@ -99,54 +99,53 @@ const CardEmergency = () => {
 
 
     return (
-        <div className="min-h-screen lg:h-screen font-sarabun flex flex-col lg:overflow-hidden">
+        <div className="min-h-screen lg:h-screen flex flex-col overflow-auto lg:overflow-hidden">
             <div className="flex-1 flex flex-col p-4 md:p-6 lg:p-6">
                 {/* Stepper */}
-                <div className="mb-8">
                     <TepStep currentStep={currentStep} />
-                </div>
                 {/* Main Content - Row Layout */}
-                <Row gutter={[16, 16]} className="flex-1">
+                <Row gutter={[20, 20]}>
                     {/* Left Column - Household Members List + Action Steps */}
-                    <Col xs={24} lg={16} className="flex !pe-0">
-                        <div className="bg-white rounded-lg flex-1 min-h-[400px] lg:h-[calc(100vh-220px)] flex flex-col overflow-hidden">
+                    <Col xs={24} lg={16} className="flex pr-0 md:pr-4">
+                        <div className="bg-white rounded-lg flex-1 min-h-[400px] lg:h-[calc(100vh-256px)] flex flex-col overflow-hidden">
                             <Row className="!h-full flex-1 !py-4">
                                 {/* Household Members List */}
                                 <Col
                                     xs={24}
                                     sm={24}
                                     md={24}
-                                    lg={enableContractOfficer ? 14 : 24}
-                                    xl={enableContractOfficer ? 14 : 24}
-                                    className={`h-full ${enableContractOfficer ? 'lg:border-r-2 lg:border-[#C6C8C9]' : ''}`}>
-                                    <div className="px-4 h-full overflow-y-auto">
+                                    lg={14}
+                                    xl={14}
+                                    className={`h-full lg:border-r-2 lg:border-[#C6C8C9]`}>
+                                    <div className="px-4 h-full lg:overflow-y-auto">
                                         <ListMember />
                                     </div>
+                                    <div className="block lg:hidden border-b-2 border-[#C6C8C9] mx-4 mt-2"></div>
 
                                 </Col>
-                                {
-                                    enableContractOfficer && (
-                                        <Col
-                                            xs={24}
-                                            sm={24}
-                                            md={24}
-                                            lg={10}
-                                            xl={10}
-                                            className="h-full">
-                                            <div className="h-full overflow-y-auto">
-                                                <ContractOfficer statusContract={statusContract} setStatusContract={setStatusContract}></ContractOfficer>
-                                            </div>
-                                        </Col>
-                                    )
-                                }
+                                <Col
+                                    xs={24}
+                                    sm={24}
+                                    md={24}
+                                    lg={10}
+                                    xl={10}
+                                    className="h-full">
+                                    <div className="h-full lg:overflow-y-auto">
+                                        <ContractOfficer 
+                                        enableContractOfficer={enableContractOfficer}
+                                        statusContract={statusContract} setStatusContract={setStatusContract}></ContractOfficer>
+                                    </div>
+                                </Col>
+                                    
+                                
 
                             </Row>
                         </div>
                     </Col>
 
                     {/* Right Column - Door Sensors */}
-                    <Col xs={24} lg={8} className="flex !ps-0">
-                        <div className=" h-full bg-white rounded-lg flex-1 min-h-[400px] lg:h-[calc(100vh-220px)] overflow-hidden">
+                    <Col xs={24} lg={8} className="flex pl-0 md:pl-4">
+                        <div className=" h-full  rounded-lg flex-1 min-h-[400px] lg:h-[calc(100vh-256px)] overflow-hidden">
                             <DeviceList doorSensors={doorSensors} />
                         </div>
                     </Col>

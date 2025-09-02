@@ -50,6 +50,8 @@ const UnauthorizedLayout = () => {
         const responseStep = await dispatch.setupProject.getStepCondoModel();
         // ถ้า login แล้วและมี token ให้ redirect ไป dashboard
         if (isAuth && access_token && access_token !== "undefined") {
+          // ดึง project data ก่อนเสมอ
+          await dispatch.setupProject.setDataProject();
           
           if(responseStep !== 3){
             checkSetupProject();

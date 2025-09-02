@@ -14,7 +14,6 @@ import {
 import IconImagePhoto from "../../../assets/images/IconImagePhoto.png";
 import { WarrantyDetailsType } from "../../../stores/interfaces/Warranty";
 import SuccessModal from "../../../components/common/SuccessModal";
-
 interface ModalFormUpdateProps {
   isOpen: boolean;
   onClose?: () => void;
@@ -70,7 +69,7 @@ export const ModalFormUpdate: React.FC<ModalFormUpdateProps> = ({
         setImageUrl(undefined);
         setIsModalOpen(false);
         if (onClose) onClose();
-        SuccessModal(selectedWarranty ? "แก้ไขการรับประกันสำเร็จ" : "เพิ่มการรับประกันสำเร็จ");
+        SuccessModal(selectedWarranty ? "Warranty updated successfully" : "Warranty added successfully");
       })
       .catch((info) => {
         console.log("Validate Failed:", info);

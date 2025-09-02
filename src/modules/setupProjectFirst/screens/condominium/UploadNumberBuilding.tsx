@@ -10,7 +10,7 @@ import { useDispatch } from "react-redux";
 const UploadNumberBuilding = () => {
     
     return (
-        <div className="h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6 flex flex-col relative font-sarabun">  
+        <div className="h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6 flex flex-col relative ">  
             <ProgressStep stepValue={0} progressSteps={3} />
             <div className="text-center  ">
                 <div className="text-2xl font-semibold text-gray-800 mb-10">

@@ -129,7 +129,7 @@ const SideMenu = ({
   // Data
   const { data: projectData } = getProjectIDQuery();
   const { access } = usePermission(projectData?.permission ?? []);
-  console.log(projectData?.permission);
+  // console.log(projectData);
 
   if (!!projectData?.permission) {
     dispatch.common.updatePermission(projectData?.permission);
@@ -257,7 +257,8 @@ const SideMenu = ({
             navigate(key);
             onMenuChange();
           }}
-          onOpenChange={setOpenKeys}>
+          onOpenChange={setOpenKeys}
+        >
           <Menu.Item
             key={`${main_link}/profile`}
             icon={
@@ -266,7 +267,8 @@ const SideMenu = ({
                 className="sideMenuIcon"
               />
             }
-            hidden={!access("profile", "view")}>
+            hidden={!access("profile", "view")}
+          >
             <Link to={`${main_link}/profile`}>Profile</Link>
           </Menu.Item>
           <SubMenu
@@ -277,7 +279,8 @@ const SideMenu = ({
                 className="sideMenuIcon"
               />
             }
-            title="Management team">
+            title="Management team"
+          >
             <Menu.Item
               key={`${main_link}/juristicInvitation`}
               icon={
@@ -286,7 +289,8 @@ const SideMenu = ({
                   className="sideMenuIcon"
                 />
               }
-              hidden={!access("team_management", "view")}>
+              hidden={!access("team_management", "view")}
+            >
               <Link to={`${main_link}/juristicInvitation`}>
                 Juristic invitations
               </Link>
@@ -300,7 +304,8 @@ const SideMenu = ({
                   className="sideMenuIcon"
                 />
               }
-              hidden={!access("team_management", "view")}>
+              hidden={!access("team_management", "view")}
+            >
               <Link to={`${main_link}/juristicManage`}>Juristic list</Link>
             </Menu.Item>
 
@@ -312,7 +317,8 @@ const SideMenu = ({
                   className="sideMenuIcon"
                 />
               }
-              hidden={!access("team_management", "view")}>
+              hidden={!access("team_management", "view")}
+            >
               <Link to={`${main_link}/staffManage`}>Staff management</Link>
             </Menu.Item> */}
 
@@ -324,7 +330,8 @@ const SideMenu = ({
                   className="sideMenuIcon"
                 />
               }
-              hidden={!access("team_management", "view")}>
+              hidden={!access("team_management", "view")}
+            >
               <Link to={`${main_link}/juristicTeamPermission`}>
                 Juristic team permission
               </Link>
@@ -338,7 +345,8 @@ const SideMenu = ({
                 className="sideMenuIcon"
               />
             }
-            title="Management">
+            title="Management"
+          >
             <Menu.Item
               key={`${main_link}/invitation`}
               icon={
@@ -347,7 +355,8 @@ const SideMenu = ({
                   className="sideMenuIcon"
                 />
               }
-              hidden={!access("users", "view")}>
+              hidden={!access("users", "view")}
+            >
               <Link to={`${main_link}/invitation`}>Invitations</Link>
             </Menu.Item>
             <Menu.Item
@@ -358,7 +367,8 @@ const SideMenu = ({
                   className="sideMenuIcon"
                 />
               }
-              hidden={!access("users", "view")}>
+              hidden={!access("users", "view")}
+            >
               <Link to={`${main_link}/userManagement`}>User management</Link>
             </Menu.Item>
             <Menu.Item
@@ -369,7 +379,8 @@ const SideMenu = ({
                   className="sideMenuIcon"
                 />
               }
-              hidden={!access("room_management", "view")}>
+              hidden={!access("room_management", "view")}
+            >
               <Link to={`${main_link}/roomManagement`}>Room management</Link>
             </Menu.Item>
           </SubMenu>
@@ -381,7 +392,8 @@ const SideMenu = ({
                 className="sideMenuIcon"
               />
             }
-            hidden={!access("announcement", "view")}>
+            hidden={!access("announcement", "view")}
+          >
             <Link to={`${main_link}/announcement`}>Announcement</Link>
           </Menu.Item>
           <Menu.Item
@@ -392,7 +404,8 @@ const SideMenu = ({
                 className="sideMenuIcon"
               />
             }
-            hidden={!access("chat", "view")}>
+            hidden={!access("chat", "view")}
+          >
             <Link to={`${main_link}/liveChat`}>Chat</Link>
           </Menu.Item>
           <SubMenu
@@ -403,7 +416,8 @@ const SideMenu = ({
                 className="sideMenuIcon"
               />
             }
-            title="Documents">
+            title="Documents"
+          >
             <Menu.Item
               key={`${main_link}/houseDocument`}
               icon={
@@ -412,7 +426,8 @@ const SideMenu = ({
                   className="sideMenuIcon"
                 />
               }
-              hidden={!access("document_home", "view")}>
+              hidden={!access("document_home", "view")}
+            >
               <Link to={`${main_link}/houseDocument`}>House documents</Link>
             </Menu.Item>
             <Menu.Item
@@ -423,7 +438,8 @@ const SideMenu = ({
                   className="sideMenuIcon"
                 />
               }
-              hidden={!access("maintenance_guide", "view")}>
+              hidden={!access("maintenance_guide", "view")}
+            >
               <Link to={`${main_link}/projectInfo`}>Project info</Link>
             </Menu.Item>
           </SubMenu>
@@ -436,7 +452,8 @@ const SideMenu = ({
                 className="sideMenuIcon"
               />
             }
-            hidden={!access("parcels", "view")}>
+            hidden={!access("parcels", "view")}
+          >
             <Link to={`${main_link}/parcels`}>Parcel</Link>
           </Menu.Item>
           <Menu.Item
@@ -447,7 +464,8 @@ const SideMenu = ({
                 className="sideMenuIcon"
               />
             }
-            hidden={!access("contact_list", "view")}>
+            hidden={!access("contact_list", "view")}
+          >
             <Link to={`${main_link}/contactLists`}>Contact lists</Link>
           </Menu.Item>
           <SubMenu
@@ -458,7 +476,8 @@ const SideMenu = ({
                 className="sideMenuIcon"
               />
             }
-            title="Fixing">
+            title="Fixing"
+          >
             <Menu.Item
               key={`${main_link}/serviceDashboard`}
               icon={
@@ -467,7 +486,8 @@ const SideMenu = ({
                   className="sideMenuIcon"
                 />
               }
-              hidden={!access("fixing_report", "view")}>
+              hidden={!access("fixing_report", "view")}
+            >
               <Link to={`${main_link}/serviceDashboard`}>Fixing dashboard</Link>
             </Menu.Item>
             <Menu.Item
@@ -478,7 +498,8 @@ const SideMenu = ({
                   className="sideMenuIcon"
                 />
               }
-              hidden={!access("fixing_report", "view")}>
+              hidden={!access("fixing_report", "view")}
+            >
               <Link to={`${main_link}/serviceCenterLists`}>Fixing lists</Link>
             </Menu.Item>
             <Menu.Item
@@ -489,7 +510,8 @@ const SideMenu = ({
                   className="sideMenuIcon"
                 />
               }
-              hidden={!access("fixing_report_chat", "view")}>
+              hidden={!access("fixing_report_chat", "view")}
+            >
               <Link to={`${main_link}/ServiceChat`}>Messages</Link>
             </Menu.Item>
           </SubMenu>
@@ -501,7 +523,8 @@ const SideMenu = ({
                 className="sideMenuIcon"
               />
             }
-            title="Event">
+            title="Event"
+          >
             <Menu.Item
               key={`${main_link}/event-logs`}
               icon={
@@ -510,7 +533,8 @@ const SideMenu = ({
                   className="sideMenuIcon"
                 />
               }
-              hidden={!access("events", "view")}>
+              hidden={!access("events", "view")}
+            >
               <Link to={`${main_link}/event-logs`}>Event logs</Link>
             </Menu.Item>
             <Menu.Item
@@ -521,7 +545,8 @@ const SideMenu = ({
                   className="sideMenuIcon"
                 />
               }
-              hidden={!access("events", "view")}>
+              hidden={!access("events", "view")}
+            >
               <Link to={`${main_link}/event-joining-logs`}>
                 Event joining logs
               </Link>
@@ -534,7 +559,8 @@ const SideMenu = ({
                   className="sideMenuIcon"
                 />
               }
-              hidden={!access("events", "view")}>
+              hidden={!access("events", "view")}
+            >
               <Link to={`${main_link}/visitor-management-log`}>
                 Visitor management log
               </Link>
@@ -583,7 +609,8 @@ const SideMenu = ({
                 className="sideMenuIcon"
               />
             }
-            title="Facility booking">
+            title="Facility booking"
+          >
             <Menu.Item
               key={`${main_link}/facility`}
               icon={
@@ -592,7 +619,8 @@ const SideMenu = ({
                   className="sideMenuIcon"
                 />
               }
-              hidden={!access("facility", "view")}>
+              hidden={!access("facility", "view")}
+            >
               <Link to={`${main_link}/facility`}>Facility</Link>
             </Menu.Item>
             <Menu.Item
@@ -603,7 +631,8 @@ const SideMenu = ({
                   className="sideMenuIcon"
                 />
               }
-              hidden={!access("facility", "view")}>
+              hidden={!access("facility", "view")}
+            >
               <Link to={`${main_link}/bookingList`}>Booking list</Link>
             </Menu.Item>
           </SubMenu>
@@ -629,7 +658,8 @@ const SideMenu = ({
                         minWidth: "18px",
                         fontSize: "10px",
                         lineHeight: "1",
-                      }}>
+                      }}
+                    >
                       {dataEmergency.emergency.length}
                     </span>
                   )}
@@ -642,13 +672,15 @@ const SideMenu = ({
                         minWidth: "18px",
                         fontSize: "10px",
                         lineHeight: "1",
-                      }}>
+                      }}
+                    >
                       {dataEmergency.deviceWarning.length}
                     </span>
                   )}
                 </div>
               </div>
-            }>
+            }
+          >
             {/* <Menu.Item
               key={`${main_link}/security-alarm`}
               icon={
@@ -668,7 +700,8 @@ const SideMenu = ({
                   className="sideMenuIcon"
                 />
               }
-              hidden={!access("sos_security", "view")}>
+              hidden={!access("sos_security", "view")}
+            >
               <Link to={`${main_link}/history-building`}>History building</Link>
             </Menu.Item>
 
@@ -680,7 +713,8 @@ const SideMenu = ({
                   className="sideMenuIcon"
                 />
               }
-              hidden={!access("sos_security", "view")}>
+              hidden={!access("sos_security", "view")}
+            >
               <Link to={`${main_link}/manage-plan`}>Manage Plan</Link>
             </Menu.Item>
           </SubMenu>
@@ -692,7 +726,8 @@ const SideMenu = ({
                 className="sideMenuIcon"
               />
             }
-            hidden={!access("warranty_tracking", "view")}>
+            hidden={!access("warranty_tracking", "view")}
+          >
             <Link to={`${main_link}/warranty-tracking`}>Warranty tracking</Link>
           </Menu.Item>
 
@@ -704,7 +739,8 @@ const SideMenu = ({
                 className="sideMenuIcon"
               />
             }
-            title="VMS Management">
+            title="VMS Management"
+          >
             <Menu.Item
               key={`${main_link}/vms-invitation`}
               icon={
@@ -713,7 +749,8 @@ const SideMenu = ({
                   className="sideMenuIcon"
                 />
               }
-              hidden={!access("vms", "view")}>
+              hidden={!access("vms", "view")}
+            >
               <Link to={`${main_link}/vms-invitation`}>VMS Invitations</Link>
             </Menu.Item>
 
@@ -725,7 +762,8 @@ const SideMenu = ({
                   className="sideMenuIcon"
                 />
               }
-              hidden={!access("vms", "view")}>
+              hidden={!access("vms", "view")}
+            >
               <Link to={`${main_link}/vms-vehicle`}>VMS Vehicles</Link>
             </Menu.Item>
 
@@ -737,7 +775,8 @@ const SideMenu = ({
                   className="sideMenuIcon"
                 />
               }
-              hidden={!access("vms", "view")}>
+              hidden={!access("vms", "view")}
+            >
               <Link to={`${main_link}/vms-visitor`}>VMS Visitors Logs</Link>
             </Menu.Item>
 
@@ -749,7 +788,8 @@ const SideMenu = ({
                   className="sideMenuIcon"
                 />
               }
-              hidden={!access("vms", "view")}>
+              hidden={!access("vms", "view")}
+            >
               <Link to={`${main_link}/vms-log-access`}>Access Logs</Link>
             </Menu.Item>
 
@@ -761,7 +801,8 @@ const SideMenu = ({
                   className="sideMenuIcon"
                 />
               }
-              hidden={!access("vms", "view")}>
+              hidden={!access("vms", "view")}
+            >
               <Link to={`${main_link}/vms-log-passage`}>Passage Logs</Link>
             </Menu.Item>
           </SubMenu>
@@ -778,7 +819,8 @@ const SideMenu = ({
                 className="sideMenuIcon"
               />
             }
-            onClick={logoutHandler}>
+            onClick={logoutHandler}
+          >
             <span style={{ color: "#9CA3AF" }}>Logout</span>
           </Menu.Item>
         </Menu>
