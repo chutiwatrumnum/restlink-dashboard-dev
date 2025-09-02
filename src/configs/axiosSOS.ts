@@ -1,10 +1,11 @@
 import axios, { AxiosInstance } from "axios";
 import { encryptStorage } from "../utils/encryptStorage";
 import { store } from "../stores";
+import { SOS_API_URL } from "../configs/configs";
 
 // สร้าง axios instance เฉพาะสำหรับ SOS APIs
 const axiosSOS: AxiosInstance = axios.create({
-  baseURL: 'https://reslink-security-wqi2p.ondigitalocean.app/api/v1.0',
+  baseURL: SOS_API_URL,
   timeout: 30000, // เพิ่มจาก 10 วินาที เป็น 30 วินาที
   headers: {
     'Content-Type': 'application/json',

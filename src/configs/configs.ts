@@ -1,32 +1,27 @@
-export const MODE = "dev"; // dev, uat
+// src/utils/config.ts
 
-// [0] == version
-// [1] == type of server
-// [2] == major version
-// [3] == minor version
-/*
-0 = DEV
-1 = SIT
-2 = UAT
-3 = UAT.
-*/
-// uat
-const APP_VERSION_CODE_UAT = "0.0.1.0";
-// dev
-const APP_VERSION_CODE_DEV = "0.0.7.1-dev";
-// prod
-const APP_VERSION_CODE_PROD = "1.0.0";
+const MODE = import.meta.env.VITE_MODE as "dev" | "uat" | "prod";
 
-const API_URL_OBJECT = {
-  uat: "https://reslink-uat-rdpnc.ondigitalocean.app/api/v1.0",
-  prod: "https://api-prod.nexrestech.com/api/v1.0",
-  dev: "https://reslink-dev-gcf3p.ondigitalocean.app/api/v1.0",
+const API_URL_MAP = {
+  dev: import.meta.env.VITE_DEV_API_URL,
+  uat: import.meta.env.VITE_UAT_API_URL,
+  prod: import.meta.env.VITE_PROD_API_URL,
 };
 
-export const APP_VERSION =
-  MODE === "uat"
-    ? APP_VERSION_CODE_UAT
-    : MODE === "prod"
-    ? APP_VERSION_CODE_PROD
-    : APP_VERSION_CODE_DEV;
-export const API_URL = API_URL_OBJECT[MODE as keyof typeof API_URL_OBJECT];
+const APP_VERSION_MAP = {
+  dev: import.meta.env.VITE_DEV_APP_VERSION,
+  uat: import.meta.env.VITE_UAT_APP_VERSION,
+  prod: import.meta.env.VITE_PROD_APP_VERSION,
+};
+
+const SOS_API_URL_MAP = {
+  dev: import.meta.env.VITE_DEV_SOS_API_URL,
+  uat: import.meta.env.VITE_UAT_SOS_API_URL,
+  prod: import.meta.env.VITE_PROD_SOS_API_URL,
+};
+
+export const API_URL = API_URL_MAP[MODE];
+export const APP_VERSION = APP_VERSION_MAP[MODE];
+export const SOS_API_URL = SOS_API_URL_MAP[MODE];
+
+export { MODE };
