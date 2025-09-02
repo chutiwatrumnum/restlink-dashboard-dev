@@ -190,6 +190,19 @@ export interface ReservedRowListDataType {
   facilityName: string;
   createdUser: CreatedUser;
   createdByRole: CreatedByRoleType;
+  status: ReservedStatusType;
+}
+
+export interface ReservedStatusType {
+  nameCode:
+    | "reserved"
+    | "expired"
+    | "activated"
+    | "completed"
+    | "cancel"
+    | string;
+  nameEn: string;
+  nameTh: string;
 }
 export interface CreatedByRoleType {
   name: string;
@@ -219,6 +232,8 @@ export interface ReservedDataPayloadType {
   curPage: number;
   perPage: number;
   date?: string;
+  sortBy?: "status"; // เช่น "status"
+  sort?: "asc" | "desc";
 }
 
 export interface ReservedUnitDataType {

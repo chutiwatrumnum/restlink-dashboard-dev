@@ -243,6 +243,9 @@ export const userAuth = createModel<RootModel>()({
           roleName: null,
         });
 
+        // ล้างข้อมูล projectData ของ setupProject
+        dispatch.setupProject.setProjectData({});
+
         dispatch.userAuth.updateAuthState(false);
         return true;
       } catch (error) {
@@ -261,6 +264,9 @@ export const userAuth = createModel<RootModel>()({
           vmsToken: null,
           roleName: null,
         });
+
+        // ล้างข้อมูล projectData ของ setupProject (ในกรณี error)
+        dispatch.setupProject.setProjectData({});
 
         dispatch.userAuth.updateAuthState(false);
         return false;

@@ -174,7 +174,7 @@ const AlertSOS = ({isAuth}:any) => {
     {isVisible && (
         <div 
           ref={alertRef} 
-          className={`fixed top-20 right-15 z-50 transition-all duration-500 ${
+          className={`fixed top-13 right-15 z-50 transition-all duration-500 ${
             isAnimatingOut ? 'animate-fade-out' : 'animate-slide-in'
           }`}
         >

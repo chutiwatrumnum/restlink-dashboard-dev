@@ -89,27 +89,8 @@ const UploadFloorPlan = () => {
         if (selectedBuilding) {
             saveCurrentBuildingData(selectedBuilding);
         }
-        // รวบรวมข้อมูลทั้งหมด
-        const allBuildingsData = {
-            currentBuilding: {
-                id: selectedBuilding,
-                data: {
-                    storeData,
-                    storeDataOriginal,
-                    fileList,
-                    selectedFloors
-                }
-            },
-            allBuildings: Object.entries(buildingData).map(([buildingId, data]) => ({
-                id: buildingId,
-                data: {
-                    storeData: data.storeData,
-                    storeDataOriginal: data.storeDataOriginal,
-                    fileList: data.fileList,
-                    selectedFloors: data.selectedFloors
-                }
-            }))
-        };
+
+
         let buildingDataNewObject: { [key: string]: any } = {};
         Object.entries(buildingData).forEach(([buildingId, data]) => {
             buildingDataNewObject[buildingId] = {
@@ -119,7 +100,7 @@ const UploadFloorPlan = () => {
                 fileList: [...data.fileList]
             };
         });
-
+         console.log(buildingDataNewObject,'buildingDataNewObject')
 
         
         // แปลงข้อมูลให้มี buildingId ด้วย
@@ -182,6 +163,7 @@ const UploadFloorPlan = () => {
                 }
             }
         }
+        console.log(cardStorData,'cardStorData')
         let objSetupFinish = cardStorData.map((item: any) => ({
             blockId: item.buildingId,
             plan: item.cards.map((card: any) => ({
@@ -307,6 +289,8 @@ const UploadFloorPlan = () => {
     const saveCurrentBuildingData = (buildingId: string) => {
         if (!buildingId) return;
         
+
+        console.log(storeData,'storeData')
         setBuildingData(prev => ({
             ...prev,
             [buildingId]: {

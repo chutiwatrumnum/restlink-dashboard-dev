@@ -1,0 +1,8 @@
+.floorIcon {
+  width: 40px;
+  height: 40px;
+}
+
+.unitCard {
+  box-shadow: var(--card-shadow);
+}

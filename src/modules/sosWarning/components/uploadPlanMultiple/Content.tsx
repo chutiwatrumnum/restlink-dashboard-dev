@@ -107,8 +107,9 @@ const Content = ({
 
 
   const buildingData = useMemo(() => {
-    if (buildingPlan?.buildings) return buildingPlan.buildings
-    return [];
+    if(Object.keys(buildingPlan?.buildings).length === 0) return []
+    if (buildingPlan?.buildings) return buildingPlan?.buildings || []
+
   }, [buildingPlan]);
 
   const floorData = useMemo(() => {
@@ -129,15 +130,8 @@ const Content = ({
   return (
     <>
 
-      <Form form={form} layout="vertical">
-        
-        {/* <Button onClick={() => {
-          // console.log(selectedBuilding,'selectedBuilding')
-          console.log(buildingPlan,'buildingPlan')
-        }}>
-          click
-        </Button>  */}
-       
+      <Form form={form} layout="vertical">        
+
 
         <Row gutter={16}>
           <Col span={24}>
@@ -158,7 +152,7 @@ const Content = ({
                   form.setFieldsValue({ floors: [] });
                 }}
               >
-                {(buildingData || []).map((option: any, index: number) => (
+                {(buildingData  || []).map((option: any, index: number) => (
                   <Option key={index} value={index}>
                     {option.blockName}
                   </Option>

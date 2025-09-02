@@ -40,6 +40,8 @@ function AuthorizedLayout() {
 
   // ตรวจสอบว่า current path อยู่ใน list ที่ไม่ต้องใช้ Content layout หรือไม่
   const shouldUseContentLayout = !storePathNotContentLayout.includes(currentPath);
+  // กำหนด path ที่ไม่ต้องการแสดง AlertSOS
+  const shouldShowAlertSOS = !['/dashboard/manage-plan'].includes(currentPath);
 
 
 
@@ -108,23 +110,6 @@ function AuthorizedLayout() {
     }
   }, [dispatch, navigate, reload]);
 
-  // เช็คว่าต้อง redirect ไปหน้า login หรือไม่
-  useEffect(() => {
-    const checkRedirect = async () => {
-      const access_token = await encryptStorage.getItem("access_token");
-      // const projectId = await encryptStorage.getItem("projectId");
-
-      if (
-        (!isAuth || !access_token || access_token === "undefined") &&
-        window.location.pathname !== "/auth"
-      ) {
-        navigate("/auth", { replace: true });
-      }
-    };
-
-    checkRedirect();
-  }, [isAuth, navigate]);
-
 
 
   const siderWidth = collapsed ? 80 : 320;
@@ -148,7 +133,7 @@ function AuthorizedLayout() {
   };
   return (
     <Layout>
-      <AlertSOS  isAuth={isAuth} />
+      {shouldShowAlertSOS && <AlertSOS  isAuth={isAuth} />}
       <Sider
         width={320}
         collapsedWidth={80}

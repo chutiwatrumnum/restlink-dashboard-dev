@@ -27,10 +27,6 @@ const CardDetailPlan = ({ onBack }: { onBack: string }) => {
                             <span className="text-gray-800 text-right text-lg">{projectData?.developer?.name || '-'}</span>
                         </div>
                         <div className="flex justify-between">
-                            <span className="text-gray-600 font-bold  text-lg">Project manager</span>
-                            <span className="text-gray-800 text-right text-lg">{projectData?.projectManagerName || '-'}</span>
-                        </div>
-                        <div className="flex justify-between">
                             <span className="text-gray-600 font-bold  text-lg">Contact no.</span>
                             <span className="text-gray-800 text-right text-lg">{projectData?.contactNo || '-'}</span>
                         </div>

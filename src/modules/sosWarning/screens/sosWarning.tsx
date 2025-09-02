@@ -1088,7 +1088,7 @@ const SOSWarning = () => {
                       TypeProject === 'condo' && !uploadedImage && (
                         <Button
                           type="primary"
-                          className=" !rounded-xl w-[150px] !h-[38px] !ml-6"
+                          className=" !rounded-xl w-[150px] !h-[38px] !ml-6 !cursor-pointer"
                           disabled={!access('sos_security', 'edit')}
                           onClick={() => {
                             setOpenUploadPlan(true)
@@ -1109,7 +1109,9 @@ const SOSWarning = () => {
                       <button
                         onClick={() => !hasActiveMarker && handleMapModeChange('preview')}
                         disabled={hasActiveMarker}
-                        className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium transition-all duration-200 h-10 sm:h-12 w-full sm:w-auto md:w-40 rounded-lg
+                        className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium 
+                          transition-all duration-200 h-10 sm:h-12 w-full sm:w-auto md:w-40 rounded-lg
+                          cursor-pointer
                   ${hasActiveMarker
                             ? 'cursor-not-allowed bg-gray-200 text-gray-400'
                             : 'cursor-pointer'
@@ -1128,7 +1130,8 @@ const SOSWarning = () => {
                       <button
                         onClick={() => !hasActiveMarker && handleMapModeChange('work-it')}
                         disabled={hasActiveMarker}
-                        className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium transition-all duration-200 h-10 sm:h-12 w-full sm:w-auto md:w-40 rounded-lg
+                        className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium transition-all 
+                          duration-200 h-10 sm:h-12 w-full sm:w-auto md:w-40 rounded-lg cursor-pointer
                   ${hasActiveMarker
                             ? 'cursor-not-allowed bg-gray-200 text-gray-400'
                             : 'cursor-pointer'
@@ -1145,9 +1148,12 @@ const SOSWarning = () => {
                         EDIT MARKER
                       </button>
                       <button
+                      style={{cursor: 'pointer'}}
                         onClick={() => setIsModalOpenPlan(true)}
                         disabled={hasActiveMarker}
-                        className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium transition-all duration-200 h-10 sm:h-12 w-full sm:w-auto md:w-40 rounded-lg bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 cursor-pointer"
+                        className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium 
+                        transition-all duration-200 h-10 sm:h-12 w-full sm:w-auto md:w-40 rounded-lg 
+                        bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 cursor-pointer disabled:cursor-pointer"
                       >
                         EDIT PLAN
                       </button>

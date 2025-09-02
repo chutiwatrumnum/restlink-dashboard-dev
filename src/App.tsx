@@ -75,6 +75,7 @@ import JuristicManage from "./modules/juristicManagement/screens/JuristicManage"
 import StaffManagement from "./modules/staffManagement/screens/StaffManagement";
 
 import RoomManageScreen from "./modules/roomManagement/screens/RoomManageScreen";
+import VillageManageScreen from "./modules/villageManagement/screens/VillageManageScreen";
 
 // unauthorize routes
 import SignInScreen from "./modules/main/SignInScreen";
@@ -104,12 +105,11 @@ import VMSVisitor from "./modules/vmsVisitor/screens/VMSVisitor";
 
 // components
 
-
 //component Toast
-import { ToastContainer } from 'react-toastify';
-
+import { ToastContainer } from "react-toastify";
 
 // data project
+import { getProject } from "./modules/setupProjectFirst/service/api/SetupProject";
 
 // ตัวอย่างการใช้ Custom Hooks (เก็บไว้สำหรับ scroll to top)
 function AppWithCustomHooks() {
@@ -149,7 +149,6 @@ function AppRoutes() {
       const currentPath = location.pathname;
 
       let currentStep = Number(step);
-      // console.log(step,'step')
       if (!currentStep) {
         const fetchedStep = await dispatch.setupProject.getStepCondoModel();
         currentStep = Number(fetchedStep);
@@ -173,12 +172,16 @@ function AppRoutes() {
       // จัดการ setup-project: ถ้า step===3 ให้กลับ dashboard ก่อน จากนั้นค่อยเช็ค token
       if (currentLayoutType === "setup-project") {
         if (currentStep === 3) {
-          navigate('/dashboard/profile', { replace: true });
+          navigate("/dashboard/profile", { replace: true });
           return;
         }
         const access_token = await encryptStorage.getItem("access_token");
-        if (!access_token || access_token === "undefined" || access_token === "") {
-          navigate('/auth', { replace: true });
+        if (
+          !access_token ||
+          access_token === "undefined" ||
+          access_token === ""
+        ) {
+          navigate("/auth", { replace: true });
           return;
         }
       }
@@ -186,7 +189,7 @@ function AppRoutes() {
       // ถ้า step === 3 ให้เข้า dashboard ทันทีจากทุกที่ (ยกเว้นหน้า unauthorized เช่น /auth)
       if (currentStep === 3 && currentLayoutType !== "unauthorized") {
         if (!currentPath.includes("/dashboard")) {
-          navigate('/dashboard/profile', { replace: true });
+          navigate("/dashboard/profile", { replace: true });
           return;
         }
         setPreviousLayoutType(currentLayoutType);
@@ -196,7 +199,7 @@ function AppRoutes() {
 
       if (currentLayoutType === "dashboard") {
         if (currentStep === 3) {
-          navigate('/dashboard/profile', { replace: true });
+          navigate("/dashboard/profile", { replace: true });
           setRouteState("allow");
           return;
         }
@@ -214,16 +217,27 @@ function AppRoutes() {
       }
 
       setRouteState("checking");
+      let projectType = '';
+      let response:any = null;
       if (!projectData || Object.keys(projectData).length === 0) {
-        console.log('projectData',projectData)
-        // อัพเดท previous layout type เฉพาะเมื่อ allow
+      if(isAuth){ 
+        response = await getProject();
+      }
+      if(response?.status){
+        dispatch.setupProject.setProjectData(response || {});
+        projectType = response?.projectType?.nameCode || '';
+        const strType = projectType.split('_');
+        projectType = strType[strType.length - 1];
+      } 
+      // else {
+      //   dispatch.setupProject.setProjectData({});
+      // }
+
         setPreviousLayoutType(currentLayoutType);
         setRouteState("allow");
-        return;
+        // return;
       }
-      console.log(projectData,'projectData')
-      let projectType = (projectData as any)?.projectType?.nameCode || "";
-      console.log(projectType,'projectType')
+      projectType = (projectData as any)?.projectType?.nameCode  || response?.projectType?.nameCode || "";
       // ถ้าเป็น unauthorized routes ให้ผ่านได้
       if (
         currentPath.includes("/auth") ||
@@ -240,7 +254,6 @@ function AppRoutes() {
       if (projectType) {
         const strType = projectType.split("_");
         projectType = strType[strType.length - 1];
-        console.log(projectType,'projectType')
         // เช็คเงื่อนไขสำหรับ dashboard routes ก่อน (เพื่อป้องกัน UI flash)
         if (currentPath.includes("/dashboard")) {
           if (projectType === "condo" && currentStep !== 3) {
@@ -258,8 +271,7 @@ function AppRoutes() {
             setPreviousLayoutType(currentLayoutType);
             setRouteState("allow");
             return;
-          } 
-          else if (projectType === "village" && currentStep !== 3) {
+          } else if (projectType === "village" && currentStep !== 3) {
             let currentStep = step;
             if (currentStep === 0) {
               currentStep = await dispatch.setupProject.getStepCondoModel();
@@ -288,9 +300,7 @@ function AppRoutes() {
 
         // เช็คเงื่อนไขสำหรับ setup-project routes
         else if (currentPath.includes("/setup-project") &&  currentStep != 3) {
-          console.log(projectType,'projectType')
           if (projectType === "condo") {
-            console.log('success-true')
             const currentStep = await dispatch.setupProject.getStepCondoModel();
             let storePathCondo = [
               "/setup-project/upload-plan",
@@ -299,7 +309,10 @@ function AppRoutes() {
             ];
             const currentRoutePath = location.pathname;
             // อนุญาตให้คงอยู่หน้า get-start ไม่ redirect อัตโนมัติ
-            if (currentRoutePath === "/setup-project/get-start" && currentStep === 1) {
+            if (
+              currentRoutePath === "/setup-project/get-start" &&
+              currentStep === 1
+            ) {
               setPreviousLayoutType(currentLayoutType);
               setRouteState("allow");
               return;
@@ -336,7 +349,10 @@ function AppRoutes() {
             ];
             const currentRoutePath = location.pathname;
             // อนุญาตให้คงอยู่หน้า get-start ไม่ redirect อัตโนมัติ
-            if (currentRoutePath === "/setup-project/get-start" && currentStep === 1) {
+            if (
+              currentRoutePath === "/setup-project/get-start" &&
+              currentStep === 1
+            ) {
               setPreviousLayoutType(currentLayoutType);
               setRouteState("allow");
               return;
@@ -371,7 +387,10 @@ function AppRoutes() {
             ];
             const currentRoutePath = location.pathname;
             // อนุญาตให้คงอยู่หน้า get-start ไม่ redirect อัตโนมัติ
-            if (currentRoutePath === "/setup-project/get-start" && currentStep === 1) {
+            if (
+              currentRoutePath === "/setup-project/get-start" &&
+              currentStep === 1
+            ) {
               setPreviousLayoutType(currentLayoutType);
               setRouteState("allow");
               return;
@@ -402,9 +421,8 @@ function AppRoutes() {
           setPreviousLayoutType(currentLayoutType);
           setRouteState("allow");
           return;
-        }
-        else if (currentStep == 3 && currentLayoutType !== "unauthorized") {
-          navigate('/dashboard/profile', { replace: true });
+        } else if (currentStep == 3 && currentLayoutType !== "unauthorized") {
+          navigate("/dashboard/profile", { replace: true });
           return;
         }
       }
@@ -467,6 +485,7 @@ function AppRoutes() {
         <Route path="userManagement" element={<ResidentInformationMain />} />
         <Route path="invitation" element={<ResidentActivation />} />
         <Route path="roomManagement" element={<RoomManageScreen />} />
+        <Route path="villageManagement" element={<VillageManageScreen />} />
         {/* Setting */}
         <Route path="profile" element={<Profile />} />
         <Route path="changePassword" element={<ChangePassword />} />
@@ -533,12 +552,16 @@ function App() {
     const fetchData = async () => {
       try {
         setIsLoading(true);
-        // หากยังไม่ล็อกอิน ให้ข้ามการยิง API project
-        if (!isAuth) {
+        // ใช้ token ใน storage แทนการพึ่ง isAuth ที่รีเซ็ตตอน refresh
+        const access_token = await encryptStorage.getItem("access_token");
+        const refreshToken = await encryptStorage.getItem("refreshToken");
+        const isLoggedIn = !!(access_token && access_token !== "undefined") || !!(refreshToken && refreshToken !== "undefined");
+
+        if (!isLoggedIn) {
           setIsDataProjectReady(true);
           return;
         }
-        if (Object.keys(projectData).length === 0 || projectData === null ) {
+        if (Object.keys(projectData).length === 0 || projectData === null) {
           await dispatch.setupProject.setDataProject();
           setIsDataProjectReady(true);
         }
@@ -581,9 +604,9 @@ function App() {
       )}
       {isDataProjectReady && <AppWithCustomHooks />}
       {isDataProjectReady && <AppRoutes />}
-      
+
       {/* Global ToastContainer */}
-      <ToastContainer 
+      <ToastContainer
         position="top-right"
         autoClose={7000}
         hideProgressBar={false}

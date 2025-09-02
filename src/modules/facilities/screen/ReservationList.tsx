@@ -7,7 +7,7 @@ import { QrcodeOutlined } from "@ant-design/icons";
 import Header from "../../../components/templates/Header";
 import MediumActionButton from "../../../components/common/MediumActionButton";
 import ReservedFacilitiesTable from "../components/ReservedFacilitiesTable";
-import { TrashIcon, QRCodeIcon } from "../../../assets/icons/Icons";
+import { TrashIcon } from "../../../assets/icons/Icons";
 import { useDispatch, useSelector } from "react-redux";
 import { Dispatch, RootState } from "../../../stores";
 import QRModal from "../components/QRModal";
@@ -16,12 +16,14 @@ import SuccessModal from "../../../components/common/SuccessModal";
 import FailedModal from "../../../components/common/FailedModal";
 import ConfirmModal from "../../../components/common/ConfirmModal";
 import SearchBox from "../../../components/common/SearchBox";
+import TagStatus from "../components/TagStatus";
 
 import type {
   TabsProps,
   DatePickerProps,
   PaginationProps,
   TableColumnsType,
+  TableProps,
 } from "antd";
 import dayjs from "dayjs";
 import {
@@ -43,83 +45,6 @@ const ReservationList = () => {
     setPerPage,
     deleteAndHandlePagination,
   } = usePagination();
-  const defaultColumns: TableColumnsType<ReservedRowListDataType> = [
-    {
-      title: "Booked by",
-      key: "createdUser",
-      align: "center",
-      render: (_, record) => {
-        return <span>{`${record?.createdByRole.roleCodeName}`}</span>;
-      },
-    },
-    {
-      title: "Room address",
-      dataIndex: "unit",
-      key: "unit",
-      align: "center",
-    },
-    {
-      title: "Facility name",
-      dataIndex: "facilityName",
-      key: "facilityName",
-      align: "center",
-    },
-
-    {
-      title: "Name-surname",
-      key: "bookingUser",
-      align: "center",
-      render: (_, record) => {
-        return (
-          <span>
-            {`${record?.bookingUser?.givenName} ${
-              record?.bookingUser?.middleName ?? ""
-            } ${record?.bookingUser?.familyName ?? ""}`}
-          </span>
-        );
-      },
-    },
-    {
-      title: "Reserve Date",
-      key: "joinAt",
-      align: "center",
-      render: ({ joinAt }) => {
-        return <span>{dayjs(joinAt).format("DD/MM/YYYY")}</span>;
-      },
-      sorter: (a, b) => dayjs(a.joinAt).unix() - dayjs(b.joinAt).unix(),
-    },
-    {
-      title: "Start/End time",
-      key: "startTime",
-      align: "center",
-      render: (_, record) => {
-        return <span>{`${record.startTime}/${record.endTime}`}</span>;
-      },
-    },
-    {
-      title: "Action",
-      key: "action",
-      align: "center",
-      render: (_, record) => {
-        return (
-          <div className="flex flex-row justify-center items-center">
-            <Button
-              type="text"
-              icon={<QrcodeOutlined className="iconButton" />}
-              onClick={() => onQRClick(record)}
-              disabled={!access("facility", "view")}
-            />
-            <Button
-              onClick={() => showDeleteConfirm(record)}
-              type="text"
-              icon={<TrashIcon className="iconWidthButton" />}
-              disabled={!access("facility", "delete")}
-            />
-          </div>
-        );
-      },
-    },
-  ];
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isQRModalOpen, setIsQRModalOpen] = useState(false);
@@ -129,6 +54,8 @@ const ReservationList = () => {
   const [items, setItems] = useState<TabsProps["items"]>([]);
   const [qrData, setQrData] = useState<ReservedRowListDataType>();
   const [search, setSearch] = useState("");
+  const [sort, setSort] = useState<"asc" | "desc">("asc");
+  const [sortBy, setSortBy] = useState<"status">();
 
   const permissions = useSelector(
     (state: RootState) => state.common?.permission
@@ -173,10 +100,12 @@ const ReservationList = () => {
       perPage: perPage,
       date: date,
       search: search,
+      sortBy: sortBy,
+      sort: sort,
     };
     await dispatch.facilities.getReservationList();
     await dispatch.facilities.getReservedList(payload);
-    await dispatch.facilities.getReservedCreateDataList();
+    // await dispatch.facilities.getReservedCreateDataList();
   };
 
   const createTabsMenu = async () => {
@@ -230,9 +159,120 @@ const ReservationList = () => {
     current,
     pageSize
   ) => {
-    // console.log(current, pageSize);
     setPerPage(pageSize);
   };
+
+  const handleTableChange: TableProps<ReservedRowListDataType>["onChange"] = (
+    _pagination,
+    _filters,
+    sorter
+  ) => {
+    const s = Array.isArray(sorter) ? sorter[0] : sorter;
+
+    const colKey = s?.columnKey as string | undefined;
+    const order = s?.order as "ascend" | "descend" | undefined;
+
+    if (colKey === "status" && order) {
+      setSortBy("status");
+      setSort(order === "ascend" ? "asc" : "desc");
+    } else if (!order) {
+      // เคลียร์ sort (ถ้าผู้ใช้กดเคลียร์)
+      setSortBy(undefined);
+      setSort("asc");
+    }
+  };
+
+  const defaultColumns: TableColumnsType<ReservedRowListDataType> = [
+    {
+      title: "Booked by",
+      key: "createdUser",
+      align: "center",
+      render: (_, record) => {
+        return <span>{`${record?.createdByRole.roleCodeName}`}</span>;
+      },
+    },
+    {
+      title: "Room address",
+      dataIndex: "unit",
+      key: "unit",
+      align: "center",
+    },
+    {
+      title: "Facility name",
+      dataIndex: "facilityName",
+      key: "facilityName",
+      align: "center",
+    },
+    {
+      title: "Name-surname",
+      key: "bookingUser",
+      align: "center",
+      render: (_, record) => {
+        return (
+          <span>
+            {`${record?.bookingUser?.givenName} ${
+              record?.bookingUser?.middleName ?? ""
+            } ${record?.bookingUser?.familyName ?? ""}`}
+          </span>
+        );
+      },
+    },
+    {
+      title: "Status",
+      key: "status",
+      align: "center",
+      sorter: true,
+      sortOrder:
+        sortBy === "status" ? (sort === "asc" ? "ascend" : "descend") : null,
+      render: (_, record) => (
+        <TagStatus
+          nameCode={record.status.nameCode}
+          nameEn={record.status.nameEn}
+          nameTh={record.status.nameTh}
+        />
+      ),
+    },
+    {
+      title: "Reserve Date",
+      key: "joinAt",
+      align: "center",
+      render: ({ joinAt }) => {
+        return <span>{dayjs(joinAt).format("DD/MM/YYYY")}</span>;
+      },
+      sorter: (a, b) => dayjs(a.joinAt).unix() - dayjs(b.joinAt).unix(),
+    },
+    {
+      title: "Start/End time",
+      key: "startTime",
+      align: "center",
+      render: (_, record) => {
+        return <span>{`${record.startTime}/${record.endTime}`}</span>;
+      },
+    },
+    {
+      title: "Action",
+      key: "action",
+      align: "center",
+      render: (_, record) => {
+        return (
+          <div className="flex flex-row justify-center items-center">
+            <Button
+              type="text"
+              icon={<QrcodeOutlined className="iconButton" />}
+              onClick={() => onQRClick(record)}
+              disabled={!access("facility", "view")}
+            />
+            <Button
+              onClick={() => showDeleteConfirm(record)}
+              type="text"
+              icon={<TrashIcon className="iconWidthButton" />}
+              disabled={!access("facility", "delete")}
+            />
+          </div>
+        );
+      },
+    },
+  ];
 
   // Actions
   useEffect(() => {
@@ -242,7 +282,7 @@ const ReservationList = () => {
   useEffect(() => {
     fetchData();
     // console.log(accessibility);
-  }, [curPage, refresh, facilitiesId, search, date, perPage]);
+  }, [curPage, refresh, facilitiesId, search, date, perPage, sort, sortBy]);
 
   return (
     <>
@@ -271,6 +311,7 @@ const ReservationList = () => {
       <ReservedFacilitiesTable
         columns={defaultColumns}
         data={reservedListData?.rows}
+        onChange={handleTableChange}
       />
       <Row
         className="reservedBottomActionContainer"

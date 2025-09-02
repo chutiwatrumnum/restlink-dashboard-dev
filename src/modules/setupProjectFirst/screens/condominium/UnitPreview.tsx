@@ -14,8 +14,9 @@ const UnitPreview = () => {
     const { excelData } = useSelector((state: RootState) => state.setupProject);
     const navigate = useNavigate();
     const dispatch = useDispatch<Dispatch>();
-
+    
     useEffect(() => {
+        console.log(excelData,'excelData')
         if (excelData.Basement.length === 0 && excelData.Condo.length === 0) {
             navigate('/setup-project/upload-number-building')
         }
@@ -209,12 +210,14 @@ const UnitPreview = () => {
                         <div className="flex justify-between items-center  px-6 py-4">
                             <div className="font-normal">Total no. of unit: {dataFloorCondo.length}</div>
                         </div>
-                        <Table
-                            columns={columns}
-                            dataSource={dataFloorCondo}
-                            pagination={false}
-                            className="w-full unit-preview-table custom-table-no-radius"
-                        />
+                                                <div className="overflow-auto" style={{ maxHeight: 400 }}>
+                            <Table
+                                columns={columns}
+                                dataSource={dataFloorCondo}
+                                pagination={false}
+                                className="w-full unit-preview-table custom-table-no-radius"
+                            />
+                        </div>
                     </div>
                 </Col>
             </Row>

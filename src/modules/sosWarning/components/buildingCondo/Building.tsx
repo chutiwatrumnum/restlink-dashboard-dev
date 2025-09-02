@@ -133,7 +133,7 @@ const Building = ({ onDataFloorChange }: { onDataFloorChange?: (dataFloor: any) 
                 const buildingColor = buildingColors[building.id] || "#d7d5ca";
 
                 return (
-                    <div key={building.id} className="flex flex-col justify-end mt-auto cursor-pointer">
+                    <div key={building.id} className="flex flex-col justify-end mt-auto relative  !cursor-pointer">
                         <div className="flex flex-col justify-end gap-5">
                             {columns.map((floors, columnIndex) => (
                                 <div key={`${building.id}-column-${columnIndex}`} className="flex flex-col gap-1 justify-end">
@@ -143,7 +143,7 @@ const Building = ({ onDataFloorChange }: { onDataFloorChange?: (dataFloor: any) 
                                                 getPlanInfo(building,floor)
                                             }}
                                             key={`${building.id}-floor-${floor.floorId}`} 
-                                            className="flex items-center h-[30px]"
+                                            className="flex items-center h-[30px] cursor-pointe relative"
                                         >
                                             <div 
                                                 className="w-[180px] h-full flex items-center justify-center 

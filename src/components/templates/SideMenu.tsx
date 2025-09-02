@@ -129,11 +129,14 @@ const SideMenu = ({
   // Data
   const { data: projectData } = getProjectIDQuery();
   const { access } = usePermission(projectData?.permission ?? []);
-  // console.log(projectData);
+
+  // ใช้ project logo จาก API response หรือใช้ default logo
+  const projectLogo = projectData?.data?.projectLogo || MENU_LOGO;
 
   if (!!projectData?.permission) {
     dispatch.common.updatePermission(projectData?.permission);
   }
+
   // Update selected keys when location changes
   useEffect(() => {
     const currentPath = location.pathname;
@@ -202,8 +205,6 @@ const SideMenu = ({
     window.dispatchEvent(new Event("sideMenuCollapsed"));
   }, [collapsed]);
 
-  // ไม่ต้องมี useEffect สำหรับ socket อีกแล้ว เพราะใช้ข้อมูลจาก Redux store
-
   const toggleCollapsed = () => {
     setCollapsed(!collapsed);
   };
@@ -218,7 +219,7 @@ const SideMenu = ({
         navigate("/auth", { replace: true });
       },
       onCancel: () => {
-        console.log("Cancel");
+        // console.log("Cancel");
       },
     });
   };
@@ -237,9 +238,40 @@ const SideMenu = ({
       <div className="sideMenuHeader">
         <div className="sideMenuLogo">
           {!collapsed ? (
-            <img src={MENU_LOGO} alt="LogoNexres" />
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <img
+                src={projectLogo}
+                alt="Project Logo"
+                style={{
+                  maxWidth: "100%",
+                  maxHeight: "60px",
+                  objectFit: "contain",
+                  display: "block",
+                }}
+                onError={(e) => {
+                  // console.error("❌ Failed to load project logo:", projectLogo);
+                  // Fallback to default logo if project logo fails to load
+                  (e.target as HTMLImageElement).src = MENU_LOGO;
+                }}
+                onLoad={() => {
+                  // console.log(
+                  //   "✅ Successfully loaded project logo:",
+                  //   projectLogo
+                  // );
+                }}
+              />
+            </div>
           ) : (
-            <div className="collapsedLogo">N</div>
+            <div className="collapsedLogo">
+              {/* แสดงตัวอักษรย่อจากชื่อโปรเจค หรือ default "N" */}
+              {projectData?.data?.projectName?.charAt(0)?.toUpperCase() || "N"}
+            </div>
           )}
         </div>
         <button className="collapseToggle" onClick={toggleCollapsed}>
@@ -309,19 +341,6 @@ const SideMenu = ({
               <Link to={`${main_link}/juristicManage`}>Juristic list</Link>
             </Menu.Item>
 
-            {/* <Menu.Item
-              key={`${main_link}/staffManage`}
-              icon={
-                <StaffMenuIcon
-                  color={iconSubMenuColorSelector("staffManage")}
-                  className="sideMenuIcon"
-                />
-              }
-              hidden={!access("team_management", "view")}
-            >
-              <Link to={`${main_link}/staffManage`}>Staff management</Link>
-            </Menu.Item> */}
-
             <Menu.Item
               key={`${main_link}/juristicTeamPermission`}
               icon={
@@ -371,18 +390,35 @@ const SideMenu = ({
             >
               <Link to={`${main_link}/userManagement`}>User management</Link>
             </Menu.Item>
-            <Menu.Item
-              key={`${main_link}/roomManagement`}
-              icon={
-                <RoomManagementIcon
-                  color={iconSubMenuColorSelector("roomManagement")}
-                  className="sideMenuIcon"
-                />
-              }
-              hidden={!access("room_management", "view")}
-            >
-              <Link to={`${main_link}/roomManagement`}>Room management</Link>
-            </Menu.Item>
+            {projectData?.data.projectTypeCode === "sos_plan_type_village" ? (
+              <Menu.Item
+                key={`${main_link}/villageManagement`}
+                icon={
+                  <RoomManagementIcon
+                    color={iconSubMenuColorSelector("villageManagement")}
+                    className="sideMenuIcon"
+                  />
+                }
+                hidden={!access("room_management", "view")}
+              >
+                <Link to={`${main_link}/villageManagement`}>
+                  Village management
+                </Link>
+              </Menu.Item>
+            ) : (
+              <Menu.Item
+                key={`${main_link}/roomManagement`}
+                icon={
+                  <RoomManagementIcon
+                    color={iconSubMenuColorSelector("roomManagement")}
+                    className="sideMenuIcon"
+                  />
+                }
+                hidden={!access("room_management", "view")}
+              >
+                <Link to={`${main_link}/roomManagement`}>Room management</Link>
+              </Menu.Item>
+            )}
           </SubMenu>
           <Menu.Item
             key={`${main_link}/announcement`}
@@ -410,12 +446,7 @@ const SideMenu = ({
           </Menu.Item>
           <SubMenu
             key="documents"
-            icon={
-              <DocumentIcon
-                color="#3B82F6" // สีฟ้าสำหรับ parent menu icon default
-                className="sideMenuIcon"
-              />
-            }
+            icon={<DocumentIcon color="#3B82F6" className="sideMenuIcon" />}
             title="Documents"
           >
             <Menu.Item
@@ -470,12 +501,7 @@ const SideMenu = ({
           </Menu.Item>
           <SubMenu
             key="serviceCenter"
-            icon={
-              <FixingReportIcon
-                color="#3B82F6" // สีฟ้าสำหรับ parent menu icon default
-                className="sideMenuIcon"
-              />
-            }
+            icon={<FixingReportIcon color="#3B82F6" className="sideMenuIcon" />}
             title="Fixing"
           >
             <Menu.Item
@@ -517,12 +543,7 @@ const SideMenu = ({
           </SubMenu>
           <SubMenu
             key="event"
-            icon={
-              <EventIcon
-                color="#3B82F6" // สีฟ้าสำหรับ parent menu icon default
-                className="sideMenuIcon"
-              />
-            }
+            icon={<EventIcon color="#3B82F6" className="sideMenuIcon" />}
             title="Event"
           >
             <Menu.Item
@@ -566,40 +587,6 @@ const SideMenu = ({
               </Link>
             </Menu.Item>
           </SubMenu>
-
-          {/* <SubMenu
-            key="powerManagement"
-            icon={
-              <PowerManagementIcon
-                color="#3B82F6" // สีฟ้าสำหรับ parent menu icon default
-                className="sideMenuIcon"
-              />
-            }
-            title="Power management"
-          >
-            <Menu.Item
-              key={`${main_link}/areaControl`}
-              icon={
-                <AreaControlIcon
-                  color={iconMenuColorSelector("areaControl")}
-                  className="sideMenuIcon"
-                />
-              }
-            >
-              <Link to={`${main_link}/areaControl`}>Area control</Link>
-            </Menu.Item>
-            <Menu.Item
-              key={`${main_link}/deviceControl`}
-              icon={
-                <DeviceControlIcon
-                  color={iconMenuColorSelector("deviceControl")}
-                  className="sideMenuIcon"
-                />
-              }
-            >
-              <Link to={`${main_link}/deviceControl`}>Device control</Link>
-            </Menu.Item>
-          </SubMenu> */}
 
           <SubMenu
             key="facilityBooking"
@@ -681,17 +668,6 @@ const SideMenu = ({
               </div>
             }
           >
-            {/* <Menu.Item
-              key={`${main_link}/security-alarm`}
-              icon={
-                <SecurityAlarmIcon
-                  color={iconSubMenuColorSelector("security-alarm")}
-                  className="sideMenuIcon"
-                />
-              }>
-              <Link to={`${main_link}/security-alarm`}>Security alarm</Link>
-            </Menu.Item> */}
-
             <Menu.Item
               key={`${main_link}/history-building`}
               icon={
@@ -735,7 +711,7 @@ const SideMenu = ({
             key="vms"
             icon={
               <DatabaseOutlined
-                color={iconMenuColorSelector("vms")}
+                style={{ color: iconMenuColorSelector("vms") }}
                 className="sideMenuIcon"
               />
             }
@@ -745,7 +721,7 @@ const SideMenu = ({
               key={`${main_link}/vms-invitation`}
               icon={
                 <UserAddOutlined
-                  color={iconSubMenuColorSelector("vms-invitation")}
+                  style={{ color: iconSubMenuColorSelector("vms-invitation") }}
                   className="sideMenuIcon"
                 />
               }
@@ -758,7 +734,7 @@ const SideMenu = ({
               key={`${main_link}/vms-vehicle`}
               icon={
                 <CarOutlined
-                  color={iconSubMenuColorSelector("vms-vehicle")}
+                  style={{ color: iconSubMenuColorSelector("vms-vehicle") }}
                   className="sideMenuIcon"
                 />
               }
@@ -771,7 +747,7 @@ const SideMenu = ({
               key={`${main_link}/vms-visitor`}
               icon={
                 <UserOutlined
-                  color={iconSubMenuColorSelector("vms-visitor")}
+                  style={{ color: iconSubMenuColorSelector("vms-visitor") }}
                   className="sideMenuIcon"
                 />
               }
@@ -784,7 +760,7 @@ const SideMenu = ({
               key={`${main_link}/vms-log-access`}
               icon={
                 <UserOutlined
-                  color={iconSubMenuColorSelector("vms-log-access")}
+                  style={{ color: iconSubMenuColorSelector("vms-log-access") }}
                   className="sideMenuIcon"
                 />
               }
@@ -797,7 +773,7 @@ const SideMenu = ({
               key={`${main_link}/vms-log-passage`}
               icon={
                 <CarOutlined
-                  color={iconSubMenuColorSelector("vms-log-passage")}
+                  style={{ color: iconSubMenuColorSelector("vms-log-passage") }}
                   className="sideMenuIcon"
                 />
               }
@@ -813,12 +789,7 @@ const SideMenu = ({
         <Menu mode="inline" selectable={false} inlineCollapsed={collapsed}>
           <Menu.Item
             key="logout"
-            icon={
-              <LogOutIcon
-                color="#9CA3AF" // สีเทาสำหรับ logout
-                className="sideMenuIcon"
-              />
-            }
+            icon={<LogOutIcon color="#9CA3AF" className="sideMenuIcon" />}
             onClick={logoutHandler}
           >
             <span style={{ color: "#9CA3AF" }}>Logout</span>

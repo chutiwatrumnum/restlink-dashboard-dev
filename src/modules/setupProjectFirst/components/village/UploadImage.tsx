@@ -204,7 +204,7 @@ const UploadImage = ({ onNext, status = 'image' }: { onNext: string, status?: st
                             acc[sheet.sheetName] = rowObjects;
                             return acc;
                         }, {});
-
+                    console.log(sheetsDataAsObjects,'sheetsDataAsObjects')
 
 
 
@@ -360,11 +360,11 @@ const UploadImage = ({ onNext, status = 'image' }: { onNext: string, status?: st
                             <div className="flex flex-col items-center justify-center h-full p-8 px-5">
                                 <img src={IconUpload} alt="IconUpload" className="w-16 h-16 mb-4 flex-shrink-0 " />
                                 <p className="text-lg font-medium text-gray-700 mb-2 text-center">
-                                    Click or drag {status === 'excel' ? 'Excel/CSV' : 'image'} file to this area to upload
+                                    Click or drag {status === 'excel' ? 'Excel' : 'image'} file to this area to upload
                                 </p>
                                 <p className="text-sm text-gray-500 text-center px-4">
                                     {status === 'excel'
-                                        ? 'Support Excel files (.xlsx, .xls) and CSV files (.csv). Maximum file size 5MB.'
+                                        ? 'Support Excel files (.xlsx, .xls)  Maximum file size 5MB.'
                                         : 'Support for a single or bulk upload. Strictly prohibited from uploading company data or other banned files.'
                                     }
                                 </p>

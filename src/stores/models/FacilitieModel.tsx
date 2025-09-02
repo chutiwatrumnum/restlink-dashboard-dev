@@ -176,25 +176,31 @@ export const facilities = createModel<RootModel>()({
       }
     },
     async getReservedList(payload) {
-      const date = payload.date ? `&date=${payload.date}` : "";
-      const searchWord = payload.search ? `&search=${payload.search}` : "";
-      const facilityID =
-        payload.facilitiesId !== 0
-          ? `&facilitiesId=${payload.facilitiesId}`
-          : "";
       try {
-        const result = await axios.get(
-          `/facilities/dashboard/reservation?curPage=${payload.curPage}&perPage=${payload.perPage}${searchWord}${date}${facilityID}`
-        );
-        if (result.data.statusCode >= 400) {
-          console.error(
-            "PARAMS : ",
-            `curPage=${payload.curPage}&perPage=${payload.perPage}${searchWord}${date}${facilityID}`,
-            result
-          );
+        // สร้าง object ของ params ที่จะส่งไป API
+        const params: Record<string, any> = {
+          curPage: payload.curPage,
+          perPage: payload.perPage,
+        };
+
+        if (payload.date) params.date = payload.date;
+        if (payload.search) params.search = payload.search;
+        if (payload.facilitiesId && payload.facilitiesId !== 0) {
+          params.facilitiesId = payload.facilitiesId;
+        }
+        if (payload.sortBy) params.sortBy = payload.sortBy;
+        if (payload.sort) params.sort = payload.sort;
+
+        const result = await axios.get("/facilities/dashboard/reservation", {
+          params,
+        });
+
+        if (result?.data?.statusCode >= 400) {
+          console.error("PARAMS:", params, result);
           return;
         }
-        console.log("Booking list result: ", result.data.result);
+
+        // console.log("Booking list result:", result.data.result);
         dispatch.facilities.updateReservedListDataState(result.data.result);
       } catch (error) {
         console.error("ERROR", error);

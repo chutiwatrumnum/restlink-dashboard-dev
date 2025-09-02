@@ -500,6 +500,8 @@ const VillageMap: React.FC<VillageMapProps> = ({
   const [isPanning, setIsPanning] = useState<boolean>(false);
   const [panStart, setPanStart] = useState<Position>({ x: 0, y: 0 });
   const [isCtrlPressed, setIsCtrlPressed] = useState<boolean>(false);
+  const [isShiftPressed, setIsShiftPressed] = useState<boolean>(false);
+  const [justFinishedPanning, setJustFinishedPanning] = useState<boolean>(false);
   const containerRef = useRef<HTMLDivElement>(null);
   // เพิ่ม state สำหรับ copy/paste zone และ marker
   const [copiedZones, setCopiedZones] = useState<Zone[]>([]);
@@ -1238,9 +1240,9 @@ const VillageMap: React.FC<VillageMapProps> = ({
         // Force re-render เพื่อให้ marker กลับไปตำแหน่งที่ถูกต้อง
         setForceRenderKey(prev => prev + 1);
 
-        // รีเซ็ต zoom และ pan เพื่อให้ marker กลับสู่ตำแหน่งเดิม
-        setZoomLevel(1);
-        setPanOffset({ x: 0, y: 0 });
+        // ปิดการรีเซ็ต zoom และ pan เมื่อ refresh เพื่อไม่ให้เด้งหลังสร้าง marker
+        // setZoomLevel(1);
+        // setPanOffset({ x: 0, y: 0 });
 
         // Force re-calculate marker positions
         setTimeout(() => {
@@ -2330,6 +2332,15 @@ const VillageMap: React.FC<VillageMapProps> = ({
       return;
     }
 
+    // ถ้าเพิ่งจบการลาก หรือกำลังลาก (panning) ไม่สร้าง marker จำลอง
+    if (isPanning || justFinishedPanning) {
+      return;
+    }
+    // ถ้าเป็นการลากด้วย Shift เมื่อซูม > 100% ไม่สร้าง marker จำลอง
+    if (zoomLevel > 1 && ((e as any).shiftKey || isShiftPressed)) {
+      return;
+    }
+
     // เรียก setStatusClickMap(true) เมื่อคลิกที่รูป (สำหรับฝั่ง Condo เท่านั้น)
     if (setStatusClickMap) {
       setStatusClickMap(true);
@@ -2529,6 +2540,10 @@ const VillageMap: React.FC<VillageMapProps> = ({
     const relativeY = (y / markerBaseHeight) * 100;
 
     // สร้าง pending marker ทันทีเมื่อคลิก
+    // หากกำลังกด Shift และซูม > 100% (โหมดลาก) ให้ยกเลิกการสร้าง marker จำลอง
+    if (isPanning || (zoomLevel > 1 && isShiftPressed)) {
+      return;
+    }
     const tempMarker: Marker = {
       id: Date.now(),
       x: relativeX,
@@ -2908,11 +2923,18 @@ const VillageMap: React.FC<VillageMapProps> = ({
         if (e.ctrlKey || e.metaKey) {
           setIsCtrlPressed(true);
         }
+        // ติดตาม shift key
+        if (e.shiftKey) {
+          setIsShiftPressed(true);
+        }
       };
 
       const handleKeyUp = (e: KeyboardEvent) => {
         if (!e.ctrlKey && !e.metaKey) {
           setIsCtrlPressed(false);
+        }
+        if (!e.shiftKey) {
+          setIsShiftPressed(false);
         }
       };
 
@@ -3465,6 +3487,14 @@ const VillageMap: React.FC<VillageMapProps> = ({
 
     // ตรวจสอบว่ากด middle click หรือ Alt+click สำหรับ panning
     if (e.button === 1 || (e.button === 0 && e.altKey)) {
+      e.preventDefault();
+      setIsPanning(true);
+      setPanStart({ x: e.clientX - panOffset.x, y: e.clientY - panOffset.y });
+      return;
+    }
+
+    // กด Shift + ซูม > 100% เพื่อ panning ด้วยซ้าย
+    if (e.button === 0 && e.shiftKey && zoomLevel > 1) {
       e.preventDefault();
       setIsPanning(true);
       setPanStart({ x: e.clientX - panOffset.x, y: e.clientY - panOffset.y });
@@ -4353,6 +4383,8 @@ const VillageMap: React.FC<VillageMapProps> = ({
     // จัดการ panning
     if (isPanning) {
       setIsPanning(false);
+      setJustFinishedPanning(true);
+      setTimeout(() => setJustFinishedPanning(false), 100);
       return;
     }
 
@@ -4959,9 +4991,6 @@ const VillageMap: React.FC<VillageMapProps> = ({
               // เก็บข้อมูลเดิมของ marker ใหม่ที่กำลังจะ active
               setOriginalMarkerBeforeEdit({ ...marker });
               
-              
-              setClickedMarker(marker);
-              setClickedZone(null);
               // เฉพาะในโหมด work-it เท่านั้นที่ตั้งค่า hasActiveMarker
               if (mapMode === 'work-it') {
                 setHasActiveMarker(true);
@@ -5225,7 +5254,7 @@ const VillageMap: React.FC<VillageMapProps> = ({
                     hover:cursor-pointer transition-colors
                     ${!access('sos_security', 'edit') ? 'opacity-50' : ''}`}
                     
-                    title={displayMarker.isLocked ? "ปลดล็อค Marker" : "ล็อค Marker"}
+                    title={displayMarker.isLocked ? "Unlock Marker" : "Lock Marker"}
                     onMouseDown={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
@@ -5255,7 +5284,7 @@ const VillageMap: React.FC<VillageMapProps> = ({
                         : ''
                       }
                       `}
-                    title="รีเซ็ตตำแหน่ง Marker"
+                    title="Reset Marker Position"
                     onMouseDown={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
@@ -5281,7 +5310,7 @@ const VillageMap: React.FC<VillageMapProps> = ({
                     hover:cursor-pointer transition-colors
                     ${!access('sos_security', 'delete') ? 'opacity-50' : ''}
                     `}
-                    title="ลบ Marker"
+                    title="Delete Marker"
                     onMouseDown={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
@@ -5647,7 +5676,7 @@ const VillageMap: React.FC<VillageMapProps> = ({
             e.stopPropagation();
             handleZoneMouseDown(e, zone, "rotate");
           }}
-          title="หมุนพื้นที่"
+          title="Rotate Area"
         >
           <svg
             className="text-gray-600"
@@ -5896,8 +5925,10 @@ const VillageMap: React.FC<VillageMapProps> = ({
             }
           })
         ]);
-        // เรียก resetZoomAndPan หลังจาก component พร้อม
-        onImageClick ? resetZoomAndPan() : resetZoomAndPanVillage();
+        // เรียก resetZoomAndPan หลังจาก component พร้อม (เฉพาะกรณี Condo)
+        if (onImageClick) {
+          resetZoomAndPan();
+        }
 
       } catch (error) {
         console.error("❌ เกิดข้อผิดพลาดใน Component initialization:", error);
@@ -5944,9 +5975,9 @@ const VillageMap: React.FC<VillageMapProps> = ({
       setMarkers(prevMarkers => [...prevMarkers]);
       setZones(prevZones => [...prevZones]);
       
-      // เพิ่มการรีเซ็ต zoom และ pan เมื่อมีการ resize
-      setZoomLevel(1);
-      setPanOffset({ x: 0, y: 0 });
+      // ปิดการรีเซ็ต zoom/pan เมื่อ resize เพื่อรักษาระดับซูมหลังสร้าง marker
+      // setZoomLevel(1);
+      // setPanOffset({ x: 0, y: 0 });
     });
 
     resizeObserver.observe(container);
@@ -6772,36 +6803,74 @@ const VillageMap: React.FC<VillageMapProps> = ({
 
 
 
-
+                    <div className="flex items-center justify-start leading-normal [line-height:normal]">
+                      <span className="font-medium">Zoom: {Math.round(zoomLevel * 100)}%</span>
+                    </div>
 
                    
-                    <div className="relative group">
-                      <div className="relative group">
+                    <div className="relative group cursor-pointer">
+                      <div className="relative group cursor-pointer">
                        <button
                          onClick={onImageClick ? resetZoomAndPan : resetZoomAndPanVillage}
                          className="w-8 h-8 bg-white-500 !text-black p-1 rounded-full !text-lg  transition-all 
-                        duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer 
-                        flex items-center justify-center shadow-md hover:shadow-lg"
-                         title="รีเซ็ต Zoom และ Pan (Ctrl+0)"
+                        duration-200   cursor-pointer 
+                        flex items-center justify-center shadow-md hover:shadow-lg cursor-pointer"
                        >
                         <img src={fullScreenIcon} alt="home" />
                        </button>
                        {/* Tooltip */}
                        <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-75 text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20">
                          <div className="font-semibold">Reset (Home)</div>
-                         <div className="text-gray-300">Reset Zoom to 100% and return to the center</div>
-                         <div className="text-gray-300">Ctrl/Cmd + 0</div>
                        </div>
                      </div>
                       {/* Tooltip */}
-                      <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-75 text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20">
+                      <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 
+                      bg-black bg-opacity-75 text-white text-xs rounded px-2 py-1 opacity-0 
+                      group-hover:opacity-100 transition-opacity whitespace-nowrap z-20"
+                      
+                      >
                         <div className="font-semibold">Reset view</div>
-                        <div className="text-gray-300">Return to the original size and position</div>
-                        <div className="text-gray-300">Ctrl/Cmd + 0</div>
                       </div>
                     </div>
 
-
+                    <div className="relative group cursor-pointer">
+                      <button
+                        onClick={undo}
+                        disabled={currentIndex < 0}
+                        className="w-8 h-8 bg-white-500 !text-white rounded-full text-sm  transition-all 
+                        duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer 
+                        flex items-center justify-center shadow-md hover:shadow-lg"
+                      >
+                        <img src={undoIcon} alt="undo"/>
+                      </button>
+                      {/* Tooltip */}
+                      <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-75 text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20 pointer-events-none">
+                        <div className="font-semibold">Undo</div>
+                      </div>
+                    </div>
+                    <div className="relative group cursor-pointer">
+                      <button
+                        onClick={redo}
+                        disabled={currentIndex >= history.length - 1}
+                        className="w-8 h-8 bg-white-500 !text-white rounded-full text-sm 
+                        transition-all duration-200 disabled:opacity-50 
+                        disabled:cursor-not-allowed cursor-pointer flex items-center justify-center shadow-md hover:shadow-lg
+                        text-black
+                        "
+                      >
+                        <img 
+                          src={undoIcon} 
+                          alt="redo" 
+                          className="transform rotate-180 object-contain filter  " 
+                          style={{ transform: 'scaleX(-1) rotate(180deg)' }}
+                        />
+                        {/* <img src={redoIcon} alt="redo" className="w-4 h-4" /> */}
+                      </button>
+                      {/* Tooltip */}
+                      <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-75 text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20 pointer-events-none">
+                        <div className="font-semibold">Redo</div>
+                      </div>
+                    </div>
 
                    
 
@@ -6814,12 +6883,6 @@ const VillageMap: React.FC<VillageMapProps> = ({
                             if (copiedMarkers.length > 0) pasteMarkers();
                           }}
                           className="w-8 h-8 bg-green-500 text-white rounded-full text-sm hover:bg-green-600 transition-all duration-200 cursor-pointer flex items-center justify-center shadow-md hover:shadow-lg"
-                          title={(() => {
-                            const items = [];
-                            if (copiedZones.length > 0) items.push(`${copiedZones.length} zones`);
-                            if (copiedMarkers.length > 0) items.push(`${copiedMarkers.length} markers`);
-                            return `วาง ${items.join(" และ ")} (Ctrl+V)`;
-                          })()}
                         >
                           📋
                         </button>
@@ -6840,93 +6903,43 @@ const VillageMap: React.FC<VillageMapProps> = ({
                     )}
 
 
-                    <div className="relative group">
-                      <button
-                        onClick={undo}
-                        disabled={currentIndex < 0}
-                        className="w-8 h-8 bg-white-500 !text-white rounded-full text-sm  transition-all 
-                        duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer 
-                        flex items-center justify-center shadow-md hover:shadow-lg"
-                        title="ย้อนกลับ (Back)"
-                      >
-                        <img src={undoIcon} alt="undo"/>
-                      </button>
-                      {/* Tooltip */}
-                      <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-75 text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20 pointer-events-none">
-                        <div className="font-semibold">Undo</div>
-                        <div className="text-gray-300">Undo the last action</div>
-                        <div className="text-gray-300">Ctrl/Cmd + Z</div>
-                      </div>
-                    </div>
-                    <div className="relative group">
-                      <button
-                        onClick={redo}
-                        disabled={currentIndex >= history.length - 1}
-                        className="w-8 h-8 bg-white-500 !text-white rounded-full text-sm 
-                        transition-all duration-200 disabled:opacity-50 
-                        disabled:cursor-not-allowed cursor-pointer flex items-center justify-center shadow-md hover:shadow-lg
-                        text-black
-                        "
-                        title="ถัดไป (Next)"
-                      >
-                        <img 
-                          src={undoIcon} 
-                          alt="redo" 
-                          className="transform rotate-180 object-contain filter  " 
-                          style={{ transform: 'scaleX(-1) rotate(180deg)' }}
-                        />
-                        {/* <img src={redoIcon} alt="redo" className="w-4 h-4" /> */}
-                      </button>
-                      {/* Tooltip */}
-                      <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-75 text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20 pointer-events-none">
-                        <div className="font-semibold">Redo</div>
-                        <div className="text-gray-300">Redo the last undone action</div>
-                        <div className="text-gray-300">Ctrl/Cmd + Shift + Z</div>
-                      </div>
-                    </div>
 
-                    <div className="relative group">
+
+                    <div className="relative group cursor-pointer">
                       <button
                         onClick={zoomIn}
                         disabled={zoomLevel >= 3}
                         className="w-8 h-8 bg-white-500 !text-black   rounded-full !text-lg  transition-all 
                         duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer 
                         flex items-center justify-center shadow-md hover:shadow-lg "
-                        title="ขยาย (Zoom In) - Ctrl + Plus"
+                        
                       >
                         +
                       </button>
                       {/* Tooltip */}
                       <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-75 text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20">
                         <div className="font-semibold">Zoom In</div>
-                        <div className="text-gray-300">Increase the image size</div>
-                        <div className="text-gray-300">Ctrl/Cmd + Plus หรือ =</div>
                       </div>
                     </div>
-                    <div className="relative group">
+                    <div className="relative group cursor-pointer">
                       <button
                         onClick={zoomOut}
                         disabled={zoomLevel <= 0.5}
                         className="w-8 h-8 bg-white-500 !text-black   rounded-full !text-lg  transition-all 
                         duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer 
                         flex items-center justify-center shadow-md hover:shadow-lg"
-                        title="ย่อ (Zoom Out) - Ctrl + Minus"
+                        
                       >
                         -
                       </button>
                       {/* Tooltip */}
                       <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-75 text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20">
                         <div className="font-semibold">Zoom Out</div>
-                        <div className="text-gray-300">Decrease the image size</div>
-                        <div className="text-gray-300">Ctrl/Cmd + Minus</div>
                       </div>
                     </div>
 
 
-                    <div className="me-5 flex items-center justify-start leading-normal [line-height:normal]"
-                    >
-                      <span className="font-medium">Zoom: {Math.round(zoomLevel * 100)}%</span>
-                    </div>
+
 
 
                   </div>
@@ -6995,7 +7008,7 @@ const VillageMap: React.FC<VillageMapProps> = ({
               onMouseLeave={handleMouseUp}
               onWheel={handleWheel}
               style={{
-                cursor: isPanning ? "grabbing" : isCtrlPressed ? "copy" : "crosshair"
+                cursor: isPanning ? "grabbing" : (isShiftPressed && zoomLevel > 1) ? "grab" : isCtrlPressed ? "copy" : "crosshair"
               }}
             >
               <img
@@ -7410,7 +7423,6 @@ const VillageMap: React.FC<VillageMapProps> = ({
                                     resetMarkerPosition(marker.id);
                                   }}
                                   className="text-blue-500 hover:text-blue-700"
-                                  title="กลับตำแหน่งเดิม"
                                   onMouseDown={e => e.stopPropagation()}
                                   onDragStart={e => e.preventDefault()}
                                 >
@@ -7511,7 +7523,6 @@ const VillageMap: React.FC<VillageMapProps> = ({
                                           resetMarkerPosition(marker.id);
                                         }}
                                         className="text-blue-500 hover:text-blue-700"
-                                        title="กลับตำแหน่งเดิม"
                                         onMouseDown={e => e.stopPropagation()}
                                         onDragStart={e => e.preventDefault()}
                                       >
@@ -8129,7 +8140,6 @@ const VillageMap: React.FC<VillageMapProps> = ({
                   hover:bg-yellow-600 transition-all duration-200 cursor-pointer flex items-center justify-center 
                   shadow-md hover:shadow-lg relative  group "
                   style={{ overflow: "hidden" }}
-                  title="รีเซ็ตตำแหน่งกลับไปที่ตำแหน่งเดิม"
                 >
                   <div className="absolute inset-0 flex flex-col items-center justify-center transition-transform duration-300 group-hover:-translate-y-12">
                     <span className="text-lg !text-white">↺</span>

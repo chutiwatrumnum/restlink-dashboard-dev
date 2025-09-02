@@ -862,7 +862,7 @@ const FormVillageLocation = ({
                     </Select>
                 </Form.Item>
                 <Form.Item
-                    label={<span className="text-[#002C55]">Name </span>}
+                    label={<span className="text-[#002C55]">Owner Name </span>}
                     name="name"
                 >
                     <Input
@@ -874,61 +874,49 @@ const FormVillageLocation = ({
                     />
                 </Form.Item>
                 <Form.Item
-                    label={<span className="text-[#002C55]">Tel 1 </span>}
+                    label={<span className="text-[#002C55]">Emergency Contact No. 1</span>}
                     name="tel1"
                 >
                     <Input
                         onChange={handleTel1Change}
                         maxLength={10}
-                        placeholder="Tel. 0985574483 (starts with 0)"
                         disabled={isFormDisabled || true}
                         onFocus={handleInputFocus}
                         onBlur={handleInputBlur}
                     />
                 </Form.Item>
-                <Form.Item label={<span className="text-[#002C55]">Tel 2</span>} name="tel2">
+                <Form.Item label={<span className="text-[#002C55]">Emergency Contact No. 2</span>} name="tel2">
                     <Input
                         onChange={handleTel2Change}
                         maxLength={10}
-                        placeholder="Tel. 0985574484 (starts with 0)"
                         disabled={isFormDisabled || true}
                         onFocus={handleInputFocus}
                         onBlur={handleInputBlur}
                     />
                 </Form.Item>
-                <Form.Item label={<span className="text-[#002C55]">Tel 3</span>} name="tel3">
+                <Form.Item label={<span className="text-[#002C55]">Emergency Contact No. 3</span>} name="tel3">
                     <Input
                         onChange={handleTel3Change}
                         maxLength={10}
-                        placeholder="Tel. 0985574485 (starts with 0)"
                         disabled={isFormDisabled || true}
                         onFocus={handleInputFocus}
                         onBlur={handleInputBlur}
                     />
                 </Form.Item>
-                {/* <Form.Item label={<span className="text-[#002C55] !hidden ">Latitude</span>} name="latitude">
-                    <Input  className="!hidden" disabled />
-                </Form.Item>
-                <Form.Item label={<span className="text-[#002C55] !hidden ">Longitude</span>} name="longitude">
-                    <Input className="!hidden" disabled />
-                </Form.Item> */}
                 <Form.Item>
                     <>
-                        
-                        {/* <div> AAA  {isFormDisabled.toString()} </div> */}
-                        {/* <div> BBB {!(isFormDisabled || !isFormValid).toString()} </div> */}
-                        <Button
+                    <div className="flex items-center"> 
+                    <Button
                             type="primary"
                             block
                             style={{
-                                marginBottom: 12,
                                 ...(isFormDisabled || !isFormValid ? {
                                     backgroundColor: '#d1d5db',
                                     borderColor: '#d1d5db',
                                     color: '#6b7280'
                                 } : {})
                             }}
-                            className={`
+                            className={` !me-4
                                 ${(isFormDisabled || !isFormValid) ?
                                     'hover:!text-white hover:!bg-gray-400 hover:!border-gray-400' :
                                     ''
@@ -1006,6 +994,9 @@ const FormVillageLocation = ({
                         >
                             Cancel
                         </Button>
+
+                    </div>
+
                     </>
                 </Form.Item>
             </Form>

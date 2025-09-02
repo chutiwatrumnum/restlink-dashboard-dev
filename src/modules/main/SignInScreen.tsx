@@ -96,9 +96,9 @@ const SignInScreen = () => {
       let projectType 
       if(response.status){
         dispatch.setupProject.setProjectData(response || {});
-        projectType = response?.projectType?.nameCode || '';
+        projectType = response?.projectType?.nameCode || response?.projectType?.nameCode || '';
         const strType = projectType.split('_');
-        projectType = strType[strType.length - 1];       
+        projectType = strType[strType.length - 1]; 
         if(projectType === 'condo'){
           navigate('/setup-project/upload-number-building', { replace: true });
         }
