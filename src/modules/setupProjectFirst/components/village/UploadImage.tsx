@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from "react";
-import { Button, Row, Col, message } from "antd";
+import { useState, useRef } from "react";
+import { Button,  message } from "antd";
 import { DeleteOutlined } from "@ant-design/icons";
 import IconUpload from "../../../../assets/images/setupProject/Icon-Upload.png";
 import { useNavigate } from "react-router-dom";
@@ -24,6 +24,7 @@ const UploadImage = ({ onNext, status = 'image' }: { onNext: string, status?: st
     // Local state for UI only
     const [isDragOver, setIsDragOver] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Use Redux state for both Excel and Image
     const uploadedImage = status === 'excel' ? null : reduxUploadedImage;
@@ -93,7 +94,7 @@ const UploadImage = ({ onNext, status = 'image' }: { onNext: string, status?: st
                         }];
 
                         dispatch.setupProject.uploadExcelFile({
-                            data: sheetsData,
+                            data: sheetsData as any,
                             fileName: file.name
                         });
 
@@ -143,27 +144,30 @@ const UploadImage = ({ onNext, status = 'image' }: { onNext: string, status?: st
                                 rowCount: filteredData.length,
                                 columnCount: filteredData.length > 0 ? Math.max(...filteredData.map((row: any) => Array.isArray(row) ? row.length : 0)) : 0
                             };
-
                             sheetsData.push(sheetObject);
                         });
 
-
-                        console.log(projectType,'projectType')
-
+                        
+                        
                         if(projectType === 'village'){
+                            console.log(workbook.SheetNames,'workbook.SheetNames')
+                            if(workbook.SheetNames[0]!='village'){
+                                FailedModal("Excel file is not valid (Village)", 1200)
+                                return;
+                            }
                             let condoCheck = sheetsData[0].data[0] || []
-                            let dataCheck = ["No","Address","Unit no.","House type","Number of floor","Size (sq.m.)"]
+                            let dataCheck = ["Address","House type","Number of floor","Size (sq.m.)"]
                             let checkCondo = !condoCheck.every((item: any) => dataCheck.includes(item))
                             if(checkCondo){
                                 FailedModal("Excel file is not valid (Village)", 1200)
                                 return;
                             }
                         }
-
                         // แปลงข้อมูล sheetsData ของแต่ละ sheet เป็น key-object โดย index ที่ 0 เป็น key แล้วที่เหลือเป็น value
                         // แปลงข้อมูล sheetsData ของแต่ละ sheet เป็น object ที่ key คือชื่อ sheet
                         let condoCheck = sheetsData[0].data[0] || []
-                        let dataCheck = ['No', 'Building name', 'Floor', 'Floor name', 'Unit no.', 'Floor of unit', 'Address', 'Room type', 'Size (sq.m.)']
+                        let dataCheck = 
+                        ['Building name', 'Floor', 'Floor name', 'Unit no.','Address', 'Room type', 'Size (sq.m.)']
                         let checkCondo = !condoCheck.every((item: any) => dataCheck.includes(item))
                         
                         if (projectType === 'condo') {
@@ -172,7 +176,7 @@ const UploadImage = ({ onNext, status = 'image' }: { onNext: string, status?: st
                                 return;
                             }
                             let basementCheck = sheetsData[1].data[0] || []
-                            let dataCheckBasement = ['No', 'Building name', 'Basement Floor', 'Basement name']
+                            let dataCheckBasement = ['Building name', 'Basement Floor', 'Basement name']
                             let checkBasement = !basementCheck.every((item: any) => dataCheckBasement.includes(item))
                             if (checkBasement) {
                                 FailedModal("Excel file is not valid (Basement)", 1200)
@@ -204,11 +208,6 @@ const UploadImage = ({ onNext, status = 'image' }: { onNext: string, status?: st
                             acc[sheet.sheetName] = rowObjects;
                             return acc;
                         }, {});
-                    console.log(sheetsDataAsObjects,'sheetsDataAsObjects')
-
-
-
-
                         dispatch.setupProject.uploadExcelFile({
                             data: sheetsDataAsObjects,
                             fileName: file.name
@@ -276,6 +275,14 @@ const UploadImage = ({ onNext, status = 'image' }: { onNext: string, status?: st
 
     const openFileDialog = () => {
         fileInputRef.current?.click();
+    };
+
+    const isDisabled = status === 'excel' ? !isExcelUploaded : !isImageUploaded;
+
+    const handleContinue = () => {
+        if (isDisabled || isSubmitting) return;
+        setIsSubmitting(true);
+        navigate(onNext);
     };
 
 
@@ -383,10 +390,11 @@ const UploadImage = ({ onNext, status = 'image' }: { onNext: string, status?: st
             </div>
             <div className="flex justify-end mt-5">
                 <Button
-                    onClick={() => navigate(onNext)}
+                    onClick={handleContinue}
                     type="primary"
-                    className="px-8 py-2 rounded-lg bg-blue-500 hover:bg-blue-600 w-[100px]"
-                    disabled={status === 'excel' ? !isExcelUploaded : !isImageUploaded}
+                    loading={isSubmitting}
+                    className={`px-8 py-2 rounded-lg bg-blue-500  w-[100px] ${isDisabled || isSubmitting ? '!opacity-50 !cursor-not-allowed' : ''}`}
+                    disabled={isDisabled || isSubmitting}
                 >
                     Continue
                 </Button>

@@ -1,14 +1,22 @@
 import homeAdd from "../../../../assets/images/setupProject/HomeAdd.png";
-
+import { useGlobalUpload } from "../../screens/condominium/context/GlobalUpload";
 interface MapAddPlanFloorProps {
     setStatusAddPlanFloor: (status: boolean) => void;
     resetForm: () => void;
 }
 
 const MapAddPlanFloor = ({ setStatusAddPlanFloor, resetForm }: MapAddPlanFloorProps) => {
+    const { selectedBuilding, buildingData, setBuildingData } = useGlobalUpload();
     const handleClick = () => {
         resetForm();
         setStatusAddPlanFloor(true);
+        setBuildingData({
+            ...buildingData,
+            [selectedBuilding]: {
+                ...buildingData[selectedBuilding],
+                imagePreview: '',
+            }
+        });
     };
 
     return (

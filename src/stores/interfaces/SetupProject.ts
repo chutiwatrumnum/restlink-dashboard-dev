@@ -84,8 +84,8 @@ export type Basement = {
 };
 
 export type UploadFileSentApiType = {
-  Condo: CondoUnit[];
-  Basement: Basement[];
+  condo: CondoUnit[];
+  basement: Basement[];
   village?: any[];
 };
 

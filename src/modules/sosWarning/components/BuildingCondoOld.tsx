@@ -616,7 +616,7 @@ const BuildingCondo: React.FC<BuildingCondoProps> = ({
                       <div
                         className="cursor-pointer h-auto"
                         style={{ 
-                          backgroundColor: buildingColors[bIdx % buildingColors.length]
+                          backgroundColor: '#d7d5ca'
                         }}
                       >
                         <div className="flex flex-col flex-wrap items-center">

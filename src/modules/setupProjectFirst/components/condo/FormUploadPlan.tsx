@@ -3,7 +3,7 @@ import iconUpload from "../../../../assets/images/setupProject/Icon-upload.png";
 import iconDelete from "../../../../assets/images/setupProject/IconDelete.png";
 import { useState, useRef, useEffect } from "react";
 import type { BaseSelectRef } from 'rc-select';
-
+import { useGlobalUpload } from "../../screens/condominium/context/GlobalUpload";
 const FormUploadPlan = (
     {
         floorOptions,
@@ -22,8 +22,7 @@ const FormUploadPlan = (
         setIsEditing,
         setStoreDataOriginal,
         setSelectedFloors,
-        
-        
+    
     }: {
         floorOptions: { value: string, label: string, disabled: boolean }[],
         fileList: File[],
@@ -33,6 +32,8 @@ const FormUploadPlan = (
         indexEdit: number | null,
         storeDataAll?: { fileList: File | null, fileName: string, selectedFloors: string[], imagePreview: string | null }[],
         storeDataOriginal: { fileList: File | null, fileName: string, selectedFloors: string[], imagePreview: string | null }[],
+        
+        
         setStoreDataOriginal: (storeDataOriginal: { fileList: File | null, fileName: string, selectedFloors: string[], imagePreview: string | null }[]) => void,
         setFileList: (files: File[]) => void,
         setSelectedFloors: (floors: string[]) => void,
@@ -43,6 +44,7 @@ const FormUploadPlan = (
         setIsEditing?: (isEditing: boolean) => void,
     }
 ) => {
+    const { selectedBuilding, buildingData, setBuildingData } = useGlobalUpload();
     const selectRef = useRef<BaseSelectRef>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isSelectOpen, setIsSelectOpen] = useState(false);
@@ -64,7 +66,6 @@ const FormUploadPlan = (
 
     const handleAdd = () => {
         let file = fileList[0];
-        
         // ตรวจสอบว่ามี file จริงๆ
         if (!file || !(file instanceof File)) {
             return;
@@ -84,6 +85,17 @@ const FormUploadPlan = (
         
         // ใช้ deep copy เพื่อแยก reference ระหว่าง storeData และ storeDataOriginal
         let data = [...storeData, obj];
+        
+        // data = data.map(item => {
+        //     if(item.selectedFloors.includes('all')){
+        //         item.selectedFloors = floorOptions.map(item => item.value)
+        //     }
+        //     return item
+        // })
+        // if(data[0]?.selectedFloors.includes('all')){
+        //   data[0].selectedFloors = floorOptions.map(item => item.value)
+        // }
+
         // สร้าง deep copy แต่เก็บ File object ไว้
         let objOriginal = {
             ...JSON.parse(JSON.stringify({
@@ -97,8 +109,6 @@ const FormUploadPlan = (
     
         setStoreData(data);
         setStoreDataOriginal(dataOriginal);
-
-
     }
 
     const handleEdit = () => {
@@ -163,9 +173,22 @@ const FormUploadPlan = (
     // อัพเดท handleFloorSelect เพื่อปิด dropdown หลังเลือก
     const handleFloorSelectWithClose = (value: string, indexEdit: number | string | null) => {
         handleFloorSelect(value, indexEdit ? Number(indexEdit) : null);
-        setIsSelectOpen(false); // ปิด dropdown หลังจากเลือกค่า
+
+        // ลบ 'all' ออกจาก Add form
+        if (selectedFloors.includes('all')) {
+            setSelectedFloors(selectedFloors.filter(f => f !== 'all'));
+        }
+        // ลบ 'all' ออกจากทุกการ์ด
+        if (storeDataAll && storeDataAll.length) {
+            setStoreData(storeDataAll.map(c => ({
+                ...c,
+                selectedFloors: (c.selectedFloors || []).filter(f => f !== 'all')
+            })));
+        }
+
+        setIsSelectOpen(false);
     };
-    const handleUpload = (event: React.ChangeEvent<HTMLInputElement>,index:any) => {
+    const handleUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
         const files = event.target.files;
         if (files && files.length > 0) {
             const file = files[0];  // เก็บ File object
@@ -187,6 +210,10 @@ const FormUploadPlan = (
                 }
             } else {
                 setImagePreview(previewURL);
+                let obj =  {...buildingData}
+                obj[selectedBuilding].imagePreview = previewURL || '';
+                setBuildingData(obj);
+                
             }
         }
     };
@@ -214,21 +241,10 @@ const FormUploadPlan = (
         }
     };
 
-    // เพิ่มฟังก์ชันสำหรับหาชั้นที่ยังไม่ได้เลือก - ใช้ข้อมูลจาก floorOptions
-    const getAvailableFloors = () => {
-        const currentFloors = statusEdit && indexEdit !== null && storeDataAll 
-            ? storeDataAll[indexEdit]?.selectedFloors || []
-            : selectedFloors;
-        
-        const selectedSet = new Set(currentFloors);
-        return floorOptions
-            .filter(option => !option.disabled && !selectedSet.has(option.value))
-            .map(option => option.value);
-    };
 
     // เพิ่มฟังก์ชันสำหรับ handle Select All
     const handleSelectAll = () => {
-        const availableFloors = getAvailableFloors();
+        if (hasAnySpecificSelected()) return; // มีแท็กแล้ว ห้ามเลือก all
         if (statusEdit && indexEdit !== null && indexEdit !== undefined) {
             const newStoreData = [...(storeDataAll || [])];
             const currentFloors = newStoreData[indexEdit].selectedFloors.filter(floor => floor !== 'all' && !floor.startsWith('pre_select_all:'));
@@ -256,7 +272,6 @@ const FormUploadPlan = (
         const currentFloors = statusEdit && indexEdit !== null && storeDataAll 
             ? storeDataAll[indexEdit]?.selectedFloors || []
             : selectedFloors;
-        const availableFloors = getAvailableFloors();
         // เช็คเฉพาะกรณีที่มี flag 'all' เท่านั้น
         return currentFloors.includes('all');
     };
@@ -425,11 +440,9 @@ const FormUploadPlan = (
 
     // เพิ่มฟังก์ชันสำหรับ get floor options
     const getFloorOptions = () => {
-        // Card Edit ใช้ storeDataAll, Card Add ใช้ selectedFloors
         const currentFloors = indexEdit !== null && storeDataAll && storeDataAll[indexEdit] 
             ? storeDataAll[indexEdit].selectedFloors || []
             : selectedFloors;
-
         // เช็คว่ามีการ์ดไหนมี "Select All" tag อยู่หรือไม่
         let hasSelectAllTag = false;
         let currentCardHasSelectAll = currentFloors.includes('all');
@@ -538,13 +551,36 @@ const FormUploadPlan = (
             return [];
         }
 
-        // สร้างตัวเลือกสุดท้าย
-        let finalOptions = [];
-        if (!hasSelectAllTag) {
-            finalOptions.push({ value: 'all', label: 'Select All' });
-        }
-        finalOptions.push(...availableOptions);
+        const originals = Array.isArray(storeDataOriginal) ? storeDataOriginal : [];
+        const isAdd = indexEdit == null;
+        const currentFloorsClean = currentFloors.filter(f => f !== 'all' && !f.startsWith('pre_select_all:'));
+        const isCurrentCardEmpty = currentFloorsClean.length === 0;
+        const anySavedHasAny = originals.some(o => (o?.selectedFloors ?? []).length > 0);
+
+        // ตรวจว่าการ์ด Edit อื่นๆ ยังมีแท็กอยู่หรือไม่ (พิจารณาทั้ง current และ saved)
+        const otherEditsHaveTag = (
+            (storeDataAll || []).some((d, idx) => idx !== indexEdit && (d.selectedFloors || []).some(f => !f.startsWith('pre_select_all:'))) ||
+            originals.some((d, idx) => idx !== indexEdit && (d.selectedFloors || []).some(f => !f.startsWith('pre_select_all:')))
+        );
+
+        // แสดง Select All:
+        // - การ์ด Add: เมื่อทุกการ์ดลบแท็กหมดและกด Edit บันทึกแล้ว (อิง saved state เท่านั้น)
+        // - การ์ด Edit: เมื่อการ์ดที่กำลังแก้ไม่มีแท็กอยู่ และไม่มีการ์ด Edit อื่นที่มีแท็ก
+        const canShowSelectAll = isAdd ? !anySavedHasAny : (isCurrentCardEmpty && !otherEditsHaveTag);
+
+        const finalOptions = canShowSelectAll
+            ? [{ value: 'all', label: 'Select All' }, ...availableOptions]
+            : availableOptions;
         return finalOptions;
+    };
+
+    // เพิ่มฟังก์ชันสำหรับตรวจว่ามีแท็กใดๆ อยู่หรือไม่
+    const hasAnySpecificSelected = () => {
+        const inAdd = selectedFloors.some(f => f !== 'all' && !f.startsWith('pre_select_all:'));
+        const inAnyCard = (storeDataAll || []).some(c =>
+            (c.selectedFloors || []).some(f => f !== 'all' && !f.startsWith('pre_select_all:'))
+        );
+        return inAdd || inAnyCard;
     };
 
     // Force re-render เมื่อข้อมูลเปลี่ยน
@@ -568,8 +604,28 @@ const FormUploadPlan = (
         setForceUpdate(prev => prev + 1);
     }, [storeData]);
 
+    useEffect(() => {
+        setImagePreview(buildingData[selectedBuilding]?.imagePreview || '')
+    }, [selectedBuilding])
+
+    const currentFloors = indexEdit !== null && storeDataAll && storeDataAll[indexEdit]
+        ? storeDataAll[indexEdit].selectedFloors || []
+        : selectedFloors;
+
+    const anyCardHasSelectAll = (storeDataAll || []).some(c =>
+        (c.selectedFloors || []).includes('all')
+    );
+
+    const thisCardFloors =
+  indexEdit !== null && storeDataAll ? (storeDataAll[indexEdit]?.selectedFloors || []) : selectedFloors;
+
+
+    // ถ้ามี Select All ที่การ์ดใดๆ ในตึก ⇒ ไม่ต้องแสดงช่อง Select
+    const shouldShowSelector = !anyCardHasSelectAll || thisCardFloors.includes('all');
+
     return (
         <>
+
 
             <div className="border-1 border-gray-300 rounded-lg h-full flex flex-col p-4">
                 <div className="">
@@ -591,30 +647,29 @@ const FormUploadPlan = (
                         >
                             <div className="flex flex-wrap items-center">
                                 {renderTags()}
-                                <div
-                                    className="!min-w-[120px] cursor-pointer px-2 select-container"
-                                    onClick={(e) => e.stopPropagation()}
-                                >
-                                    <Select
-                                        key={forceUpdate}
-                                        ref={selectRef}
-                                        placeholder={"Select Floor"}
-                                        className="!w-full [&_.ant-select-selector]:!border-0 [&_.ant-select-selector]:!shadow-none [&_.ant-select-selector]:!p-0 [&_.ant-select-selector]:!m-0"
-                                        options={getFloorOptions()}
-                                        onChange={(value) => {
-                                            if (value === 'all') {
-                                                handleSelectAll();
-                                            } else {
-                                                handleFloorSelectWithClose(value || '', statusEdit ? indexEdit?.toString() || null : null);
-                                            }
-                                        }}
-                                        value={null}
-                                        popupMatchSelectWidth={false}
-                                        suffixIcon={null}
-                                        open={isSelectOpen}
-                                        onOpenChange={setIsSelectOpen}
-                                        notFoundContent="No data"
-                                    />
+                                <div className="!min-w-[120px] cursor-pointer px-2 select-container" onClick={(e) => e.stopPropagation()}>
+                                    {shouldShowSelector && (
+                                        <Select
+                                            key={forceUpdate}
+                                            ref={selectRef}
+                                            placeholder={"Select Floor"}
+                                            className="!w-full [&_.ant-select-selector]:!border-0 [&_.ant-select-selector]:!shadow-none [&_.ant-select-selector]:!p-0 [&_.ant-select-selector]:!m-0"
+                                            options={getFloorOptions()}
+                                            onChange={(value) => {
+                                                if (value === 'all') {
+                                                    handleSelectAll();
+                                                } else {
+                                                    handleFloorSelectWithClose(value || '', statusEdit ? indexEdit?.toString() || null : null);
+                                                }
+                                            }}
+                                            value={null}
+                                            popupMatchSelectWidth={false}
+                                            suffixIcon={null}
+                                            open={isSelectOpen}
+                                            onOpenChange={setIsSelectOpen}
+                                            notFoundContent="No data"
+                                        />
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -632,9 +687,9 @@ const FormUploadPlan = (
                             ref={fileInputRef}
                             type="file"
                             className="hidden upload-floor-plan-input"
-                            onChange={(e) => handleUpload(e,indexEdit)}
+                            onChange={(e) => handleUpload(e)}
                             multiple={false}
-                            accept="image/*"
+                            accept=".png,.jpg,.jpeg"
                         />
                         {
 
@@ -656,7 +711,7 @@ const FormUploadPlan = (
                                         </div>
                                     </div>
                                 ) : (
-                                    <div className="flex flex-col items-center">
+                                    <div className="flex flex-col items-center py-4">
 
                                         {(statusEdit ? storeData[0].imagePreview || '' : imagePreview) && (
                                             <div className="w-full  relative">

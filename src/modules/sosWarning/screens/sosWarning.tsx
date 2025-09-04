@@ -24,6 +24,7 @@ import { usePermission } from "../../../utils/hooks/usePermission";
 // import { toast } from 'react-toastify';
 import Topbar from "../components/imageVillage/Topbar";
 import { isEqual } from 'lodash';
+import FailedModal from "../../../components/common/FailedModal";
 
 
 const SOSWarning = () => {
@@ -470,6 +471,16 @@ const SOSWarning = () => {
 
   const loadFirst = useCallback(async (floorId?: string) => {
     try {
+
+      let dataAllMap = await getVillageData(floorId || null);
+      if(floorId && dataAllMap.status){
+        console.log('success-first')
+        if(!dataAllMap.result.planImg || !dataAllMap.result.planInfoId){
+          FailedModal("Plan Not Found", 1200)
+          return 
+        }
+      }
+
       if (Object.keys(dataEmergencyDetail).length > 0) {
         setIsLoadingFirst(false);
         return
@@ -483,7 +494,8 @@ const SOSWarning = () => {
       if (floorId) {
         await dispatch.sosWarning.setFloorIdGlobal(floorId || '');
       }
-      let dataAllMap = await getVillageData(floorId || null);
+      
+
       let dataEmergency = await getEventPending();
       // await getEmergency();
       let dataBuilding = []
@@ -756,14 +768,14 @@ const SOSWarning = () => {
     }
 
     // แสดง loading เมื่อลบ marker
-    setLoadingText("กำลังลบข้อมูล...");
+    setLoadingText("Deleting data...");
     // setIsLoading(true);
 
     let data = await deleteMarker(id);
     if (data.status) {
       if (data.result) {
         // อัพเดท marker
-        SuccessModal("ลบข้อมูลสำเร็จ", 900)
+        SuccessModal("Delete data successfully", 900)
         if (data.result.marker && Array.isArray(data.result.marker)) {
           setDataMapAll((prev: any) => ({
             ...prev,
@@ -971,48 +983,6 @@ const SOSWarning = () => {
           >
             <div className="min-h-screen  relative !bg-white flex flex-col"
               style={{ zIndex: '1' }}>
-              {/* <div>
-                  <Button 
-                  onClick={() => {
-                    console.log(permissions,'permissions')
-                  }}
-                  >
-                    permission
-                  </Button>
-                </div>
-                <div>
-                  <Button onClick={() => {
-                    console.log(permissions,'permissions')
-                     let dataPermission = JSON.parse(JSON.stringify(permissions))
-                     if(dataPermission.length > 0) {
-                      dataPermission[7].allowAdd = true
-                      dataPermission[7].allowView = true
-                      dataPermission[7].allowEdit = false
-                      dataPermission[7].allowDelete = false
-                      dispatch.common.updatePermission(dataPermission)
-                     }
-                  }}>
-                    change permission
-                  </Button>
-
-
-                  <Button onClick={() => {
-                    console.log(permissions,'permissions')
-                     let dataPermission = JSON.parse(JSON.stringify(permissions))
-                     if(dataPermission.length > 0) {
-                      dataPermission[7].allowAdd = true
-                      dataPermission[7].allowView = true
-                      dataPermission[7].allowEdit = true
-                      dataPermission[7].allowDelete = true
-                      dispatch.common.updatePermission(dataPermission)
-                     }
-                  }}>
-                    change permission2
-                  </Button>
-
-                </div> */}
-
-
               <ModalFormUpdate
                 dataSelectPlan={dataSelectPlan}
                 isOpen={isModalOpen}
@@ -1143,7 +1113,7 @@ const SOSWarning = () => {
                               : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
                           }
                 `}
-                        title={hasActiveMarker ? 'มีการแก้ไข marker อยู่ กรุณายืนยันหรือยกเลิกก่อน' : ''}
+                        title={hasActiveMarker ? 'There is an active marker, please confirm or cancel first' : ''}
                       >
                         EDIT MARKER
                       </button>

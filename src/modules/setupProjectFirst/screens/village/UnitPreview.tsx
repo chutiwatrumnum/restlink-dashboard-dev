@@ -3,12 +3,9 @@ import {
     Table,
 } from "antd";
 import { useEffect } from "react";
-import { CheckCircleFilled } from '@ant-design/icons';
 import ProgressStep from "../../components/village/ProgressStep";
 import "../../styles/SetupProject.css";
 import type { ColumnsType } from "antd/es/table";
-import { UnitPreviewType } from "../../../../stores/interfaces/SetupProject";
-// import { unitPreviewData } from "./dummyData/Unit";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import SetupSuccessModal from "../../components/ModalSuccessUnit";
@@ -24,19 +21,22 @@ import SuccessModal from "../../../../components/common/SuccessModal";
 const UploadPlan = () => {
 
     const dispatch = useDispatch<Dispatch>();
-    const { excelData,uploadedImage,uploadedFileName,imageFileObject } = useSelector((state: RootState) => state.setupProject);
+    const { excelData,uploadedImage,imageFileObject } = useSelector((state: RootState) => state.setupProject);
     const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
     const navigate = useNavigate();
+    const [isSubmitting, setIsSubmitting] = useState(false);
     
 
     useEffect(()=>{
-        if(!imageFileObject || excelData.village?.length === 0){
+        if(!imageFileObject || excelData?.village?.length === 0){
             navigate('/setup-project/upload-unit')
         }
         
     },[])
     
     const handleFinishSetup = async () => {
+        if (isSubmitting) return;
+        setIsSubmitting(true);
         try {
             if (!uploadedImage) {
                 return;
@@ -81,6 +81,8 @@ const UploadPlan = () => {
 
         } catch (error) {
             console.error('Error in handleFinishSetup:', error);
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -93,12 +95,12 @@ const UploadPlan = () => {
             title: "No.",
             dataIndex: "No",
             align: "center",
-            render: (_, record) => (
+            render: (_, __, index:number) => (
                 <div className="text-lg font-light text-[#002C55]">
-                    {record.No}
+                    {index + 1}
                 </div>
             )
-        },
+        }, 
         {
             title: "Address",
             dataIndex: "Address",
@@ -108,17 +110,6 @@ const UploadPlan = () => {
                     {record.Address}
                 </div>
             )
-        },
-        {
-            title: "Unit no.",
-            dataIndex: "Unit no.",
-            align: "center",
-            render: (_, record) => (
-                <div className="text-lg font-light text-[#002C55]">
-                    {record.UnitNo}
-                </div>
-            )
-
         },
         {
             title: "House type",
@@ -173,15 +164,16 @@ const UploadPlan = () => {
                         <div className="flex justify-between items-center p-6 bg-white">
                             <Button
                                 onClick={() => navigate("/setup-project/upload-unit")}
-                                size="large"
                                 className="px-8 py-2 rounded-lg border-gray-300 w-[150px]"
                             >
                                 Back
                             </Button>
                             <Button
                                 type="primary"
-                                size="large"
-                                className="px-8 py-2 rounded-lg bg-blue-500 hover:bg-blue-600 w-[150px]"
+                                className={`px-8 py-2 rounded-lg bg-blue-500
+                                    !transition-opacity !duration-200 ${isSubmitting ? '!opacity-50 !cursor-not-allowed' : ''}`}
+                                loading={isSubmitting}
+                                disabled={isSubmitting}
                                 onClick={handleFinishSetup}
                             >
                                 Finish setup
@@ -201,6 +193,7 @@ const UploadPlan = () => {
 };
 
 export default UploadPlan;
+
 
 
 

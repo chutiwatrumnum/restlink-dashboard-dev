@@ -58,8 +58,7 @@ const FormVillageLocation = ({
     mapMode = 'work-it',
     shouldFocusNameInput,
     dataSelectPlan, 
-    isCreatingMode,
-    idVillage, 
+    isCreatingMode, 
     hasActiveMarker,
     dataAllMap,
     onMarkerNameChange,
@@ -79,7 +78,6 @@ const FormVillageLocation = ({
     const [form] = Form.useForm();
     const [isFormValid, setIsFormValid] = useState(false);
     const nameInputRef = useRef<any>(null);
-    const [isUserInputting, setIsUserInputting] = useState(false);
     const lastUserSelectedAddress = useRef<string | null>(null);
     const currentMarkerIdRef = useRef<number | string | null>(null);
     const isUserInputtingRef = useRef<boolean>(false);
@@ -91,7 +89,6 @@ const FormVillageLocation = ({
     const lastFormUpdateTimeRef = useRef<number>(0);
     const isCancellingRef = useRef<boolean>(false); // flag เพื่อป้องกัน useEffect ทำงานหลังจากกด cancel // เก็บเวลาล่าสุดที่ update form
     const isConfirmingRef = useRef<boolean>(false); // flag เพื่อป้องกัน racing condition หลัง confirm
-    const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null); // สำหรับ debounce การอัปเดต form
 
 
 
@@ -142,7 +139,6 @@ const FormVillageLocation = ({
 
         // หากเป็นการเปลี่ยน marker หรือ reselect marker ขณะที่ user กำลัง interact ให้ reset flags ก่อน
         if ((isMarkerChanged || isMarkerReselected) && isUserCurrentlyActive) {
-            setIsUserInputting(false);
             isUserInputtingRef.current = false;
             isUserFocusedRef.current = false;
             isUserInteractingRef.current = false;
@@ -159,7 +155,6 @@ const FormVillageLocation = ({
             lastUserSelectedAddress.current = null;
             currentMarkerIdRef.current = selectedMarker.id;
             // Reset interaction flags ทันทีเมื่อเปลี่ยน marker เพื่อให้ form อัพเดทได้
-            setIsUserInputting(false);
             isUserInputtingRef.current = false;
             isUserFocusedRef.current = false;
             isUserInteractingRef.current = false;
@@ -347,7 +342,6 @@ const FormVillageLocation = ({
             isUserInputtingRef.current = false;
             isUserFocusedRef.current = false;
             isUserInteractingRef.current = false;
-            setIsUserInputting(false);
             lastUserSelectedAddress.current = null;
             currentMarkerIdRef.current = null;
             
@@ -399,7 +393,6 @@ const FormVillageLocation = ({
     const handleInputFocus = () => {
         isUserFocusedRef.current = true;
         isUserInteractingRef.current = true;
-        setIsUserInputting(true);
         isUserInputtingRef.current = true;
         lastFormUpdateTimeRef.current = Date.now(); // บันทึกเวลาที่ user เริ่ม focus
     };
@@ -408,7 +401,6 @@ const FormVillageLocation = ({
         // ใช้ delay ยาวขึ้นเพื่อป้องกันการ refresh เมื่อ click marker อื่น
         setTimeout(() => {
             isUserFocusedRef.current = false;
-            setIsUserInputting(false);
             // รอเพิ่มอีกเยอะก่อน unlock interaction เพื่อป้องกัน race condition
             setTimeout(() => {
                 isUserInputtingRef.current = false;
@@ -426,7 +418,6 @@ const FormVillageLocation = ({
         // Set strong protection flags เมื่อ user กำลังพิมพ์
         isUserInputtingRef.current = true;
         isUserInteractingRef.current = true;
-        setIsUserInputting(true);
         lastFormUpdateTimeRef.current = Date.now();
 
         if (selectedMarker && onMarkerNameChange) {
@@ -511,7 +502,6 @@ const FormVillageLocation = ({
         // Set strong protection flags เมื่อ user กำลังพิมพ์
         isUserInputtingRef.current = true;
         isUserInteractingRef.current = true;
-        setIsUserInputting(true);
         lastFormUpdateTimeRef.current = Date.now();
         // ไม่ใช้ form.setFieldsValue เพื่อป้องกันการ reset ช่องอื่น
         // ให้ antd จัดการ value ผ่าน controlled component แทน
@@ -536,7 +526,6 @@ const FormVillageLocation = ({
         // Set strong protection flags เมื่อ user กำลังพิมพ์
         isUserInputtingRef.current = true;
         isUserInteractingRef.current = true;
-        setIsUserInputting(true);
         lastFormUpdateTimeRef.current = Date.now();
         // ไม่ใช้ form.setFieldsValue เพื่อป้องกันการ reset ช่องอื่น
         // ให้ antd จัดการ value ผ่าน controlled component แทน
@@ -561,7 +550,6 @@ const FormVillageLocation = ({
         // Set strong protection flags เมื่อ user กำลังพิมพ์
         isUserInputtingRef.current = true;
         isUserInteractingRef.current = true;
-        setIsUserInputting(true);
         lastFormUpdateTimeRef.current = Date.now();
 
         // ไม่ใช้ form.setFieldsValue เพื่อป้องกันการ reset ช่องอื่น
@@ -686,7 +674,6 @@ const FormVillageLocation = ({
                     isUserFocusedRef.current = false;
                     isUserInputtingRef.current = false;
                     isUserInteractingRef.current = false;
-                    setIsUserInputting(false);
                     // ยกเลิกการเลือก marker เพื่อลบขอบสีแดง
                     if (onMarkerSelect) {
                         onMarkerSelect(null);
@@ -784,7 +771,6 @@ const FormVillageLocation = ({
                     isUserFocusedRef.current = false;
                     isUserInputtingRef.current = false;
                     isUserInteractingRef.current = false;
-                    setIsUserInputting(false);
                     // ยกเลิกการเลือก marker เพื่อลบขอบสีแดง
                     if (onMarkerSelect) {
                         onMarkerSelect(null);
@@ -838,7 +824,7 @@ const FormVillageLocation = ({
                 <Form.Item
                     label={<span className="text-[#002C55]">Address </span>}
                     name="address"
-                    rules={[{ required: true, message: 'กรุณาเลือก Address' }]}
+                    rules={[{ required: true, message: 'Please select Address' }]}
                 >
 
                     <Select
@@ -941,7 +927,6 @@ const FormVillageLocation = ({
                                 isUserFocusedRef.current = false;
                                 isUserInputtingRef.current = false;
                                 isUserInteractingRef.current = false;
-                                setIsUserInputting(false);
                                 
                                 // เคลียร์ ref data - รีเซ็ต currentMarkerIdRef เป็น null เพื่อให้ unlock marker ทำงาน
                                 lastUserSelectedAddress.current = null;

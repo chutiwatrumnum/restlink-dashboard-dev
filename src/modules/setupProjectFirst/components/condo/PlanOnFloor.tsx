@@ -1,5 +1,4 @@
-import { useState, useEffect } from "react";
-import { Button } from "antd";
+import { useState } from "react";
 import UploadBuildingImage from "../../../../assets/images/setupProject/UploadBuildingImage.png";
 import FormUploadPlan from "./FormUploadPlan";
 interface PlanOnFloorProps {
@@ -48,44 +47,6 @@ const PlanOnFloor = ({
 
 
 
-    const formatFloorNumbers = (floors: string[]) => {
-        // ถ้าไม่มีข้อมูลหรือมีแค่ all ให้แสดง Select All
-        if (!floors.length || floors.includes('all')) {
-            return 'Select All';
-        }
-
-        // กรองเอาเฉพาะตัวเลข
-        const numberFloors = floors.filter(floor => !isNaN(Number(floor)));
-        if (!numberFloors.length) return '';
-
-        // แปลง string[] เป็น number[] และเรียงลำดับ
-        const sortedFloors = numberFloors.map(Number).sort((a, b) => a - b);
-        const ranges: string[] = [];
-
-        // ใช้ loop เดียวในการสร้าง ranges
-        let i = 0;
-        while (i < sortedFloors.length) {
-            let start = sortedFloors[i];
-            let end = start;
-            
-            // หาช่วงที่ต่อเนื่องกัน
-            while (i + 1 < sortedFloors.length && sortedFloors[i + 1] === end + 1) {
-                end = sortedFloors[i + 1];
-                i++;
-            }
-            
-            // เพิ่มช่วงที่พบ
-            if (start === end) {
-                ranges.push(start.toString());
-            } else {
-                ranges.push(`${start}-${end}`);
-            }
-            
-            i++;
-        }
-
-        return ranges.join(', ');
-    };
 
     // เพิ่มฟังก์ชันสำหรับแสดงผลชั้น
     const displayFloorText = (floors: string[]): string => {

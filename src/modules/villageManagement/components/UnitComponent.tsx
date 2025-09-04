@@ -24,7 +24,7 @@ const UnitComponent = (props: UnitComponentType) => {
   const { access } = usePermission(permissions);
 
   const { unit, onEditClick, onAddMemberClick } = props;
-  const { id, roomAddress, unitNo, family, unitOwner } = unit;
+  const { id, roomAddress, family, unitOwner, unitType } = unit;
 
   return (
     <div
@@ -46,7 +46,7 @@ const UnitComponent = (props: UnitComponentType) => {
         ) : null}
       </div>
       <span className="text-lg font-light text-[var(--text-gray)]">
-        Unit No. : {unitNo ?? "123(XX)"}
+        House type: {unitType ? unitType.name : "XXX XX2163X01"}
       </span>
       {/* Section 1 (Room info | Add room member) */}
       {unitOwner ? (

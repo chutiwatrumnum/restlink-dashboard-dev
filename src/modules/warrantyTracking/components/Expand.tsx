@@ -19,7 +19,7 @@ export const ExpandedRowRender = (props: ExpandTableProps) => {
     props.handleEdit(warrantyDetails);
   };
 
-  const onDelete = async (record: WarrantyDetailsType) => {
+  const onDelete = async () => {
     await ConfirmModal({
       message: "Confirm deletion",
       title: "Confirm deleting this device warranty",
@@ -95,7 +95,7 @@ export const ExpandedRowRender = (props: ExpandTableProps) => {
                 onClick={() => onEdit(record)}
               />
               <Button
-                onClick={() => onDelete(record)}
+                onClick={() => onDelete()}
                 type="text"
                 icon={<TrashIcon />}
               />

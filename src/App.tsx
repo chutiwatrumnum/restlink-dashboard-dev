@@ -10,7 +10,6 @@ import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "./stores";
 import { useEffect, useState, useLayoutEffect } from "react";
 
-import { getStepCondo } from "./modules/setupProjectFirst/service/api/SetupProject";
 import { useRouteChange } from "./utils/hooks";
 import { useNavigate } from "react-router-dom";
 
@@ -30,7 +29,6 @@ import SetupProjectLayout from "./navigation/SetupProjectLayout";
 // authorize routes
 import SummaryDashboard from "./modules/summary/screens/Summary";
 import Announcement from "./modules/announcement/screens/Announcement";
-import PeopleCountingMain from "./modules/peopleCounting/screens/PeopleCountingMain";
 import ManagementMain from "./modules/management/screens/ManagementMain";
 import ResidentInformationMain from "./modules/userManagement/screens/ResidentInformationMain";
 import ResidentActivation from "./modules/userManagement/screens/ResidentActivation";
@@ -53,7 +51,6 @@ import WarrantyTracking from "./modules/warrantyTracking/screens/WarrantyTrackin
 
 import SOSWarning from "./modules/sosWarning/screens/sosWarning";
 import SecurityAlarm from "./modules/sosWarning/screens/securityAlarm";
-import SOSHistoryAlarm from "./modules/sosWarning/screens/sosHistoryAlarm";
 import HistoryBuilding from "./modules/sosWarning/screens/historyBuilding";
 
 import LiveChat from "./modules/chat/screens/ChatRoomScreen";
@@ -82,7 +79,6 @@ import SignInScreen from "./modules/main/SignInScreen";
 import RecoveryScreen from "./modules/main/RecoveryScreen";
 import ResetPassword from "./modules/main/ResetPassword";
 import SuccessResetScreen from "./modules/main/SuccessResetScreen";
-import ParcelDashboard from "./modules/parcelDashboard/screen/ParcelDashboard";
 // Removed unused and case-sensitive conflicting import for ParcelDeliverLogs
 
 import SetupProject from "./modules/setupProjectFirst/screens/SetupProject";
@@ -113,7 +109,7 @@ import { getProject } from "./modules/setupProjectFirst/service/api/SetupProject
 
 // ตัวอย่างการใช้ Custom Hooks (เก็บไว้สำหรับ scroll to top)
 function AppWithCustomHooks() {
-  useRouteChange(async (currentPath, previousPath) => {
+  useRouteChange(async () => {
     window.scrollTo(0, 0);
   });
   return null;

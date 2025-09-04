@@ -1,9 +1,8 @@
-import { useState, useEffect, useRef } from "react";
-import { Button, Row, Col, message } from "antd";
+import { Button } from "antd";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../../stores";
 import { useNavigate } from "react-router-dom";
-import uploadBuildingImage from "../../../../assets/images/setupProject/UploadBuildingImage.png";
+
 import defaultImage from "../../../../assets/images/setupProject/DefaultImage.jpg"
 
 const CardDetailPlan = ({ onBack }: { onBack: string }) => {

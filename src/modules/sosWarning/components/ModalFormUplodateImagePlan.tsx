@@ -1,10 +1,5 @@
-import { useState, useEffect } from "react";
-import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
+import { useEffect } from "react";
 import CreateModal from "../../../components/common/FormModal";
-import dayjs from 'dayjs';
-import {
-  Form,
-} from "antd";
 import { WarrantyDetailsType } from "../../../stores/interfaces/Warranty";
 import SuccessModal from "../../../components/common/SuccessModal";
 import Content from "./ModalformUpdatePImagePlan/Context";
@@ -23,8 +18,6 @@ interface ModalFormUpdateProps {
 export const ModalFormUploadateImagePlan: React.FC<ModalFormUpdateProps> = ({ 
   isModalOpen, 
   setIsModalOpen,
-  onClose,
-  selectedWarranty 
 }) => {
 //   const [isModalOpen, setIsModalOpen] = useState<boolean>(isOpen);
 const { dataMapAll ,loadFirst } = useGlobal();

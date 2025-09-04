@@ -16,50 +16,58 @@ const UnitPreview = () => {
     const dispatch = useDispatch<Dispatch>();
     
     useEffect(() => {
-        console.log(excelData,'excelData')
-        if (excelData.Basement.length === 0 && excelData.Condo.length === 0) {
+        if (excelData?.Basement?.length === 0 && excelData?.Condo?.length === 0) {
             navigate('/setup-project/upload-number-building')
         }
     }, [])
 
+    
 
     const [dataFloorCondo, setDataFloorCondo] = useState<any[]>([]);
+    const [selectedBuilding, setSelectedBuilding] = useState<string | null>(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
 
     const sentPreviewApi = async () => {
-        let data: UploadFileSentApiType = {
-            condo: excelData.Condo.map((item: any): CondoUnit => (
-                {
+        if (isSubmitting) return;
+        setIsSubmitting(true);
+        try {
+            let data: UploadFileSentApiType = {
+                condo: excelData.Condo.map((item: any): CondoUnit => (
+                    {
+                        buildingName: item["Building name"],
+                        floor: item["Floor"],
+                        floorName: item["Floor name"],
+                        unitNo: item["Unit no."],
+                        floorOfUnit: item["Floor of unit"],
+                        address: item["Address"],
+                        roomType: item["Room type"],
+                        size: item["Size (sq.m.)"]
+                    })),
+                basement: excelData.Basement.map((item: any): Basement => ({
                     buildingName: item["Building name"],
-                    floor: item["Floor"],
-                    floorName: item["Floor name"],
-                    unitNo: item["Unit no."],
-                    floorOfUnit: item["Floor of unit"],
-                    address: item["Address"],
-                    roomType: item["Room type"],
-                    size: item["Size (sq.m.)"]
-                })),
-            basement: excelData.Basement.map((item: any): Basement => ({
-                buildingName: item["Building name"],
-                basementFloor: item["Basement Floor"],
-                basementName: item["Basement name"]
-            }))
-        }
+                    basementFloor: item["Basement Floor"],
+                    basementName: item["Basement name"]
+                }))
+            }
 
-        let response = await uploadFileSentApi(data)
-        if (response.status) {
-            SuccessModal(
-                'Upload file sent successfully',
-                1500,
-                () => {
-                    dispatch.setupProject.setDataSetupUnit(response.result);
-                    navigate('/setup-project/upload-floor-plan')
-                }
-            )
+            let response = await uploadFileSentApi(data)
+            if (response.status) {
+                SuccessModal(
+                    'Upload file sent successfully',
+                    1500,
+                    () => {
+                        dispatch.setupProject.setDataSetupUnit(response.result);
+                        navigate('/setup-project/upload-floor-plan')
+                    }
+                )
 
-        }
-        else {
-            FailedModal('Upload file sent failed', 1500)
+            }
+            else {
+                FailedModal('Upload file sent failed', 1500)
+            }
+        } finally {
+            setIsSubmitting(false);
         }
 
     }
@@ -72,8 +80,8 @@ const UnitPreview = () => {
             key: 'no',
             align: 'center',
             className: '!font-medium',
-            render: (text: string) =>
-                <div className="text-center font-normal">{text}</div>
+            render: (_: any, __: any, index: number) =>
+            <div className="text-center font-normal">{index + 1}</div>
         },
         {
             title: 'Address',
@@ -145,6 +153,7 @@ const UnitPreview = () => {
 
 
     const setfloorCondo = (building: string) => {
+        setSelectedBuilding(building);
         let condoData = (excelData as any).Condo;
         let fileterCondo = condoData.filter((item: any) => item['Building name'] === building)
         let dataFloor = fileterCondo.map((item: any, index: number) => {
@@ -190,7 +199,7 @@ const UnitPreview = () => {
                                     <div
                                         onClick={() => setfloorCondo(building)}
                                         key={index}
-                                        className=" px-8 py-3 hover:bg-blue-50 cursor-pointer rounded "
+                                        className={` px-8 py-3 hover:bg-blue-50 cursor-pointer rounded ${selectedBuilding === building ? 'bg-blue-100 ' : ''} `}
                                     >
                                         {building}
                                     </div>
@@ -236,7 +245,9 @@ const UnitPreview = () => {
                     <Button
                         type="primary"
                         onClick={() => sentPreviewApi()}
-                        className="px-8 py-2 bg-[#002C55] !text-white rounded-lg hover:bg-[#001F3D]"
+                        loading={isSubmitting}
+                        disabled={isSubmitting}
+                        className={`px-8 py-2 bg-[#002C55] !text-white rounded-lg  ${isSubmitting ? '!opacity-50 !cursor-not-allowed' : ''}`}
                     >
                         Continue
                     </Button>

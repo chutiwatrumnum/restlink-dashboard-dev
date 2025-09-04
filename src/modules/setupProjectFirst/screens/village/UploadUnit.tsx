@@ -1,7 +1,7 @@
 import {  useEffect } from "react";
 import {  Row, Col } from "antd";
-import { useSelector, useDispatch } from "react-redux";
-import { RootState, Dispatch } from "../../../../stores";
+import { useSelector } from "react-redux";
+import { RootState } from "../../../../stores";
 import { useNavigate } from "react-router-dom";
 
 
@@ -10,7 +10,6 @@ import UploadImage from "../../components/village/UploadImage";
 import ProgressStep from "../../components/village/ProgressStep";
 import "../../styles/SetupProject.css";
 const UploadPlan = () => {
-    const dispatch = useDispatch<Dispatch>();
     const navigate = useNavigate();
     const { imageFileObject } = useSelector((state: RootState) => state.setupProject);
     // const { dataSetupUnit } = useSelector((state: RootState) => state.setupProject);

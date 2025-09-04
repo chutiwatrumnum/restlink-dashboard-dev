@@ -512,3 +512,16 @@
   font-size: 0.75rem;
   margin-top: 0.25rem;
 }
+
+.app-version {
+  position: fixed;
+  bottom: 10px; /* ระยะห่างจากขอบล่าง */
+  right: 10px; /* ระยะห่างจากขอบขวา */
+  font-size: 12px;
+  color: #888; /* สีเทาอ่อน */
+  background-color: rgba(255, 255, 255, 0.7); /* พื้นหลังโปร่งใสเล็กน้อย */
+  padding: 4px 8px;
+  border-radius: 4px;
+  z-index: 1000; /* ให้อยู่ด้านบนสุด */
+  pointer-events: none; /* กันไม่ให้บังการคลิก */
+}

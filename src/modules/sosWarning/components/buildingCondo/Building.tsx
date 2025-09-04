@@ -1,13 +1,8 @@
-import { Button } from "antd";
+
 import { useCondo } from "../../contexts/Condo";
 import { useEffect, useState, useMemo } from "react";
-import { getEventPending, getVillageData } from "../../service/api/SOSwarning";
 import { useGlobal } from "../../contexts/Global";
-import { dataAllMap } from "../../../../stores/interfaces/SosWarning";
 import { useDispatch } from "react-redux";
-import { sosWarning } from "../../../../stores/models/SosWarning";
-import { useSelector } from "react-redux";
-import { RootState } from "../../../../stores";
 import AlarmIcon from "./Alarm";
 import "./alarm.css";
 
@@ -31,7 +26,6 @@ interface Building {
 
 
 const Building = ({ onDataFloorChange }: { onDataFloorChange?: (dataFloor: any) => void }) => {
-    const projectData = useSelector((state: RootState) => state.setupProject.projectData);
     const { dataBuilding } = useCondo();
     const { loadFirst } = useGlobal();
     const dispatch = useDispatch();
@@ -39,7 +33,6 @@ const Building = ({ onDataFloorChange }: { onDataFloorChange?: (dataFloor: any) 
     const MAX_FLOORS_PER_COLUMN = 20;
     
     // สร้าง state เก็บสีของแต่ละตึก
-    const [buildingColors, setBuildingColors] = useState<Record<number, string>>({});
     
     // ฟังก์ชันสุ่มสี
     const getRandomColor = () => {
@@ -51,9 +44,6 @@ const Building = ({ onDataFloorChange }: { onDataFloorChange?: (dataFloor: any) 
     };
 
     const getPlanInfo = async (building: any, dataFloor: any) => {
-        // console.log(buildingDisplay,'buildingDisplay') //ตึกทั้งหมด
-        // console.log(building,'building'); //ตึกที่เลือกำ
-        // console.log(dataFloor,'dataFloor'); // ชั้นที่เลือก
         let objFloor = {
             ...dataFloor,
             buildingName: building.name
@@ -110,7 +100,6 @@ const Building = ({ onDataFloorChange }: { onDataFloorChange?: (dataFloor: any) 
                 colors[building.id] = colors[mainBuildingId];
             }
         });
-        setBuildingColors(colors);
     }, [buildings]);  // dependency บน buildings
 
         return (
@@ -130,7 +119,7 @@ const Building = ({ onDataFloorChange }: { onDataFloorChange?: (dataFloor: any) 
                 });
 
                 // ใช้สีที่สุ่มได้หรือใช้สีเริ่มต้นถ้ายังไม่มีสี
-                const buildingColor = buildingColors[building.id] || "#d7d5ca";
+                const buildingColor = "#d7d5ca";
 
                 return (
                     <div key={building.id} className="flex flex-col justify-end mt-auto relative  !cursor-pointer">

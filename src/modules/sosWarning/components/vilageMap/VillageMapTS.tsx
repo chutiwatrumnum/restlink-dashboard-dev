@@ -583,9 +583,9 @@ const VillageMap: React.FC<VillageMapProps> = ({
 
   // สีและชื่อสี (TypeScript typed)
   const colorOptions: ColorOption[] = [
-    { value: "red", label: "แดง", bg: "bg-red-500", hover: "hover:bg-red-600" },
-    { value: "yellow", label: "เหลือง", bg: "bg-yellow-500", hover: "hover:bg-yellow-600" },
-    { value: "green", label: "เขียว", bg: "bg-green-500", hover: "hover:bg-green-600" },
+    { value: "red", label: "Red", bg: "bg-red-500", hover: "hover:bg-red-600" },
+    { value: "yellow", label: "Yellow", bg: "bg-yellow-500", hover: "hover:bg-yellow-600" },
+    { value: "green", label: "Green", bg: "bg-green-500", hover: "hover:bg-green-600" },
     // { value: "blue", label: "น้ำเงิน", bg: "bg-blue-500", hover: "hover:bg-blue-600" },
     // { value: "pink", label: "ชมพู", bg: "bg-pink-500", hover: "hover:bg-pink-600" },
     // { value: "indigo", label: "คราม", bg: "bg-indigo-500", hover: "hover:bg-indigo-600" },
@@ -593,12 +593,12 @@ const VillageMap: React.FC<VillageMapProps> = ({
   ];
 
   const zoneColorOptions = [
-    { value: "blue", label: "น้ำเงิน", bg: "bg-blue-500", border: "border-blue-500", bgOpacity: "bg-blue-200" },
-    { value: "purple", label: "ม่วง", bg: "bg-purple-500", border: "border-purple-500", bgOpacity: "bg-purple-200" },
-    { value: "orange", label: "ส้ม", bg: "bg-orange-500", border: "border-orange-500", bgOpacity: "bg-orange-200" },
-    { value: "emerald", label: "มรกต", bg: "bg-emerald-500", border: "border-emerald-500", bgOpacity: "bg-emerald-200" },
-    { value: "rose", label: "กุหลาบ", bg: "bg-rose-500", border: "border-rose-500", bgOpacity: "bg-rose-200" },
-    { value: "cyan", label: "ฟ้า", bg: "bg-cyan-500", border: "border-cyan-500", bgOpacity: "bg-cyan-200" },
+    { value: "blue", label: "Blue", bg: "bg-blue-500", border: "border-blue-500", bgOpacity: "bg-blue-200" },
+    { value: "purple", label: "Purple", bg: "bg-purple-500", border: "border-purple-500", bgOpacity: "bg-purple-200" },
+    { value: "orange", label: "Orange", bg: "bg-orange-500", border: "border-orange-500", bgOpacity: "bg-orange-200" },
+    { value: "emerald", label: "Emerald", bg: "bg-emerald-500", border: "border-emerald-500", bgOpacity: "bg-emerald-200" },
+    { value: "rose", label: "Rose", bg: "bg-rose-500", border: "border-rose-500", bgOpacity: "bg-rose-200" },
+    { value: "cyan", label: "Cyan", bg: "bg-cyan-500", border: "border-cyan-500", bgOpacity: "bg-cyan-200" },
   ];
 
   // เพิ่มตัวเลือกรูปทรง zone
@@ -2477,20 +2477,20 @@ const VillageMap: React.FC<VillageMapProps> = ({
             switch (areaType) {
               case "corridor":
                 if (aspectRatio > 2) {
-                  return `ทางเดินแนวนอน ${zoneNumber}`;
+                  return `Horizontal Corridor ${zoneNumber}`;
                 } else if (aspectRatio < 0.5) {
-                  return `ทางเดินแนวตั้ง ${zoneNumber}`;
+                  return `Vertical Corridor ${zoneNumber}`;
                 } else {
-                  return `ทางเดิน ${zoneNumber}`;
+                  return `Corridor ${zoneNumber}`;
                 }
               case "room":
                 if (bounds.width > 80 && bounds.height > 80) {
-                  return `บล็อก ${zoneNumber}`;
+                  return `Block ${zoneNumber}`;
                 } else {
-                  return `ห้อง ${zoneNumber}`;
+                  return `Room ${zoneNumber}`;
                 }
               default:
-                return `พื้นที่สีเดียวกัน ${zoneNumber}`;
+                return `Same Color Area ${zoneNumber}`;
             }
           };
 

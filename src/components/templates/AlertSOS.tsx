@@ -1,19 +1,18 @@
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect, useRef,useCallback } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { Dispatch, RootState } from '../../stores';
-import { io, Socket } from "socket.io-client";
-import { getEmergency,getEventPending } from "../../modules/sosWarning/service/api/SOSwarning";
+import { useDispatch } from 'react-redux';
+import { Dispatch } from '../../stores';
+import { io } from "socket.io-client";
+import { getEventPending } from "../../modules/sosWarning/service/api/SOSwarning";
 import { encryptStorage } from "../../utils/encryptStorage";
 // import { toast } from 'react-toastify';
-import { Button } from 'antd';
-import { ToastContainer,toast } from 'react-toastify';
+import { toast } from 'react-toastify';
 
 const AlertSOS = ({isAuth}:any) => {
   const dispatch = useDispatch<Dispatch>();
   const [isToastExpanded, setIsToastExpanded] = useState<boolean>(false);
-  const [socket, setSocket] = useState<Socket | null>(null);
-  const [connected, setConnected] = useState(false);
+  // const [socket, setSocket] = useState<Socket | null>(null);
+  // const [connected, setConnected] = useState(false);
   const [showToast, setShowToast] = useState<boolean>(false);
   const [dataEmergency, setDataEmergency] = useState<any>(null);
   // State สำหรับควบคุม animation
@@ -86,11 +85,11 @@ const AlertSOS = ({isAuth}:any) => {
       });
       newSocket.connect();
       newSocket.on("connect", () => {
-        setConnected(true);
+        // setConnected(true);
       });
 
       newSocket.on("disconnect", () => {
-        setConnected(false);
+        // setConnected(false);
       });
 
       newSocket.on("sos", (data) => {
@@ -119,7 +118,7 @@ const AlertSOS = ({isAuth}:any) => {
         }
 
       });
-      setSocket(newSocket);
+      // setSocket(newSocket);
       return () => {
         newSocket.close();
       };

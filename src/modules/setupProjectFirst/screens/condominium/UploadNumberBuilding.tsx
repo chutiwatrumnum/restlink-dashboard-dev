@@ -1,4 +1,3 @@
-import { useState } from "react";
 import {  Row, Col } from "antd";
 import CardDetailPlan from "../../components/condo/CardDetailPlan";
 import UploadImage from "../../components/village/UploadImage";
@@ -6,7 +5,6 @@ import CardDetailUploadExcel from "../../components/village/CardDetailUploadUnit
 import ProgressStep from "../../components/village/ProgressStep";
 import "../../styles/SetupProject.css";
 
-import { useDispatch } from "react-redux";
 const UploadNumberBuilding = () => {
     
     return (

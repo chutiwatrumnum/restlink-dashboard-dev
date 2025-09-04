@@ -61,7 +61,7 @@ export const ModalUploadPlan: React.FC<ModalFormUpdateProps> = ({
     <CreateModal
       title={"Upload floor plan"}
       content={<Content handleSave={handleSave} handleCancel={handleCancel} />}
-      onOk={handleSave}
+      onOk={()=>{}}
       isOpen={isModalOpen}
       onCancel={handleCancel}
       width="40%"

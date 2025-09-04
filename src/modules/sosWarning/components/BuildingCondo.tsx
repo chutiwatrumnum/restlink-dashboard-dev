@@ -1,7 +1,5 @@
 import { useState,useEffect } from "react";
-import { useSelector } from "react-redux";
-import { RootState } from "../../../stores/";
-import { Row, Col } from "antd";
+
 import { getVillageData } from "../service/api/SOSwarning";
 import { CondoProvider } from "../contexts/Condo";
 import Building from "./buildingCondo/Building";

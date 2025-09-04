@@ -9,7 +9,13 @@ import LOGO from "../../assets/images/SignInLogo.png";
 import LOGO_MAIN from "../../assets/images/LogoNexres.png";
 import type { AccessTokenType } from "../../stores/interfaces/Auth";
 import "./styles/signIn.css";
-import { getAuthCode, startGoogleLogin, getIntendedDestination, isOAuthCallback, cleanOAuthUrl } from "../../utils/googleAuth";
+import {
+  getAuthCode,
+  startGoogleLogin,
+  getIntendedDestination,
+  isOAuthCallback,
+  cleanOAuthUrl,
+} from "../../utils/googleAuth";
 import { useGoogleAuthRedirect } from "../../utils/hooks/useGoogleAuth";
 import { GoogleIcon } from "../../assets/icons/Icons";
 import { Link, useNavigate, useLocation } from "react-router-dom";
@@ -25,8 +31,6 @@ import { Dispatch, RootState } from "../../stores";
 import { requiredRule } from "../../utils/formRule";
 import { getProject } from "../setupProjectFirst/service/api/SetupProject";
 
-
-
 const { Title } = Typography;
 
 interface LoginFormData {
@@ -40,8 +44,24 @@ const SignInScreen = () => {
   const dispatch = useDispatch<Dispatch>();
   const navigate = useNavigate();
   const location = useLocation();
+  const getAppVersion = () => {
+    const mode = import.meta.env.VITE_MODE;
+
+    switch (mode) {
+      case "dev":
+        return `Dev ${import.meta.env.VITE_DEV_APP_VERSION}`;
+      case "uat":
+        return `UAT ${import.meta.env.VITE_UAT_APP_VERSION}`;
+      case "prod":
+        return `Prod ${import.meta.env.VITE_PROD_APP_VERSION}`;
+      default:
+        return "Unknown";
+    }
+  };
   const { isAuth } = useSelector((state: RootState) => state.userAuth);
-  const { step,projectData } = useSelector((state: RootState) => state.setupProject);
+  const { step, projectData } = useSelector(
+    (state: RootState) => state.setupProject
+  );
   const { handlePostAuthSuccess } = useGoogleAuthRedirect();
   const [authCode, setAuthCode] = useState<string>("");
   const [validateCode, setValidateCode] = useState<string>("");
@@ -54,7 +74,7 @@ const SignInScreen = () => {
 
   // Redirect ถ้า login แล้ว
   useEffect(() => {
-    const redirectDashboard = async () => { 
+    const redirectDashboard = async () => {
       if (isAuth) {
         // เช็คว่ามี intended destination จาก Google OAuth หรือไม่
         const intendedPath = getIntendedDestination();
@@ -64,61 +84,58 @@ const SignInScreen = () => {
         }
 
         const responseStep = await dispatch.setupProject.getStepCondoModel(0);
-        if(responseStep === 0){
+        if (responseStep === 0) {
           checkSetupProject();
-        }
-        else{
-          await reCheckDataProject()
+        } else {
+          await reCheckDataProject();
           navigate("/dashboard/profile", { replace: true });
         }
       }
-    }
-    redirectDashboard()
+    };
+    redirectDashboard();
   }, [isAuth, navigate]);
 
   const handleLogin = async () => {
     // ส่ง current path เป็น intended destination
-    const currentPath = location.pathname !== '/auth' ? location.pathname : '/dashboard/profile';
+    const currentPath =
+      location.pathname !== "/auth" ? location.pathname : "/dashboard/profile";
     startGoogleLogin(currentPath);
   };
   const reCheckDataProject = async () => {
-      const response = await getProject() 
-      if(response.status){
-        dispatch.setupProject.setProjectData(response || {});
-      }
-}
-
+    const response = await getProject();
+    if (response.status) {
+      dispatch.setupProject.setProjectData(response || {});
+    }
+  };
 
   const checkSetupProject = async () => {
-    const response = await getProject() 
-    if(step !== 3){
-      
-      let projectType 
-      if(response.status){
+    const response = await getProject();
+    if (step !== 3) {
+      let projectType;
+      if (response.status) {
         dispatch.setupProject.setProjectData(response || {});
-        projectType = response?.projectType?.nameCode || response?.projectType?.nameCode || '';
-        const strType = projectType.split('_');
-        projectType = strType[strType.length - 1]; 
-        if(projectType === 'condo'){
-          navigate('/setup-project/upload-number-building', { replace: true });
+        projectType =
+          response?.projectType?.nameCode ||
+          response?.projectType?.nameCode ||
+          "";
+        const strType = projectType.split("_");
+        projectType = strType[strType.length - 1];
+        if (projectType === "condo") {
+          navigate("/setup-project/upload-number-building", { replace: true });
+        } else if (projectType === "village") {
+          navigate("/setup-project/upload-plan", { replace: true });
         }
-        else if(projectType === 'village'){
-          navigate('/setup-project/upload-plan', { replace: true });
-        }
-      } 
-      else{
+      } else {
         dispatch.setupProject.setProjectData({});
       }
-    }
-    else {
-      if(response.status){
+    } else {
+      if (response.status) {
         dispatch.setupProject.setProjectData(response || {});
       }
-      await reCheckDataProject()
+      await reCheckDataProject();
       navigate("/dashboard/profile", { replace: true });
     }
-  }
-
+  };
 
   const handleGetAccessToken = async () => {
     if (authCode) {
@@ -141,7 +158,6 @@ const SignInScreen = () => {
       });
 
       if (result) {
-
         // Success message จะแสดงใน loginEffects แล้ว
         // Navigation จะเกิดขึ้นใน useEffect เมื่อ isAuth เปลี่ยน
       }
@@ -177,9 +193,9 @@ const SignInScreen = () => {
   useEffect(() => {
     // ตรวจสอบ OAuth errors ก่อน
     const urlParams = new URLSearchParams(window.location.search);
-    const error = urlParams.get('error');
-    const errorDescription = urlParams.get('error_description');
-    
+    const error = urlParams.get("error");
+    const errorDescription = urlParams.get("error_description");
+
     if (error) {
       callFailedModal(`Google OAuth Error: ${error} - ${errorDescription}`);
       // ทำความสะอาด URL
@@ -221,7 +237,8 @@ const SignInScreen = () => {
               initialValues={{ remember: true }}
               onFinish={onFinish}
               onFinishFailed={onFinishFailed}
-              autoComplete="off">
+              autoComplete="off"
+            >
               {/* Google Sign In Button */}
               {/* <Button
                 onClick={handleLogin}
@@ -245,7 +262,8 @@ const SignInScreen = () => {
                 rules={[
                   { required: true, message: "Please input your email!" },
                   { type: "email", message: "Please enter a valid email!" },
-                ]}>
+                ]}
+              >
                 <Input
                   size="large"
                   placeholder="Email"
@@ -259,7 +277,8 @@ const SignInScreen = () => {
                 name="password"
                 rules={[
                   { required: true, message: "Please input your password!" },
-                ]}>
+                ]}
+              >
                 <Input.Password
                   size="large"
                   placeholder="Password"
@@ -289,7 +308,8 @@ const SignInScreen = () => {
                   size="large"
                   block
                   className="login-button"
-                  loading={loading}>
+                  loading={loading}
+                >
                   Login
                 </Button>
               </Form.Item>
@@ -317,7 +337,7 @@ const SignInScreen = () => {
           </div>
         </Col>
       </Row>
-
+      <div className="app-version">Version: {getAppVersion()}</div>
       <SignUpModal onOk={onSignUpOk} onClose={() => {}} />
       <ConfirmDetailModal onOk={onJoinConfirm} onClose={() => {}} />
     </div>

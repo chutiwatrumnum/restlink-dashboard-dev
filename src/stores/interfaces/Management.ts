@@ -113,9 +113,14 @@ export interface Unit {
   id: number;
   roomAddress: string;
   unitNo: string;
-
+  unitType?: UnitTypeData;
   family?: number;
   unitOwner?: UnitOwner;
+}
+
+export interface UnitTypeData {
+  name: string;
+  sizeInSqm: string;
 }
 
 export interface UnitOwner {

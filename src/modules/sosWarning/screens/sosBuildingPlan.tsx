@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { usePagination } from "../../../utils/hooks/usePagination";
 
 import Header from "../../../components/templates/Header";
@@ -17,28 +17,22 @@ import SuccessModal from "../../../components/common/SuccessModal";
 import {
   Row,
   Col,
-  DatePicker,
-  DatePickerProps,
   Input,
   Button,
   Table,
-  Pagination,
 } from "antd";
 import {
   VerticalAlignBottomOutlined,
   DeleteOutlined,
   EditOutlined,
 } from "@ant-design/icons";
-import dayjs from "dayjs";
 
 const SOSBuildingPlan = () => {
   // Initial
   const {
     curPage,
-    perPage,
     pageSizeOptions,
     setCurPage,
-    setPerPage,
     deleteAndHandlePagination,
   } = usePagination();
   // variables
@@ -50,16 +44,12 @@ const SOSBuildingPlan = () => {
 
   // setting pagination Option
 
-  const openModal = (record: SosWarningDataType) => {
-    console.log("openModal", record);
-  };
+
   const dowloadBuildingPlan = () => {
     console.log("dowloadBuildingPlan");
   };
 
-  const handleDate = (dates: any, dateStrings: [string, string]) => {
-    console.log("Selected dates:", dates, dateStrings);
-  };
+
 
   const onSearch = (value: string) => {
     console.log("Search:", value);

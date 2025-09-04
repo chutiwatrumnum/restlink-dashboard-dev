@@ -9,6 +9,7 @@ interface SetupProjectState {
   excelData: {
     Condo: CondoUnit[];
     Basement: Basement[];
+    village?: any[];
   };
   dataSetupUnit: DataSetupUnitType;
   step: number;
@@ -25,6 +26,7 @@ const initialState: SetupProjectState = {
   excelData: {
     Condo: [],
     Basement: [],
+    village: [],
   },
   dataSetupUnit: {
     block: [],
@@ -108,7 +110,7 @@ export const setupProject = createModel<RootModel>()({
         Condo:[],
         Basement:[]
       },
-      step: 3,
+      step: 1,
       uploadedFileName: '',
       isExcelUploaded: false,
       imageFileObject: null,
@@ -155,7 +157,7 @@ export const setupProject = createModel<RootModel>()({
       }
     },
     // วิธีที่ 1: ใช้ rootState parameter (แนะนำ)
-    async getStepCondoModel(payload, rootState){
+    async getStepCondoModel(_: any, rootState: any){
       try {
         // กันยิง API เมื่อยังไม่ล็อกอิน/เพิ่งล็อกเอาต์
         const access_token = await encryptStorage.getItem("access_token");

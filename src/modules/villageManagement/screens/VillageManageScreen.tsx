@@ -4,14 +4,13 @@ import { usePagination } from "../../../utils/hooks/usePagination";
 
 // Components
 import Header from "../../../components/templates/Header";
-import { Pagination, Tabs } from "antd";
-import FloorComponent from "../components/FloorComponent";
+import { Pagination } from "antd";
 import UnitComponent from "../components/UnitComponent";
 import RoomManageModal from "../components/RoomManageModal";
 import SelectUserModal from "../components/SelectUserModal";
 
 // Types
-import type { PaginationProps, TabsProps } from "antd";
+import type { PaginationProps } from "antd";
 import {
   Floor,
   Unit,
@@ -76,19 +75,7 @@ const VillageManageScreen = () => {
   // API
   const deleteMember = deleteMemberMutation();
 
-  // Functions
-  const onTabsChange = (key: string) => {
-    // console.log(parseInt(key));
-    const currentId = parseInt(key);
-    setCurrentBlockId(currentId);
-    clearData();
-  };
-
-  const onFloorClick = (floor: Floor) => {
-    // console.log("FLOOR DATA : ", floor);
-    setCurrentFloor(floor);
-  };
-
+  // Helpers
   const clearData = () => {
     setCurrentFloor(undefined);
     setCurrentUnit(undefined);
@@ -103,8 +90,6 @@ const VillageManageScreen = () => {
   };
 
   const onAddUserClick = (curRoleId: number) => {
-    console.log("ADD CLICKED WITH ROLE ID:", curRoleId);
-
     setCurrentRoleId(curRoleId);
     setIsSelectUserModalOpen(true);
   };
@@ -126,110 +111,84 @@ const VillageManageScreen = () => {
     });
   };
 
-  // Components
-
-  const items: TabsProps["items"] = blockData?.data.map((block) => ({
-    key: block.id.toString(),
-    label: block.blockName,
-    children: null,
-  }));
-
+  // ----- Auto-select block แรก -----
   useEffect(() => {
-    setCurrentBlockId(blockData?.data[0].id);
+    if (blockData?.data?.length) {
+      // เลือกบล็อกแรกทันที
+      setCurrentBlockId(blockData.data[0].id);
+      clearData();
+      onPageFChange(1);
+      onPageUChange(1);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [blockData]);
+
+  // ----- Auto-select floor แรกของบล็อกที่เลือก -----
+  useEffect(() => {
+    if (!currentFloor && floorData?.data?.length) {
+      setCurrentFloor(floorData.data[0]);
+      onPageUChange(1);
+    }
+    console.log(unitData);
+  }, [floorData, currentFloor, onPageUChange]);
 
   return (
     <>
       <div className="flex flex-row w-full justify-between items-start">
-        <Header
-          title={
-            currentFloor
-              ? `Floor ${currentFloor.floorName}`
-              : "Village management"
-          }
-        />
-        {currentFloor ? (
-          <span
-            onClick={clearData}
-            className="text-2xl/[40px] font-normal hover:cursor-pointer"
-          >
-            {"< Back"}
-          </span>
-        ) : null}
+        <Header title={"Village management"} />
       </div>
 
       <div className="flex flex-col justify-center items-center w-full pl-4">
         {/* Section 1 */}
-        <section className="flex flex-row justify-between items-center w-full">
+        <section className="flex flex-row justify-between items-center w-full mb-8">
           <span className="text-3xl font-normal">
             {projectData?.data?.projectName}
           </span>
           <span className="text-3xl font-normal">
-            {`Total number of floors ${floorData?.total}`}
+            {`Total houses: ${unitData?.total ?? 0}`}
           </span>
         </section>
 
-        {/* Section 2 */}
+        {/* Section 2: แสดง Unit grid ทันที (ไม่มีการเลือกบล็อก/ชั้น) */}
         <section className="flex flex-col justify-center items-start w-full mt-4">
-          <Tabs
-            // defaultActiveKey={blockData?.data[0].id.toString()}
-            items={items}
-            onChange={onTabsChange}
-          />
-          {!currentFloor ? (
-            <div className="flex flex-col w-full h-full justify-between items-end">
-              <div className="grid grid-cols-5 gap-4 w-full mb-8">
-                {floorData?.data.map((floor) => (
-                  <FloorComponent
-                    key={floor.id}
-                    floor={floor}
-                    onFloorClick={onFloorClick}
-                  />
-                ))}
-              </div>
-              <Pagination
-                defaultCurrent={1}
-                pageSize={20}
-                onChange={onPageFloorChange}
-                total={floorData?.total}
-                showSizeChanger={false}
-              />
+          <div className="flex flex-col w-full h-full justify-between items-end">
+            <div className="grid grid-cols-4 gap-4 w-full max-2xl:grid-cols-3 mb-8">
+              {unitData
+                ? unitData.data.map((unit) => (
+                    <UnitComponent
+                      key={unit.id}
+                      unit={unit}
+                      onEditClick={() => setCurrentUnit(unit)}
+                      onAddMemberClick={() => setCurrentUnit(unit)}
+                    />
+                  ))
+                : null}
             </div>
-          ) : (
-            <div className="flex flex-col w-full h-full justify-between items-end">
-              <div className="grid grid-cols-4 gap-4 w-full max-2xl:grid-cols-3 mb-8">
-                {unitData
-                  ? unitData?.data.map((unit) => (
-                      <UnitComponent
-                        key={unit.id}
-                        unit={unit}
-                        onEditClick={() => {
-                          setCurrentUnit(unit);
-                        }}
-                        onAddMemberClick={() => {
-                          setCurrentUnit(unit);
-                        }}
-                      />
-                    ))
-                  : null}
-              </div>
-              <Pagination
-                defaultCurrent={1}
-                pageSize={20}
-                onChange={onPageUnitChange}
-                total={unitData?.total}
-                showSizeChanger={false}
-              />
-            </div>
-          )}
+            <Pagination
+              defaultCurrent={1}
+              pageSize={20}
+              onChange={onPageUnitChange}
+              total={unitData?.total}
+              showSizeChanger={false}
+            />
+          </div>
+
+          {/* (ถ้าต้องการเลื่อนชั้นอย่างรวดเร็วในอนาคต ค่อยเพิ่ม Select ชั้นภายหลังได้) */}
+          <div className="hidden">
+            <Pagination
+              defaultCurrent={1}
+              pageSize={20}
+              onChange={onPageFloorChange}
+              total={floorData?.total}
+              showSizeChanger={false}
+            />
+          </div>
         </section>
       </div>
 
       <RoomManageModal
         isModalOpen={currentUnit ? true : false}
-        onCancel={() => {
-          setCurrentUnit(undefined);
-        }}
+        onCancel={() => setCurrentUnit(undefined)}
         unitData={currentUnit}
         memberData={memberData}
         onAdd={onAddUserClick}

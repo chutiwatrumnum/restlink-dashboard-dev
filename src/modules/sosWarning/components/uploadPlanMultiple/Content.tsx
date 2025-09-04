@@ -1,4 +1,4 @@
-import { Form, Input, Row, Col, Tooltip, Select, Tag, Upload, message } from "antd";
+import { Form, Row, Col, Select, Tag, Upload, message } from "antd";
 import { Button } from "antd";
 import { InboxOutlined, CloseOutlined } from '@ant-design/icons';
 import { useState, useMemo } from "react";
@@ -17,39 +17,44 @@ const Content = ({
   const [form] = Form.useForm();
   const [selectedBuilding, setSelectedBuilding] = useState<string>('');
   const [selectedFloors, setSelectedFloors] = useState<number[]>([]);
+  const [isAllSelected, setIsAllSelected] = useState<boolean>(false);
   const [fileList, setFileList] = useState<any[]>([]);
   const [idUploadPlan, setIdUploadPlan] = useState<string>('');
 
   // ใช้ try-catch เพื่อจัดการ error
   let buildingPlan: any = null;
-  let setBuildingPlan: any = null;
 
   try {
     const globalContext = useGlobal();
     buildingPlan = globalContext.buildingPlan;
-    setBuildingPlan = globalContext.setBuildingPlan;
   } catch (error) {
     console.error('useGlobal error:', error);
   }
 
 
-  // ตัวอย่างข้อมูล floor
-  const floorOptions = [
-    { value: 'floor1', label: 'Floor 1' },
-    { value: 'floor2', label: 'Floor 2' },
-    { value: 'floor3', label: 'Floor 3' },
-    { value: 'floor4', label: 'Floor 4' },
-  ];
+
 
   const handleFloorChange = (value: number[]) => {
+    // ห้ามเลือกอย่างอื่นขณะอยู่โหมด Select all จนกว่าจะลบแท็ก
+    if (isAllSelected && value && !value.includes(-1)) {
+      return;
+    }
+
+    // ถ้ามีค่า -1 แปลว่าเลือก Select all → เซ็ตเป็นโหมดทั้งหมดและแท็กเดียว
+    if (value && value.includes(-1)) {
+      const allIds = (floorData || []).map((f: any) => f.floorId);
+      setIsAllSelected(true);
+      setSelectedFloors(allIds);
+      // แสดงแท็กเดียวด้วยการใส่ค่าใน form เป็น [-1]
+      form.setFieldsValue({ floors: [-1] });
+      return;
+    }
+
+    setIsAllSelected(false);
     setSelectedFloors(value);
+    form.setFieldsValue({ floors: value });
   };
 
-  const removeFloor = (removedFloor: number) => {
-    const newFloors = selectedFloors.filter(floor => floor !== removedFloor);
-    setSelectedFloors(newFloors);
-    form.setFieldsValue({ floors: newFloors });
-  };
 
   const uploadProps = {
     name: 'file',
@@ -79,18 +84,12 @@ const Content = ({
       return false; // ป้องกันการ upload อัตโนมัติ
     },
     onChange: async (info: any) => {
-      console.log(info,'info-upload-plan')
-      
       let file = info?.fileList[0] || null
       if(file){
         let dataUploadPlan = await uploadPlan(info.file)
-        console.log(dataUploadPlan,'dataUploadPlan-upload-plan')
         if(dataUploadPlan.status){
           setIdUploadPlan(dataUploadPlan.result.id)
         }
-        // let formData = new FormData()
-        // formData.append('file', info.fileList[0])
-        // console.log(formData,'formData')
         setFileList(info.fileList);
       }
     },
@@ -138,16 +137,17 @@ const Content = ({
             <Form.Item
               label="Number of building"
               name="building"
-              rules={[{ required: true, message: 'กรุณาเลือก building' }]}
+              rules={[{ required: true, message: 'Please select building' }]}
             >
               <Select
-                placeholder="เลือก building"
+                placeholder="Please select building"
                 style={{ width: '100%' }}
                 showSearch
                 optionFilterProp="label"
                 onChange={(value) => {
                   setSelectedBuilding(value);
                   // Clear selected floors เมื่อเลือก building ใหม่
+                  setIsAllSelected(false);
                   setSelectedFloors([]);
                   form.setFieldsValue({ floors: [] });
                 }}
@@ -176,11 +176,27 @@ const Content = ({
                 placeholder="Please select floor(s)"
                 style={{ width: '100%' }}
                 onChange={handleFloorChange}
-                value={selectedFloors}
+                value={isAllSelected ? [-1] : selectedFloors}
                 showSearch
                 optionFilterProp="label"
                 tagRender={(props) => {
-                  const { label, closable, onClose } = props;
+                  const { closable, onClose } = props;
+                  if (isAllSelected) {
+                    return (
+                      <Tag
+                        color="blue"
+                        closable={true}
+                        onClose={() => {
+                          setIsAllSelected(false);
+                          setSelectedFloors([]);
+                          form.setFieldsValue({ floors: [] });
+                        }}
+                        style={{ marginRight: 3 }}
+                      >
+                        Select all
+                      </Tag>
+                    );
+                  }
                   return (
                     <Tag
                       color="blue"
@@ -188,13 +204,26 @@ const Content = ({
                       onClose={onClose}
                       style={{ marginRight: 3 }}
                     >
-                      {label}
+                      {props.label}
                     </Tag>
                   );
                 }}
+                dropdownRender={(menu) => (
+                  <div>
+                    <div className="px-3 py-2 cursor-pointer hover:bg-gray-50" onMouseDown={(e) => e.preventDefault()} onClick={() => {
+                      const allIds = (floorData || []).map((f: any) => f.floorId);
+                      setIsAllSelected(true);
+                      setSelectedFloors(allIds);
+                      form.setFieldsValue({ floors: [-1] });
+                    }}>
+                      Select all
+                    </div>
+                    {menu}
+                  </div>
+                )}
               >
                 {
-                  floorData.map((item: any, index: number) => (
+                  floorData.map((item: any) => (
                     <Option key={item.floorId} value={item.floorId}>
                       {item.floorName}
                     </Option>
@@ -226,8 +255,8 @@ const Content = ({
                     Click or drag file to this area to upload
                   </p>
                   <p className="ant-upload-hint" style={{ color: '#666', fontSize: '14px' }}>
-                    รองรับการอัปโหลดไฟล์รูปภาพ (JPG, PNG, GIF) หรือ PDF<br />
-                    ขนาดไฟล์ไม่เกิน 10MB
+                    Supports image files (JPG, PNG, GIF) or PDF upload<br />
+                    File size must not exceed 10MB
                   </p>
                 </Dragger>
               ) : (

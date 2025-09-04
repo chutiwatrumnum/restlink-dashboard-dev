@@ -1,6 +1,6 @@
 {
   "projects": {
-    "default": "dashboard-restlink-dev"
+    "default": "dashboard-nexres-uat"
   },
   "targets": {},
   "etags": {}

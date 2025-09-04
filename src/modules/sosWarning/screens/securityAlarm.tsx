@@ -1,12 +1,10 @@
-import { useEffect } from "react";
-import { Button, message } from "antd";
+import { message } from "antd";
 import CardWarning from "../components/securityAlarm/CardWarning";
 import CardEmergency from "../components/securityAlarm/CardEmergency";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../../stores";
-import { useNavigate } from "react-router-dom";
 import { SecurityAlarmProvider } from "../contexts/SecurityAlarmContext";
-import { callCustomer,closeJob,closeCase } from "../service/api/SOSwarning";
+import { callCustomer } from "../service/api/SOSwarning";
 import ConfirmModal from "../../../components/common/ConfirmModal";
 import SuccessModal from "../../../components/common/SuccessModal";
 const SecurityAlarm = () => {

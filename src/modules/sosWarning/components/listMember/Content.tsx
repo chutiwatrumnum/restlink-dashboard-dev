@@ -1,5 +1,4 @@
-import { useState, useEffect } from "react";
-import { Button } from "antd";
+import { useState } from "react";
 
 const Content = ({ member, handleCallCustomer, convertDate, index }: any) => {
     const [callTime, setCallTime] = useState<any>(null)

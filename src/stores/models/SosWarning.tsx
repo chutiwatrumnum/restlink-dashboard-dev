@@ -1,6 +1,5 @@
 import { createModel } from "@rematch/core";
 import { RootModel } from "./index";
-import { ProjectData, SetupProjectState, CondoUnit, Basement, DataSetupUnitType } from "../interfaces/SetupProject";
 
 import { SosWarningState } from "../interfaces/SosWarning";
 export const sosWarning = createModel<RootModel>()({
@@ -61,10 +60,7 @@ export const sosWarning = createModel<RootModel>()({
 
   },
   
-  effects: (dispatch) => ({
-
-
-      
+  effects: (_: any) => ({
     // async setDataProject(){
     //   try {
     //     const response = await getProject();

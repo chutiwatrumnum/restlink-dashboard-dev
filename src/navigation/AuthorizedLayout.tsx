@@ -1,16 +1,13 @@
-import { useEffect, useState, useLayoutEffect,useCallback } from "react";
+import { useEffect, useState, useLayoutEffect } from "react";
 import { useOutlet, useLocation } from "react-router-dom";
-import { Button, Layout } from "antd";
+import {  Layout } from "antd";
 import { useDispatch, useSelector } from "react-redux";
 import { Dispatch, RootState } from "../stores";
 import { encryptStorage } from "../utils/encryptStorage";
 import SideMenu from "../components/templates/SideMenu";
 import "./styles/authorizedLayout.css";
-import { io, Socket } from "socket.io-client";
 import AlertSOS from "../components/templates/AlertSOS";
-import { getEmergency,getEventPending } from "../modules/sosWarning/service/api/SOSwarning";
 import { useNavigate } from "react-router-dom";
-import SocketRead from "../modules/sosWarning/components/SocketRead";
 
 
 const { Sider, Content } = Layout;
@@ -29,12 +26,10 @@ function AuthorizedLayout() {
     const savedState = localStorage.getItem("sideMenuCollapsed");
     return savedState === "true";
   });
-  const [socket, setSocket] = useState<Socket | null>(null);
-  const [connected, setConnected] = useState(false);
-  const [count, setCount] = useState(0);
+
   
   const [reload, setReload] = useState(false);
-  const [storePathNotContentLayout, setStorePathNotContentLayout] = useState([
+  const [storePathNotContentLayout] = useState([
     '/dashboard/manage-plan'
   ]);
 
@@ -70,7 +65,6 @@ function AuthorizedLayout() {
           access_token === "undefined" ||
           access_token === ""
         ) {
-          // console.log("❌ No access token found");
           throw "access_token not found";
         }
 
@@ -86,7 +80,6 @@ function AuthorizedLayout() {
         // ถ้า isAuth เป็น false แต่มี token ให้ลอง refresh
         const resReToken = await dispatch.userAuth.refreshTokenNew();
         if (!resReToken) {
-          console.log("❌ Refresh token failed");
           throw "access_token expired";
         }
 
@@ -97,7 +90,6 @@ function AuthorizedLayout() {
 
         return true;
       } catch (error) {
-        // console.log("❌ Auth check failed:", error);
         dispatch.userAuth.onLogout();
         navigate("/auth", { replace: true });
         return false;

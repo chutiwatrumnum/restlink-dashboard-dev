@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
+import { DeleteOutlined } from "@ant-design/icons";
 import CreateModal from "../../../components/common/FormModal";
 import dayjs from 'dayjs';
 import {
@@ -64,7 +64,7 @@ export const ModalFormUpdate: React.FC<ModalFormUpdateProps> = ({
   };
 
   const handleSave = () => {
-    form.validateFields().then((values) => {
+    form.validateFields().then(() => {
         form.resetFields();
         setImageUrl(undefined);
         setIsModalOpen(false);

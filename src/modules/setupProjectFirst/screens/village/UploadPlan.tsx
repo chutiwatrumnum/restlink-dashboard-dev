@@ -1,5 +1,4 @@
 import {  Row, Col } from "antd";
-import { Button } from "antd";
 
 
 import CardDetailPlan from "../../components/village/CardDetailPlan";
