@@ -8,7 +8,7 @@ import {
   postCreateFolderMutation,
   putEditFolderMutation,
 } from "../../../utils/mutationsGroup/documentMutations";
-import SelectUnit from "../../../components/common/SelectUnit";
+import SelectUnit from "../components/SelectUnit";
 import { getFolderInfoQuery } from "../../../utils/queriesGroup/documentQueries";
 
 import type { RadioChangeEvent } from "antd";
@@ -193,6 +193,7 @@ const NewFolderModal = (props: ComponentCreateProps) => {
           selectValue={selectedAddress}
           isAllowAll={isAllowAll}
           onIsAllowAllChange={onIsAllowAllChange}
+          folderId={folderId}
         />
 
         <span>Folder name</span>

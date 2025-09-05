@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button, Modal, message, Upload, ProgressProps, Input } from "antd";
-import SelectUnit from "../../../components/common/SelectUnit";
+import SelectUnit from "../components/SelectUnit";
 import { InboxOutlined } from "@ant-design/icons";
 import { uploadMaintenanceGuide } from "../service/MaintenanceGuideAPI";
 import {
@@ -270,6 +270,7 @@ const UploadPublic = (props: ComponentCreateProps) => {
           selectValue={selectedAddress}
           isAllowAll={isAllowAll}
           onIsAllowAllChange={onIsAllowAllChange}
+          folderId={folderId}
         />
         <div style={{ display: mode === "create" ? "block" : "none" }}>
           <Dragger

@@ -1,5 +1,5 @@
 import { Radio, Select } from "antd";
-import { getUnitListQuery } from "../../utils/queriesGroup/documentQueries";
+import { getUnitListQuery } from "../../../utils/queriesGroup/maintenanceQueries";
 
 import type { RadioChangeEvent } from "antd";
 
@@ -9,6 +9,7 @@ interface SelectUnitProps {
   disabled: boolean;
   selectValue: number[];
   handleSelectChange: (value: number[]) => void;
+  folderId?: number;
 }
 
 const SelectUnit = (props: SelectUnitProps) => {
@@ -18,8 +19,10 @@ const SelectUnit = (props: SelectUnitProps) => {
     disabled,
     selectValue,
     handleSelectChange,
+    folderId = 0,
   } = props;
-  const { data: unitData, isLoading: isLoadingUnit } = getUnitListQuery();
+  const { data: unitData, isLoading: isLoadingUnit } =
+    getUnitListQuery(folderId);
   return (
     <div
       style={{

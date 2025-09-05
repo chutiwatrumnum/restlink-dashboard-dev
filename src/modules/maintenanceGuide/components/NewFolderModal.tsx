@@ -4,7 +4,7 @@ import {
   callFailedModal,
   callSuccessModal,
 } from "../../../components/common/Modal";
-import SelectUnit from "../../../components/common/SelectUnit";
+import SelectUnit from "../components/SelectUnit";
 
 // import { postCreateFolderMutation } from "../../../utils/mutationsGroup/maintenanceMutations";
 import {
@@ -195,6 +195,7 @@ const NewFolderModal = (props: ComponentCreateProps) => {
           selectValue={selectedAddress}
           isAllowAll={isAllowAll}
           onIsAllowAllChange={onIsAllowAllChange}
+          folderId={folderId}
         />
 
         <span>Folder name</span>

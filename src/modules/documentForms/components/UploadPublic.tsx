@@ -7,7 +7,7 @@ import {
   callFailedModal,
   callSuccessModal,
 } from "../../../components/common/Modal";
-import SelectUnit from "../../../components/common/SelectUnit";
+import SelectUnit from "../components/SelectUnit";
 import { getFileInfoQuery } from "../../../utils/queriesGroup/documentQueries";
 import { putEditFileMutation } from "../../../utils/mutationsGroup/documentMutations";
 
@@ -269,6 +269,7 @@ const UploadPublic = (props: ComponentCreateProps) => {
           selectValue={selectedAddress}
           isAllowAll={isAllowAll}
           onIsAllowAllChange={onIsAllowAllChange}
+          folderId={folderId}
         />
         <div style={{ display: mode === "create" ? "block" : "none" }}>
           <Dragger

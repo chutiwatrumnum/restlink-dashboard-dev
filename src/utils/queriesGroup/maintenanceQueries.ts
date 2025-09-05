@@ -6,10 +6,11 @@ import {
 } from "../../stores/interfaces/MaintenanceGuide";
 
 // Functions section
-const getUnitList = async () => {
+const getUnitList = async (folderId?: number) => {
   let url = `/document-project/dashboard/unit-list`;
-  const res = await axios.get(url);
-  // console.log("RES project unit list : ", res);
+  const res = await axios.get(url, {
+    params: folderId ? { folderId } : {}, // ส่งเฉพาะตอนมีค่า
+  });
 
   return res.data.result;
 };
@@ -37,10 +38,10 @@ const getFolderInfo = async ({
 };
 
 // Queries section
-export const getUnitListQuery = () => {
+export const getUnitListQuery = (folderId?: number) => {
   return useQuery({
-    queryKey: ["unitListProject"],
-    queryFn: getUnitList,
+    queryKey: ["unitList", folderId],
+    queryFn: () => getUnitList(folderId),
   });
 };
 

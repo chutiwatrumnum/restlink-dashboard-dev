@@ -3,10 +3,11 @@ import axios from "axios";
 import { FileDataType, FolderDataType } from "../../stores/interfaces/Document";
 
 // Functions section
-const getUnitList = async () => {
-  let url = `/document-home/dashboard/unit-list`;
-  const res = await axios.get(url);
-  // console.log("RES : ", res);
+const getUnitList = async (folderId?: number) => {
+  const url = `/document-home/dashboard/unit-list`;
+  const res = await axios.get(url, {
+    params: folderId ? { folderId } : {}, // ส่งเฉพาะตอนมีค่า
+  });
 
   return res.data.result;
 };
@@ -34,10 +35,10 @@ const getFolderInfo = async ({
 };
 
 // Queries section
-export const getUnitListQuery = () => {
+export const getUnitListQuery = (folderId?: number) => {
   return useQuery({
-    queryKey: ["unitList"],
-    queryFn: getUnitList,
+    queryKey: ["unitList", folderId],
+    queryFn: () => getUnitList(folderId),
   });
 };
 
