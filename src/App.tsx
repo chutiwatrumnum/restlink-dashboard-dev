@@ -218,6 +218,7 @@ function AppRoutes() {
       if (!projectData || Object.keys(projectData).length === 0) {
       if(isAuth){ 
         response = await getProject();
+      
       }
       if(response?.status){
         dispatch.setupProject.setProjectData(response || {});
@@ -225,9 +226,9 @@ function AppRoutes() {
         const strType = projectType.split('_');
         projectType = strType[strType.length - 1];
       } 
-      // else {
-      //   dispatch.setupProject.setProjectData({});
-      // }
+      else {
+        // dispatch.setupProject.setProjectData({});
+      }
 
         setPreviousLayoutType(currentLayoutType);
         setRouteState("allow");

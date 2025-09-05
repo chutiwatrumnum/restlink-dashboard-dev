@@ -42,7 +42,7 @@ const Announcement = () => {
   const items: TabsProps["items"] = [
     { key: "announcement", label: "Announcement", children: null },
     { key: "projectNews", label: "Project news", children: null },
-    { key: "devNews", label: "Developer news", children: null },
+    // { key: "devNews", label: "Developer news", children: null },
   ];
 
   const {
@@ -62,9 +62,9 @@ const Announcement = () => {
   const [startDate, setStartDate] = useState();
   const [endDate, setEndDate] = useState();
   const [refresh, setRefresh] = useState(false);
-  const [fetchType, setFetchType] = useState<
-    "projectNews" | "announcement" | "devNews"
-  >("announcement");
+  const [fetchType, setFetchType] = useState<"projectNews" | "announcement">(
+    "announcement"
+  );
 
   const permissions = useSelector(
     (state: RootState) => state.common?.permission
@@ -150,7 +150,7 @@ const Announcement = () => {
   };
 
   const onTabsChange = (key: string) => {
-    if (key === "projectNews" || key === "announcement" || key === "devNews") {
+    if (key === "projectNews" || key === "announcement") {
       setFetchType(key);
     } else {
       message.error("Something went wrong");

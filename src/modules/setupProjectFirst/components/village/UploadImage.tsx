@@ -381,7 +381,8 @@ const UploadImage = ({ onNext, status = 'image' }: { onNext: string, status?: st
                     <input
                         ref={fileInputRef}
                         type="file"
-                        accept={status === 'excel' ? '.xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv' : 'image/*'}
+                        accept={status === 'excel' ? '.xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv' : 
+                            '.jpg,.jpeg,.png'}
                         onChange={handleFileChange}
                         className="hidden"
                     />

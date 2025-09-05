@@ -37,7 +37,7 @@ const DashboardCard: React.FC<DashboardCardProps> = ({  index, title, count, ico
             
             {/* Content Section */}
             <div className="ms-auto">
-                <div className="text-gray-600 text-sm mb-1 !text-xl">
+                <div className="text-gray-600 text-sm mb-1 !text-xl !text-end">
                     {title || '-'}
                 </div>
                 <div className="text-end text-3xl font-bold text-gray-800">

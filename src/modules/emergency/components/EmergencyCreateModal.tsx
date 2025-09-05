@@ -127,6 +127,11 @@ const EmergencyCreateModal = ({
         layout="vertical"
         onFinish={handleFormSubmit}
         onFinishFailed={handleFormFailed}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+          }
+        }}
       >
         <div>
           <div className="flex flex-row justify-between items-center w-full gap-4">

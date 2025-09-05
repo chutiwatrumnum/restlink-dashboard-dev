@@ -9,6 +9,7 @@
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "deploy-demo": "firebase deploy -P dashboard-restlink-demo",
+    "deploy-prod": "firebase deploy -P aitan-nexres",
     "deploy-uat": "firebase deploy -P dashboard-nexres-uat",
     "deploy-dev": "firebase deploy -P dashboard-restlink-dev"
   },

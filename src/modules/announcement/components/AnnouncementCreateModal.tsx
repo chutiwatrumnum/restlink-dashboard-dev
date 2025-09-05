@@ -120,7 +120,7 @@ const AnnouncementCreateModal = ({
                   <Select.Option value="announcement">
                     Announcement
                   </Select.Option>
-                  <Select.Option value="devNews">Developer news</Select.Option>
+                  {/* <Select.Option value="devNews">Developer news</Select.Option> */}
                 </Select>
               </Form.Item>
               <Form.Item<AnnounceFormDataType>

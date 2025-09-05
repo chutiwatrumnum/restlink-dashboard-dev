@@ -312,6 +312,9 @@ const SideMenu = ({
               />
             }
             title="Management team"
+            style={
+              !access("team_management", "view") ? { display: "none" } : {}
+            }
           >
             <Menu.Item
               key={`${main_link}/juristicInvitation`}
@@ -365,6 +368,11 @@ const SideMenu = ({
               />
             }
             title="Management"
+            style={
+              !access("users", "view") && !access("room_management", "view")
+                ? { display: "none" }
+                : {}
+            }
           >
             <Menu.Item
               key={`${main_link}/invitation`}
@@ -448,6 +456,12 @@ const SideMenu = ({
             key="documents"
             icon={<DocumentIcon color="#3B82F6" className="sideMenuIcon" />}
             title="Documents"
+            style={
+              !access("document_home", "view") &&
+              !access("maintenance_guide", "view")
+                ? { display: "none" }
+                : {}
+            }
           >
             <Menu.Item
               key={`${main_link}/houseDocument`}
@@ -503,6 +517,12 @@ const SideMenu = ({
             key="serviceCenter"
             icon={<FixingReportIcon color="#3B82F6" className="sideMenuIcon" />}
             title="Fixing"
+            style={
+              !access("fixing_report_chat", "view") &&
+              !access("fixing_report", "view")
+                ? { display: "none" }
+                : {}
+            }
           >
             <Menu.Item
               key={`${main_link}/serviceDashboard`}
@@ -545,6 +565,7 @@ const SideMenu = ({
             key="event"
             icon={<EventIcon color="#3B82F6" className="sideMenuIcon" />}
             title="Event"
+            style={!access("events", "view") ? { display: "none" } : {}}
           >
             <Menu.Item
               key={`${main_link}/event-logs`}
@@ -597,6 +618,7 @@ const SideMenu = ({
               />
             }
             title="Facility booking"
+            style={!access("facility", "view") ? { display: "none" } : {}}
           >
             <Menu.Item
               key={`${main_link}/facility`}
@@ -667,6 +689,12 @@ const SideMenu = ({
                 </div>
               </div>
             }
+            style={
+              !access("sos_security", "view") &&
+              !access("warranty_tracking", "view")
+                ? { display: "none" }
+                : {}
+            }
           >
             <Menu.Item
               key={`${main_link}/history-building`}
@@ -716,6 +744,7 @@ const SideMenu = ({
               />
             }
             title="VMS Management"
+            style={!access("vms", "view") ? { display: "none" } : {}}
           >
             <Menu.Item
               key={`${main_link}/vms-invitation`}

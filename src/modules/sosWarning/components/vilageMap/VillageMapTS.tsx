@@ -262,6 +262,7 @@ const VillageMap: React.FC<VillageMapProps> = ({
         (state: RootState) => state.common?.permission
       );
     const { access } = usePermission(permissions);
+  const ENABLE_ZONE_CREATION = false;
   // เพิ่มฟังก์ชันสำหรับการล็อค/ปลดล็อค marker
   // ฟังก์ชันสำหรับ unlock markers ทั้งหมด
   const unlockAllMarkers = () => {
@@ -3666,6 +3667,10 @@ const VillageMap: React.FC<VillageMapProps> = ({
       setSelectedZones([]);
     }
 
+    if (!ENABLE_ZONE_CREATION) {
+      return;
+    }
+
     // ตั้งค่า mouseDownStart เฉพาะถ้าไม่ได้ทำ group selection
     setMouseDownStart({ x, y });
     setMouseDownTime(Date.now());
@@ -4142,8 +4147,7 @@ const VillageMap: React.FC<VillageMapProps> = ({
 
     // จัดการการเลือกกลุ่มใหม่ (สร้าง zone) - แต่ไม่ให้ทำถ้ากำลัง group selecting
     if (mouseDownStart && !isGroupSelecting) {
-      // ตรวจสอบโมด - ถ้าเป็น preview ไม่อนุญาตให้สร้าง zone selection
-      if (mapMode === 'preview') {
+      if (!ENABLE_ZONE_CREATION) {
         return;
       }
 

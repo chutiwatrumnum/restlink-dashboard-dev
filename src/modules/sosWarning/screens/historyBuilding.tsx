@@ -3,20 +3,14 @@ import Header from "../../../components/templates/Header";
 import {
     Row,
     Col,
-    DatePicker,
-    DatePickerProps,
     Input,
     Button,
     Tabs,
     Table,
-    Form,
-    Space,
-    Dropdown,
     message,
   } from "antd";
 import { SearchOutlined, CloseOutlined } from '@ant-design/icons';
-import type { ColumnsType, TableProps } from "antd/es/table";
-import { historyBuildingData } from "../dummyData/HistoryBuilding";
+import type { ColumnsType } from "antd/es/table";
 import { usePagination } from "../../../utils/hooks/usePagination";
 import IconStep from "../../../assets/icons/IconStep.png";
 import CardDashboard from "../components/historyBuilding/cardDashboard";
@@ -40,17 +34,13 @@ const HistoryBuilding = () => {
       );
 
     const [eventStore, setEventStore] = useState<any[]>([])
-    const [curentPage, setCurentPage] = useState<number>(1)
-    const [limit, setLimit] = useState<number>(10)
     const [step, setStep] = useState<string>('');
     const [roomAddress, setRoomAddress] = useState<string>('');
     const [residentOwner, setResidentOwner] = useState<string>('');
     const [receiver, setReceiver] = useState<string>('');
     const [contact, setContact] = useState<string>('');
 
-    const [searchText, setSearchText] = useState<string>('');
-    const [searchedColumn, setSearchedColumn] = useState<string>('');
-    const [ServiceCenterList, setServiceCenterStatusList] = useState<
+    const [ServiceCenterList] = useState<
     TabsProps["items"]
   >([
     {
@@ -164,9 +154,6 @@ const HistoryBuilding = () => {
 
     const onChangeTable = (
             pagination: any,
-            filters: any,
-            sorter: any,
-            extra: any
     )=>{
         // อัปเดต state สำหรับ pagination (useEffect จะ handle การเรียก loadFilter)
         setCurPage(pagination.current);
@@ -226,7 +213,7 @@ const HistoryBuilding = () => {
                     />
                 </div>
                 <Input
-                    placeholder={`ค้นหา ${title}`}
+                    placeholder={`search ${title}`}
                     value={selectedKeys[0]}
                     onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
                     onPressEnter={() => handleSearch(selectedKeys, confirm, dataIndex)}
@@ -312,10 +299,6 @@ const HistoryBuilding = () => {
     });
 
     const handleSearch = (selectedKeys: any, confirm: any, dataIndex: string) => {
-        // ไม่เรียก confirm() เพื่อไม่ให้ปิด popup
-        setSearchText(selectedKeys[0]);
-        setSearchedColumn(dataIndex);
-
         // reset เป็นหน้าแรกเมื่อ search
         setCurPage(1);
 
@@ -339,21 +322,13 @@ const HistoryBuilding = () => {
         }
     };
 
-    const handleReset = (clearFilters: any, confirm: any) => {
-        clearFilters();
-        setSearchText('');
-        confirm();
-    };
 
     const handleResetOnly = (setSelectedKeys: any) => {
         setSelectedKeys([]);
-        setSearchText('');
     };
 
     const handleCloseAndClearFilter = (clearFilters: any, confirm: any, close: any, dataIndex: string) => {
         clearFilters();
-        setSearchText('');
-        
         // reset เป็นหน้าแรก
         setCurPage(1);
         
@@ -481,7 +456,7 @@ const HistoryBuilding = () => {
           dataIndex: "Address",
           align: "center",
           width: 200,
-          ...getColumnSearchProps("Address", "บ้านเลขที่"),
+          ...getColumnSearchProps("Address", "House No."),
         },
         {
           title: "Report Time",
@@ -541,14 +516,14 @@ const HistoryBuilding = () => {
           align: "center",
           dataIndex: "NameOwner",
           width: 200,
-          ...getColumnSearchProps("NameOwner", "ชื่อเจ้าของบ้าน"),
+          ...getColumnSearchProps("NameOwner", "Owner Name"),
         },
         {
           title: "Security Staff Name",
           align: "center",
           dataIndex: "NameStaff",
           width: 180,
-          ...getColumnSearchProps("NameStaff", "ชือเจ้าหน้าที่ รปภ."),
+          ...getColumnSearchProps("NameStaff", "Security Staff Name"),
         },
 
         {
@@ -556,7 +531,7 @@ const HistoryBuilding = () => {
             align: "center",
             dataIndex: "ContractStaff",
             width: 180,
-            ...getColumnSearchProps("ContractStaff", "เบอร์โทรศัพท์"),
+            ...getColumnSearchProps("ContractStaff", "Phone Number"),
           },
 
         {

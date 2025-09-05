@@ -23,7 +23,7 @@ type AnnouncementEditModalType = {
   onCancel: () => void;
   data: AnnounceFormDataType;
   onRefresh: () => void;
-  type: "projectNews" | "announcement" | "devNews";
+  type: "projectNews" | "announcement";
 };
 
 const AnnouncementEditModal = ({
@@ -144,7 +144,7 @@ const AnnouncementEditModal = ({
                   <Select.Option value="announcement">
                     Announcement
                   </Select.Option>
-                  <Select.Option value="devNews">Developer news</Select.Option>
+                  {/* <Select.Option value="devNews">Developer news</Select.Option> */}
                 </Select>
               </Form.Item>
               <Form.Item<AnnounceFormDataType> label="Image" name="image">
