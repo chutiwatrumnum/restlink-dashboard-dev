@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../../stores"
 import defaultImage from "../../../../assets/images/setupProject/DefaultImage.jpg"
-
+ 
 
 
 
@@ -30,10 +30,6 @@ const CardDetailPlan = ({ onBack }: { onBack: string }) => {
                         <div className="flex justify-between">
                             <span className="text-gray-600 font-bold  text-lg">Developer</span>
                             <span className="text-gray-800 text-right text-lg">{projectData?.developer?.name || '-'}</span>
-                        </div>
-                        <div className="flex justify-between">
-                            <span className="text-gray-600 font-bold  text-lg">Project manager</span>
-                            <span className="text-gray-800 text-right text-lg">{projectData?.projectManagerName || '-'}</span>
                         </div>
                         <div className="flex justify-between">
                             <span className="text-gray-600 font-bold  text-lg">Contact no.</span>
