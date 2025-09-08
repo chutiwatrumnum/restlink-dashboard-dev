@@ -155,3 +155,103 @@
   cursor: not-allowed;
   opacity: 1;
 }
+
+/* Change Password Modal Styles */
+.changePasswordModal {
+  max-width: 500px !important;
+}
+
+.changePasswordModal .ant-modal-content {
+  border-radius: 12px;
+}
+
+.changePasswordModal .ant-modal-header {
+  padding: 24px 24px 0 24px;
+  border-bottom: none;
+}
+
+.changePasswordModal .ant-modal-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--mainText-color);
+}
+
+.changePasswordModal .ant-modal-body {
+  padding: 14px;
+}
+
+.changePasswordModalForm {
+  width: 100%;
+}
+
+.changePasswordModalForm .ant-form-item {
+  margin-bottom: 24px;
+}
+
+.changePasswordModalForm .ant-form-item-label > label {
+  font-weight: 500;
+  color: var(--mainText-color);
+  font-size: 14px;
+}
+
+.changePasswordModalForm .ant-input-affix-wrapper {
+  border-radius: 8px;
+  border: 1px solid #d9d9d9;
+  transition: all 0.3s;
+}
+
+.changePasswordModalForm .ant-input-affix-wrapper:hover {
+  border-color: var(--primary-color);
+}
+
+.changePasswordModalForm .ant-input-affix-wrapper-focused {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+}
+
+.changePasswordModalActions {
+  display: flex;
+  justify-content: center;
+  margin-top: 32px;
+  padding-top: 16px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.changePasswordModalActions .ant-btn {
+  min-width: 140px;
+  height: 40px;
+  border-radius: 8px;
+  font-weight: 500;
+}
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+  .changePasswordModal {
+    max-width: 90% !important;
+    margin: 20px auto;
+  }
+  
+  .changePasswordModal .ant-modal-body {
+    padding: 16px;
+  }
+  
+  .changePasswordModalActions {
+    margin-top: 24px;
+  }
+}
+
+/* Profile button layout adjustments */
+.changePasswordBottomBtnContainer .ant-row {
+  width: 100%;
+}
+
+.changePasswordBottomBtnContainer .ant-col {
+  display: flex;
+  align-items: center;
+}
+
+.changePasswordBottomBtnContainer .ant-btn {
+  flex: 1;
+  min-width: 120px;
+  max-width: 180px;
+}

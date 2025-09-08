@@ -3,6 +3,7 @@ export interface ProfileDetail {
     userId: string;
     lastName: string;
     firstName: string;
+    middleName?: string; // เพิ่ม middleName
     nickName: string;
     email: string;
     imageProfile: string | null;
@@ -19,10 +20,18 @@ export interface editProfileDetail {
     // เพิ่มหรือปรับฟิลด์ตามที่ต้องการให้แก้ไขได้
     firstName?: string;
     lastName?: string;
+    middleName?: string; // เพิ่ม middleName
     nickName?: string;
     contact?: string;
     allowNotifications?: boolean;
     callAllowNotification?: boolean;
     imageProfile?: string;
     // ฟีลด์อื่นๆ ที่อนุญาตให้แก้ไข
+}
+
+// เพิ่ม interface ใหม่สำหรับ API ที่คุณต้องการใช้
+export interface UpdateUserNamesPayload {
+    givenName: string;
+    middleName?: string;
+    familyName: string;
 }
