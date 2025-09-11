@@ -78,12 +78,12 @@ const VisitorManagementLog = () => {
     let data = childrenVisitor[params.key];
     const columns: TableColumnsType<ExpandedDataType> = [
       { title: "Name", dataIndex: "name", key: "name", align: "center" },
-      {
-        title: "Status",
-        dataIndex: "status",
-        key: "status",
-        align: "center",
-      },
+      // {
+      //   title: "Status",
+      //   dataIndex: "status",
+      //   key: "status",
+      //   align: "center",
+      // },
       {
         title: "Create date",
         dataIndex: "createDate",

@@ -37,6 +37,7 @@ const EditFacilityModal = (props: EditFacilityModalProps) => {
       maximumHourBooking: dayjs(formData.maximumHourBooking, "HH:mm").format(
         "HH:mm"
       ),
+      maxDayCanBooking: parseInt(formData.maxDayCanBooking?.toString() || "30"),
       facilitiesRules: formData.facilitiesRules,
       accommodates: formData.accommodates,
     };
@@ -74,6 +75,7 @@ const EditFacilityModal = (props: EditFacilityModalProps) => {
         endTime: dayjs(props?.data?.endTime, "HH:mm"),
         limitPeople: props?.data?.limitPeople,
         maximumHourBooking: dayjs(props?.data?.maximumHourBooking, "HH:mm"),
+        maxDayCanBooking: props?.data?.maxDayCanBooking || 30, // Set default to 30 if not exists
         accommodates: props?.data?.accommodates,
         facilitiesRules: props?.data?.facilitiesRules,
       });
@@ -98,8 +100,7 @@ const EditFacilityModal = (props: EditFacilityModalProps) => {
       ]}
       okText="Save"
       width={"90%"}
-      style={{ maxWidth: 1200 }}
-    >
+      style={{ maxWidth: 1200 }}>
       <Form onFinish={props.onSave} form={editFacilityForm} layout={"vertical"}>
         <div className="reserveModalColumn">
           <div className="reserveModalContainer">
@@ -107,8 +108,7 @@ const EditFacilityModal = (props: EditFacilityModalProps) => {
               <Form.Item<ReservationListDataType>
                 label="Room name"
                 name="name"
-                rules={requiredRule}
-              >
+                rules={requiredRule}>
                 <Input
                   size="large"
                   placeholder="Please input title"
@@ -120,8 +120,7 @@ const EditFacilityModal = (props: EditFacilityModalProps) => {
               <Form.Item<ReservationListDataType>
                 label="Room name detail"
                 name="subName"
-                rules={requiredRule}
-              >
+                rules={requiredRule}>
                 <Input
                   size="large"
                   placeholder="Please input title"
@@ -133,8 +132,7 @@ const EditFacilityModal = (props: EditFacilityModalProps) => {
               <Form.Item<ReservationListDataType>
                 label="Detail"
                 name="description"
-                rules={requiredRule}
-              >
+                rules={requiredRule}>
                 <Input.TextArea
                   rows={5}
                   placeholder="Please input description"
@@ -150,8 +148,7 @@ const EditFacilityModal = (props: EditFacilityModalProps) => {
                   label="From"
                   name="startTime"
                   rules={requiredRule}
-                  style={{ width: "48%" }}
-                >
+                  style={{ width: "48%" }}>
                   <TimePicker
                     format="HH:mm"
                     style={{ width: "100%" }}
@@ -163,8 +160,7 @@ const EditFacilityModal = (props: EditFacilityModalProps) => {
                   label="To"
                   name="endTime"
                   rules={requiredRule}
-                  style={{ width: "48%" }}
-                >
+                  style={{ width: "48%" }}>
                   <TimePicker
                     format="HH:mm"
                     style={{ width: "100%" }}
@@ -178,20 +174,32 @@ const EditFacilityModal = (props: EditFacilityModalProps) => {
               <Form.Item<ReservationListDataType>
                 label="Maximum total"
                 name="limitPeople"
-                rules={requiredRule}
-              >
+                rules={requiredRule}>
                 <Input size="large" type="number" />
               </Form.Item>
               <Form.Item<ReservationListDataType>
                 label="Maximum hour"
                 name="maximumHourBooking"
-                rules={requiredRule}
-              >
+                rules={requiredRule}>
                 <TimePicker
                   size="large"
                   style={{ width: "100%" }}
                   minuteStep={5}
                   format={"HH:mm"}
+                />
+              </Form.Item>
+              <Form.Item<ReservationListDataType>
+                label="Max Advance Booking Days"
+                name="maxDayCanBooking"
+                rules={requiredRule}
+                tooltip="Booking Days in Advance (1–730 Days)">
+                <Input
+                  size="large"
+                  type="number"
+                  min={1}
+                  max={730}
+                  placeholder="30"
+                  suffix="วัน"
                 />
               </Form.Item>
               <Form.Item<ReservationListDataType> label="Image" name="imageUrl">
@@ -211,8 +219,7 @@ const EditFacilityModal = (props: EditFacilityModalProps) => {
                       display: "flex",
                       rowGap: 4,
                       flexDirection: "column",
-                    }}
-                  >
+                    }}>
                     {fields.map((field) => (
                       <div key={field.key}>
                         <Form.Item name={[field.name, "name"]}>
@@ -234,8 +241,7 @@ const EditFacilityModal = (props: EditFacilityModalProps) => {
                       type="dashed"
                       size="large"
                       onClick={() => add()}
-                      block
-                    >
+                      block>
                       + Add Accommodates
                     </Button>
                   </div>
@@ -249,8 +255,7 @@ const EditFacilityModal = (props: EditFacilityModalProps) => {
                       display: "flex",
                       rowGap: 4,
                       flexDirection: "column",
-                    }}
-                  >
+                    }}>
                     {fields.map((field) => (
                       <div title={`Item ${field.name + 1}`} key={field.key}>
                         <Form.Item name={[field.name, "name"]}>
@@ -272,8 +277,7 @@ const EditFacilityModal = (props: EditFacilityModalProps) => {
                       type="dashed"
                       size="large"
                       onClick={() => add()}
-                      block
-                    >
+                      block>
                       + Add Rules
                     </Button>
                   </div>

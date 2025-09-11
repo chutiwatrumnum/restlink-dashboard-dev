@@ -135,6 +135,7 @@ export interface AddNewFacilityPayloadType {
   endTime: string;
   limitPeople: number;
   maximumHourBooking: string;
+  maxDayCanBooking: number;
   imageUrl: string;
   facilitiesRules?: FacilitiesRuleType[];
   accommodates?: AccommodateType[];

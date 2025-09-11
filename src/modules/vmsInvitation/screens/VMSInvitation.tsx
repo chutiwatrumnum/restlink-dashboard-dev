@@ -425,14 +425,14 @@ const VMSInvitation = () => {
         );
       },
     },
-    {
-      title: "Type",
-      key: "type",
-      dataIndex: "type",
-      align: "center",
-      width: "8%",
-      render: (type) => <div>{type || "-"}</div>,
-    },
+    // {
+    //   title: "Type",
+    //   key: "type",
+    //   dataIndex: "type",
+    //   align: "center",
+    //   width: "8%",
+    //   render: (type) => <div>{type || "-"}</div>,
+    // },
     {
       title: "Status",
       key: "active",
