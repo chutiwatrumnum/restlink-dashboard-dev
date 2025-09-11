@@ -105,7 +105,7 @@ const ReservationList = () => {
     };
     await dispatch.facilities.getReservationList();
     await dispatch.facilities.getReservedList(payload);
-    // await dispatch.facilities.getReservedCreateDataList();
+    await dispatch.facilities.getReservedCreateDataList();
   };
 
   const createTabsMenu = async () => {

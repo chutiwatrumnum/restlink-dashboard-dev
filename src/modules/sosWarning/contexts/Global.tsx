@@ -17,6 +17,7 @@ interface GlobalContextType {
   setBuildingPlan: (data: any) => void
   dataMapAll: any
   setDataMapAll: (data: any) => void
+  refreshMap: () => void
 }
 
 // สร้าง Context
@@ -39,6 +40,7 @@ interface GlobalProviderProps {
   setBuildingPlan: (data: any) => void
   dataMapAll: any
   setDataMapAll: (data: any) => void
+  refreshMap: () => void
 }
 
 export const GlobalProvider: React.FC<GlobalProviderProps> = ({ 
@@ -56,7 +58,8 @@ export const GlobalProvider: React.FC<GlobalProviderProps> = ({
   buildingPlan,
   setBuildingPlan,
   dataMapAll,
-  setDataMapAll
+  setDataMapAll,
+  refreshMap
 }) => {
   return (
     <GlobalContext.Provider value={{ 
@@ -73,7 +76,8 @@ export const GlobalProvider: React.FC<GlobalProviderProps> = ({
       buildingPlan,
       setBuildingPlan,
       dataMapAll,
-      setDataMapAll
+      setDataMapAll,
+      refreshMap
     }}>
       {children}
     </GlobalContext.Provider>

@@ -94,16 +94,11 @@ const SOSBuildingPlan = () => {
     showSizeChanger: true,
     total: sosWarningData?.length,
   };
-  const onPageChange = (page: number) => {
-    setCurPage(page);
-  };
 
   const { Search } = Input;
   const onChangeTable: TableProps<SosWarningDataType>["onChange"] = async (
     pagination: any,
-    filters,
     sorter: any,
-    extra
   ) => {
     params = paramsData;
     params.sort = sorter?.order;
@@ -176,7 +171,6 @@ const SOSBuildingPlan = () => {
       ),
     },
   ];
-  const dateFormat = "MMMM,YYYY";
   const scroll: { x?: number | string } = {
     x: "10vw",
   };

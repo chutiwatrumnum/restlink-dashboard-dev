@@ -28,7 +28,7 @@ interface FormVillageLocationProps {
 
     } | null;
     mapMode?: 'preview' | 'work-it';
-    shouldFocusNameInput?: boolean;    
+    shouldFocusNameInput?: boolean;
     dataSelectPlan?: dataSelectPlan;
     isCreatingMode?: boolean;
     planType: string;
@@ -51,30 +51,30 @@ interface FormVillageLocationProps {
     floorIdGlobal: string;
 }
 
-const FormVillageLocation = ({ 
+const FormVillageLocation = ({
     latitude,
-    longitude, 
-    selectedMarker, 
+    longitude,
+    selectedMarker,
     mapMode = 'work-it',
     shouldFocusNameInput,
-    dataSelectPlan, 
-    isCreatingMode, 
+    dataSelectPlan,
+    isCreatingMode,
     hasActiveMarker,
     dataAllMap,
     onMarkerNameChange,
-    onMarkerAddressChange, 
-    onMarkerTel1Change, 
+    onMarkerAddressChange,
+    onMarkerTel1Change,
     onMarkerTel2Change,
-    onMarkerTel3Change, 
-    onMarkerUpdate, 
-    onCancel, 
-    onConfirm, 
-    onFocusHandled, 
+    onMarkerTel3Change,
+    onMarkerUpdate,
+    onCancel,
+    onConfirm,
+    onFocusHandled,
     onMarkerDelete,
-    setDataMapAll, 
+    setDataMapAll,
     onMarkerSelect,
     floorIdGlobal,
-    }: FormVillageLocationProps) => {
+}: FormVillageLocationProps) => {
     const [form] = Form.useForm();
     const [isFormValid, setIsFormValid] = useState(false);
     const nameInputRef = useRef<any>(null);
@@ -113,8 +113,8 @@ const FormVillageLocation = ({
         if (!selectedMarker) {
             return;
         }
-            
-            // เพิ่มการตรวจสอบ hasActiveMarker - ถ้าไม่มี active marker ให้ผ่านไปได้ (เพื่อ unlock marker)
+
+        // เพิ่มการตรวจสอบ hasActiveMarker - ถ้าไม่มี active marker ให้ผ่านไปได้ (เพื่อ unlock marker)
         // if (!hasActiveMarker) {
         //     console.log('⚠️ hasActiveMarker is false - this could be unlock marker scenario, proceeding anyway');
         // }
@@ -126,8 +126,8 @@ const FormVillageLocation = ({
             currentMarkerIdRef.current === null || // หลังจาก cancel/confirm
             (currentMarkerIdRef.current !== selectedMarker.id && lastFormUpdateTimeRef.current === 0) // หลังจาก reset
         );
-        
-        
+
+
         const now = Date.now();
         // ถ้า user กำลัง interact กับ form และไม่ใช่การเปลี่ยน marker หรือ reselect marker ให้ skip การ update
         const hasActiveElement = document.activeElement && document.activeElement.tagName.match(/input|select|textarea/i);
@@ -191,7 +191,7 @@ const FormVillageLocation = ({
 
         // Set ค่าจาก marker ลง form - ใช้ข้อมูลจาก selectedMarker โดยตรงเสมอ
         if (selectedMarker) {
-            
+
             // เก็บข้อมูลต้นฉบับของ marker เฉพาะเมื่อจำเป็น (สำหรับ reset function)
             const currentMarkerId = selectedMarker.id.toString();
             if (!allMarkersOriginalDataRef.current[currentMarkerId]) {
@@ -224,11 +224,11 @@ const FormVillageLocation = ({
 
             // Set address ถ้ามี - ใช้ข้อมูลจาก selectedMarker ปัจจุบันโดยตรง (ไม่พึ่งพา cache)
             const markerUnitID = (selectedMarker as any)?.unitID || selectedMarker.address;
-            
+
             if (markerUnitID) {
                 // ตรวจสอบว่า unitID ของ marker ตรงกับ unit.id ใน options หรือไม่
                 const matchingUnit = dataSelectPlan?.unit?.find(unit => unit.id == markerUnitID);
-                
+
                 if (matchingUnit) {
                     updateFields.address = matchingUnit.id;
                 } else {
@@ -283,7 +283,7 @@ const FormVillageLocation = ({
                 // บังคับ update form ทันทีเมื่อเปลี่ยน marker
                 form.setFieldsValue(updateFields);
                 lastFormUpdateTimeRef.current = now;
-                
+
                 // Double-check address field specifically
                 setTimeout(() => {
                     const currentAddress = form.getFieldValue('address');
@@ -344,7 +344,7 @@ const FormVillageLocation = ({
             isUserInteractingRef.current = false;
             lastUserSelectedAddress.current = null;
             currentMarkerIdRef.current = null;
-            
+
             // บังคับ disable form เมื่อไม่มี marker เลย
             setIsFormValid(false);
         } else if (isCancellingRef.current) {
@@ -596,8 +596,8 @@ const FormVillageLocation = ({
                 if (isCreateMode) {
                     const markerData: MarkerProcess = {
                         // villageId: idVillage,
-                        planInfoId:  dataAllMap?.planInfoId || '',
-                        floorId: Number(floorIdGlobal)  || null,
+                        planInfoId: dataAllMap?.planInfoId || '',
+                        floorId: Number(floorIdGlobal) || null,
                         unitId: Number(values.address), // ใช้ค่าจาก form address ซึ่งจะเป็น unitID
                         markerType: "marker",
                         markerInfo: {
@@ -659,15 +659,15 @@ const FormVillageLocation = ({
                             if (data) {
                                 // อัพเดท marker
                                 if (data.result.marker && Array.isArray(data.result.marker)) {
-                                  setDataMapAll((prev: any) => ({
-                                    ...prev,
-                                    marker: data.result.marker
-                                  }));
+                                    setDataMapAll((prev: any) => ({
+                                        ...prev,
+                                        marker: data.result.marker
+                                    }));
                                 }
                             }
 
 
-                        } 
+                        }
                     }
 
                     // Reset focus/input flags หลัง submit
@@ -678,13 +678,13 @@ const FormVillageLocation = ({
                     if (onMarkerSelect) {
                         onMarkerSelect(null);
                     }
-                    
+
                     // IMPORTANT: Reset currentMarkerIdRef และ clear cache หลังจาก create เพื่อให้ marker ใหม่ถูกตรวจจับว่าเป็นการเปลี่ยน marker
                     currentMarkerIdRef.current = null;
                     // Clear ข้อมูล cache ทั้งหมดเพื่อให้ marker ใหม่ใช้ข้อมูลจริง
                     allMarkersOriginalDataRef.current = {};
                     originalMarkerDataRef.current = null;
-                    
+
                     // Clear confirming flag
                     setTimeout(() => {
                         isConfirmingRef.current = false;
@@ -698,7 +698,7 @@ const FormVillageLocation = ({
                         markerId: selectedMarker?.id?.toString() || "",
                         unitId: Number(values.address), // ใช้ค่าจาก form address ซึ่งจะเป็น unitID
                         // selectedMarker?.unitID || Number(values.address),
-                        
+
                         floorId: Number(floorIdGlobal) || null,
                         markerType: "marker",
                         markerInfo: {
@@ -717,9 +717,9 @@ const FormVillageLocation = ({
 
                     let data = await updateMarker(markerData)
                     if (data.status) {
-                        SuccessModal("Marker Updated Successfully",900)
+                        SuccessModal("Marker Updated Successfully", 900)
                         // สร้าง updatedMarker object ที่มีค่า originalX และ originalY เป็นตำแหน่งปัจจุบัน
-                        if (selectedMarker && selectedMarker.x !== undefined && 
+                        if (selectedMarker && selectedMarker.x !== undefined &&
                             selectedMarker.y !== undefined) {
                             const updatedMarker = {
                                 ...selectedMarker,
@@ -757,10 +757,10 @@ const FormVillageLocation = ({
                         if (data) {
                             // อัพเดท marker
                             if (data.result.marker && Array.isArray(data.result.marker)) {
-                              setDataMapAll((prev: any) => ({
-                                ...prev,
-                                marker: data.result.marker
-                              }));
+                                setDataMapAll((prev: any) => ({
+                                    ...prev,
+                                    marker: data.result.marker
+                                }));
                             }
                         }
 
@@ -775,7 +775,7 @@ const FormVillageLocation = ({
                     if (onMarkerSelect) {
                         onMarkerSelect(null);
                     }
-                    
+
                     // IMPORTANT: Reset currentMarkerIdRef และ clear cache หลังจาก update เพื่อให้ marker ใหม่ถูกตรวจจับว่าเป็นการเปลี่ยน marker
                     currentMarkerIdRef.current = null;
                     // Clear ข้อมูล cache ทั้งหมดเพื่อให้ marker ใหม่ใช้ข้อมูลจริง
@@ -802,6 +802,77 @@ const FormVillageLocation = ({
 
     };
 
+    const handleCancel = () => {
+        // ตั้ง flag เพื่อป้องกัน useEffect ทำงานขณะ cancel
+        isCancellingRef.current = true;
+        // เคลียร์ค่าในฟอร์มทั้งหมดก่อนอื่น
+        form.resetFields();
+        // เคลียร์ state เพิ่มเติม - บังคับให้ form invalid เพื่อ disable Address
+        setIsFormValid(false);
+        // Reset focus/input flags
+        isUserFocusedRef.current = false;
+        isUserInputtingRef.current = false;
+        isUserInteractingRef.current = false;
+
+        // เคลียร์ ref data - รีเซ็ต currentMarkerIdRef เป็น null เพื่อให้ unlock marker ทำงาน
+        lastUserSelectedAddress.current = null;
+        currentMarkerIdRef.current = null; // สำคัญ: รีเซ็ตเป็น null เพื่อให้ isMarkerReselected = true
+        originalMarkerDataRef.current = null;
+        lastFormUpdateTimeRef.current = 0;
+        // ยกเลิกการเลือก marker ทันที
+        if (onMarkerSelect) {
+            onMarkerSelect(null);
+        }
+        // บังคับ disable form หลายครั้งเพื่อให้แน่ใจ
+        const forceDisableForm = () => {
+            setIsFormValid(false);
+        };
+        // เรียกใช้หลายครั้งด้วย delay เพื่อให้แน่ใจ
+        setTimeout(forceDisableForm, 500);
+
+        // รีเซ็ต cancelling flag หลังจาก delay สั้น ๆ
+        setTimeout(() => {
+            isCancellingRef.current = false;
+            // บังคับ disable อีกครั้งหลังจาก cancel flag reset
+        }, 300); // เพิ่มเวลา delay เป็น 300ms เพื่อให้แน่ใจว่า state update เสร็จสิ้น
+
+        // แยกแยะ marker จำลอง (temporary) กับ marker ที่มีอยู่แล้ว (existing)
+        // Temporary marker จะมี ID เป็น timestamp (Date.now()) ซึ่งเป็นตัวเลขขนาดใหญ่ (13 หลัก)
+        // Existing marker จะมี ID จาก database ซึ่งเป็นตัวเลขปกติ (1-6 หลัก)
+        const isTemporaryMarker = typeof selectedMarker?.id === 'number'
+        // ลบเฉพาะ marker จำลองเท่านั้น
+
+        if (isTemporaryMarker && onMarkerDelete) {
+            const markerId = typeof selectedMarker.id === 'string' ? parseInt(selectedMarker.id) : selectedMarker.id;
+            onMarkerDelete(markerId);
+        } else {
+            // สำหรับ existing marker ให้รีเซ็ตกลับเป็นค่าเดิมก่อน cancel
+            if (selectedMarker && !isTemporaryMarker) {
+                const currentMarkerId = selectedMarker.id.toString();
+                const originalData = allMarkersOriginalDataRef.current[currentMarkerId];
+                if (originalData) {
+                    resetMarkerToOriginal(selectedMarker.id, originalData);
+                }
+            }
+
+            if (onCancel) {
+                onCancel();
+            }
+        }
+
+    }
+
+    // ฟังอีเวนต์จากภายนอกเพื่อสั่ง Cancel ฟอร์ม (เช่น ตอนกด Save เปลี่ยนแผน)
+    useEffect(() => {
+        const handleExternalCancel = () => {
+            handleCancel();
+        };
+        window.addEventListener('sos:village-form-cancel', handleExternalCancel);
+        return () => {
+            window.removeEventListener('sos:village-form-cancel', handleExternalCancel);
+        };
+    }, []);
+
     // ตรวจสอบว่าควร disable ฟอร์มหรือไม่
     const isFormDisabled = mapMode === 'preview';
 
@@ -815,7 +886,7 @@ const FormVillageLocation = ({
     return (
         <div className=" mx-auto bg-[#F6F6F6] p-6 mt-4 lg:mt-0 h-full">
             <div className="font-semibold text-xl text-center mb-6">
-                Pin the village location on the map
+                Location on the map
             </div>
             <Form
                 form={form}
@@ -891,96 +962,35 @@ const FormVillageLocation = ({
                 </Form.Item>
                 <Form.Item>
                     <>
-                    <div className="flex items-center"> 
-                    <Button
-                            type="primary"
-                            block
-                            style={{
-                                ...(isFormDisabled || !isFormValid ? {
-                                    backgroundColor: '#d1d5db',
-                                    borderColor: '#d1d5db',
-                                    color: '#6b7280'
-                                } : {})
-                            }}
-                            className={` !me-4
-                                ${(isFormDisabled || !isFormValid) ?
-                                    'hover:!text-white hover:!bg-gray-400 hover:!border-gray-400' :
-                                    ''
-                                }
-                            `}
-                            onClick={handleSubmit}
-                            disabled={isFormDisabled || !isFormValid}
-                        >
-                            Confirm
-                        </Button>
-                        <Button
-                            type="default"
-                            block
-                            onClick={() => {
-                                // ตั้ง flag เพื่อป้องกัน useEffect ทำงานขณะ cancel
-                                isCancellingRef.current = true;
-                                // เคลียร์ค่าในฟอร์มทั้งหมดก่อนอื่น
-                                form.resetFields();
-                                // เคลียร์ state เพิ่มเติม - บังคับให้ form invalid เพื่อ disable Address
-                                setIsFormValid(false);
-                                // Reset focus/input flags
-                                isUserFocusedRef.current = false;
-                                isUserInputtingRef.current = false;
-                                isUserInteractingRef.current = false;
-                                
-                                // เคลียร์ ref data - รีเซ็ต currentMarkerIdRef เป็น null เพื่อให้ unlock marker ทำงาน
-                                lastUserSelectedAddress.current = null;
-                                currentMarkerIdRef.current = null; // สำคัญ: รีเซ็ตเป็น null เพื่อให้ isMarkerReselected = true
-                                originalMarkerDataRef.current = null;
-                                lastFormUpdateTimeRef.current = 0;
-                                // ยกเลิกการเลือก marker ทันที
-                                if (onMarkerSelect) {
-                                    onMarkerSelect(null);
-                                }
-                                // บังคับ disable form หลายครั้งเพื่อให้แน่ใจ
-                                const forceDisableForm = () => {
-                                    setIsFormValid(false);
-                                };
-                                // เรียกใช้หลายครั้งด้วย delay เพื่อให้แน่ใจ
-                                setTimeout(forceDisableForm, 500);
-
-                                // รีเซ็ต cancelling flag หลังจาก delay สั้น ๆ
-                                setTimeout(() => {
-                                    isCancellingRef.current = false;
-                                    // บังคับ disable อีกครั้งหลังจาก cancel flag reset
-                                }, 300); // เพิ่มเวลา delay เป็น 300ms เพื่อให้แน่ใจว่า state update เสร็จสิ้น
-
-                                // แยกแยะ marker จำลอง (temporary) กับ marker ที่มีอยู่แล้ว (existing)
-                                // Temporary marker จะมี ID เป็น timestamp (Date.now()) ซึ่งเป็นตัวเลขขนาดใหญ่ (13 หลัก)
-                                // Existing marker จะมี ID จาก database ซึ่งเป็นตัวเลขปกติ (1-6 หลัก)
-                                const isTemporaryMarker = typeof selectedMarker?.id === 'number'
-                                // ลบเฉพาะ marker จำลองเท่านั้น
-                                
-                                if (isTemporaryMarker && onMarkerDelete) {
-                                    const markerId = typeof selectedMarker.id === 'string' ? parseInt(selectedMarker.id) : selectedMarker.id;
-                                    onMarkerDelete(markerId);
-                                } else {
-                                    // สำหรับ existing marker ให้รีเซ็ตกลับเป็นค่าเดิมก่อน cancel
-                                    if (selectedMarker && !isTemporaryMarker) {
-                                        const currentMarkerId = selectedMarker.id.toString();
-                                        const originalData = allMarkersOriginalDataRef.current[currentMarkerId];
-                                        if (originalData) {
-                                            resetMarkerToOriginal(selectedMarker.id, originalData);
+                        <div className="flex flex-col sm:flex-row items-stretch w-full gap-3">
+                            <div className="w-full sm:flex-1">
+                                <Button
+                                    type="primary"
+                                    block
+                                    className={` w-full !rounded-xl
+                                    ${(isFormDisabled || !isFormValid) ?
+                                            '!bg-gray-300 !border-gray-300 !text-gray-500 hover:!text-white hover:!bg-gray-400 hover:!border-gray-400' :
+                                            ''
                                         }
-                                    }
-
-                                    if (onCancel) {
-                                        onCancel();
-                                    }
-                                }
-                                
-                            }}
-                            disabled={isFormDisabled}
-                        >
-                            Cancel
-                        </Button>
-
-                    </div>
+                                `}
+                                    onClick={handleSubmit}
+                                    disabled={isFormDisabled || !isFormValid}
+                                >
+                                    Confirm
+                                </Button>
+                            </div>
+                            <div className="w-full sm:flex-1">
+                                <Button
+                                    type="default"
+                                    block
+                                    onClick={handleCancel}
+                                    disabled={isFormDisabled}
+                                    className="w-full !rounded-xl"
+                                >
+                                    Cancel
+                                </Button>
+                            </div>
+                        </div>
 
                     </>
                 </Form.Item>

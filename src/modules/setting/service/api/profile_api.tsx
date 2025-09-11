@@ -66,7 +66,7 @@ const updateUserNames = async (
   }
 ) => {
   try {
-    const result = await axios.put(`/api/v1.0/users/${userId}`, data);
+    const result = await axios.put(`/users/${userId}`, data);
     if (result.status === 200) {
       return {
         status: true,
@@ -106,7 +106,7 @@ export const changePassword = async (
   payload: ChangePasswordPayload
 ): Promise<ChangePasswordResponse> => {
   try {
-    const result = await axios.put("/api/v1.0/auth/dashboard/change-password", {
+    const result = await axios.put("/auth/dashboard/change-password", {
       oldPassword: payload.oldPassword,
       newPassword: payload.newPassword,
       confirmNewPassword: payload.confirmNewPassword,

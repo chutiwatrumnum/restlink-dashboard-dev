@@ -1,7 +1,8 @@
 import { io } from "socket.io-client";
 import { encryptStorage } from "../utils/encryptStorage";
+import { SOCKET_URL } from "./configs";
 
-const URL = "https://reslink-dev-gcf3p.ondigitalocean.app/chat";
+const URL = SOCKET_URL as string;
 const access_token = encryptStorage.getItem("access_token");
 
 export const socket = io(URL, { autoConnect: false,

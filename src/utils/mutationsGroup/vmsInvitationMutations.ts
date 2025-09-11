@@ -67,7 +67,7 @@ export const useCreateVMSInvitationMutation = () => {
             console.log('✅ Create invitation success');
 
             // แก้ไข: แสดง success message เฉพาะครั้งเดียว
-            message.success("สร้างคำเชิญสำเร็จ!");
+            message.success("Create invitation success");
 
             // Refresh data
             queryClient.invalidateQueries({
@@ -77,7 +77,7 @@ export const useCreateVMSInvitationMutation = () => {
         onError: (error: any) => {
             console.error('❌ Create invitation error:', error);
 
-            let errorMessage = "ไม่สามารถสร้างคำเชิญได้";
+            let errorMessage = "The invitation could not be created.";
 
             if (error.response?.data?.message) {
                 errorMessage = error.response.data.message;
@@ -146,7 +146,7 @@ export const useUpdateVMSInvitationMutation = () => {
         onError: (error: any) => {
             console.error('❌ Update invitation error:', error);
 
-            let errorMessage = "ไม่สามารถอัปเดตคำเชิญได้";
+            let errorMessage = "The invitation could not be updated.";
 
             if (error.response?.data?.message) {
                 errorMessage = error.response.data.message;
@@ -181,7 +181,7 @@ export const useDeleteVMSInvitationMutation = () => {
             console.log('✅ Delete invitation success');
 
             // แก้ไข: แสดง success message เฉพาะครั้งเดียว
-            message.success("ลบคำเชิญสำเร็จ!");
+            message.success("Delete invitation success");
 
             queryClient.invalidateQueries({
                 queryKey: ["vmsInvitations"]
@@ -190,7 +190,7 @@ export const useDeleteVMSInvitationMutation = () => {
         onError: (error: any) => {
             console.error('❌ Delete invitation error:', error);
 
-            let errorMessage = "ไม่สามารถลบคำเชิญได้";
+            let errorMessage = "The invitation could not be deleted.";
 
             if (error.response?.data?.message) {
                 errorMessage = error.response.data.message;

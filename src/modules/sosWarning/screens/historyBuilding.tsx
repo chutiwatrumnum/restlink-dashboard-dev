@@ -201,9 +201,9 @@ const HistoryBuilding = () => {
     // ฟังก์ชันสำหรับ search
     const getColumnSearchProps = (dataIndex: string, title: string) => ({
         filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters, close }: any) => (
-            <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                    <span style={{ fontWeight: 'bold' }}>ค้นหา {title}</span>
+            <div className="p-2" onKeyDown={(e) => e.stopPropagation()}>
+                <div className="flex justify-between items-center mb-2">
+                    <span className="font-bold">Search {title}</span>
                     <Button
                         type="text"
                         size="small"
@@ -228,7 +228,7 @@ const HistoryBuilding = () => {
                             size="small"
                             style={{ width: '100%' }}
                         >
-                            ค้นหา
+                            Search
                         </Button>
                     </div>
                     <div style={{ display: 'flex', gap: 8 }}>
@@ -237,14 +237,14 @@ const HistoryBuilding = () => {
                             size="small"
                             style={{ flex: 1 }}
                         >
-                            รีเซ็ต
+                            Reset
                         </Button>
                         <Button
                             onClick={close}
                             size="small"
                             style={{ flex: 1 }}
                         >
-                            ปิด
+                            Close
                         </Button>
                         <Button
                             onClick={() => handleCloseAndClearFilter(clearFilters, confirm, close, dataIndex)}
@@ -252,7 +252,7 @@ const HistoryBuilding = () => {
                             style={{ flex: 1 }}
                             danger
                         >
-                            ยกเลิก
+                            Cancel
                         </Button>
                     </div>
                 </div>
@@ -280,11 +280,7 @@ const HistoryBuilding = () => {
             
             return (
                 <SearchOutlined 
-                    style={{ 
-                        color: hasActiveSearch ? '#1890ff' : undefined,
-                        fontWeight: hasActiveSearch ? 'bold' : 'normal',
-                        fontSize: '16px'
-                    }} 
+                    className={`text-base ${hasActiveSearch ? 'text-blue-500 font-bold' : 'font-normal'}`}
                 />
             );
         },
@@ -455,14 +451,14 @@ const HistoryBuilding = () => {
           title: "House No.",
           dataIndex: "Address",
           align: "center",
-          width: 200,
+          width: 150,
           ...getColumnSearchProps("Address", "House No."),
         },
         {
           title: "Report Time",
           dataIndex: "ReportTime",
           align: "center",
-          width: 180,
+          width: 150,
           render: (_, record) => (
             <Row>
               <Col span={24} className="!flex !flex-col !justify-center !items-center !mb-0">
@@ -480,7 +476,7 @@ const HistoryBuilding = () => {
           title: "Receive Time",
           dataIndex: "ReceiveTime",
           align: "center",
-          width: 180,
+          width: 150,
           render: (_, record) => (
             <Row>
               <Col span={24} className="!flex !flex-col !justify-center !items-center !mb-0">
@@ -505,7 +501,6 @@ const HistoryBuilding = () => {
                         <div 
                         className="font-bold" style={{color:statusEvent(record?.EventTypeStatus || '')}}>
                             {record.EventType}
-                            {/* {record?.EventTypeStatus} */}
                         </div>
                     </Col>
                 </Row>
@@ -522,7 +517,7 @@ const HistoryBuilding = () => {
           title: "Security Staff Name",
           align: "center",
           dataIndex: "NameStaff",
-          width: 180,
+          width: 200,
           ...getColumnSearchProps("NameStaff", "Security Staff Name"),
         },
 
@@ -580,33 +575,7 @@ const HistoryBuilding = () => {
                         sticky={{
                             offsetHeader: 0  // ให้ header ติดด้านบนเมื่อ scroll
                         }}
-                        components={{
-                            header: {
-                                cell: (props: any) => (
-                                    <th {...props} style={{ 
-                                        ...props.style, 
-                                        whiteSpace: 'nowrap',
-                                        overflow: 'visible',
-                                        textOverflow: 'ellipsis',
-                                        height: '50px',
-                                        lineHeight: '1.2',
-                                        padding: '8px 40px 8px 16px',
-                                        verticalAlign: 'middle',
-                                        position: 'relative'
-                                    }} />
-                                )
-                            },
-                            body: {
-                                cell: (props: any) => (
-                                    <td {...props} style={{ 
-                                        ...props.style, 
-                                        whiteSpace: 'nowrap',
-                                        overflow: 'hidden',
-                                        textOverflow: 'ellipsis'
-                                    }} />
-                                )
-                            }
-                        }}
+   
                     />
                 </Col>
             </Row>

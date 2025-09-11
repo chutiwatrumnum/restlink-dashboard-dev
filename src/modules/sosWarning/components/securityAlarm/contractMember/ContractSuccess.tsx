@@ -12,10 +12,13 @@ const ContractSuccess = () => {
     const handleGoBack = () => {
         if(statusCaseReceiveCast) {
             navigate('/dashboard/history-building')
+            dispatch.sosWarning.setStep(0)
             dispatch.sosWarning.setDataEmergencyDetail({})
         }else {
+            dispatch.sosWarning.setStep(0)
             dispatch.sosWarning.setDataEmergencyDetail({})
         }
+        
     };
 
     return (

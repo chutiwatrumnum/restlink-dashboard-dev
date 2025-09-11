@@ -629,7 +629,7 @@ const UploadFloorPlan = () => {
                 <Row justify="space-between" className="!py-6">
                     <Col>
                         <Button
-                            className="px-8 py-2 rounded-full w-[100px]"
+                            className="px-8 py-2 rounded-full w-[150px]"
                             onClick={() => navigate('/setup-project/unit-preview-condo')}
                         >
                             Back
@@ -641,7 +641,7 @@ const UploadFloorPlan = () => {
                             loading={isSubmitting}
                             type="primary"
                             onClick={handleFinishSetup}
-                            className={`px-8 py-2 bg-[#002C55] !text-white rounded-lg  ${(!hasAnyBuildingWithData || isSubmitting) ? '!opacity-50 !cursor-not-allowed' : ''}`}
+                            className={`px-8 py-2 bg-[#002C55] w-[150px] !text-white rounded-lg  ${(!hasAnyBuildingWithData || isSubmitting) ? '!opacity-50 !cursor-not-allowed' : ''}`}
                         >
                             Continue
                         </Button>

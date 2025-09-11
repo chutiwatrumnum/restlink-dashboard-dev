@@ -13,6 +13,7 @@ import { EditIcon, TrashIcon } from "../../../assets/icons/Icons";
 import { useDispatch, useSelector } from "react-redux";
 import { Dispatch, RootState } from "../../../stores";
 import ConfirmModal from "../../../components/common/ConfirmModal";
+import NoImg from "../../../assets/images/noImg.jpeg";
 
 import type { ColumnsType } from "antd/es/table";
 import type { PaginationProps } from "antd";
@@ -144,7 +145,7 @@ const Emergency = () => {
       width: 200, // กำหนดความกว้างของ column
       render: ({ image }) => (
         <img
-          src={image}
+          src={image ? image : NoImg}
           style={{
             width: "200px",
             height: "100px",
@@ -162,7 +163,7 @@ const Emergency = () => {
       align: "center",
     },
     {
-      title: "Tel",
+      title: "Tel.",
       dataIndex: "tel",
       key: "tel",
       align: "center",

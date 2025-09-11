@@ -55,6 +55,12 @@ export const theme: object = {
     colorInfo: "#3F3F3F",
     colorLink: "#3F3F3F",
     fontFamily: "Sarabun",
+    borderRadius: 16,
+  },
+  components: {
+    Pagination: {
+      borderRadius: 8,
+    },
   },
 };
 

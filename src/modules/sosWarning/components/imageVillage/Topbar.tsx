@@ -72,14 +72,14 @@ const Topbar = ({ projectName, mode = 'preview', onModeChange, dataMapAll, dataF
                     <div className="text-xs text-[#002C55] text-center">Plan type</div>
                     <div className="font-bold text-[#002C55] text-center">Village</div>
                   </div>
-                  <div className="d-flex justify-center w-full">
+                  {/* <div className="d-flex justify-center w-full">
                     <div className="text-xs text-[#002C55] text-center">Condo type</div>
                     <div className="font-bold text-[#002C55] text-center">-</div>
                   </div>
                   <div className="d-flex justify-center w-full">
                     <div className="text-xs text-[#002C55] text-center">Floor</div>
                     <div className="font-bold text-[#002C55] text-center">-</div>
-                  </div>
+                  </div> */}
                 </div>
               </div>
             )

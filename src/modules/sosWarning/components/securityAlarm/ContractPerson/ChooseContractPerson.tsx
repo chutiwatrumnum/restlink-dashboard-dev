@@ -63,7 +63,7 @@ const ChooseContractPerson = ({ statusContract, setStatusContract, enableContrac
                                             className={`
                                             cursor-pointer
                                             !mb-4
-                                            w-full p-3 rounded-xl border-2 text-center font-medium 
+                                            w-full p-3 !rounded-xl border-2 text-center font-medium 
                                             transition-all duration-200 outline-none
                                             ${selectedOption === option.id
                                                     ? 'border-blue-500 bg-blue-50 text-blue-700'

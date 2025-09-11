@@ -30,7 +30,7 @@ import FailedModal from "../../../components/common/FailedModal";
 const SOSWarning = () => {
   const dispatch = useDispatch();
   const { projectData } = useSelector((state: RootState) => state.setupProject, isEqual);
-  const { dataEmergencyDetail } = useSelector((state: RootState) => state.sosWarning, isEqual);
+  const { dataEmergencyDetail,floorIdGlobal } = useSelector((state: RootState) => state.sosWarning, isEqual);
 
   const permissions = useSelector(
     (state: RootState) => state.common?.permission
@@ -108,7 +108,7 @@ const SOSWarning = () => {
   const [selectedMarker, setSelectedMarker] = useState<SelectMarker | null>(null);
   const [unitHover, setUnitHover] = useState<number | null>(null);
   const [unitClick, setUnitClick] = useState<number | null>(null);
-  const [floorIdGlobal, setFloorIdGlobal] = useState<string | null>('');
+  // const [floorIdGlobal, setFloorIdGlobal] = useState<string | null>('');
   const [masterData, setMasterData] = useState<any>(null);
   const [testA, setTestA] = useState<any>(null);
 
@@ -474,7 +474,6 @@ const SOSWarning = () => {
 
       let dataAllMap = await getVillageData(floorId || null);
       if(floorId && dataAllMap.status){
-        console.log('success-first')
         if(!dataAllMap.result.planImg || !dataAllMap.result.planInfoId){
           FailedModal("Plan Not Found", 1200)
           return 
@@ -938,11 +937,6 @@ const SOSWarning = () => {
     );
   }
 
-  // if (statusAcknowledge) {
-  //   return (
-  //     <SecurityAlarm />
-  //   );
-  // }
 
   return (
     <>
@@ -956,13 +950,6 @@ const SOSWarning = () => {
             <SecurityAlarm />
           </div>
         </div>
-        {/* <div>
-          <Button className="relative" style={{ zIndex: 1000 }} onClick={() => {
-            console.log(buildingPlan, 'buildingPlan')
-          }}>
-            test
-          </Button>
-        </div> */}
         <div
           style={{ display: Object.keys(dataEmergencyDetail).length > 0 ? 'none' : 'block' }}
           className="position-relative" >
@@ -980,6 +967,14 @@ const SOSWarning = () => {
             statusAcknowledge={statusAcknowledge}
             buildingPlan={buildingPlan}
             setBuildingPlan={setBuildingPlan}
+            setDataMapAll={setDataMapAll}
+            refreshMap={() => {
+              if (villageMapRefreshRef.current) {
+                villageMapRefreshRef.current();
+                setTimeout(() => villageMapRefreshRef.current && villageMapRefreshRef.current(), 200);
+                setTimeout(() => villageMapRefreshRef.current && villageMapRefreshRef.current(), 600);
+              }
+            }}
           >
             <div className="min-h-screen  relative !bg-white flex flex-col"
               style={{ zIndex: '1' }}>
@@ -1018,7 +1013,10 @@ const SOSWarning = () => {
               <div className="px-6 pt-4">
                 {
                   uploadedImage && (TypeProject === 'condo') && (
-                    <Button type="primary" className="!h-[42px] !w-[100px]" onClick={() => {
+                    <Button type="primary" 
+                    size="large"
+                    className=" !rounded-xl w-[150px] !h-[40px]" 
+                    onClick={() => {
                       setStatusAcknowledge(false)
                       setDataMapAll({
                         id: '',
@@ -1033,6 +1031,7 @@ const SOSWarning = () => {
                         zone: []
                       })
                       loadFirst()
+                      dispatch.sosWarning.setDataEmergencyDetail({})
                       dispatch.sosWarning.setDataFloor({});
                       setUploadedImage(null)
 
@@ -1058,7 +1057,7 @@ const SOSWarning = () => {
                       TypeProject === 'condo' && !uploadedImage && (
                         <Button
                           type="primary"
-                          className=" !rounded-xl w-[150px] !h-[38px] !ml-6 !cursor-pointer"
+                          className=" !rounded-xl w-[150px] !h-[40px] !ml-6 !cursor-pointer"
                           disabled={!access('sos_security', 'edit')}
                           onClick={() => {
                             setOpenUploadPlan(true)
@@ -1080,7 +1079,8 @@ const SOSWarning = () => {
                         onClick={() => !hasActiveMarker && handleMapModeChange('preview')}
                         disabled={hasActiveMarker}
                         className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium 
-                          transition-all duration-200 h-10 sm:h-12 w-full sm:w-auto md:w-40 rounded-lg
+                          transition-all duration-200 h-10 sm:h-12 w-full sm:w-auto md:w-40 
+                          rounded-xl
                           cursor-pointer
                   ${hasActiveMarker
                             ? 'cursor-not-allowed bg-gray-200 text-gray-400'
@@ -1101,7 +1101,7 @@ const SOSWarning = () => {
                         onClick={() => !hasActiveMarker && handleMapModeChange('work-it')}
                         disabled={hasActiveMarker}
                         className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium transition-all 
-                          duration-200 h-10 sm:h-12 w-full sm:w-auto md:w-40 rounded-lg cursor-pointer
+                          duration-200 h-10 sm:h-12 w-full sm:w-auto md:w-40 rounded-xl cursor-pointer
                   ${hasActiveMarker
                             ? 'cursor-not-allowed bg-gray-200 text-gray-400'
                             : 'cursor-pointer'
@@ -1122,7 +1122,7 @@ const SOSWarning = () => {
                         onClick={() => setIsModalOpenPlan(true)}
                         disabled={hasActiveMarker}
                         className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium 
-                        transition-all duration-200 h-10 sm:h-12 w-full sm:w-auto md:w-40 rounded-lg 
+                        transition-all duration-200 h-10 sm:h-12 w-full sm:w-auto md:w-40 rounded-xl 
                         bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 cursor-pointer disabled:cursor-pointer"
                       >
                         EDIT PLAN
@@ -1289,7 +1289,7 @@ const SOSWarning = () => {
                       }
 
                       {
-                        numberBuilding > 2 && (
+                        numberBuilding > 2 &&  (
                           <Row>
                             <Col
                               span={24}

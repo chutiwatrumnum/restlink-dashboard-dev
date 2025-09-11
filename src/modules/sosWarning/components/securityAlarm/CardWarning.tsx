@@ -94,21 +94,7 @@ const SecurityAlarm = () => {
     return (
         <div className="min-h-screen lg:h-screen flex flex-col overflow-auto lg:overflow-hidden">
             <div className="flex-1 flex flex-col p-4 md:p-6 lg:p-6">
-                {/* Stepper */}
-                    <TepStep currentStep={dataEmergencyDetail.sosEventInfo.step} />
-
-                {/* Main Content - Row Layout */}
-                {/* <div className="text-end mb-4 w-full sm:w-full md:w-auto">
-                    <Button 
-                        type="primary"
-                        className="ms-auto w-full sm:w-full md:w-[150px]"
-                        onClick={()=>{
-                            navigate('/dashboard/manage-plan')
-                        }}
-                    >
-                        Back
-                    </Button>
-                </div> */}
+                <TepStep currentStep={dataEmergencyDetail.sosEventInfo.step} />
                 <Row gutter={[16, 16]} className="flex-1 ">
                     {/* Left Column - Household Members List + Action Steps */}
                     <Col xs={24} lg={16} className="flex">

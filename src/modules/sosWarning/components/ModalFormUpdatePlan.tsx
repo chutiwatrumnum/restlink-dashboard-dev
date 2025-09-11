@@ -30,7 +30,6 @@ export const ModalFormUpdatePlan: React.FC<ModalFormUpdateProps> = ({
   const [form] = Form.useForm();
 
   const handleSave = () => {
-    console.log("handleSave");
     setIsModalOpen(false);
   };
   const handleCancel = () => {
@@ -79,7 +78,7 @@ export const ModalFormUpdatePlan: React.FC<ModalFormUpdateProps> = ({
                     ?.includes(input.toLowerCase()) ?? false
                 }
                 defaultValue="Village"
-                placeholder="ค้นหาหรือเลือกประเภทแผน"
+                placeholder="Search or select plan type"
               >
                 <Select.Option value="Village">Village</Select.Option>
                 <Select.Option value="Condo">Condo</Select.Option>
@@ -103,7 +102,7 @@ export const ModalFormUpdatePlan: React.FC<ModalFormUpdateProps> = ({
                         setImageBase64(undefined);
                       }}
                     >
-                      ลบรูป
+                      Remove
                     </Button>
                   )}
                 </div>

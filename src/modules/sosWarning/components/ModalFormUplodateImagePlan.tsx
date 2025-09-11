@@ -21,6 +21,7 @@ export const ModalFormUploadateImagePlan: React.FC<ModalFormUpdateProps> = ({
 }) => {
 //   const [isModalOpen, setIsModalOpen] = useState<boolean>(isOpen);
 const { dataMapAll ,loadFirst } = useGlobal();
+const { refreshMap } = useGlobal();
 const floorIdGlobal = useSelector((state:any)=>state.sosWarning.floorIdGlobal)
   useEffect(() => {
     setIsModalOpen(isModalOpen);
@@ -36,6 +37,12 @@ const floorIdGlobal = useSelector((state:any)=>state.sosWarning.floorIdGlobal)
     if(dataUpdatePlan.status){
       await loadFirst(floorIdGlobal)
       setIsModalOpen(false);
+      // refresh แผนที่หลายครั้งเพื่อให้ภาพและมาร์คเกอร์คงตำแหน่งเดิม
+      if (typeof refreshMap === 'function') {
+        refreshMap();
+        setTimeout(() => refreshMap(), 200);
+        setTimeout(() => refreshMap(), 600);
+      }
       SuccessModal("Plan Changed Successfully")
     }
   }

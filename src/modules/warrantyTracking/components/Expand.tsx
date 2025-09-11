@@ -1,35 +1,51 @@
-import { warrantyDetailsData } from "../dummyData/TableDetail";
 import { WarrantyDetailsType } from "../../../stores/interfaces/Warranty";
 import type { TableColumnsType } from "antd";
 import { EditIcon, TrashIcon } from "../../../assets/icons/Icons";
 import { Button, Row, Col, Table } from "antd";
 import ConfirmModal from "../../../components/common/ConfirmModal";
 import SuccessModal from "../../../components/common/SuccessModal";
+import { deleteWarrantyTracking } from "../service/api/WarrantyTracking";
+import FailedModal from "../../../components/common/FailedModal";
 interface ExpandTableProps {
   handleEdit: (record: WarrantyDetailsType) => void;
+  dataRecord: any;
+  setSelectedWarranty: (warranty: WarrantyDetailsType) => void;
+  loadFirst: (overrideSearch?: any) => Promise<void>;
 }
 
 export const ExpandedRowRender = (props: ExpandTableProps) => {
-  let data: WarrantyDetailsType[] = warrantyDetailsData;
+  const data: any = props.dataRecord?.expand || [];
+  let recordRow = props.dataRecord;
+  const loadFirst = props.loadFirst;
   const onEdit = (record: WarrantyDetailsType) => {
     const warrantyDetails: WarrantyDetailsType = {
       ...record,
+      owner: recordRow?.owner,
+      address: recordRow?.address,
       createdAt: record.createdAt || new Date().toISOString()
     };
     props.handleEdit(warrantyDetails);
   };
 
-  const onDelete = async () => {
+  const onDelete = async (id:string) => {
     await ConfirmModal({
       message: "Confirm deletion",
       title: "Confirm deleting this device warranty",
       okMessage: "Confirm",
       cancelMessage: "Cancel",
       onOk: async () => {
-        await new Promise((resolve) => {
-          setTimeout(resolve, 300);
-        });
-        SuccessModal("ลบการรับรองอุปกรณ์สำเร็จ");
+        let deleteWarranty = await deleteWarrantyTracking(id);
+        if(deleteWarranty.status){
+          // SuccessModal("ลบการรับรองอุปกรณ์สำเร็จ");
+          loadFirst();
+          await new Promise((resolve) => {
+            setTimeout(resolve, 300);
+          });
+          SuccessModal("Device warranty deleted successfully");
+        }else{
+          FailedModal("Failed to delete warranty tracking");
+        }
+
       }
     });
   };
@@ -95,7 +111,7 @@ export const ExpandedRowRender = (props: ExpandTableProps) => {
                 onClick={() => onEdit(record)}
               />
               <Button
-                onClick={() => onDelete()}
+                onClick={() => onDelete(record.id)}
                 type="text"
                 icon={<TrashIcon />}
               />

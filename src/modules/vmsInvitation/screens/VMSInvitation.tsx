@@ -284,7 +284,7 @@ const VMSInvitation = () => {
 
   const onEStamp = (record: InvitationRecord) => {
     if (record.stamped_time) {
-      message.warning("บัตรเชิญนี้ได้รับการประทับตราแล้ว");
+      message.warning("This invitation has been stamped.");
       return;
     }
 
@@ -507,7 +507,7 @@ const VMSInvitation = () => {
         return (
           <div>
             <Tag color="green" style={{ marginBottom: "4px" }}>
-              ประทับตราแล้ว
+              Stamped
             </Tag>
             <div style={{ fontSize: "11px", color: "#666" }}>
               {dayjs(stamped_time).format("DD/MM/YYYY HH:mm")}

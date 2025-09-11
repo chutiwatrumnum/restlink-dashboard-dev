@@ -32,7 +32,9 @@ const FormWarningSOS = ({ dataEmergency, unitHover, unitClick, setDataEmergency,
     const dispatch = useDispatch();
     const permissions = useSelector(
         (state: RootState) => state.common?.permission
-      );
+    );
+    // const projectData = useSelector((state: RootState) => state.setupProject.projectData);
+    const step = useSelector((state: RootState) => state.sosWarning.step);
     const { access } = usePermission(permissions);
     // const navigate = useNavigate();
     const { uploadedImage, setStatusAcknowledge } = useGlobal();
@@ -200,28 +202,20 @@ const FormWarningSOS = ({ dataEmergency, unitHover, unitClick, setDataEmergency,
             ...data.result,
             type: type
         }
-        
-        let step = marker.step
-        if(step >= 1){
-            console.log(uploadedImage,'uploadedImage')
+        let stepCurrent = marker.step || step
+        if(stepCurrent >= 1){
             await dispatch.sosWarning.setDataEmergencyDetail(data.result)
-            // console.log('True1')
-            // setStatusAcknowledge(true)
-            // navigate('/dashboard/security-alarm') 
-            // message.success('Emergency acknowledged successfully')
             return
         }
         if (data.status) {
             let dataReceiveCast = await receiveCast(marker.id)
             if(dataReceiveCast.status){
-                let step = dataReceiveCast?.result?.step
-                data.result.sosEventInfo.step  = step
+                await dispatch.sosWarning.setStep(dataReceiveCast?.result?.step)
+                data.result.sosEventInfo.step  = dataReceiveCast?.result?.step
                 data.result.sosEventInfo.isCompleted = dataReceiveCast?.result?.is_completed
                 data.result.sosEventInfo.event_help_id = dataReceiveCast?.result?.event_help_id
                 await dispatch.sosWarning.setDataEmergencyDetail(data.result)
                 setStatusAcknowledge(true)
-                // navigate('/dashboard/security-alarm') // ปิดการ navigate เพื่อไม่ให้เปลี่ยนหน้า
-                // message.success('Emergency acknowledged successfully')
             }else{
                 message.error(dataReceiveCast.message)
             }
@@ -240,14 +234,6 @@ const FormWarningSOS = ({ dataEmergency, unitHover, unitClick, setDataEmergency,
             onClose={() => setIsModalOpen(false)} idMarker={idMarker} 
         />
         <div>
-            {/* 
-            <Button type="button" onClick={()=>{
-                console.log(dataSelectPlan,'dataSelectPlan')
-                console.log(dataEmergency,'dataEmergency')
-            }}>
-                dataSelectPlan
-            </Button> 
-            */}
             {/* Summary Cards */}
             <div className="flex justify-between gap-4  p-4">
                 {/* SOS Card */}

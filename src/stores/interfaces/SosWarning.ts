@@ -167,5 +167,6 @@ export interface Member {
     test:string,
     count:number,
     dataEmergency:any,
-    statusCaseReceiveCast:boolean
+    statusCaseReceiveCast:boolean,
+    step:number
   }

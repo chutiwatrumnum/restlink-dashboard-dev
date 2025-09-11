@@ -101,9 +101,7 @@ const CardEmergency = () => {
     return (
         <div className="min-h-screen lg:h-screen flex flex-col overflow-auto lg:overflow-hidden">
             <div className="flex-1 flex flex-col p-4 md:p-6 lg:p-6">
-                {/* Stepper */}
-                    <TepStep currentStep={currentStep} />
-                {/* Main Content - Row Layout */}
+                <TepStep currentStep={currentStep} />
                 <Row gutter={[20, 20]}>
                     {/* Left Column - Household Members List + Action Steps */}
                     <Col xs={24} lg={16} className="flex pr-0 md:pr-4">

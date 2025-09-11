@@ -125,7 +125,8 @@ function AuthorizedLayout() {
   };
   return (
     <Layout>
-      {shouldShowAlertSOS && <AlertSOS  isAuth={isAuth} />}
+      {/* {shouldShowAlertSOS && <AlertSOS  isAuth={isAuth} />} */}
+      <AlertSOS  isAuth={isAuth} />
       <Sider
         width={320}
         collapsedWidth={80}

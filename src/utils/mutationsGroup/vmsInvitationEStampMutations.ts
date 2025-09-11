@@ -21,7 +21,7 @@ export const useEStampVMSInvitationMutation = () => {
         },
         onSuccess: (data, invitationId) => {
             console.log('✅ E-Stamp invitation success');
-            message.success("บัตรเชิญได้รับการประทับตราเรียบร้อย!");
+            message.success("The invitation has been stamped.");
 
             // Refresh data
             queryClient.invalidateQueries({
@@ -34,7 +34,7 @@ export const useEStampVMSInvitationMutation = () => {
         onError: (error: any) => {
             console.error('❌ E-Stamp invitation error:', error);
 
-            let errorMessage = "ไม่สามารถประทับตราบัตรเชิญได้";
+            let errorMessage = "The invitation could not be stamped.";
 
             if (error.response?.data?.message) {
                 errorMessage = error.response.data.message;

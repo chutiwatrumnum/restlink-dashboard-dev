@@ -1,33 +1,18 @@
-import { useState, useEffect, useRef } from "react";
-import { Form, Input, Modal } from "antd";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import { Form, Input, Modal, Typography } from "antd";
 import { requiredRule, telRule } from "../../../configs/inputRule";
 import { useDispatch } from "react-redux";
 import { Dispatch } from "../../../stores";
+
 import UploadImageGroup from "../../../components/group/UploadImageGroup";
 import SmallButton from "../../../components/common/SmallButton";
-import ConfirmModal from "../../../components/common/ConfirmModal";
-import SuccessModal from "../../../components/common/SuccessModal";
-import {
-  callConfirmModal,
-  callSuccessModal,
-} from "../../../components/common/Modal";
 import {
   DataEmergencyCreateByType,
   DataEmergencyTableDataType,
 } from "../../../stores/interfaces/Emergency";
-import {
-  Map,
-  FullscreenControl,
-  NavigationControl,
-  Marker,
-} from "react-map-gl/maplibre";
-import GeoCoderControl from "./GeoCoderControl";
-import maplibregl from "maplibre-gl";
 
-import type { MapLayerMouseEvent } from "maplibre-gl";
-
-import "@maplibre/maplibre-gl-geocoder/dist/maplibre-gl-geocoder.css";
-import "maplibre-gl/dist/maplibre-gl.css";
+// ⛳️ ใช้ Google Map
+import GoogleMapComponent from "../components/GoogleMapComponent";
 
 type EmergencyEditModalType = {
   isEditModalOpen: boolean;
@@ -37,6 +22,8 @@ type EmergencyEditModalType = {
   onRefresh: () => void;
 };
 
+const DEFAULT_CENTER = { lat: 13.736717, lng: 100.523186 };
+
 const EmergencyEditModal = ({
   isEditModalOpen,
   onOk,
@@ -45,72 +32,72 @@ const EmergencyEditModal = ({
   onRefresh,
 }: EmergencyEditModalType) => {
   const dispatch = useDispatch<Dispatch>();
-  const mapRef = useRef<any>();
-  const markerRef = useRef<maplibregl.Marker | null>(null);
-  const previousDataRef = useRef<DataEmergencyTableDataType | null>(null);
-  const currentLocation = useRef<{
-    lng: number;
-    lat: number;
-  }>();
-
-  const id = data?.id;
-  // States
   const [emergencyForm] = Form.useForm();
+
   const [open, setOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState("");
 
+  // ==== Map states ====
+  const initialCenterRef = useRef(DEFAULT_CENTER);
+  const currentLocation = useRef<{ lat: number; lng: number }>(DEFAULT_CENTER);
+  const [hasPickedLocation, setHasPickedLocation] = useState(false);
+  const [mapKey, setMapKey] = useState<string>("init"); // ใช้บังคับ re-mount map เมื่อต้องการ
+
+  const handleLocationChange = useCallback((lat: number, lng: number) => {
+    currentLocation.current = { lat, lng };
+    setHasPickedLocation(true);
+  }, []);
+
+  // เตรียม Map element ให้ re-mount เมื่อ key เปลี่ยน (เช่น เปิด modal ใหม่/เปลี่ยน data)
+  const MapElement = useMemo(
+    () => (
+      <GoogleMapComponent
+        onLocationChange={handleLocationChange}
+        initialLat={initialCenterRef.current.lat}
+        initialLng={initialCenterRef.current.lng}
+        height={360}
+        width="100%"
+        zoom={18}
+        draggableMarker
+      />
+    ),
+    [handleLocationChange, mapKey]
+  );
+
   const onClose = () => {
     emergencyForm.resetFields();
+    setHasPickedLocation(false);
+    currentLocation.current = DEFAULT_CENTER;
     onCancel();
   };
 
-  const onMapClick = (e: MapLayerMouseEvent) => {
-    // console.log(e);
-    const { lng, lat } = e.lngLat;
-    setMarker(lng, lat);
-  };
-
-  const setMarker = (lng: number, lat: number) => {
-    if (!markerRef.current) {
-      currentLocation.current = { lng: lng, lat: lat };
-      markerRef.current = new maplibregl.Marker({
-        anchor: "bottom",
-        color: "red",
-        draggable: true,
-      })
-        .setLngLat([lng, lat])
-        .addTo(mapRef.current?.getMap());
-
-      // Add dragend handler
-      markerRef.current.on("dragend", (e) => {
-        const { lng, lat } = e.target.getLngLat();
-        currentLocation.current = { lng: lng, lat: lat };
-      });
-    } else {
-      markerRef.current.setLngLat([lng, lat]);
-      currentLocation.current = { lng: lng, lat: lat };
-    }
-  };
-
-  const clearData = () => {
-    markerRef.current = null;
-    previousDataRef.current = null;
-    currentLocation.current = undefined;
-  };
-
+  // เปิด/ปิด modal
   useEffect(() => {
     setOpen(isEditModalOpen);
-    clearData();
-  }, [isEditModalOpen]);
+    if (isEditModalOpen) {
+      // ตั้งค่าเริ่มต้นแผนที่จาก data (ถ้ามี), ไม่งั้นใช้ DEFAULT_CENTER
+      const initLat = data?.lat ?? DEFAULT_CENTER.lat;
+      const initLng = data?.long ?? DEFAULT_CENTER.lng;
+      initialCenterRef.current = { lat: initLat, lng: initLng };
+      currentLocation.current = { lat: initLat, lng: initLng };
+      setHasPickedLocation(!!data?.lat && !!data?.long);
 
+      // บังคับ re-mount แผนที่สำหรับแต่ละ record เพื่อให้ initialLat/initialLng ถูกใช้แน่ๆ
+      setMapKey(`map-${data?.id ?? "new"}-${Date.now()}`);
+    }
+  }, [isEditModalOpen, data]);
+
+  // เติมฟอร์มจาก data
   useEffect(() => {
     if (data) {
       setPreviewImage(data.image ?? "");
       emergencyForm.setFieldsValue(data);
     }
-  }, [data]);
+  }, [data, emergencyForm]);
 
   const ModalContent = () => {
+    const { Text } = Typography;
+
     return (
       <Form
         form={emergencyForm}
@@ -119,47 +106,34 @@ const EmergencyEditModal = ({
         autoComplete="off"
         layout="vertical"
         onFinish={async (value) => {
-          callConfirmModal({
-            title: "Edit contact lists",
-            message: "Are you sure you want to edit this?",
-            okMessage: "Yes",
-            cancelMessage: "Cancel",
-            onOk: async () => {
-              const payload: DataEmergencyCreateByType = {
-                ...value,
-                id: id,
-                image: null,
-                long: currentLocation.current?.lng ?? 999,
-                lat: currentLocation.current?.lat ?? 999,
-              };
-              if (value.image !== data?.image) {
-                payload.image = value.image;
-              }
+          const payload: DataEmergencyCreateByType = {
+            ...value,
+            id: data?.id,
+            image: null,
+            long: currentLocation.current?.lng ?? DEFAULT_CENTER.lng,
+            lat: currentLocation.current?.lat ?? DEFAULT_CENTER.lat,
+          };
+          if (value.image !== data?.image) {
+            payload.image = value.image;
+          }
 
-              const result = await dispatch.emergency.editEmergencyService(
-                payload
-              );
-              if (result) {
-                emergencyForm.resetFields();
-                onOk();
-                onRefresh();
-                SuccessModal("Successfully Upload");
-              }
-            },
-            onCancel: () => console.log("Cancel"),
-          });
+          const result = await dispatch.emergency.editEmergencyService(payload);
+          if (result) {
+            emergencyForm.resetFields();
+            onOk();
+            onRefresh();
+          }
         }}
         onFinishFailed={() => {
           console.log("FINISHED FAILED");
         }}
         onKeyDown={(e) => {
-          if (e.key === "Enter") {
-            e.preventDefault();
-          }
+          if (e.key === "Enter") e.preventDefault();
         }}
       >
         <div>
           <div className="flex flex-row justify-between items-center w-full gap-4">
+            {/* ซ้าย */}
             <div className="flex flex-col justify-center items-center w-full">
               <Form.Item<DataEmergencyCreateByType>
                 label="Image"
@@ -187,42 +161,29 @@ const EmergencyEditModal = ({
                 />
               </Form.Item>
             </div>
+
+            {/* ขวา: แผนที่ */}
             <div className="flex flex-col justify-center items-center w-full">
               <Form.Item<DataEmergencyCreateByType>
                 label="Map"
-                rules={requiredRule}
                 className="w-full"
+                rules={[
+                  {
+                    validator: () => {
+                      const { lat, lng } = currentLocation.current || {};
+                      if (lat == null || lng == null) {
+                        return Promise.reject(
+                          "Please select a location on the map"
+                        );
+                      }
+                      return Promise.resolve();
+                    },
+                  },
+                ]}
               >
-                <Map
-                  initialViewState={{
-                    longitude: 100.523186,
-                    latitude: 13.736717,
-                    zoom: 12,
-                  }}
-                  mapStyle="https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json"
-                  style={{ width: "100%", height: 360 }}
-                  onClick={onMapClick}
-                  ref={mapRef}
-                  onLoad={() => {
-                    if (
-                      data &&
-                      JSON.stringify(previousDataRef.current) !==
-                        JSON.stringify(data)
-                    ) {
-                      previousDataRef.current = data;
-                      mapRef.current.flyTo({
-                        center: [data?.long, data?.lat],
-                        zoom: 12,
-                      });
-                      setMarker(data?.long, data?.lat);
-                    }
-                  }}
-                >
-                  <GeoCoderControl position="top-left" />
-                  <FullscreenControl />
-                  <NavigationControl />
-                </Map>
+                {MapElement}
               </Form.Item>
+
               <Form.Item<DataEmergencyCreateByType>
                 label="Tel."
                 name="tel"
@@ -238,6 +199,7 @@ const EmergencyEditModal = ({
               </Form.Item>
             </div>
           </div>
+
           <div className="flex flex-row justify-end items-center w-full">
             <SmallButton
               className="saveButton"
@@ -251,20 +213,18 @@ const EmergencyEditModal = ({
   };
 
   return (
-    <>
-      <Modal
-        open={open}
-        title="Edit contact lists"
-        onOk={onOk}
-        onCancel={onClose}
-        width={"90%"}
-        style={{ maxWidth: 1000 }}
-        footer={null}
-        centered
-      >
-        <ModalContent />
-      </Modal>
-    </>
+    <Modal
+      open={open}
+      title="Edit contact lists"
+      onOk={onOk}
+      onCancel={onClose}
+      width={"90%"}
+      style={{ maxWidth: 1000 }}
+      footer={null}
+      centered
+    >
+      <ModalContent />
+    </Modal>
   );
 };
 

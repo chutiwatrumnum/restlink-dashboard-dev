@@ -13,7 +13,8 @@ export const sosWarning = createModel<RootModel>()({
     test:"test",
     count:1,
     dataEmergency:null,
-    statusCaseReceiveCast:false
+    statusCaseReceiveCast:false,
+    step:0
   } as SosWarningState,
   // SetupProjectState,
   
@@ -55,6 +56,11 @@ export const sosWarning = createModel<RootModel>()({
     setStatusCaseReceiveCast: (state, payload: boolean) => ({
       ...state,
       statusCaseReceiveCast: payload
+    }),
+
+    setStep: (state, payload: number) => ({
+      ...state,
+      step: payload,
     }),
 
 

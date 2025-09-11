@@ -311,6 +311,7 @@ const PublicFolder = () => {
             } else {
               console.log("Something went wrong!");
             }
+            fetchData();
           },
           fetchData: fetchData,
         });

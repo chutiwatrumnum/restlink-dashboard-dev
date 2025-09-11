@@ -16,6 +16,7 @@ const Content = ({
     isModalOpen: boolean;
 }) => {
     const { dataAllMap  } = useGlobal();
+    const { refreshMap } = useGlobal();
 
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
     const [showUpload, setShowUpload] = useState(false);
@@ -56,6 +57,12 @@ const Content = ({
         let dataUpdatePlan = await uploadPlan(file)
         if(dataUpdatePlan.status){
             setIdUploadPlan(dataUpdatePlan.result.id)
+            // รีเฟรชเพื่อคงตำแหน่ง marker ตามพิกัดเดิมบนภาพใหม่ (preview)
+            if (typeof refreshMap === 'function') {
+                refreshMap();
+                setTimeout(() => refreshMap(), 200);
+                setTimeout(() => refreshMap(), 600);
+            }
         }
         if (file) {
             const reader = new FileReader();
@@ -129,7 +136,12 @@ const Content = ({
         <div className="flex justify-end mt-4">
             <Button  type="default" className="w-40 !me-auto !bg-red-500 !text-white hover:!border-red-500" 
             onClick={handleDeleteImage}>Delete</Button>
-            <Button  disabled={!idUploadPlan} className="w-40 !me-4" type="primary" onClick={()=>handleSave(idUploadPlan)}>Save</Button>
+            <Button  disabled={!idUploadPlan} className="w-40 !me-4" 
+            type="primary" onClick={() => {
+                // สั่ง Cancel ฟอร์มตำแหน่งหมู่บ้านก่อนบันทึกเพื่อยกเลิก marker จำลอง
+                window.dispatchEvent(new Event('sos:village-form-cancel'));
+                handleSave(idUploadPlan);
+            }}>Save</Button>
             <Button className="w-40" type="default" onClick={handleCancel}>Cancel</Button>
         </div>
     </>

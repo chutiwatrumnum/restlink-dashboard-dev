@@ -14,14 +14,12 @@ const UnitPreview = () => {
     const { excelData } = useSelector((state: RootState) => state.setupProject);
     const navigate = useNavigate();
     const dispatch = useDispatch<Dispatch>();
-    
     useEffect(() => {
         if (excelData?.Basement?.length === 0 && excelData?.Condo?.length === 0) {
             navigate('/setup-project/upload-number-building')
         }
     }, [])
 
-    
 
     const [dataFloorCondo, setDataFloorCondo] = useState<any[]>([]);
     const [selectedBuilding, setSelectedBuilding] = useState<string | null>(null);
@@ -81,7 +79,7 @@ const UnitPreview = () => {
             align: 'center',
             className: '!font-medium',
             render: (_: any, __: any, index: number) =>
-            <div className="text-center font-normal">{index + 1}</div>
+                <div className="text-center font-normal">{index + 1}</div>
         },
         {
             title: 'Address',
@@ -197,8 +195,8 @@ const UnitPreview = () => {
                             {uniqueBuildings.length > 0 ? (
                                 uniqueBuildings.map((building: string, index: number) => (
                                     <div
-                                        onClick={() => setfloorCondo(building)}
                                         key={index}
+                                        onClick={() => setfloorCondo(building)}
                                         className={` px-8 py-3 hover:bg-blue-50 cursor-pointer rounded ${selectedBuilding === building ? 'bg-blue-100 ' : ''} `}
                                     >
                                         {building}
@@ -219,10 +217,11 @@ const UnitPreview = () => {
                         <div className="flex justify-between items-center  px-6 py-4">
                             <div className="font-normal">Total no. of unit: {dataFloorCondo.length}</div>
                         </div>
-                                                <div className="overflow-auto" style={{ maxHeight: 400 }}>
+                        <div className="overflow-auto" style={{ maxHeight: 400 }}>
                             <Table
                                 columns={columns}
                                 dataSource={dataFloorCondo}
+                                rowKey="unit"
                                 pagination={false}
                                 className="w-full unit-preview-table custom-table-no-radius"
                             />
@@ -235,7 +234,7 @@ const UnitPreview = () => {
             <Row justify="space-between" className="mt-6">
                 <Col>
                     <Button
-                        className="px-8 py-2 rounded-full  w-[100px]"
+                        className="px-8 py-2 rounded-full  w-[150px]"
                         onClick={() => navigate("/setup-project/upload-number-building")}
                     >
                         Back
@@ -247,7 +246,7 @@ const UnitPreview = () => {
                         onClick={() => sentPreviewApi()}
                         loading={isSubmitting}
                         disabled={isSubmitting}
-                        className={`px-8 py-2 bg-[#002C55] !text-white rounded-lg  ${isSubmitting ? '!opacity-50 !cursor-not-allowed' : ''}`}
+                        className={`px-8 py-2 bg-[#002C55] w-[150px] !text-white rounded-lg  ${isSubmitting ? '!opacity-50 !cursor-not-allowed' : ''}`}
                     >
                         Continue
                     </Button>

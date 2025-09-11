@@ -1,16 +1,20 @@
 export interface WarrantyDataType {
-  key: string;
+  id?: string | number;
   total?: number;
   address?: string;
   owner?: string;
   contact?: string;
-  nationality?: string;
   type?: string;
   tel?: string;
   email?: string;
+  expand?: WarrantyDetailsType[];
+  user?: any;
+  unit?: any;
+  projectId?: string;
 }
 
 export interface WarrantyDetailsType {
+  id?: string;
   key: string;
   image?: string;
   warrantyName?: string;
@@ -18,6 +22,14 @@ export interface WarrantyDetailsType {
   purchaseDate?: string;
   expireDate?: string;
   createdAt: string;
+  owner?: string;
+  address?: string;
+  startDate?: string;
+  notifyDateBeforeExpiration?: number | string;
+  user?: any;
+  unit?: any;
+  projectId?: string;
+  setSelectedWarranty?: (warranty: WarrantyDetailsType) => void;
 }
 
 export interface WarrantyFormDataType {

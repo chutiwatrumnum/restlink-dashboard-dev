@@ -48,7 +48,9 @@ const CallOfficerSuccess = ({ statusContract, setStatusContract }: { statusContr
             {/* Success Button */}
             <button
                 onClick={handleSuccess}
-                className="w-full max-w-sm bg-[#1a365d] !text-white rounded-xl py-4 px-6 text-base font-semibold cursor-pointer transition-colors duration-200 outline-none hover:bg-[#2c5282] active:bg-[#1a202c] "
+                className="w-full max-w-sm bg-[#1a365d] !text-white !rounded-xl 
+                py-4 px-6 text-base font-semibold cursor-pointer transition-colors 
+                duration-200 outline-none hover:bg-[#2c5282] active:bg-[#1a202c] "
                 type="button"
             >
                 Success

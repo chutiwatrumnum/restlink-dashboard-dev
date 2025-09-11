@@ -20,8 +20,38 @@ const SOS_API_URL_MAP = {
   prod: import.meta.env.VITE_PROD_SOS_API_URL,
 };
 
+const TEMPLETE_EXCEL_URL_MAP = {
+  dev: {
+    village: import.meta.env.VITE_DEV_VILLAGE_TEMPLATE,
+    condo: import.meta.env.VITE_DEV_CONDO_TEMPLATE,
+  },
+  uat: {
+    village: import.meta.env.VITE_UAT_VILLAGE_TEMPLATE,
+    condo: import.meta.env.VITE_UAT_CONDO_TEMPLATE,
+  },
+  prod: {
+    village: import.meta.env.VITE_PROD_VILLAGE_TEMPLATE,
+    condo: import.meta.env.VITE_PROD_CONDO_TEMPLATE,
+  },
+};
+ 
+const GOOGLE_API_KEY_MAP = {
+  dev: import.meta.env.VITE_DEV_GOOGLE_API_KEY,
+  uat: import.meta.env.VITE_UAT_GOOGLE_API_KEY,
+  prod: import.meta.env.VITE_PROD_GOOGLE_API_KEY,
+};
+
+const SOCKET_URL_MAP = {
+  dev: import.meta.env.VITE_DEV_SOCKET_URL,
+  uat: import.meta.env.VITE_UAT_SOCKET_URL,
+  prod: import.meta.env.VITE_PROD_SOCKET_URL,
+}; 
+
 export const API_URL = API_URL_MAP[MODE];
 export const APP_VERSION = APP_VERSION_MAP[MODE];
 export const SOS_API_URL = SOS_API_URL_MAP[MODE];
+export const TEMPLETE_EXCEL_URL = TEMPLETE_EXCEL_URL_MAP[MODE];
+export const NEXRES_GOOGLE_API_KEY = GOOGLE_API_KEY_MAP[MODE];
+export const SOCKET_URL = SOCKET_URL_MAP[MODE];
 
 export { MODE };

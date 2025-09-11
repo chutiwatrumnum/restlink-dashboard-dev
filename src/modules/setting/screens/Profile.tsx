@@ -195,7 +195,7 @@ const Profile = () => {
               <Form.Item
                 label={
                   <Text className="textColor semiBoldText">
-                    First name (Given Name)
+                    First name
                   </Text>
                 }
                 name="givenName"
@@ -228,7 +228,7 @@ const Profile = () => {
               <Form.Item
                 label={
                   <Text className="textColor semiBoldText">
-                    Last name (Family Name)
+                    Last name
                   </Text>
                 }
                 name="familyName"

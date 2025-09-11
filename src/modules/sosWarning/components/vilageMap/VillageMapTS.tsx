@@ -341,13 +341,9 @@ const VillageMap: React.FC<VillageMapProps> = ({
       
       // ถ้ามี marker active อยู่และเป็นตัวอื่น ให้ reset ตำแหน่งก่อน
       if (clickedMarker && clickedMarker.id !== markerId) {
-        console.log('🔄 Unlocking different marker, resetting previous marker');
         
         // ใช้ originalMarkerBeforeEdit เพื่อ reset กลับไปยังตำแหน่งก่อนเริ่มลาก
-        if (originalMarkerBeforeEdit && originalMarkerBeforeEdit.id === clickedMarker.id) {
-          console.log('🔄 Found originalMarkerBeforeEdit for previous marker (toggle)');
-          console.log('🔄 Reset to position:', originalMarkerBeforeEdit.x, originalMarkerBeforeEdit.y);
-          
+        if (originalMarkerBeforeEdit && originalMarkerBeforeEdit.id === clickedMarker.id) {  
           // reset marker กลับไปยังตำแหน่งก่อนเริ่มลาก
           setMarkers(prevMarkers =>
             prevMarkers.map(m => 
@@ -357,15 +353,12 @@ const VillageMap: React.FC<VillageMapProps> = ({
             )
           );
         } else {
-          console.log('🔄 No originalMarkerBeforeEdit found for previous marker (toggle), using fallback');
-          
           // fallback: ใช้ originalX/Y
           const previousMarker = markers.find(m => m.id === clickedMarker.id);
           if (previousMarker) {
             const hasBeenMoved = previousMarker.x !== previousMarker.originalX || previousMarker.y !== previousMarker.originalY;
             
             if (hasBeenMoved) {
-              console.log('🔄 Fallback (toggle): resetting to originalX/Y:', previousMarker.originalX, previousMarker.originalY);
               setMarkers(prevMarkers =>
                 prevMarkers.map(m => 
                   m.id === clickedMarker.id 
@@ -418,7 +411,6 @@ const VillageMap: React.FC<VillageMapProps> = ({
                 // เพิ่ม unitID สำหรับ form address
                 unitID: markerDataToSend.unitID || (markerDataToSend.address ? Number(markerDataToSend.address) : undefined)
               };
-              console.log('🔓 Sending unlocked marker with latest state:', markerToSend);
               onMarkerSelect(markerToSend, false); // false = ไม่ใช่ marker ใหม่
             }
             return currentMarkers; // ไม่เปลี่ยนแปลง state
@@ -1147,7 +1139,6 @@ const VillageMap: React.FC<VillageMapProps> = ({
     if (villageMapConfirmRef) {
       villageMapConfirmRef.current = (markerId: number | string, markerData: any) => {
         const numericMarkerId = typeof markerId === 'string' ? parseInt(markerId) : markerId;
-        console.log('🎯 villageMapConfirmRef received markerData:', markerData);
         // อัพเดท marker ด้วยข้อมูลครบถ้วนจาก API
         setMarkers(prevMarkers => {
           const updatedMarkers = prevMarkers.map(marker => {
@@ -4880,24 +4871,25 @@ const VillageMap: React.FC<VillageMapProps> = ({
         filter: 'grayscale(30%)'
       } : {};
 
-      // ใช้ขนาด natural ของรูปภาพ (ขนาดจริงก่อน transform)
+      // ใช้ขนาด element และ padding เพื่อคำนวณตำแหน่งจริงของรูปภาพบนหน้าจอ
       const imageRect = imageElement.getBoundingClientRect();
-      const naturalWidth = imageElement.naturalWidth;
-      const naturalHeight = imageElement.naturalHeight;
+      const styles = window.getComputedStyle(imageElement);
+      const padL = parseFloat(styles.paddingLeft || '0') || 0;
+      const padR = parseFloat(styles.paddingRight || '0') || 0;
+      const padT = parseFloat(styles.paddingTop || '0') || 0;
+      const padB = parseFloat(styles.paddingBottom || '0') || 0;
 
-      // คำนวณขนาดฐานจาก CSS matrix transform
-      // เมื่อใช้ matrix(scaleX, 0, 0, scaleY, translateX, translateY)
-      // ขนาดที่แสดงจริง = naturalSize * scale factor ที่ fit กับ container
-      const containerWidth = imageRect.width / zoomLevel;
-      const containerHeight = imageRect.height / zoomLevel;
+      // ขนาด content ที่แท้จริงของรูป (ไม่รวม padding) บนฐานก่อน zoom
+      const contentWidth = (imageRect.width - padL - padR) / zoomLevel;
+      const contentHeight = (imageRect.height - padT - padB) / zoomLevel;
 
-      // ใช้ percentage coordinates โดยตรง
+      // ใช้ percentage coordinates โดยตรงจาก API
       const percentX = displayMarker.x; // เป็น % แล้ว
       const percentY = displayMarker.y; // เป็น % แล้ว
 
-      // แปลงเป็น pixel coordinates บนขนาดฐาน (ก่อน zoom)
-      const pixelX = (percentX / 100) * containerWidth;
-      const pixelY = (percentY / 100) * containerHeight;
+      // แปลงเป็นพิกเซลโดยอิงจากพื้นที่ content และชดเชย padding เพื่อแก้ offset แนวตั้ง/แนวนอน
+      const pixelX = padL + (percentX / 100) * contentWidth;
+      const pixelY = padT + (percentY / 100) * contentHeight;
 
       return (
         <div
@@ -7023,6 +7015,10 @@ const VillageMap: React.FC<VillageMapProps> = ({
                 style={{
                   transform: `matrix(${zoomLevel}, 0, 0, ${zoomLevel}, ${panOffset.x}, ${panOffset.y})`,
                   transformOrigin: "0 0"
+                }}
+                onLoad={() => {
+                  // เตรียม bounding rect/padding ให้พร้อมก่อนคำนวณ marker แรก
+                  setTimeout(() => setForceRenderKey(prev => prev + 1), 0);
                 }}
                 onClick={handleImageClick}
                 onMouseDown={handleImageMouseDown}

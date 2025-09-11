@@ -122,6 +122,19 @@ const UploadPlan = () => {
             )
         },
 
+        {
+            title: "Size (sq.m.)",
+            dataIndex: "Size (sq.m.)",
+            align: "center",
+            render: (_, record) => (
+                <div className="text-lg font-light text-[#002C55]">
+                    {record.size}
+                </div>
+            )
+        },
+
+        
+
     ];
 
     return (
@@ -152,7 +165,8 @@ const UploadPlan = () => {
                                     No: item.No,
                                     Address: item.Address,
                                     UnitNo: item["Unit no."],
-                                    HomeType: item["House type"]
+                                    HomeType: item["House type"],
+                                    size: item["Size (sq.m.)"]
                                 })) || []}
                                 loading={false}
                                 className="custom-table-no-radius"
@@ -170,7 +184,7 @@ const UploadPlan = () => {
                             </Button>
                             <Button
                                 type="primary"
-                                className={`px-8 py-2 rounded-lg bg-blue-500
+                                className={`w-[150px] py-2 rounded-lg bg-blue-500
                                     !transition-opacity !duration-200 ${isSubmitting ? '!opacity-50 !cursor-not-allowed' : ''}`}
                                 loading={isSubmitting}
                                 disabled={isSubmitting}

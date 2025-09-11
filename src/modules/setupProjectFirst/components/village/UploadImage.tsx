@@ -58,6 +58,13 @@ const UploadImage = ({ onNext, status = 'image' }: { onNext: string, status?: st
             handleFileSelect(files[0]);
         }
     };
+
+    const resetFileInput = () => {
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
+    };
+
     const handleFileSelect = (file: File) => {
         if (!validateFile(file)) return;
 
@@ -100,8 +107,8 @@ const UploadImage = ({ onNext, status = 'image' }: { onNext: string, status?: st
 
                         message.success(`CSV file loaded successfully! Found ${sheetsData[0].rowCount} rows`);
                     } catch (error) {
-                        console.error('Error reading CSV file:', error);
                         message.error('Error reading CSV file');
+                        resetFileInput();
                     }
                 };
                 reader.readAsText(file);
@@ -120,6 +127,7 @@ const UploadImage = ({ onNext, status = 'image' }: { onNext: string, status?: st
                             if (workbook.SheetNames.length !== 2) {
                                 if (workbook.SheetNames[0] === 'Condo' && workbook.SheetNames[1] === 'Basement') {
                                     message.error('Excel file is not valid');
+                                    resetFileInput();
                                     return;
                                 }
                             }
@@ -153,6 +161,7 @@ const UploadImage = ({ onNext, status = 'image' }: { onNext: string, status?: st
                             console.log(workbook.SheetNames,'workbook.SheetNames')
                             if(workbook.SheetNames[0]!='village'){
                                 FailedModal("Excel file is not valid (Village)", 1200)
+                                resetFileInput();
                                 return;
                             }
                             let condoCheck = sheetsData[0].data[0] || []
@@ -160,6 +169,7 @@ const UploadImage = ({ onNext, status = 'image' }: { onNext: string, status?: st
                             let checkCondo = !condoCheck.every((item: any) => dataCheck.includes(item))
                             if(checkCondo){
                                 FailedModal("Excel file is not valid (Village)", 1200)
+                                resetFileInput();
                                 return;
                             }
                         }
@@ -173,6 +183,7 @@ const UploadImage = ({ onNext, status = 'image' }: { onNext: string, status?: st
                         if (projectType === 'condo') {
                             if (checkCondo) {
                                 FailedModal("Excel file is not valid (Condo)", 1200)
+                                resetFileInput();
                                 return;
                             }
                             let basementCheck = sheetsData[1].data[0] || []
@@ -180,6 +191,7 @@ const UploadImage = ({ onNext, status = 'image' }: { onNext: string, status?: st
                             let checkBasement = !basementCheck.every((item: any) => dataCheckBasement.includes(item))
                             if (checkBasement) {
                                 FailedModal("Excel file is not valid (Basement)", 1200)
+                                resetFileInput();
                                 return;
                             }
                         }
@@ -216,6 +228,7 @@ const UploadImage = ({ onNext, status = 'image' }: { onNext: string, status?: st
                     } catch (error) {
                         console.error('Error reading Excel file:', error);
                         message.error('Error reading Excel file');
+                        resetFileInput();
                     }
                 };
                 reader.readAsArrayBuffer(file);
@@ -254,6 +267,7 @@ const UploadImage = ({ onNext, status = 'image' }: { onNext: string, status?: st
 
             if (!isExcel && !isCsv) {
                 message.error('You can only upload Excel files (.xlsx, .xls) or CSV files (.csv)!');
+                resetFileInput();
                 return false;
             }
         } else {
@@ -261,6 +275,7 @@ const UploadImage = ({ onNext, status = 'image' }: { onNext: string, status?: st
             const isImage = file.type.startsWith('image/');
             if (!isImage) {
                 message.error('You can only upload image files!');
+                resetFileInput();
                 return false;
             }
         }
@@ -268,6 +283,7 @@ const UploadImage = ({ onNext, status = 'image' }: { onNext: string, status?: st
         const isLt5M = file.size / 1024 / 1024 < 5;
         if (!isLt5M) {
             message.error('File must smaller than 5MB!');
+            resetFileInput();
             return false;
         }
         return true;
@@ -394,7 +410,7 @@ const UploadImage = ({ onNext, status = 'image' }: { onNext: string, status?: st
                     onClick={handleContinue}
                     type="primary"
                     loading={isSubmitting}
-                    className={`px-8 py-2 rounded-lg bg-blue-500  w-[100px] ${isDisabled || isSubmitting ? '!opacity-50 !cursor-not-allowed' : ''}`}
+                    className={`px-8 w-[150px] rounded-lg bg-blue-500  w-[100px] ${isDisabled || isSubmitting ? '!opacity-50 !cursor-not-allowed' : ''}`}
                     disabled={isDisabled || isSubmitting}
                 >
                     Continue
