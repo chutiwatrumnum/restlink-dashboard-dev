@@ -179,7 +179,7 @@ const createMarker = async (data: any) => {
         else return { status: false, data: null }
     } catch (error) {
         console.error(error);
-        return { status: false, data: null }
+        return { status: false, data: null ,message:error?.message }
     }
 }
 
@@ -193,7 +193,7 @@ const updateMarker = async (data: any) => {
         else return { status: false, data: null }
     } catch (error) {
         console.error(error);
-        return { status: false, data: null }
+        return { status: false, data: null,message:error?.message }
     }
 }
 
@@ -333,8 +333,7 @@ const getSosWarningById = async (eventId: string) => {
             return result
         }
     } catch (error) {
-        console.error(error);
-        return { status: false, data: null }
+        return { status: false, data: null,message:error?.message }
     }
 }
 
@@ -348,7 +347,7 @@ const receiveCast = async (eventId: string) => {
         else return { status: false, data: null }
     } catch (error) {
         console.error(error);
-        return { status: false, data: null }
+        return { status: false, data: null ,message:error?.message }
     }
 }
 
@@ -376,7 +375,7 @@ const chooseContractOfficer = async (eventId: string, data: any) => {
         else return { status: false, data: null }
     } catch (error) {
         console.error(error);
-        return { status: false, data: null }
+        return { status: false, data: null ,message:error?.message }
     }
 }
 
@@ -390,7 +389,7 @@ const closeJob = async (eventId: string) => {
         else return { status: false, data: null }
     } catch (error) {
         console.error(error);
-        return { status: false, data: null }
+        return { status: false, data: null ,message:error?.message }
     }
 }
 
@@ -405,7 +404,7 @@ const closeCase = async (eventId: string,data:{remark:string}) => {
         else return { status: false, data: null }
     } catch (error) {
         console.error(error);
-        return { status: false, data: null }
+        return { status: false, data: null ,message:error?.message }
     }   
 }
 

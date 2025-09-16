@@ -6,6 +6,7 @@ import ConfirmModal from "../../../components/common/ConfirmModal";
 import SuccessModal from "../../../components/common/SuccessModal";
 import { deleteWarrantyTracking } from "../service/api/WarrantyTracking";
 import FailedModal from "../../../components/common/FailedModal";
+import { useWarrantyTracking } from "../Contaxt";
 interface ExpandTableProps {
   handleEdit: (record: WarrantyDetailsType) => void;
   dataRecord: any;
@@ -17,7 +18,9 @@ export const ExpandedRowRender = (props: ExpandTableProps) => {
   const data: any = props.dataRecord?.expand || [];
   let recordRow = props.dataRecord;
   const loadFirst = props.loadFirst;
+  const { setIsEditMode } = useWarrantyTracking();
   const onEdit = (record: WarrantyDetailsType) => {
+    setIsEditMode(true);
     const warrantyDetails: WarrantyDetailsType = {
       ...record,
       owner: recordRow?.owner,
@@ -111,7 +114,7 @@ export const ExpandedRowRender = (props: ExpandTableProps) => {
                 onClick={() => onEdit(record)}
               />
               <Button
-                onClick={() => onDelete(record.id)}
+                onClick={() => onDelete(record.id || '')}
                 type="text"
                 icon={<TrashIcon />}
               />

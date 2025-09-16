@@ -41,13 +41,13 @@ const ListMember = () => {
             let data: any[] = []
 
             if (contact != '-') {
-                data = [...data, contact]
+                data = [contact]
             }
-            if (contact2 != '-') {
-                data = [...data, contact2]
+            if (contact2 != '-' && data.length === 0) {
+                data = [contact2]
             }
-            if (contact3 != '-') {
-                data = [...data, contact3]
+            if (contact3 != '-' && data.length === 0) {
+                data = [contact3]
             }
             if (data.length === 0) {
                 return []

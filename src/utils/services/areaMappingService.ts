@@ -35,7 +35,7 @@ class AreaMappingService {
         try {
             const response = await axiosVMS.get('/api/collections/area/records', {
                 params: {
-                    perPage: 500,
+                    perPage: 1000,
                     page: 1
                 }
             });

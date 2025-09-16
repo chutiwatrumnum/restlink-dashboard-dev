@@ -17,6 +17,7 @@ import { WarrantyDetailsType } from "../../../stores/interfaces/Warranty";
 import SuccessModal from "../../../components/common/SuccessModal";
 import { createWarrantyTracking ,updateWarrantyById } from "../service/api/WarrantyTracking";
 import FailedModal from "../../../components/common/FailedModal";
+import { useWarrantyTracking } from "../Contaxt";
 interface ModalFormUpdateProps {
   isOpen: boolean;
   onClose?: () => void;
@@ -43,7 +44,7 @@ export const ModalFormUpdate: React.FC<ModalFormUpdateProps> = ({
   const [imageUrl, setImageUrl] = useState<string>();
   const [fileUpload, setFileUpload] = useState<File>();
   const [form] = Form.useForm();
-  
+  const { isEditMode } = useWarrantyTracking();
   useEffect(() => {
     setIsModalOpen(isOpen);
   }, [isOpen]);
@@ -65,16 +66,16 @@ export const ModalFormUpdate: React.FC<ModalFormUpdateProps> = ({
     }
   }, [selectedWarranty, form]);
 
-  const isEditMode = useMemo(() => {
-    if (!selectedWarranty) return false;
-    return Boolean(
-      selectedWarranty.serialNumber ||
-      selectedWarranty.warrantyName ||
-      selectedWarranty.purchaseDate ||
-      selectedWarranty.expireDate ||
-      selectedWarranty.image
-    );
-  }, [selectedWarranty]);
+  // const isEditMode = useMemo(() => {
+  //   if (!selectedWarranty) return false;
+  //   return Boolean(
+  //     selectedWarranty.serialNumber ||
+  //     selectedWarranty.warrantyName ||
+  //     selectedWarranty.purchaseDate ||
+  //     selectedWarranty.expireDate ||
+  //     selectedWarranty.image
+  //   );
+  // }, [selectedWarranty]);
 
 
   const handleRemoveImage = () => {
@@ -131,12 +132,11 @@ export const ModalFormUpdate: React.FC<ModalFormUpdateProps> = ({
        if (fileUpload) formData.append('image', fileUpload);
        if (selectedWarranty?.user?.sub) formData.append('user', String(selectedWarranty.user.sub));
        
-
-
-
-
-      if(isEditMode && selectedWarranty?.id){
-        let updateWarranty = await updateWarrantyById(selectedWarranty.id, formData);
+      // console.log(selectedWarranty,'selectedWarranty')
+      // console.log(isEditMode,'isEditMode')
+      // return 
+      if(isEditMode){
+        let updateWarranty = await updateWarrantyById(selectedWarranty?.id || '', formData);
         if(updateWarranty.status){
           setImageUrl(undefined);
           setIsModalOpen(false);

@@ -5,6 +5,7 @@ import { Dispatch } from '../../stores';
 import { io } from "socket.io-client";
 import { getEventPending } from "../../modules/sosWarning/service/api/SOSwarning";
 import { encryptStorage } from "../../utils/encryptStorage";
+import { SOCKET_URL_SOS } from "../../configs/configs";
 // import { toast } from 'react-toastify';
 import { toast } from 'react-toastify';
 
@@ -69,7 +70,7 @@ const AlertSOS = ({isAuth}:any) => {
       };
       getEmergencyData();
 
-      const URL ="https://reslink-security-wqi2p.ondigitalocean.app/socket/sos/dashboard";
+      const URL = SOCKET_URL_SOS;
       const access_token = encryptStorage.getItem("access_token");
       const projectID = await encryptStorage.getItem("projectId");
       const newSocket = io(URL, {
@@ -173,7 +174,7 @@ const AlertSOS = ({isAuth}:any) => {
     {isVisible && (
         <div 
           ref={alertRef} 
-          className={`fixed top-13 right-15 z-50 transition-all duration-500 ${
+          className={`fixed top-10 right-15 z-50 transition-all duration-500 ${
             isAnimatingOut ? 'animate-fade-out' : 'animate-slide-in'
           }`}
         >

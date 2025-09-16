@@ -9,6 +9,7 @@ import { useGlobal } from "../contexts/Global";
 import { getSosWarningById, receiveCast } from "../service/api/SOSwarning";
 import { usePermission } from "../../../utils/hooks/usePermission";
 import { RootState } from "../../../stores";
+import FailedModal from "../../../components/common/FailedModal";
 
 interface AlertMarkers {
     red: any[];
@@ -198,6 +199,10 @@ const FormWarningSOS = ({ dataEmergency, unitHover, unitClick, setDataEmergency,
     const handleAcknowledgeEmergency = async (marker: any, type: string) => {
         
         let data = await getSosWarningById(marker.id)
+        if(!data.status){
+            FailedModal(data.message,900)
+            return
+        }
         data.result = {
             ...data.result,
             type: type
@@ -209,6 +214,10 @@ const FormWarningSOS = ({ dataEmergency, unitHover, unitClick, setDataEmergency,
         }
         if (data.status) {
             let dataReceiveCast = await receiveCast(marker.id)
+            if(!dataReceiveCast.status){
+                FailedModal(dataReceiveCast.message,900)
+                return
+            }
             if(dataReceiveCast.status){
                 await dispatch.sosWarning.setStep(dataReceiveCast?.result?.step)
                 data.result.sosEventInfo.step  = dataReceiveCast?.result?.step
@@ -216,10 +225,12 @@ const FormWarningSOS = ({ dataEmergency, unitHover, unitClick, setDataEmergency,
                 data.result.sosEventInfo.event_help_id = dataReceiveCast?.result?.event_help_id
                 await dispatch.sosWarning.setDataEmergencyDetail(data.result)
                 setStatusAcknowledge(true)
-            }else{
-                message.error(dataReceiveCast.message)
             }
-        }    
+        } 
+        else {
+            FailedModal(data.message,900)
+            return
+        }   
     }
     // ฟังก์ชันสำหรับตรวจสอบว่า card กำลังถูกลบหรือไม่
     const isCardRemoving = (cardId: string) => {
@@ -263,7 +274,7 @@ const FormWarningSOS = ({ dataEmergency, unitHover, unitClick, setDataEmergency,
         </div>
 
         <div className={`
-            form-warning-sos p-4 pb-4 
+            form-warning-sos p-4 pt-0 pb-4 
             w-full h-full flex flex-col 
             gap-4 overflow-y-auto 
             max-h-[calc(100vh-100px)]
@@ -338,10 +349,10 @@ const FormWarningSOS = ({ dataEmergency, unitHover, unitClick, setDataEmergency,
                         }}
                     >
                         <div className="p-3">
-                            <div className="text-md mb-1"><span className="font-medium">Incident:</span> {incident}</div>
-                            <div className="text-md  mb-1"><span className="font-medium">Reported by:</span> {createBy}</div>
-                            <div className="text-md  mb-1"><span className="font-medium">Address:</span> {address}</div>
-                            <div className="text-md  mb-1"><span className="font-medium">Emergency Contact:</span> {contract}</div>
+                            <div className="text-md mb-3"><span className="font-medium">Incident:</span> {incident}</div>
+                            <div className="text-md  mb-3"><span className="font-medium">Reported by:</span> {createBy}</div>
+                            <div className="text-md  mb-3"><span className="font-medium">Address:</span> {address}</div>
+                            <div className="text-md  mb-3"><span className="font-medium">Emergency Contact:</span> {contract}</div>
                             <div className="text-md  mb-3"><span className="font-medium">Time:</span> {time}</div>
                             <Button 
                             type="primary" 
@@ -443,7 +454,6 @@ const FormWarningSOS = ({ dataEmergency, unitHover, unitClick, setDataEmergency,
                     <div className="text-xs font-bold tracking-wide px-3 py-2 
                     flex justify-center items-center  gap-2"
                         style={{ lineHeight: 'normal' }}>
-                        <span>✅</span>
                         <span className="pt-1 text-xl whitespace-nowrap">No emergency</span>
                     </div>
                 )

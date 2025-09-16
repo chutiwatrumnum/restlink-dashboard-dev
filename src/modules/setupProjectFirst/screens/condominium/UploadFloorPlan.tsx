@@ -597,8 +597,8 @@ const UploadFloorPlan = () => {
 
                                 {
                                     storeData.map((item, index) => (
-                                        <Col span={8} key={index} >
-                                            <div className={`w-full h-full ${index > 1 ? '!mt-4' : ''}`} key={index}>
+                                        <Col span={8} key={index}  style={{marginTop:index>1 ? '1rem' : '0'}} >
+                                            <div className={`w-full h-full `} key={index}>
                                                 <PlanOnFloor
                                                     storeData={item}
                                                     onDelete={() => handleDeleteCardConfirm(index)}

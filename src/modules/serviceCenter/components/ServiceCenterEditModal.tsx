@@ -770,7 +770,7 @@ const ServiceCenterEditModal = ({
                         </Tooltip>
                       </span>
                     </div>
-  
+
                     <Space
                       direction="vertical"
                       style={{ width: "100%" }}
@@ -795,7 +795,7 @@ const ServiceCenterEditModal = ({
                                   date: dayjs(appointment).format("DD/MM/YYYY"),
                                   time: "All day",
                                 };
-  
+
                           return (
                             <Card
                               key={appointment.id || index}
@@ -841,14 +841,16 @@ const ServiceCenterEditModal = ({
                                 </Col>
                               </Row>
                               <div className="selected-indicator">
-                                <CheckCircleOutlined style={{ marginRight: 4 }} />
+                                <CheckCircleOutlined
+                                  style={{ marginRight: 4 }}
+                                />
                                 User Selected
                               </div>
                             </Card>
                           );
                         })}
                     </Space>
-  
+
                     {!data.appointmentDate.some(
                       (appointment: any) => appointment.selected === true
                     ) && (
@@ -861,19 +863,19 @@ const ServiceCenterEditModal = ({
                     )}
                   </div>
                 )}
-  
+
               {/* Request status alerts - เช็คเงื่อนไขตามที่ต้องการ */}
               {data.requestReSchedule && (
                 <Alert
-                  message="กรุณารอการยืนยันจากลูกบ้าน"
-                  description="ขณะนี้มีการร้องขอการเปลี่ยนแปลงนัดหมายจากลูกบ้าน กรุณารอการยืนยันก่อนดำเนินการต่อ"
+                  message="Please wait for the resident's confirmation."
+                  description="A request to reschedule has been made by the resident. Please wait for their confirmation before proceeding."
                   type="warning"
                   showIcon
                   className="info-alert"
                   style={{ marginTop: 16 }}
                 />
               )}
-  
+
               {data.requestCloseCase && !data.requestReSchedule && (
                 <Alert
                   message="ลูกบ้านร้องขอปิดเคส"
@@ -884,18 +886,18 @@ const ServiceCenterEditModal = ({
                   style={{ marginTop: 16 }}
                 />
               )}
-  
+
               {data.requestNewAppointment && !data.requestReSchedule && (
                 <Alert
-                  message="ลูกบ้านร้องขอนัดหมายใหม่"
-                  description="ลูกบ้านได้ส่งคำขอนัดหมายใหม่ กรุณาดำเนินการจัดนัดหมายใหม่"
+                  message="The resident has requested a new appointment."
+                  description="Please proceed to schedule the new appointment."
                   type="info"
                   showIcon
                   className="info-alert"
                   style={{ marginTop: 16 }}
                 />
               )}
-  
+
               <div className="action-buttons">
                 <Button
                   disabled={
@@ -908,7 +910,7 @@ const ServiceCenterEditModal = ({
                   danger>
                   Close ticket
                 </Button>
-                
+
                 <Button
                   disabled={
                     // ปิดปุ่ม Reschedule เมื่อ requestReSchedule เป็น true
@@ -921,7 +923,7 @@ const ServiceCenterEditModal = ({
                   size="large">
                   Reschedule
                 </Button>
-                
+
                 <Button
                   disabled={
                     // ปิดปุ่ม Confirm Appointment เมื่อ requestReSchedule เป็น true

@@ -1,10 +1,7 @@
 import { Form, Select, Button, Upload } from "antd";
-import { useState,useEffect } from "react";
-import type { UploadChangeParam } from "antd/es/upload";
+import { useEffect } from "react";
 import type { RcFile, UploadFile } from "antd/es/upload/interface";
-import { PlusOutlined, InboxOutlined } from "@ant-design/icons";
 import IconImagePhoto from "../../../../../assets/images/IconImagePhoto.png";
-import { BuildingCondo as BuildingCondoType } from "../../../../../stores/interfaces/SosWarning";
 import { dataAllMap } from "../../../../../stores/interfaces/SosWarning";
 interface FormUploadCondoProps {
   selectedBuildingCondo: {
@@ -28,7 +25,6 @@ const FormUploadCondo = ({
   imageUrl,
   setIsImageUploaded,
   setUploadProgress,
-  dataMapAll
   
  }: FormUploadCondoProps) => {
   
@@ -61,11 +57,6 @@ const FormUploadCondo = ({
     return false;
   };    
 
-  const customRequest = ({ onSuccess }: { onSuccess: (body: any, fileOrXhr?: any) => void }) => {
-    setTimeout(() => {
-      onSuccess && onSuccess("ok");
-    }, 1000);
-  };
 
 
   return (
@@ -117,7 +108,7 @@ const FormUploadCondo = ({
                 ?.includes(input) ?? false
             }
             placeholder="Search or select number of floors"
-            options={Array.from({ length: 50 }, (_, i) => ({
+            options={Array.from({ length: 30 }, (_, i) => ({
               value: i + 1,
               label: i + 1
             }))}

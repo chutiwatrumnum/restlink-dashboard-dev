@@ -121,24 +121,24 @@ export const generateQRCodeWithText = async (
                 ctx.font = 'bold 14px Arial, sans-serif';
                 ctx.fillStyle = '#333333';
                 const startDate = dayjs(invitationInfo.startTime).format('DD/MM/YYYY HH:mm');
-                ctx.fillText(`เริ่มใช้งาน : ${startDate}`, leftColumn, textY);
+                ctx.fillText(`start : ${startDate}`, leftColumn, textY);
 
                 // คอลัมน์ขวา - วันหมดอายุ
                 const expireDate = dayjs(invitationInfo.expireTime).format('DD/MM/YYYY HH:mm');
-                ctx.fillText(`หมดอายุ : ${expireDate}`, rightColumn, textY);
+                ctx.fillText(`expire : ${expireDate}`, rightColumn, textY);
                 textY += lineHeight;
 
                 // คอลัมน์ซ้าย - ชื่อแขก
-                ctx.fillText(`ชื่อแขก : ${invitationInfo.guestName}`, leftColumn, textY);
+                ctx.fillText(`guest name : ${invitationInfo.guestName}`, leftColumn, textY);
 
                 // คอลัมน์ขวา - ที่อยู่
-                ctx.fillText(`ที่อยู่ : ${invitationInfo.houseAddress}`, rightColumn, textY);
+                ctx.fillText(`address : ${invitationInfo.houseAddress}`, rightColumn, textY);
                 textY += lineHeight;
 
                 // คอลัมน์ซ้าย - ประเภท
                 const typeText = invitationInfo.type === 'invitation' ? 'เชิญ' :
                     invitationInfo.type === 'vehicle' ? 'ยานพาหนะ' : invitationInfo.type;
-                ctx.fillText(`ประเภท : ${invitationInfo.type}`, leftColumn, textY);
+                ctx.fillText(`type : ${invitationInfo.type}`, leftColumn, textY);
                 textY += lineHeight + 15;
 
                 // พื้นที่ที่ได้รับอนุญาต
@@ -146,7 +146,7 @@ export const generateQRCodeWithText = async (
                     // หัวข้อ
                     ctx.font = 'bold 16px Arial, sans-serif';
                     ctx.fillStyle = '#333333';
-                    ctx.fillText('พื้นที่ที่ได้รับอนุญาต :', leftColumn, textY);
+                    ctx.fillText('authorized areas :', leftColumn, textY);
                     textY += 25;
 
                     ctx.font = '14px Arial, sans-serif';
@@ -188,7 +188,7 @@ export const generateQRCodeWithText = async (
                     // หัวข้อ
                     ctx.font = 'bold 16px Arial, sans-serif';
                     ctx.fillStyle = '#333333';
-                    ctx.fillText('ป้ายทะเบียน :', leftColumn, textY);
+                    ctx.fillText('license plates :', leftColumn, textY);
                     textY += 25;
 
                     ctx.font = '14px Arial, sans-serif';

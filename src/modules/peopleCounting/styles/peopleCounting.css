@@ -2,41 +2,43 @@
   width: 100%;
 }
 
+.ant-card-bordered.cardContainer_PPC{
+  border-radius: 8px !important;
+}
+
+.cardContainer_PPC > .ant-card-body {
+  padding: 0 !important;
+}
+
 .cardImage_PPC {
   width: 100%;
   height: 240px;
   object-fit: cover;
-  border-radius: 15px 15px 0 0;
+  border-radius: 8px 8px 0 0;
 }
 
 .cardDetailContainer_PPC {
   display: flex;
   flex-direction: column;
   padding: 15px;
-  background-color: var(--cardBG-color);
-  border-radius: 0 0 15px 15px;
+  background-color: white;
+  border-radius: 0 0 8px 8px;
 }
 
 .cardTitle_PPC {
-  font-size: var(--font-size-2xl);
-  font-weight: var(--font-normal);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
   line-height: var(--font-size-2xl);
-  color: var(--mainText-color);
+  color: var(--primary-color);
 }
 
 .cardStatusBoxContainer_PPC {
-  width: fit-content;
-  min-width: 130px;
-  padding: 10px 6%;
-  box-sizing: border-box;
-  border-radius: 10px;
   margin-top: 15px;
 }
 
 .cardStatusIcon_PPC {
-  width: 16px;
-  height: 16px;
-  margin-right: 12px;
+  width: 24px;
+  height: 24px;
 }
 
 .cardStatusText_PPC {
@@ -44,8 +46,23 @@
   font-weight: var(--font-normal);
   font-size: 1rem;
   line-height: 1rem;
+  padding: 6px 12px;
+  border-radius: 8px;
 }
 
 .peopleCountingModalColumn {
   width: 100%;
+}
+
+.peopleCountingModalColumn > .ant-col {
+margin: 0 !important;
+padding: 0 !important;
+}
+
+.saveButton {
+  margin-top: 12px;
+}
+
+.peopleCountingFormModal .ant-modal-content {
+  border-radius: 8px !important;
 }

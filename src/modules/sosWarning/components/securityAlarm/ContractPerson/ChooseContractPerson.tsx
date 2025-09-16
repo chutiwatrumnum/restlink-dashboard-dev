@@ -2,8 +2,9 @@ import React, { useState, useMemo } from 'react';
 import { useSelector } from "react-redux";
 import { RootState } from "../../../../../stores";
 import { chooseContractOfficer } from "../../../service/api/SOSwarning";
-const ChooseContractPerson = ({ statusContract, setStatusContract, enableContractOfficer }: { statusContract: string, setStatusContract: (status: string) => void, enableContractOfficer: boolean }) => {
-    const [selectedOption, setSelectedOption] = useState<string>('');
+import FailedModal from '../../../../../components/common/FailedModal';
+const ChooseContractPerson = ({  setStatusContract, enableContractOfficer }: { statusContract: string, setStatusContract: (status: string) => void, enableContractOfficer: boolean }) => {
+    const [selectedOption] = useState<string>('');
     const { dataEmergencyDetail } = useSelector((state: RootState) => state.sosWarning);
     const handleOptionSelect = async (optionId: string) => {
         let obj = {
@@ -13,6 +14,9 @@ const ChooseContractPerson = ({ statusContract, setStatusContract, enableContrac
         let data = await chooseContractOfficer(eventId, obj)
         if (data.status) {
             setStatusContract("callOfficer")
+        }
+        else if(data.message) {
+            FailedModal(data.message, 900)
         }
     };
     const helpOptions = useMemo(() => {
@@ -56,7 +60,7 @@ const ChooseContractPerson = ({ statusContract, setStatusContract, enableContrac
                         {
                             enableContractOfficer && (
                                 <div className="space-y-3 max-h-[300px] overflow-y-auto">
-                                    {helpOptions.map((option: any) => (
+                                    { helpOptions.length > 0 && helpOptions.map((option: any) => (
                                         <button
                                             key={option.id}
                                             onClick={() => handleOptionSelect(option.id)}
@@ -75,6 +79,13 @@ const ChooseContractPerson = ({ statusContract, setStatusContract, enableContrac
                                             {option.label}
                                         </button>
                                     ))}
+                                    {
+                                        helpOptions.length === 0 && (
+                                            <div className="text-center text-gray-500">
+                                                No options available
+                                            </div>
+                                        )
+                                    }
                                 </div>
                             )
                         }

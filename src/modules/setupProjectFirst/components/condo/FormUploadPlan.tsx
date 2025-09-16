@@ -109,47 +109,74 @@ const FormUploadPlan = (
     
         setStoreData(data);
         setStoreDataOriginal(dataOriginal);
+
+        // Reset ค่าที่อัปโหลดในฟอร์ม Add ให้กลับเป็นค่าเริ่มต้น
+        setFileList([]);
+        setImagePreview(null);
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
+        // เคลียร์ preview ที่เก็บใน global (เพื่อไม่ให้ค้างในฟอร์ม Add เมื่อสลับตึก)
+        try {
+            let objB = { ...buildingData } as any;
+            if (selectedBuilding && objB[selectedBuilding]) {
+                objB[selectedBuilding].imagePreview = '';
+                setBuildingData(objB);
+            }
+        } catch (_) {}
     }
 
     const handleEdit = () => {
-        let file = fileList[0];
-        if(statusEdit && !file){ 
-            setIsEditing && setIsEditing(false);
-        }
-        let base64 = URL.createObjectURL(file);
-        let obj = {
-            fileList: file || null,
-            selectedFloors: selectedFloors || [],
-            imagePreview: base64 || null,
-            fileName: file?.name || '',
-        }
+        const file = fileList[0];
+        const isNewFile = !!file;
+
+        // ใช้รูป/ไฟล์เดิมถ้าไม่ได้อัปโหลดใหม่
+        const previous = (indexEdit !== null && storeDataAll) ? storeDataAll[indexEdit] : undefined;
+        const base64 = isNewFile ? URL.createObjectURL(file) : (previous?.imagePreview || null);
+        const newFile = isNewFile ? file : (previous?.fileList || null);
+        const newFileName = isNewFile ? (file?.name || '') : (previous?.fileName || '');
+
         if (indexEdit !== null && indexEdit !== undefined) {
             const newStoreData = [...(storeDataAll || [])];
-            let newFileList = [...fileList];
-            newFileList[indexEdit] = file;
-            newStoreData[indexEdit].imagePreview = base64;
-            newStoreData[indexEdit].fileList = file;
-            newStoreData[indexEdit].fileName = file.name;
-            // ใช้ deep copy เพื่อแยก reference ระหว่าง storeData และ storeDataOriginal
+            // อัปเดตเฉพาะส่วนที่เปลี่ยน
+            newStoreData[indexEdit] = {
+                ...newStoreData[indexEdit],
+                imagePreview: base64,
+                fileList: newFile,
+                fileName: newFileName,
+            };
+
+            // commit state
             setStoreData([...newStoreData]);
-            // สร้าง deep copy ของ newStoreData แต่เก็บ File object ไว้
+
+            // sync saved state (ไว้ใช้คำนวณ options)
             const newStoreDataOriginalCopy = newStoreData.map(item => ({
                 ...JSON.parse(JSON.stringify({
                     fileName: item.fileName,
                     selectedFloors: item.selectedFloors,
                     imagePreview: item.imagePreview
                 })),
-                fileList: item.fileList // เก็บ File object ไว้
+                fileList: item.fileList
             }));
             setStoreDataOriginal(newStoreDataOriginalCopy);
-            setFileList(newFileList);
+
+            // เคลียร์ไฟล์ชั่วคราวในฟอร์ม Edit
+            setFileList([]);
         }
         else {
             setStatusAddPlanFloor(false);
-            setStoreData([...storeData, obj]);
-
+            setStoreData([...storeData, {
+                fileList: newFile,
+                selectedFloors: selectedFloors || [],
+                imagePreview: base64 || null,
+                fileName: newFileName,
+            }]);
         }
+
         setIsEditing && setIsEditing(false);
+        // กระตุ้นให้ select รีเฟรชรายการทันที
+        setForceUpdate(prev => prev + 1);
+        setTimeout(() => setForceUpdate(prev => prev + 1), 50);
     }
 
     const handleCancel = () => {
@@ -324,116 +351,77 @@ const FormUploadPlan = (
         if (!floors || floors.length === 0) return '';
         if (floors.includes('all')) return 'Select All';
 
-        // Debug
+        // ทำความสะอาดค่า: ให้เป็นสตริง, ตัดคำว่า "Floor" ออก, ตัด flag ต่างๆ ออก
+        const cleaned = floors
+            .map(f => String(f).trim())
+            .filter(f => f !== 'all' && !f.startsWith('pre_select_all:'))
+            .map(f => f.replace(/^floor\s*/i, ''));
 
-        // จัดกลุ่มชั้นตามประเภท
-        const groups: { [key: string]: string[] } = {};
-
-        floors.forEach(floor => {
-            if (floor === 'all' || floor.startsWith('pre_select_all:')) return;
-
-            // ตัวอักษรนำหน้าตัวเลข (A1, A2, max1, max2)
-            if (/^[A-Za-z]+\d+$/.test(floor)) {
-                const letter = floor.match(/^([A-Za-z]+)/)?.[1] || '';
-                if (!groups[letter]) groups[letter] = [];
-                groups[letter].push(floor);
-            }
-            // ตัวเลขนำหน้าตัวอักษร (1A, 2A)
-            else if (/^\d+[A-Za-z]+$/.test(floor)) {
-                const letter = floor.match(/[A-Za-z]+$/)?.[0] || '';
-                const number = floor.match(/^\d+/)?.[0] || '';
-                const transformed = `${letter}${number}`;
-                if (!groups[letter]) groups[letter] = [];
-                groups[letter].push(transformed); // แปลง 1A เป็น A1
-            }
-            // ตัวเลขล้วน
-            else if (!isNaN(Number(floor))) {
-                if (!groups['number']) groups['number'] = [];
-                groups['number'].push(floor);
-            }
-            // ตัวอักษรล้วน
-            else if (/^[A-Za-z]+$/.test(floor)) {
-                if (!groups['letter']) groups['letter'] = [];
-                groups['letter'].push(floor);
-            }
-        });
-
-        // แปลงตัวเลขเป็น range
-        const makeRange = (numbers: string[]): string[] => {
-            if (!numbers || numbers.length === 0) return [];
-            
-            const sorted = numbers.map(Number).sort((a, b) => a - b);
-        const ranges: string[] = [];
-
-            // ถ้ามีแค่ตัวเดียว
-            if (sorted.length === 1) {
-                ranges.push(`${sorted[0]}`);
-                return ranges;
-            }
-            
-            // ถ้ามีแค่ 2 ตัว ให้แสดงเป็น range ทันที
-            if (sorted.length === 2) {
-                const range = `${sorted[0]}-${sorted[1]}`;
-                ranges.push(range);
-                return ranges;
-            }
-            
-            let start = sorted[0];
-            let prev = start;
-            
-            for (let i = 1; i <= sorted.length; i++) {
-                if (i === sorted.length || sorted[i] !== prev + 1) {
-                    // ถ้ามี 2 ตัวขึ้นไปที่ต่อเนื่องกัน
-                    if (prev > start) {
-                        const range = `${start}-${prev}`;
-                        ranges.push(range);
-                    } else {
-                        ranges.push(`${start}`);
-                    }
-                    if (i < sorted.length) {
-                        start = sorted[i];
-                        prev = start;
-                    }
-            } else {
-                    prev = sorted[i];
-                }
-            }
-            
-            return ranges;
-        };
+        if (cleaned.length === 0) return '';
 
         const results: string[] = [];
 
-        // จัดการตัวเลขล้วน
-        if (groups['number']?.length > 0) {
-            const ranges = makeRange(groups['number']);
-            results.push(...ranges);
-        }
-
-        // จัดการตัวอักษรล้วน
-        if (groups['letter']?.length > 0) {
-            results.push(...groups['letter'].sort());
-        }
-
-        // จัดการตัวอักษรนำหน้าตัวเลข (A1, A2, max1, max2)
-        Object.entries(groups)
-            .filter(([key]) => key !== 'number' && key !== 'letter')
-            .forEach(([letter, values]) => {
-                // แยกตัวเลขออกจากตัวอักษร
-                const numbers = values.map(v => v.replace(letter, '')).sort();
-                
-                // ถ้ามีแค่ตัวเดียว
-                if (numbers.length === 1) {
-                    results.push(`${letter}${numbers[0]}`);
-                    return;
+        // ฟังก์ชันทำช่วงตัวเลขต่อเนื่องให้เป็น range
+        const makeNumberRanges = (arr: number[]): string[] => {
+            if (arr.length === 0) return [];
+            const sorted = [...arr].sort((a, b) => a - b);
+            const out: string[] = [];
+            let start = sorted[0];
+            let prev = sorted[0];
+            for (let i = 1; i <= sorted.length; i++) {
+                const cur = sorted[i];
+                if (i < sorted.length && cur === prev + 1) {
+                    prev = cur;
+                    continue;
                 }
+                out.push(start === prev ? `${start}` : `${start}-${prev}`);
+                start = cur;
+                prev = cur;
+            }
+            return out;
+        };
 
-                                // แปลงเป็น range
-                const ranges = makeRange(numbers);
-                results.push(...ranges.map(range => `${letter}${range}`));
+        // 1) ตัวเลขล้วน
+        const onlyNumbers = cleaned.filter(v => /^\d+$/.test(v)).map(Number);
+        if (onlyNumbers.length) {
+            results.push(...makeNumberRanges(onlyNumbers));
+        }
+
+        // 2) ตัวอักษรล้วน
+        const onlyLetters = cleaned.filter(v => /^[A-Za-z]+$/.test(v)).sort();
+        if (onlyLetters.length) {
+            results.push(...onlyLetters);
+        }
+
+        // 3) ตัวอักษร+ตัวเลข (A1, B10)
+        const letterNumber = cleaned.filter(v => /^[A-Za-z]+\d+$/.test(v));
+        const groupLN: Record<string, number[]> = {};
+        letterNumber.forEach(v => {
+            const letter = v.match(/^([A-Za-z]+)/)?.[1] || '';
+            const num = Number(v.replace(/^[A-Za-z]+/, ''));
+            if (!groupLN[letter]) groupLN[letter] = [];
+            groupLN[letter].push(num);
+        });
+        Object.entries(groupLN)
+            .sort(([a], [b]) => a.localeCompare(b))
+            .forEach(([letter, nums]) => {
+                results.push(...makeNumberRanges(nums).map(r => `${letter}${r}`));
             });
 
-        // Debug
+        // 4) ตัวเลข+ตัวอักษร (1A -> A1)
+        const numberLetter = cleaned.filter(v => /^\d+[A-Za-z]+$/.test(v));
+        const groupNL: Record<string, number[]> = {};
+        numberLetter.forEach(v => {
+            const letter = v.match(/[A-Za-z]+$/)?.[0] || '';
+            const num = Number(v.match(/^\d+/)?.[0] || '');
+            if (!groupNL[letter]) groupNL[letter] = [];
+            groupNL[letter].push(num);
+        });
+        Object.entries(groupNL)
+            .sort(([a], [b]) => a.localeCompare(b))
+            .forEach(([letter, nums]) => {
+                results.push(...makeNumberRanges(nums).map(r => `${letter}${r}`));
+            });
 
         return results.join(', ');
     };
@@ -544,6 +532,11 @@ const FormUploadPlan = (
         // กรองตัวเลือกที่สามารถเลือกได้
         const availableOptions = floorOptions.filter(option => {
             const isUsed = usedFloors.includes(option.value);
+            // ในโหมดแก้ไข ให้ตัดสินจากรายการที่ใช้งานจริงแบบเรียลไทม์เท่านั้น (ไม่อิง option.disabled)
+            if (indexEdit !== null) {
+                return !isUsed;
+            }
+            // โหมด Add: ใช้ disabled จาก parent ตามเดิม
             return !isUsed && !option.disabled;
         });
         // ถ้าไม่มีชั้นให้เลือก
@@ -636,7 +629,7 @@ const FormUploadPlan = (
                                 const currentFloors = statusEdit && indexEdit !== null && storeDataAll 
                                     ? storeDataAll[indexEdit]?.selectedFloors || []
                                     : selectedFloors;
-                                return isAllFloorsSelected() ? 'Select All' : `Floor ${displayFloorText(currentFloors)}`;
+                                return isAllFloorsSelected() ? 'All Floor' : `Floor ${displayFloorText(currentFloors)}`;
                             })()}
                         </span>
                     </div>

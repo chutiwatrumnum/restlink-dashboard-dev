@@ -13,8 +13,9 @@ const ImageVillage = ({ uploadedImage, projectName, showWarningVillage,
   onMarkerNameChange, onMarkerAddressChange, onMarkerUpdate, selectedMarkerUpdate, villageMapResetRef,
   villageMapUpdateAddressRef, villageMapConfirmRef, mapMode, onMapModeChange, onMarkerDeleted, onZoneCreated, onZoneEdited,
   onZoneEditStarted, onNewMarkerCreated, onAlertMarkersChange, villageMapRefreshRef,
-  setDataMapAll, setDataEmergency, setUnitHover, setUnitClick, onActiveMarkerChange, currentDataFloor }: any) => {
+  setDataMapAll, setDataEmergency, setUnitHover, setUnitClick, onActiveMarkerChange, onMarkersChange, currentDataFloor, syncToggleButtonRef }: any) => {
 
+  const [forceRenderKey, setForceRenderKey] = useState(false);
   // ใช้ mapMode จาก props แทน state ของตัวเอง
   const currentMapMode = mapMode || 'work-it';
   
@@ -26,6 +27,15 @@ const ImageVillage = ({ uploadedImage, projectName, showWarningVillage,
     dataFloorRef.current = currentDataFloor || {};
   }, [currentDataFloor]);
 
+  useEffect(() => {
+    setTimeout(() => {
+      setForceRenderKey(prev => !prev);  
+    }, 1000);
+    
+  }, [currentDataFloor]);
+
+
+  
   const handleModeChange = (mode: 'preview' | 'work-it') => {
     console.log(`Map mode changed to: ${mode}`);
 
@@ -46,6 +56,7 @@ const ImageVillage = ({ uploadedImage, projectName, showWarningVillage,
         dataMapAll={dataMapAll}
         dataFloorRef={dataFloorRef}
       />
+      
       <div className="">
         <VillageMapTS
           uploadedImage={uploadedImage}
@@ -75,6 +86,7 @@ const ImageVillage = ({ uploadedImage, projectName, showWarningVillage,
           setUnitHover={setUnitHover || (() => { })}
           setUnitClick={setUnitClick || (() => { })}
           onActiveMarkerChange={onActiveMarkerChange}
+          onMarkersChange={onMarkersChange}
         />
       </div>
       {/* สามารถ overlay tooltip/alert ได้ที่นี่ */}

@@ -18,6 +18,10 @@ interface GlobalContextType {
   dataMapAll: any
   setDataMapAll: (data: any) => void
   refreshMap: () => void
+  setIsRightPanelCollapsed: (status: boolean) => void
+  villageMapRefreshRef: React.RefObject<() => void>
+  isRightPanelCollapsed: boolean
+  syncToggleButtonRef: React.RefObject<HTMLButtonElement>
 }
 
 // สร้าง Context
@@ -41,6 +45,10 @@ interface GlobalProviderProps {
   dataMapAll: any
   setDataMapAll: (data: any) => void
   refreshMap: () => void
+  setIsRightPanelCollapsed: (status: boolean) => void
+  villageMapRefreshRef: React.RefObject<() => void>
+  isRightPanelCollapsed: boolean
+  syncToggleButtonRef: React.RefObject<HTMLButtonElement>
 }
 
 export const GlobalProvider: React.FC<GlobalProviderProps> = ({ 
@@ -59,7 +67,11 @@ export const GlobalProvider: React.FC<GlobalProviderProps> = ({
   setBuildingPlan,
   dataMapAll,
   setDataMapAll,
-  refreshMap
+  refreshMap,
+  setIsRightPanelCollapsed,
+  villageMapRefreshRef,
+  isRightPanelCollapsed,
+  syncToggleButtonRef
 }) => {
   return (
     <GlobalContext.Provider value={{ 
@@ -77,7 +89,11 @@ export const GlobalProvider: React.FC<GlobalProviderProps> = ({
       setBuildingPlan,
       dataMapAll,
       setDataMapAll,
-      refreshMap
+      refreshMap,
+      setIsRightPanelCollapsed,
+      villageMapRefreshRef,
+      isRightPanelCollapsed,
+      syncToggleButtonRef
     }}>
       {children}
     </GlobalContext.Provider>
@@ -91,4 +107,4 @@ export const useGlobal = () => {
     throw new Error('useGlobal must be used within a GlobalProvider');
   }
   return context;
-}; 
+};  

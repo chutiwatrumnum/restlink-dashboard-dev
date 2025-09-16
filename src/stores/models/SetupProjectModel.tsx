@@ -125,8 +125,24 @@ export const setupProject = createModel<RootModel>()({
   
   effects: (dispatch) => ({
     // Excel effects
-    async uploadExcelFile(payload: { data: { Condo: CondoUnit[]; Basement: Basement[]; }; fileName: string }) {
-      dispatch.setupProject.setExcelData(payload.data);
+    async uploadExcelFile(payload: { data: { Condo: CondoUnit[]; Basement: Basement[]; village: any[] }; fileName: string }) {
+      let fnFormatExcel = (data: any) => {
+        console.log(data,'data-test')
+        return data.map((item:any) => {
+          const formattedItem: any = {};
+          Object.keys(item).forEach(key => {
+            formattedItem[key.toLowerCase()] = item[key as keyof CondoUnit];
+          });
+          return formattedItem;
+        });
+      }
+      let dataFormatExcel = {
+        Condo: fnFormatExcel(payload?.data?.Condo || []),
+        Basement: fnFormatExcel(payload?.data?.Basement || []),
+        village: fnFormatExcel(payload?.data?.village || []),
+      }
+      console.log(dataFormatExcel,'dataFormatExcel')
+      dispatch.setupProject.setExcelData(dataFormatExcel);
       dispatch.setupProject.setUploadedFileName(payload.fileName);
     },
     

@@ -91,7 +91,7 @@ class VMSInvitationSearchService {
         try {
             const response = await axiosVMS.get('/api/collections/house/records', {
                 params: {
-                    perPage: 500,
+                    perPage: 1000,
                     filter: `address~"${searchTerm}"`
                 }
             });
@@ -111,7 +111,7 @@ class VMSInvitationSearchService {
         try {
             const response = await axiosVMS.get('/api/collections/vehicle/records', {
                 params: {
-                    perPage: 500,
+                    perPage: 1000,
                     filter: `license_plate~"${searchTerm}"`
                 }
             });
@@ -135,7 +135,7 @@ class VMSInvitationSearchService {
 
             const response = await axiosVMS.get('/api/collections/invitation/records', {
                 params: {
-                    perPage: 500,
+                    perPage: 1000,
                     filter: `(${houseFilter})`,
                     sort: '-created'
                 }
@@ -160,7 +160,7 @@ class VMSInvitationSearchService {
 
             const response = await axiosVMS.get('/api/collections/invitation/records', {
                 params: {
-                    perPage: 500,
+                    perPage: 1000,
                     sort: '-created'
                 }
             });

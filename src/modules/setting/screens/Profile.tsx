@@ -40,7 +40,8 @@ const Profile = () => {
   const [dataProfileDetail, setDataProfileDetail] = useState<any>(null);
   const [edited, setEdited] = useState<boolean>(true);
   const [reRender, setReRender] = useState<boolean>(false);
-  const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false);
+  const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] =
+    useState(false);
 
   const permissions = useSelector(
     (state: RootState) => state.common?.permission
@@ -76,7 +77,7 @@ const Profile = () => {
       ) {
         const nameUpdatePayload: UpdateUserNamesPayload = {
           givenName: values.givenName,
-          middleName: values.middleName || "",
+          middleName: values.middleName || null,
           familyName: values.familyName,
         };
 
@@ -171,7 +172,8 @@ const Profile = () => {
           initialValues={{ remember: true }}
           onFinish={onFinish}
           onFinishFailed={onFinishFailed}
-          autoComplete="off">
+          autoComplete="off"
+        >
           <div className="imageProfileContainer">
             <div style={{ position: "relative" }}>
               <Avatar
@@ -194,14 +196,11 @@ const Profile = () => {
             <div className="profileFormColumn">
               <Form.Item
                 label={
-                  <Text className="textColor semiBoldText">
-                    First name
-                  </Text>
+                  <Text className="textColor semiBoldText">First name</Text>
                 }
                 name="givenName"
-                rules={[
-                  { required: true, message: "Please input first name" },
-                ]}>
+                rules={[{ required: true, message: "Please input first name" }]}
+              >
                 <Input
                   disabled={edited}
                   size="large"
@@ -214,7 +213,8 @@ const Profile = () => {
                 label={
                   <Text className="textColor semiBoldText">Middle name</Text>
                 }
-                name="middleName">
+                name="middleName"
+              >
                 <Input
                   disabled={edited}
                   size="large"
@@ -227,12 +227,11 @@ const Profile = () => {
             <div className="profileFormColumn">
               <Form.Item
                 label={
-                  <Text className="textColor semiBoldText">
-                    Last name
-                  </Text>
+                  <Text className="textColor semiBoldText">Last name</Text>
                 }
                 name="familyName"
-                rules={[{ required: true, message: "Please input last name" }]}>
+                rules={[{ required: true, message: "Please input last name" }]}
+              >
                 <Input
                   disabled={edited}
                   size="large"
@@ -243,7 +242,8 @@ const Profile = () => {
 
               <Form.Item
                 label={<Text className="textColor semiBoldText">Email</Text>}
-                name="email">
+                name="email"
+              >
                 <Input
                   disabled={true}
                   size="large"
@@ -258,7 +258,8 @@ const Profile = () => {
                 <Form.Item
                   label={<Text className="textColor semiBoldText">Role</Text>}
                   name="roleName"
-                  style={{ width: "100%" }}>
+                  style={{ width: "100%" }}
+                >
                   <Input
                     disabled={true}
                     size="large"
@@ -273,7 +274,8 @@ const Profile = () => {
                   }
                   name="contact"
                   style={{ width: "100%" }}
-                  rules={telRule}>
+                  rules={telRule}
+                >
                   <Input
                     disabled={edited}
                     size="large"
@@ -306,7 +308,8 @@ const Profile = () => {
                   justifyContent: "end",
                   display: "flex",
                   paddingRight: "10px",
-                }}>
+                }}
+              >
                 <MediumActionButton
                   type="default"
                   className="ProfileButton"
@@ -322,7 +325,8 @@ const Profile = () => {
                   paddingRight: "5px",
                   display: "flex",
                   justifyContent: "center",
-                }}>
+                }}
+              >
                 <MediumActionButton
                   type="default"
                   className="ProfileButton"

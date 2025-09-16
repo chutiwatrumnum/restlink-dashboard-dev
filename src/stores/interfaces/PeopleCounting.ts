@@ -1,28 +1,38 @@
 export interface PeopleCountingType {
   peopleCountingData: PeopleCountingDataType[];
 }
-export interface PeopleCountingDataType {
-  id: number;
-  totalPeople: number;
-  lowStatus: number;
-  mediumStatus: number;
-  highStatus: number;
-  facility: FacilityType;
-  status: string;
-}
 export interface FacilityType {
   name: string;
-  imageUrl: string;
+  image: string;
   description: string;
 }
 
 export interface PeopleCountingFormDataType {
-  id?: number;
-  roomName?: string;
-  detail?: string;
-  lowStatus: number;
-  mediumStatus: number;
-  highStatus: number;
-  openTime?: string;
-  closedTime?: string;
+  id?: number | string;
+  name?: string;
+  description: string;
+  statusLow: number | string;
+  statusMedium: number | string;
+  statusHigh: number | string;
+  sort?: number | string;
+  image?: File | string;
+  active?: boolean;
+  cameraIp?: number;
+  icon?: File | string;
+}
+
+export interface PeopleCountingDataType {
+  id?: number | string;
+  name?: string;
+  description?: string;
+  active?: boolean;
+  currentCount?: number;
+  image?: File | string;
+  status?: string;
+  statusLow?: number | string;
+  statusMedium?: number | string;
+  statusHigh?: number | string;
+  cameraIp?: number;
+  icon?: string;
+  sort?: number | string;
 }

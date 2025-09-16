@@ -79,7 +79,7 @@ const VMSVehicleFormModal = ({
       if (!houseData || houseData.length === 0) {
         await dispatch.house.getHouseList({
           page: 1,
-          perPage: 500,
+          perPage: 1000,
           silent: true,
         });
       }
@@ -87,7 +87,7 @@ const VMSVehicleFormModal = ({
       if (!areaData || areaData.length === 0) {
         await dispatch.area.getAreaList({
           page: 1,
-          perPage: 500,
+          perPage: 1000,
           silent: true,
         });
       }
@@ -273,12 +273,12 @@ const VMSVehicleFormModal = ({
           {/* Left Column */}
           <Col xs={24} md={12}>
             <Form.Item
-              label="ป้ายทะเบียน"
+              label="license plate"
               name="license_plate"
               rules={requiredRule}>
               <Input
                 size="large"
-                placeholder="ป้อนป้ายทะเบียนรถ"
+                placeholder="license plate"
                 maxLength={20}
                 showCount
               />
@@ -479,8 +479,8 @@ const VMSVehicleFormModal = ({
             }}>
             <Spin size="small" style={{ marginRight: "8px" }} />
             <span style={{ color: "#0369a1" }}>
-              {isEditing ? "กำลังอัปเดตรถยนต์..." : "กำลังสร้างรถยนต์..."}
-              กรุณารอสักครู่...
+              {isEditing ? "Updating vehicle..." : "Creating vehicle..."}
+              Please wait a moment....
             </span>
           </div>
         )}

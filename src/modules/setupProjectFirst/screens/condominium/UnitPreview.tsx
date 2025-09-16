@@ -25,6 +25,9 @@ const UnitPreview = () => {
     const [selectedBuilding, setSelectedBuilding] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    const formatLowercase = (str: string) => {
+        return str.toLowerCase();
+    }
 
     const sentPreviewApi = async () => {
         if (isSubmitting) return;
@@ -33,19 +36,19 @@ const UnitPreview = () => {
             let data: UploadFileSentApiType = {
                 condo: excelData.Condo.map((item: any): CondoUnit => (
                     {
-                        buildingName: item["Building name"],
-                        floor: item["Floor"],
-                        floorName: item["Floor name"],
-                        unitNo: item["Unit no."],
-                        floorOfUnit: item["Floor of unit"],
-                        address: item["Address"],
-                        roomType: item["Room type"],
-                        size: item["Size (sq.m.)"]
+                        buildingName: item[formatLowercase("Building name") ],
+                        floor: item[formatLowercase("Floor")],
+                        floorName: item[formatLowercase("Floor name")],
+                        unitNo: item[formatLowercase("Unit no.")],
+                        floorOfUnit: item[formatLowercase("Floor of unit")],
+                        address: item[formatLowercase("Address")],
+                        roomType: item[formatLowercase("Room type")],
+                        size: item[formatLowercase("Size (sq.m.)")]
                     })),
                 basement: excelData.Basement.map((item: any): Basement => ({
-                    buildingName: item["Building name"],
-                    basementFloor: item["Basement Floor"],
-                    basementName: item["Basement name"]
+                    buildingName: item[formatLowercase("Building name")],
+                    basementFloor: item[formatLowercase("Basement floor")],
+                    basementName: item[formatLowercase("Basement name")]
                 }))
             }
 
@@ -134,11 +137,11 @@ const UnitPreview = () => {
         const buildingNames = basementData
             .map((item: any) => {
                 // ลองหาค่า Building name จากหลาย field ที่เป็นไปได้
-                return item['Building name'] ||
+                return item[formatLowercase("Building name")] ||
                     item.buildingName ||
                     item.building ||
-                    item['Building_name'] ||
-                    item.Building;
+                    item[formatLowercase("Building_name")] ||
+                    item[formatLowercase("Building")];
             })
             .filter(Boolean) // กรองค่า null, undefined, empty string
             .filter((building: string, index: number, self: string[]) =>
@@ -153,14 +156,15 @@ const UnitPreview = () => {
     const setfloorCondo = (building: string) => {
         setSelectedBuilding(building);
         let condoData = (excelData as any).Condo;
-        let fileterCondo = condoData.filter((item: any) => item['Building name'] === building)
+        console.log(condoData,'condoData')
+        let fileterCondo = condoData.filter((item: any) => item[formatLowercase("Building name")] === building)
         let dataFloor = fileterCondo.map((item: any, index: number) => {
             let data = {
                 no: index + 1,
-                address: item['Address'],
-                floor: item['Floor'],
-                unit: item['Unit no.'],
-                sizeSQM: item['Size (sq.m.)']
+                address: item[formatLowercase("Address")],
+                floor: item[formatLowercase("Floor")],
+                unit: item[formatLowercase("Unit no.")],
+                sizeSQM: item[formatLowercase("Size (sq.m.)")]
             }
             return data
         })
@@ -169,7 +173,7 @@ const UnitPreview = () => {
 
     return (
         <div className="h-screen bg-gradient-to-br from-blue-50 
-        to-indigo-100 p-6 flex flex-col relative  min-h-screen overflow-hidden ">
+        to-indigo-100 p-6 flex flex-col relative overflow-hidden ">
             <ProgressStep stepValue={1} progressSteps={3} />
             {/* ส่วนหัว */}
             <Row justify="center" className="text-center mb-8">
@@ -184,14 +188,14 @@ const UnitPreview = () => {
             </Row>
 
             {/* ส่วนเนื้อหาหลัก */}
-            <Row gutter={0} className="flex-1">
+            <Row gutter={0} className="flex-1 min-h-0">
                 {/* ส่วนแสดงรายการอาคาร */}
-                <Col span={4}>
-                    <div className="bg-white border-t border-b border-l border-gray-300 py-4 h-full rounded-tl-lg rounded-bl-lg">
+                <Col span={4} className="h-full min-h-0">
+                    <div className="bg-white border-t border-b border-l border-gray-300 py-4 h-full rounded-tl-lg rounded-bl-lg flex flex-col overflow-hidden">
                         <div className="font-semibold mb-4 px-8 py-4">
                             Building ({uniqueBuildings.length})
                         </div>
-                        <div className="space-y-2">
+                        <div className="space-y-2 flex-1 overflow-auto">
                             {uniqueBuildings.length > 0 ? (
                                 uniqueBuildings.map((building: string, index: number) => (
                                     <div
@@ -212,12 +216,12 @@ const UnitPreview = () => {
                 </Col>
 
                 {/* ส่วนแสดงตารางข้อมูลยูนิต */}
-                <Col span={20}>
-                    <div className="bg-white border-1 border-gray-300 h-full rounded-tr-lg rounded-br-lg">
+                <Col span={20} className="h-full min-h-0">
+                    <div className="bg-white border-1 border-gray-300 h-full rounded-tr-lg rounded-br-lg flex flex-col min-h-0 overflow-hidden">
                         <div className="flex justify-between items-center  px-6 py-4">
                             <div className="font-normal">Total no. of unit: {dataFloorCondo.length}</div>
                         </div>
-                        <div className="overflow-auto" style={{ maxHeight: 400 }}>
+                        <div className="flex-1 min-h-0 overflow-auto">
                             <Table
                                 columns={columns}
                                 dataSource={dataFloorCondo}

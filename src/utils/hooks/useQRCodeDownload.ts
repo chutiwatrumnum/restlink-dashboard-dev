@@ -9,7 +9,7 @@ export const useQRCodeDownload = () => {
 
     const downloadQRCode = async (invitation: InvitationRecord) => {
         if (!invitation.code || !invitation.code.trim()) {
-            message.error("ไม่พบรหัสบัตรเชิญสำหรับการสร้าง QR Code");
+            message.error("Invitation code not found for QR Code ");
             return;
         }
 
@@ -45,11 +45,11 @@ export const useQRCodeDownload = () => {
                 errorCorrectionLevel: 'M'
             });
 
-            message.success(`ดาวน์โหลด QR Code สำหรับ ${invitation.guest_name} เรียบร้อย!`);
+            message.success(`Download QR Code for ${invitation.guest_name} completed!`);
         } catch (error: any) {
             console.error('❌ Enhanced QR Code download error:', error);
 
-            let errorMessage = "ไม่สามารถดาวน์โหลด QR Code ได้";
+            let errorMessage = "Unable to download QR Code";
             if (error.message) {
                 errorMessage = error.message;
             }

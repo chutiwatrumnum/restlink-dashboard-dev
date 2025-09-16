@@ -69,9 +69,8 @@ const Building = ({ onDataFloorChange }: { onDataFloorChange?: (dataFloor: any) 
         }));
     }, [buildingDisplay]);
 
-
-
-    
+    // จัดกึ่งกลางเมื่อจำนวนตึกไม่เกิน 3 ตึก
+    const isThreeOrLess = buildings.length <= 3;
     // สุ่มสีเมื่อโหลดคอมโพเนนต์
     useEffect(() => {
         // ตรวจสอบว่า buildings มีข้อมูลหรือไม่
@@ -103,7 +102,7 @@ const Building = ({ onDataFloorChange }: { onDataFloorChange?: (dataFloor: any) 
     }, [buildings]);  // dependency บน buildings
 
         return (
-        <div className="flex flex-wrap gap-10 p-5 justify-center">          
+        <div className={isThreeOrLess ? "flex flex-wrap justify-center gap-10 p-5" : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10 p-5 justify-items-center justify-center"}>          
             {buildings.map((building: Building) => {
                 // คำนวณจำนวนคอลัมน์ที่ต้องใช้
                 const numberOfColumns = Math.ceil(building.floorsSize / MAX_FLOORS_PER_COLUMN);
@@ -123,7 +122,7 @@ const Building = ({ onDataFloorChange }: { onDataFloorChange?: (dataFloor: any) 
 
                 return (
                     <div key={building.id} className="flex flex-col justify-end mt-auto relative  !cursor-pointer">
-                        <div className="flex flex-col justify-end gap-5">
+                        <div className="flex flex-row items-end gap-5">
                             {columns.map((floors, columnIndex) => (
                                 <div key={`${building.id}-column-${columnIndex}`} className="flex flex-col gap-1 justify-end">
                                     {floors.map((floor: Floor) => (
@@ -135,21 +134,24 @@ const Building = ({ onDataFloorChange }: { onDataFloorChange?: (dataFloor: any) 
                                             className="flex items-center h-[30px] cursor-pointe relative"
                                         >
                                             <div 
-                                                className="w-[180px] h-full flex items-center justify-center 
-                                                font-bold text-lg cursor-pointer"
+                                                className="w-[230px] h-full flex items-center justify-between 
+                                                font-bold  cursor-pointer"
                                                 style={{ backgroundColor: buildingColor }}
                                             >
-                                                <div className="flex items-center justify-start!py-2 ms-3 mr-auto">
+                                                <div className="flex items-center justify-start !py-2 ms-3">
                                                     <div className="border-1 border-gray-300 w-[25px] h-[15px] bg-white flex items-center justify-center">
                                                     </div>
                                                     <div className="border-1 border-gray-300 w-[25px] h-[15px] bg-white flex items-center justify-center">
                                                     </div>
                                                 </div>
-                                                <div className="flex items-center">
-                                                    {floor.isEvent && <AlarmIcon nameAlarm={floor.floorName} />}
-                                                    {!floor.isEvent && floor.floorName}
+                                                <div className="flex-1 px-2 flex items-center justify-center min-w-0">
+                                                    {floor.isEvent  ? (
+                                                        <AlarmIcon nameAlarm={floor.floorName} />
+                                                    ) : (
+                                                        <span className="truncate w-full text-center">{floor.floorName}</span>
+                                                    )}
                                                 </div>
-                                                <div className="flex items-center justify-start!py-2 mr-3 ms-auto">
+                                                <div className="flex items-center justify-start !py-2 me-3">
                                                     <div className="border-1 border-gray-300 w-[25px] h-[15px] bg-white flex items-center justify-center">
                                                     </div>
                                                     <div className="border-1 border-gray-300 w-[25px] h-[15px] bg-white flex items-center justify-center">
@@ -161,7 +163,7 @@ const Building = ({ onDataFloorChange }: { onDataFloorChange?: (dataFloor: any) 
                                 </div>
                             ))}
                         </div>
-                                                 <div className="h-4"></div>
+                        <div className="h-4"></div>
                          <div className="text-center !mt-auto">
                             <div className="font-bold text-sm">
                                 {building.name}

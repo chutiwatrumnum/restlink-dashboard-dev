@@ -276,7 +276,7 @@ const UploadPublic = (props: ComponentCreateProps) => {
           <Dragger
             accept="application/pdf"
             customRequest={({ file, onSuccess, onError }: any) => {
-              if (maxUploadFile === fileList.length) {
+              if (maxUploadFile < fileList.length) {
                 message.error(
                   `maximum file ${maxUploadFile} unit to one count upload.`
                 );

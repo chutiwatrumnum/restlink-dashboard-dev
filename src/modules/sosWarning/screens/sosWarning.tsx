@@ -9,7 +9,7 @@ import BuildingCondoOld from "../components/BuildingCondoOld";
 import { ModalFormUploadateImagePlan } from "../components/ModalFormUplodateImagePlan";
 import { ModalUploadPlan } from "../components/ModalUploadPlan";
 import SecurityAlarm from "./securityAlarm";
-import { Row, Col, Card, Spin, Button } from "antd";
+import { Row, Col, Card, Spin, Button, message } from "antd";
 import { deletePlanAccount, deleteMarker, getMasterData, getVillageData, getEmergency, getEventPending } from "../service/api/SOSwarning";
 import { dataSelectPlan, dataAllMap, SelectMarker } from "../../../stores/interfaces/SosWarning";
 import { io, Socket } from 'socket.io-client';
@@ -25,12 +25,14 @@ import { usePermission } from "../../../utils/hooks/usePermission";
 import Topbar from "../components/imageVillage/Topbar";
 import { isEqual } from 'lodash';
 import FailedModal from "../../../components/common/FailedModal";
+import { SOCKET_URL_SOS } from "../../../configs/configs";
+
 
 
 const SOSWarning = () => {
   const dispatch = useDispatch();
   const { projectData } = useSelector((state: RootState) => state.setupProject, isEqual);
-  const { dataEmergencyDetail,floorIdGlobal } = useSelector((state: RootState) => state.sosWarning, isEqual);
+  const { dataEmergencyDetail, floorIdGlobal } = useSelector((state: RootState) => state.sosWarning, isEqual);
 
   const permissions = useSelector(
     (state: RootState) => state.common?.permission
@@ -59,6 +61,9 @@ const SOSWarning = () => {
   const [openUploadPlan, setOpenUploadPlan] = useState<boolean>(false);
 
   const formVillageRef = useRef<HTMLDivElement>(null);
+
+  // ref สำหรับซิงค์การกดปุ่มกับฝั่ง Village
+  const syncToggleButtonRef = useRef<HTMLButtonElement>(null);
 
 
   // เพิ่ม state เพื่อตรวจสอบว่าได้ duplicate building แล้วหรือยัง
@@ -136,10 +141,24 @@ const SOSWarning = () => {
   const [isToastExpanded, setIsToastExpanded] = useState<boolean>(false);
   // State สำหรับเก็บสถานะ active marker
   const [hasActiveMarker, setHasActiveMarker] = useState<boolean>(false);
+  // State สำหรับเก็บ current markers
+  const [currentMarkers, setCurrentMarkers] = useState<any[]>([]);
+  const [isRightPanelCollapsed, setIsRightPanelCollapsed] = useState<boolean>(false);
   // เปลี่ยนจาก state เป็น useRef สำหรับ dataFloor
   const dataFloorRef = useRef<any>({});
+  // คอนเทนเนอร์หลักของโซนแผนที่/ฟอร์ม สำหรับคำนวณความสูงในโหมด work-it
+  const workItContainerRef = useRef<HTMLDivElement>(null);
+  const [workItHeightPx, setWorkItHeightPx] = useState<number | undefined>(undefined);
   // toast
   // const notify = () => toast("Wow so easy!");
+
+  // Responsive: เช็คว่าเป็นจอใหญ่ (>= 1024px) เพื่อควบคุมการ stack/side-by-side
+  const [isLgUp, setIsLgUp] = useState<boolean>(typeof window !== 'undefined' ? window.innerWidth >= 1024 : true);
+  useEffect(() => {
+    const handleResizeScreen = () => setIsLgUp(window.innerWidth >= 1024);
+    window.addEventListener('resize', handleResizeScreen);
+    return () => window.removeEventListener('resize', handleResizeScreen);
+  }, []);
 
   // Loading state
   const [isLoadingFirst, setIsLoadingFirst] = useState<boolean>(true);
@@ -473,10 +492,10 @@ const SOSWarning = () => {
     try {
 
       let dataAllMap = await getVillageData(floorId || null);
-      if(floorId && dataAllMap.status){
-        if(!dataAllMap.result.planImg || !dataAllMap.result.planInfoId){
+      if (floorId && dataAllMap.status) {
+        if (!dataAllMap.result.planImg || !dataAllMap.result.planInfoId) {
           FailedModal("Plan Not Found", 1200)
-          return 
+          return
         }
       }
 
@@ -493,7 +512,7 @@ const SOSWarning = () => {
       if (floorId) {
         await dispatch.sosWarning.setFloorIdGlobal(floorId || '');
       }
-      
+
 
       let dataEmergency = await getEventPending();
       // await getEmergency();
@@ -580,7 +599,7 @@ const SOSWarning = () => {
   // แยก Socket.IO ออกมาเป็น useEffect เฉพาะ
   useEffect(() => {
     async function connectSocket() {
-      const URL = "https://reslink-security-wqi2p.ondigitalocean.app/socket/sos/dashboard"
+      const URL = SOCKET_URL_SOS
       const access_token = encryptStorage.getItem("access_token");
       const projectID = await encryptStorage.getItem("projectId");
       const newSocket = io(URL, {
@@ -605,6 +624,7 @@ const SOSWarning = () => {
       });
 
       newSocket.on("sos", async (data) => {
+        console.log('sos',data)
         // อัพเดทข้อมูลทั้งชุดเมื่อได้รับข้อมูลใหม่
         if (data) {
           if (data?.marker?.marker?.length > 0) {
@@ -865,6 +885,38 @@ const SOSWarning = () => {
     setProjectName(projectName);
   };
 
+  // กำหนดความสูงแบบเต็มหน้าจอเฉพาะโหมด work-it
+  const isWorkIt = useMemo(() => currentMapMode === 'work-it', [currentMapMode]);
+  const mapContainerStyle = useMemo(() => (
+    isWorkIt
+      ? { padding: 0, height: 'calc(100vh - 160px)' }
+      : { padding: 0, height: '100%' }
+  ), [isWorkIt]);
+  const workItHeight = useMemo(() => (isWorkIt ? 'calc(100vh - 160px)' : undefined), [isWorkIt]);
+
+  // คำนวณความสูงจริงตามตำแหน่งคอนเทนเนอร์ (รองรับความสูง header เปลี่ยนแปลง)
+  const updateWorkItHeight = useCallback(() => {
+    if (!isWorkIt || !isLgUp) {
+      setWorkItHeightPx(undefined);
+      return;
+    }
+    const el = workItContainerRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const available = window.innerHeight - rect.top; // ความสูงที่เหลือจากด้านบนถึงล่างสุดของ viewport
+    setWorkItHeightPx(available > 0 ? available : undefined);
+  }, [isWorkIt, isLgUp]);
+
+  useEffect(() => {
+    updateWorkItHeight();
+    window.addEventListener('resize', updateWorkItHeight);
+    return () => window.removeEventListener('resize', updateWorkItHeight);
+  }, [updateWorkItHeight]);
+
+  useEffect(() => {
+    // อัปเดตเมื่อ layout ภายในมีการเปลี่ยนแปลงที่กระทบตำแหน่ง
+    updateWorkItHeight();
+  }, [isWorkIt, isRightPanelCollapsed, alertMarkers.red.length, alertMarkers.yellow.length, shouldShowVillageForm, uploadedImage, projectName, planType]);
 
   const confirmDeletePlan = async (id: string) => {
     setLoadingText("กำลังลบแผนที่...");
@@ -903,6 +955,11 @@ const SOSWarning = () => {
   // Handler สำหรับรับสถานะ active marker จาก VillageMapTS
   const handleActiveMarkerChange = (isActive: boolean) => {
     setHasActiveMarker(isActive);
+  };
+
+  // Callback สำหรับรับ markers จาก VillageMapTS
+  const handleMarkersChange = (markers: any[]) => {
+    setCurrentMarkers(markers);
   };
 
   // Handler สำหรับรับข้อมูล dataFloor จาก BuildingCondoOld
@@ -954,6 +1011,8 @@ const SOSWarning = () => {
           style={{ display: Object.keys(dataEmergencyDetail).length > 0 ? 'none' : 'block' }}
           className="position-relative" >
           <GlobalProvider
+            isRightPanelCollapsed={isRightPanelCollapsed}
+            syncToggleButtonRef={syncToggleButtonRef}
             dataMapAll={dataMapAll}
             dataAllMap={dataMapAll}
             setDataAllMap={setDataMapAll}
@@ -975,6 +1034,8 @@ const SOSWarning = () => {
                 setTimeout(() => villageMapRefreshRef.current && villageMapRefreshRef.current(), 600);
               }
             }}
+            setIsRightPanelCollapsed={setIsRightPanelCollapsed}
+            villageMapRefreshRef={villageMapRefreshRef}
           >
             <div className="min-h-screen  relative !bg-white flex flex-col"
               style={{ zIndex: '1' }}>
@@ -990,7 +1051,7 @@ const SOSWarning = () => {
                 planType={planType}
                 loadFirst={loadFirst}
                 dataMapAll={dataMapAll}
-              />
+              />  
 
               <ModalFormUploadateImagePlan
                 isModalOpen={isModalOpenPlan}
@@ -1013,35 +1074,43 @@ const SOSWarning = () => {
               <div className="px-6 pt-4">
                 {
                   uploadedImage && (TypeProject === 'condo') && (
-                    <Button type="primary" 
-                    size="large"
-                    className=" !rounded-xl w-[150px] !h-[40px]" 
-                    onClick={() => {
-                      setStatusAcknowledge(false)
-                      setDataMapAll({
-                        id: '',
-                        planInfoId: '',
-                        projectName: '',
-                        planTypeId: 70,
-                        planType: '',
-                        planTypeCondo: '',
-                        floor: '',
-                        planImg: '',
-                        marker: [],
-                        zone: []
-                      })
-                      loadFirst()
-                      dispatch.sosWarning.setDataEmergencyDetail({})
-                      dispatch.sosWarning.setDataFloor({});
-                      setUploadedImage(null)
+                    <Button type="primary"
+                      size="large"
+                      className=" !rounded-xl w-[150px] !h-[40px]"
+                      onClick={() => {
+                        setStatusAcknowledge(false)
+                        setDataMapAll({
+                          id: '',
+                          planInfoId: '',
+                          projectName: '',
+                          planTypeId: 70,
+                          planType: '',
+                          planTypeCondo: '',
+                          floor: '',
+                          planImg: '',
+                          marker: [],
+                          zone: []
+                        })
+                        loadFirst()
+                        dispatch.sosWarning.setDataEmergencyDetail({})
+                        dispatch.sosWarning.setDataFloor({});
+                        setUploadedImage(null)
+                        setCurrentMapMode('preview')
 
-                      // Refresh map หลังจาก data เปลี่ยน
-                      setTimeout(() => {
-                        if (villageMapRefreshRef.current) {
-                          villageMapRefreshRef.current();
-                        }
-                      }, 100);
-                    }}>
+                        // รีเซ็ตสถานะการแก้ไข/สร้าง marker ทั้งหมด
+                        setIsCreatingMode(false)
+                        setHasActiveMarker(false)
+                        setSelectedMarker(null)
+                        setShouldShowVillageForm(false)
+                        setShouldShowWarningSOS(true)
+
+                        // Refresh map หลังจาก data เปลี่ยน
+                        setTimeout(() => {
+                          if (villageMapRefreshRef.current) {
+                            villageMapRefreshRef.current();
+                          }
+                        }, 100);
+                      }}>
                       Back
                     </Button>
                   )
@@ -1071,29 +1140,29 @@ const SOSWarning = () => {
                 </div>
 
                 <div className="flex flex-col md:flex-row gap-3 
-                items-start md:items-center px-6 md:ms-6 md:px-0 mb-4 md:mb-0 ">
+                items-start md:items-center px-6 md:ms-6 md:px-0 mb-4 md:mb-0  w-full">
+
                   {/* ปุ่มแยกสำหรับสลับโหมด */}
                   {(dataMapAll?.id || uploadedImage) && (
-                    <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full">
+                    <div className="flex  gap-2 sm:gap-3 w-full">
                       <button
-                        onClick={() => !hasActiveMarker && handleMapModeChange('preview')}
-                        disabled={hasActiveMarker}
+                        onClick={() => {
+                          if (hasActiveMarker || isCreatingMode) {
+                            message.warning('Still in the process of creating/editing marker, please confirm or cancel first');
+                            return;
+                          }
+                          handleMapModeChange('preview');
+                        }}
                         className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium 
                           transition-all duration-200 h-10 sm:h-12 w-full sm:w-auto md:w-40 
                           rounded-xl
                           cursor-pointer
-                  ${hasActiveMarker
-                            ? 'cursor-not-allowed bg-gray-200 text-gray-400'
-                            : 'cursor-pointer'
-                          }
-                  ${currentMapMode === 'preview'
+                          ${currentMapMode === 'preview'
                             ? 'bg-blue-500 !text-white shadow-sm'
-                            : hasActiveMarker
-                              ? 'bg-gray-200 text-gray-400'
-                              : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
+                            : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
                           }
-                `}
-                        title={hasActiveMarker ? 'มีการแก้ไข marker อยู่ กรุณายืนยันหรือยกเลิกก่อน' : ''}
+                        `}
+                        title={(hasActiveMarker || isCreatingMode) ? 'Still in the process of creating/editing marker, please confirm or cancel first' : ''}
                       >
                         PREVIEW
                       </button>
@@ -1102,31 +1171,63 @@ const SOSWarning = () => {
                         disabled={hasActiveMarker}
                         className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium transition-all 
                           duration-200 h-10 sm:h-12 w-full sm:w-auto md:w-40 rounded-xl cursor-pointer
-                  ${hasActiveMarker
+                          ${hasActiveMarker
                             ? 'cursor-not-allowed bg-gray-200 text-gray-400'
                             : 'cursor-pointer'
                           }
-                  ${currentMapMode === 'work-it'
+                          ${currentMapMode === 'work-it'
                             ? 'bg-blue-500 !text-white shadow-sm'
                             : hasActiveMarker
                               ? 'bg-gray-200 text-gray-400'
                               : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
                           }
-                `}
+                        `}
                         title={hasActiveMarker ? 'There is an active marker, please confirm or cancel first' : ''}
                       >
                         EDIT MARKER
                       </button>
                       <button
-                      style={{cursor: 'pointer'}}
+                        style={{ cursor: 'pointer' }}
                         onClick={() => setIsModalOpenPlan(true)}
                         disabled={hasActiveMarker}
                         className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium 
-                        transition-all duration-200 h-10 sm:h-12 w-full sm:w-auto md:w-40 rounded-xl 
-                        bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 cursor-pointer disabled:cursor-pointer"
+                        transition-all duration-200 h-10 sm:h-12 w-full sm:w-auto md:w-40 rounded-xl !me-auto 
+                        bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 cursor-pointer 
+                        disabled:cursor-pointer"
                       >
                         EDIT PLAN
                       </button>
+                      <button
+                        ref={syncToggleButtonRef}
+                        onClick={() => {
+                          setIsRightPanelCollapsed(prev => !prev);
+                          const refresh = () => {
+                            if (villageMapRefreshRef.current) {
+                              villageMapRefreshRef.current();
+                            }
+                          }; 
+                          setTimeout(refresh, 0);
+                          setTimeout(refresh, 50);
+                          setTimeout(refresh, 100);
+                          setTimeout(refresh, 150);
+                          setTimeout(refresh, 200);
+                          setTimeout(refresh, 300);
+                          setTimeout(refresh, 400);
+                        }}
+                        className={` hidden  ms-auto px-3 py-2 text-sm rounded-xl  bg-white  cursor-pointer md:w-40 
+                          flex items-center justify-end`}
+                        title={isRightPanelCollapsed ? 'Show panel' : 'Hide panel'}
+                        aria-label={isRightPanelCollapsed ? 'Close panel' : 'Open panel'}
+                      >
+                        <span className="relative inline-block w-6 h-6">
+                          <span className={`absolute left-1/2 -translate-x-1/2 block h-[2px] w-6 bg-gray-700 rounded transition-all duration-300 ease-in-out origin-center ${isRightPanelCollapsed ? 'top-1/2 -translate-y-1/2 rotate-45' : 'top-0 rotate-0'}`}></span>
+                          <span className={`absolute left-1/2 -translate-x-1/2 block h-[2px] w-6 bg-gray-700 rounded transition-all duration-300 ease-in-out origin-center ${isRightPanelCollapsed ? 'opacity-0 top-1/2 -translate-y-1/2' : 'opacity-100 top-1/2 -translate-y-1/2'}`}></span>
+                          <span className={`absolute left-1/2 -translate-x-1/2 block h-[2px] w-6 bg-gray-700 rounded transition-all duration-300 ease-in-out origin-center ${isRightPanelCollapsed ? 'top-1/2 -translate-y-1/2 -rotate-45' : 'bottom-0 rotate-0'}`}></span>
+                        </span>
+                      </button>
+
+
+
                     </div>
                   )}
                 </div>
@@ -1134,22 +1235,23 @@ const SOSWarning = () => {
 
               {/* แสดงผล village */}
               {uploadedImage && (
-                <div className="flex-1 overflow-hidden" onClick={handleAreaClick}>
-                  <Card className="h-full" styles={{ body: { padding: 0, height: '100%' } }}>
-                    <Row gutter={0} className="h-full test flex-col sm:flex-row">
+                <div className="flex-1 overflow-auto lg:overflow-hidden" onClick={handleAreaClick} ref={workItContainerRef}>
+                  <div className="h-full rounded-none" style={isLgUp ? (workItHeightPx !== undefined ? { padding: 0, height: workItHeightPx } : mapContainerStyle) : { padding: 0 }}>
+                    <Row gutter={0} className="h-full test flex-col lg:flex-row" style={isLgUp ? (workItHeightPx !== undefined ? { height: '100%' } : (workItHeight ? { height: workItHeight } : undefined)) : undefined}>
                       {/* แผนที่ - ปรับขนาดตามสภาพการแสดง form */}
                       <Col
                         span={24}
                         sm={24}
                         md={24}
-                        lg={16}
-                        className={`transition-all duration-300 ease-in-out ${
-                          // เพิ่ม animation เมื่อเปลี่ยนขนาด
-                          (alertMarkers.red.length === 0 && alertMarkers.yellow.length === 0 && !shouldShowVillageForm) ||
-                            currentMapMode === 'preview' ? 'lg:w-full' : 'lg:w-2/3'
+                        lg={isRightPanelCollapsed ? 24 : 16}
+                        className={`transition-all duration-300 ease-in-out ${isWorkIt && isLgUp ? 'h-full ' : ''}${isRightPanelCollapsed
+                            ? 'lg:w-full'
+                            : ((alertMarkers.red.length === 0 && alertMarkers.yellow.length === 0 && !shouldShowVillageForm) || currentMapMode === 'preview')
+                              ? 'lg:w-full'
+                              : 'lg:w-2/3'
                           }`}
                       >
-                        <div ref={imageRef}>
+                        <div ref={imageRef} className={`${isWorkIt && isLgUp ? 'h-full' : ''}`}>
                           <ImageVillage
                             uploadedImage={uploadedImage || ""}
                             projectName={projectName}
@@ -1185,6 +1287,7 @@ const SOSWarning = () => {
                             setUnitHover={setUnitHover}
                             setUnitClick={setUnitClick}
                             onActiveMarkerChange={handleActiveMarkerChange}
+                            onMarkersChange={handleMarkersChange}
                             currentDataFloor={dataFloorRef.current}
                           />
                         </div>
@@ -1193,13 +1296,14 @@ const SOSWarning = () => {
                       {/* Form ด้านขวา - แยกเป็น 2 กรณี */}
                       <>
                         {/* กรณีที่ 1: แสดง FormVillageLocation */}
-                        {currentMapMode === 'work-it' && (
+                        {currentMapMode === 'work-it' && !isRightPanelCollapsed && (
                           <Col
                             span={24}
                             sm={24}
                             md={24}
                             lg={8}
-                            className="animate-slide-in-right"
+                            className={`animate-slide-in-right ${isWorkIt && isLgUp ? 'h-full' : ''}`}
+                            style={isLgUp ? (workItHeightPx !== undefined ? { height: '100%' } : (workItHeight ? { height: workItHeight } : undefined)) : undefined}
                           >
 
                             <div className="shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.1)] h-full">
@@ -1232,13 +1336,14 @@ const SOSWarning = () => {
                                   hasActiveMarker={!!selectedMarker}
                                   dataAllMap={dataMapAll}
                                   floorIdGlobal={floorIdGlobal || ''}
+                                  existingMarkers={currentMarkers || []} // ส่ง markers ปัจจุบันจาก VillageMapTS
                                 />
                               </div>
                             </div>
                           </Col>
                         )}
 
-                        {(currentMapMode === 'preview') && (
+                        {(currentMapMode === 'preview') && !isRightPanelCollapsed && (
                           <Col
                             span={24}
                             sm={24}
@@ -1246,7 +1351,7 @@ const SOSWarning = () => {
                             lg={8}
                             className="animate-slide-in-right !shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.1)]"
                           >
-                            <div className="animate-fade-in h-full">
+                            <div className="animate-fade-in lg:h-full">
                               <FormWarningSOS
                                 alertMarkers={alertMarkers}
                                 dataMapAll={dataMapAll}
@@ -1264,12 +1369,12 @@ const SOSWarning = () => {
                       </>
 
                     </Row>
-                  </Card>
+                  </div>
                 </div>
               )}
               {/* แสดงผล condo */}
               {TypeProject === 'condo' && !uploadedImage && (
-                <div className="flex-1 overflow-hidden" onClick={handleAreaClick}>
+                <div className="flex-1 overflow-auto lg:overflow-hidden" onClick={handleAreaClick}>
                   <div className="h-full">
                     <div ref={imageRef} className="h-full">
                       {
@@ -1288,8 +1393,8 @@ const SOSWarning = () => {
                         )
                       }
 
-                      {
-                        numberBuilding > 2 &&  (
+                      { 
+                        numberBuilding > 2 && (
                           <Row>
                             <Col
                               span={24}

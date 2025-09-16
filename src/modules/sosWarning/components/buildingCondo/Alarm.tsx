@@ -8,9 +8,9 @@ const AlarmIcon = ({nameAlarm}:{nameAlarm:string}) => {
                         alarm-bell-body text-normal flex items-center 
                         justify-center 
                         text-xs  text-center font-bold
-                        absolute inset-0
+                        absolute inset-0 overflow-hidden
                     ">
-                        {nameAlarm}
+                        <span className="truncate w-full px-[2px]">{nameAlarm}</span>
                     </div>
                 </div>
                 <div className="alarm-waves">

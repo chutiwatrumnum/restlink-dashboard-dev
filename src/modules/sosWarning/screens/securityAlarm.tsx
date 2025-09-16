@@ -17,13 +17,13 @@ const SecurityAlarm = () => {
         let dataContact:any[] = []
         
         if(contact!='-'){
-            dataContact = [...dataContact, contact]
+            dataContact = [contact]
         }
         if(contact2!='-'){
-            dataContact = [...dataContact, contact2]
+            dataContact = [contact2]
         }
         if(contact3!='-'){
-            dataContact = [...dataContact, contact3]
+            dataContact = [contact3]
         }
         if(dataContact.length === 0){
             return []
@@ -78,12 +78,15 @@ const SecurityAlarm = () => {
     // }, [dataEmergencyDetail])
     const typeEmergency = {
         emergency: <CardEmergency></CardEmergency>,
-        DeviceWarning: <CardWarning></CardWarning>
+        DeviceWarning: <CardWarning></CardWarning>,
+        device: <CardWarning></CardWarning>
     }
     return (
         <SecurityAlarmProvider handleCallCustomer={handleCallCustomer}>
-            <div className="min-h-screen lg:h-screen overflow-auto lg:overflow-hidden pb-4 lg:pb-6 rounded-b-2xl">
-                {typeEmergency[dataEmergencyDetail.type as keyof typeof typeEmergency]}
+            <div className="h-screen flex flex-col overflow-hidden rounded-b-2xl">
+                <div className="flex-1 overflow-auto">
+                    {typeEmergency[dataEmergencyDetail.type as keyof typeof typeEmergency]}
+                </div>
             </div>
         </SecurityAlarmProvider>
     )

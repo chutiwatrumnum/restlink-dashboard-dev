@@ -78,9 +78,10 @@ const TepStep: React.FC<TepStepProps> = ({ currentStep = 1 }) => {
   ]);
  
   const stepsWithTime: StepData[] = useMemo(() => {
-    const dataObj: Record<'emergency' | 'DeviceWarning', StepData[]> = {
+    const dataObj: Record<'emergency' | 'DeviceWarning' | 'device', StepData[]> = {
       emergency: stepsEmergency,
-      DeviceWarning: stepsDeviceWarning
+      DeviceWarning: stepsDeviceWarning,
+      device: stepsDeviceWarning
     };
     let dataTime: StepData[] = JSON.parse(JSON.stringify(dataObj[dataEmergencyDetail?.type as keyof typeof dataObj] || []));
 
@@ -118,8 +119,6 @@ const TepStep: React.FC<TepStepProps> = ({ currentStep = 1 }) => {
 
   return (
     <>
-
-
 
       <div className="tep-step-container">
         <div className="w-full md:w-auto">

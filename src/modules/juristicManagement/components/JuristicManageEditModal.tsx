@@ -38,12 +38,12 @@ const JuristicManageEditModal = ({
     const payload = {
       givenName: values.firstName,
       familyName: values.lastName,
-      middleName: values.middleName || "",
+      middleName: values.middleName || null,
       contact: values.contact,
       roleId: values.roleId,
     };
 
-    console.log(data.userId, payload);
+    // console.log(data.userId, payload);
     showEditConfirm(data.userId, payload);
   };
 
@@ -109,7 +109,8 @@ const JuristicManageEditModal = ({
         onFinish={onFinish}
         onFinishFailed={() => {
           console.log("FINISHED FAILED");
-        }}>
+        }}
+      >
         <Row gutter={[24, 16]}>
           {/* Left Column */}
           <Col xs={24} md={12}>
@@ -119,7 +120,8 @@ const JuristicManageEditModal = ({
                 <Form.Item<JuristicAddNew>
                   label="First name"
                   name="firstName"
-                  rules={requiredRule}>
+                  rules={requiredRule}
+                >
                   <Input
                     size="large"
                     placeholder="Please input first name"
@@ -133,7 +135,8 @@ const JuristicManageEditModal = ({
               <Col span={24}>
                 <Form.Item<JuristicAddNew>
                   label="Middle name"
-                  name="middleName">
+                  name="middleName"
+                >
                   <Input
                     size="large"
                     placeholder="Please input middle name"
@@ -148,7 +151,8 @@ const JuristicManageEditModal = ({
                 <Form.Item<JuristicAddNew>
                   label="Last name"
                   name="lastName"
-                  rules={requiredRule}>
+                  rules={requiredRule}
+                >
                   <Input
                     size="large"
                     placeholder="Please input last name"
@@ -168,7 +172,8 @@ const JuristicManageEditModal = ({
                 <Form.Item<JuristicAddNew>
                   label="Phone number"
                   name="contact"
-                  rules={telRule}>
+                  rules={telRule}
+                >
                   <Input
                     size="large"
                     placeholder="Please input phone number"
@@ -183,7 +188,8 @@ const JuristicManageEditModal = ({
                 <Form.Item<JuristicAddNew>
                   label="Role"
                   name="roleId"
-                  rules={requiredRule}>
+                  rules={requiredRule}
+                >
                   <Select
                     placeholder="Select a role"
                     options={roleData}
@@ -199,7 +205,8 @@ const JuristicManageEditModal = ({
               <Form.Item<JuristicAddNew>
                 label="Email"
                 name="email"
-                rules={emailRule}>
+                rules={emailRule}
+              >
                 <Input
                   size="large"
                   placeholder="Please input email"
@@ -237,7 +244,8 @@ const JuristicManageEditModal = ({
         ]}
         onCancel={onClose}
         className="managementFormModal"
-        confirmLoading={isLoading}>
+        confirmLoading={isLoading}
+      >
         <ModalContent />
       </Modal>
     </>

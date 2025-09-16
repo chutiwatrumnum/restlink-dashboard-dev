@@ -188,14 +188,14 @@ const DeliveryLogs = () => {
       dataIndex: "ToDateTime",
       align: "center",
     },
-    {
-      title: "Pick-up type",
-      dataIndex: "pickUpType",
-      align: "center",
-      sorter: {
-        compare: (a, b) => a.name.localeCompare(b.name),
-      },
-    },
+    // {
+    //   title: "Pick-up type",
+    //   dataIndex: "pickUpType",
+    //   align: "center",
+    //   sorter: {
+    //     compare: (a, b) => a.name.localeCompare(b.name),
+    //   },
+    // },
     {
       title: "Collected",
       dataIndex: "collected",

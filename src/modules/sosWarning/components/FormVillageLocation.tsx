@@ -1,4 +1,4 @@
-import { Form, Input, Select, Button } from "antd";
+import { Form, Input, Select, Button, Modal } from "antd";
 import { useEffect, useState, useRef, useMemo } from "react";
 import { dataSelectPlan } from "../../../stores/interfaces/SosWarning";
 import { getAddress, createMarker, updateMarker } from "../service/api/SOSwarning";
@@ -6,6 +6,7 @@ import { MarkerProcess } from "../../../stores/interfaces/SosWarning";
 import { dataAllMap } from "../../../stores/interfaces/SosWarning";
 import ConfirmModal from "../../../components/common/ConfirmModal";
 import SuccessModal from "../../../components/common/SuccessModal";
+import FailedModal from "../../../components/common/FailedModal";
 interface FormVillageLocationProps {
     onCancel?: () => void;
     onConfirm?: () => void;
@@ -49,6 +50,7 @@ interface FormVillageLocationProps {
     onEditMarkerData?: (data: any) => void;
     dataAllMap: dataAllMap;
     floorIdGlobal: string;
+    existingMarkers?: any[]; // เพิ่ม prop สำหรับ markers ที่มีอยู่แล้ว
 }
 
 const FormVillageLocation = ({
@@ -74,6 +76,7 @@ const FormVillageLocation = ({
     setDataMapAll,
     onMarkerSelect,
     floorIdGlobal,
+    existingMarkers = [], // รับ prop existingMarkers
 }: FormVillageLocationProps) => {
     const [form] = Form.useForm();
     const [isFormValid, setIsFormValid] = useState(false);
@@ -89,6 +92,35 @@ const FormVillageLocation = ({
     const lastFormUpdateTimeRef = useRef<number>(0);
     const isCancellingRef = useRef<boolean>(false); // flag เพื่อป้องกัน useEffect ทำงานหลังจากกด cancel // เก็บเวลาล่าสุดที่ update form
     const isConfirmingRef = useRef<boolean>(false); // flag เพื่อป้องกัน racing condition หลัง confirm
+
+    // ฟังก์ชันตรวจสอบว่า address ถูกใช้แล้วหรือไม่
+    const isAddressUsed = (addressId: number | string): boolean => {
+        // ถ้าเป็นการแก้ไข marker ที่มีอยู่แล้ว ให้ยกเว้น marker ปัจจุบัน
+        const currentMarkerId = selectedMarker?.id;
+        
+        return existingMarkers.some(marker => {
+            // ยกเว้น marker ปัจจุบันที่กำลังแก้ไข
+            if (currentMarkerId && marker.id === currentMarkerId) {
+                return false;
+            }
+            
+            // ยกเว้น marker จำลอง (temporary marker) ที่มี ID เป็น timestamp
+            // Temporary marker จะมี ID เป็นตัวเลขขนาดใหญ่ (มากกว่า 1000000)
+            const isTemporaryMarker = typeof marker.id === 'number' && marker.id > 1000000;
+            if (isTemporaryMarker) {
+                return false;
+            }
+            
+            // ตรวจสอบ unitID หรือ address
+            return marker.unitID == addressId || marker.address == addressId;
+        });
+    };
+
+    // ฟังก์ชันสำหรับกรอง address options ที่ใช้ได้ (แสดงทั้งหมดแต่ disable ตัวที่ใช้แล้ว)
+    const getAllAddressOptions = () => {
+        if (!dataSelectPlan?.unit) return [];
+        return dataSelectPlan.unit;
+    };
 
 
 
@@ -441,13 +473,11 @@ const FormVillageLocation = ({
                     let tel2 = storeAddress.result.user?.contact2 || storeAddress.result.contact2 || '';
                     let tel3 = storeAddress.result.user?.contact3 || storeAddress.result.contact3 || '';
 
-                    // ดึง roomAddress จาก dataSelectPlan.unit
-                    const selectedUnit = dataSelectPlan?.unit?.find((unit: any) => unit.id === Number(value));
-                    // ดึง roomAddress และตรวจสอบค่า
-                    const roomAddressText = selectedUnit?.roomAddress || '';
-                    // อัพเดท marker name ทันทีด้วย roomAddress
-                    if (selectedMarker && onMarkerNameChange && roomAddressText) {
-                        onMarkerNameChange(selectedMarker.id, roomAddressText);
+                    // ดึง floorName จากผลลัพธ์ API
+                    const floorNameText = storeAddress?.result?.floor?.floorName || '';
+                    // อัพเดท marker name ทันทีด้วย floorName
+                    if (selectedMarker && onMarkerNameChange && floorNameText) {
+                        onMarkerNameChange(selectedMarker.id, floorNameText);
                     }
                     // อัพเดทข้อมูลใน form
                     const fieldsToUpdate = {
@@ -565,241 +595,261 @@ const FormVillageLocation = ({
 
     // ฟังก์ชันจัดการเมื่อกด Submit (Confirm)
     const handleSubmit = async () => {
-        ConfirmModal({
-            title: "Confirm Update Data",
-            message: "",
-            okMessage: "Confirm",
-            cancelMessage: "Cancel",
-            onOk: async () => {
-                // Set flag เพื่อป้องกัน racing condition
-                isConfirmingRef.current = true;
-                // ตรวจสอบ validation ก่อน (เหลือแค่ address)
-                const values = form.getFieldsValue();
-                if (!values.address) {
-                    return;
-                }
-                // ดึงข้อมูล marker ที่กำลังสร้างหรือแก้ไขจาก form
-                let colorStatus = {
-                    "green": "normal",
-                    "red": "emergency",
-                    "yellow": "warning",
-                }
-
-                // หา roomAddress ที่ตรงกับ address ที่เลือก
-                const selectedUnit = dataSelectPlan?.unit?.find((unit: any) => unit.id.toString() === values.address.toString());
-                const markerName = selectedUnit?.roomAddress || values.name || '';
-
-                // ตรวจสอบว่าเป็นการสร้างใหม่หรือแก้ไข โดยใช้ isCreatingMode prop
-                const isCreateMode = isCreatingMode === true;
-                const isUpdateMode = isCreatingMode === false;
-                // แสดงข้อความตามโหมด
-                if (isCreateMode) {
-                    const markerData: MarkerProcess = {
-                        // villageId: idVillage,
-                        planInfoId: dataAllMap?.planInfoId || '',
-                        floorId: Number(floorIdGlobal) || null,
-                        unitId: Number(values.address), // ใช้ค่าจาก form address ซึ่งจะเป็น unitID
-                        markerType: "marker",
-                        markerInfo: {
-                            // id: selectedMarker?.id?.toString() || "",
-                            name: markerName, // ใช้ roomAddress แทน name จาก form
-                            status: colorStatus[selectedMarker?.color as keyof typeof colorStatus],
-                            position: {
-                                x: selectedMarker?.x?.toFixed(2) || "",
-                                y: selectedMarker?.y?.toFixed(2) || ""
-                            },
-                            size: 6,
-                            rotationDegrees: "0°",
-                            group: selectedMarker?.group || ""
-                        },
-                    };
-
-
-                    let data = await createMarker(markerData)
-                    if (data.status) {
-                        SuccessModal("Marker created successfully", 900)
-                        // อัพเดท marker ด้วยข้อมูลที่ได้จาก API
-                        if (data.result && selectedMarker) {
-                            // ตรวจสอบ structure ของ data.result
-                            let newMarkerData = null;
-
-                            // Case 1: data.result.marker เป็น array - ใช้ตัวสุดท้าย
-                            if (data.result.marker && Array.isArray(data.result.marker) && data.result.marker.length > 0) {
-                                newMarkerData = data.result.marker[data.result.marker.length - 1];
+        // Custom ConfirmModal with green confirm and red cancel buttons
+        Modal.confirm({
+            icon: null,
+            title: <span style={{ fontWeight: 'normal' }}>Confirm Update Data</span>,
+            width: 500,
+            content: null,
+            footer: (
+                <div className="flex gap-4 mt-6">
+                    <Button
+                        type="primary"
+                        onClick={async () => {
+                            Modal.destroyAll();
+                            // Set flag เพื่อป้องกัน racing condition
+                            isConfirmingRef.current = true;
+                            // ตรวจสอบ validation ก่อน (เหลือแค่ address)
+                            const values = form.getFieldsValue();
+                            if (!values.address) {
+                                return;
                             }
-                            // Case 2: data.result เป็น marker object โดยตรง
-                            else if (data.result.id) {
-                                newMarkerData = data.result;
+                            // ดึงข้อมูล marker ที่กำลังสร้างหรือแก้ไขจาก form
+                            let colorStatus = {
+                                "green": "normal",
+                                "red": "emergency",
+                                "yellow": "warning",
                             }
-                            // Case 3: data.result เป็น array ของ markers - ใช้ตัวสุดท้าย
-                            else if (Array.isArray(data.result) && data.result.length > 0) {
-                                newMarkerData = data.result[data.result.length - 1];
-                            }
+                            // หา roomAddress ที่ตรงกับ address ที่เลือก
+                            const selectedUnit = dataSelectPlan?.unit?.find((unit: any) => unit.id.toString() === values.address.toString());
+                            const markerName = selectedUnit?.roomAddress || values.name || '';
 
-                            if (newMarkerData) {
-                                // สร้าง updated marker object ด้วยข้อมูลจาก API
-                                const updatedMarker = {
-                                    ...selectedMarker, // ใช้ข้อมูลเดิมของ selectedMarker เป็นฐาน
-                                    id: newMarkerData.id ? (typeof newMarkerData.id === 'string' ? newMarkerData.id : newMarkerData.id.toString()) : selectedMarker.id, // แปลง id เป็น string หรือใช้ selectedMarker.id เดิม
-                                    name: markerName, // ใช้ roomAddress แทน name จาก form
-                                    unitID: newMarkerData.unitID || newMarkerData.address || values.address, // ใช้ unitID จาก API หรือจาก form
-                                    address: values.address, // ใช้ address จาก form เสมอ
-                                    roomAddress: newMarkerData.roomAddress || "",
-                                    unitNo: newMarkerData.unitNo || "",
-                                    tel1: values.tel1 || "", // ใช้ tel จาก form เสมอ
-                                    tel2: values.tel2 || "",
-                                    tel3: values.tel3 || ""
+                            // ตรวจสอบว่าเป็นการสร้างใหม่หรือแก้ไข โดยใช้ isCreatingMode prop
+                            const isCreateMode = isCreatingMode === true;
+                            const isUpdateMode = isCreatingMode === false;
+                            // แสดงข้อความตามโหมด
+                            if (isCreateMode) {
+                                const markerData: MarkerProcess = {
+                                    // villageId: idVillage,
+                                    planInfoId: dataAllMap?.planInfoId || '',
+                                    floorId: Number(floorIdGlobal) || null,
+                                    unitId: Number(values.address), // ใช้ค่าจาก form address ซึ่งจะเป็น unitID
+                                    markerType: "marker",
+                                    markerInfo: {
+                                        // id: selectedMarker?.id?.toString() || "",
+                                        name: markerName, // ใช้ roomAddress แทน name จาก form
+                                        status: colorStatus[selectedMarker?.color as keyof typeof colorStatus],
+                                        position: {
+                                            x: selectedMarker?.x?.toFixed(2) || "",
+                                            y: selectedMarker?.y?.toFixed(2) || ""
+                                        },
+                                        size: 6,
+                                        rotationDegrees: "0°",
+                                        group: selectedMarker?.group || ""
+                                    },
                                 };
-                                // อัพเดท marker ทั้งหมดก่อนปิด form
-                                if (onMarkerUpdate) {
-                                    // แปลง selectedMarker.id เป็น string เพื่อส่งไปยัง handleMarkerUpdate
-                                    onMarkerUpdate(selectedMarker.id.toString(), updatedMarker);
+
+
+                                let data = await createMarker(markerData)
+                                if (data.status) {
+                                    SuccessModal("Marker created successfully", 900)
+                                    // อัพเดท marker ด้วยข้อมูลที่ได้จาก API
+                                    if (data.result && selectedMarker) {
+                                        // ตรวจสอบ structure ของ data.result
+                                        let newMarkerData = null;
+
+                                        // Case 1: data.result.marker เป็น array - ใช้ตัวสุดท้าย
+                                        if (data.result.marker && Array.isArray(data.result.marker) && data.result.marker.length > 0) {
+                                            newMarkerData = data.result.marker[data.result.marker.length - 1];
+                                        }
+                                        // Case 2: data.result เป็น marker object โดยตรง
+                                        else if (data.result.id) {
+                                            newMarkerData = data.result;
+                                        }
+                                        // Case 3: data.result เป็น array ของ markers - ใช้ตัวสุดท้าย
+                                        else if (Array.isArray(data.result) && data.result.length > 0) {
+                                            newMarkerData = data.result[data.result.length - 1];
+                                        }
+
+                                        if (newMarkerData) {
+                                            // สร้าง updated marker object ด้วยข้อมูลจาก API
+                                            const updatedMarker = {
+                                                ...selectedMarker, // ใช้ข้อมูลเดิมของ selectedMarker เป็นฐาน
+                                                id: newMarkerData.id ? (typeof newMarkerData.id === 'string' ? newMarkerData.id : newMarkerData.id.toString()) : selectedMarker.id, // แปลง id เป็น string หรือใช้ selectedMarker.id เดิม
+                                                name: markerName, // ใช้ roomAddress แทน name จาก form
+                                                unitID: newMarkerData.unitID || newMarkerData.address || values.address, // ใช้ unitID จาก API หรือจาก form
+                                                address: values.address, // ใช้ address จาก form เสมอ
+                                                roomAddress: newMarkerData.roomAddress || "",
+                                                unitNo: newMarkerData.unitNo || "",
+                                                tel1: values.tel1 || "", // ใช้ tel จาก form เสมอ
+                                                tel2: values.tel2 || "",
+                                                tel3: values.tel3 || ""
+                                            };
+                                            // อัพเดท marker ทั้งหมดก่อนปิด form
+                                            if (onMarkerUpdate) {
+                                                // แปลง selectedMarker.id เป็น string เพื่อส่งไปยัง handleMarkerUpdate
+                                                onMarkerUpdate(selectedMarker.id.toString(), updatedMarker);
+                                            }
+                                        }
+                                        if (data) {
+                                            // อัพเดท marker
+                                            if (data.result.marker && Array.isArray(data.result.marker)) {
+                                                setDataMapAll((prev: any) => ({
+                                                    ...prev,
+                                                    marker: data.result.marker
+                                                }));
+                                            }
+                                        }
+                                    }
                                 }
-                            }
-                            if (data) {
-                                // อัพเดท marker
-                                if (data.result.marker && Array.isArray(data.result.marker)) {
-                                    setDataMapAll((prev: any) => ({
-                                        ...prev,
-                                        marker: data.result.marker
-                                    }));
+                                else {
+                                    FailedModal(data.message, 900)
+                                    return
                                 }
-                            }
 
+                                // Reset focus/input flags หลัง submit
+                                isUserFocusedRef.current = false;
+                                isUserInputtingRef.current = false;
+                                isUserInteractingRef.current = false;
+                                // ยกเลิกการเลือก marker เพื่อลบขอบสีแดง
+                                if (onMarkerSelect) {
+                                    onMarkerSelect(null);
+                                }
 
-                        }
-                    }
+                                // IMPORTANT: Reset currentMarkerIdRef และ clear cache หลังจาก create เพื่อให้ marker ใหม่ถูกตรวจจับว่าเป็นการเปลี่ยน marker
+                                currentMarkerIdRef.current = null;
+                                // Clear ข้อมูล cache ทั้งหมดเพื่อให้ marker ใหม่ใช้ข้อมูลจริง
+                                allMarkersOriginalDataRef.current = {};
+                                originalMarkerDataRef.current = null;
 
-                    // Reset focus/input flags หลัง submit
-                    isUserFocusedRef.current = false;
-                    isUserInputtingRef.current = false;
-                    isUserInteractingRef.current = false;
-                    // ยกเลิกการเลือก marker เพื่อลบขอบสีแดง
-                    if (onMarkerSelect) {
-                        onMarkerSelect(null);
-                    }
+                                // Clear confirming flag
+                                setTimeout(() => {
+                                    isConfirmingRef.current = false;
+                                }, 100);
 
-                    // IMPORTANT: Reset currentMarkerIdRef และ clear cache หลังจาก create เพื่อให้ marker ใหม่ถูกตรวจจับว่าเป็นการเปลี่ยน marker
-                    currentMarkerIdRef.current = null;
-                    // Clear ข้อมูล cache ทั้งหมดเพื่อให้ marker ใหม่ใช้ข้อมูลจริง
-                    allMarkersOriginalDataRef.current = {};
-                    originalMarkerDataRef.current = null;
+                                if (onConfirm) {
+                                    onConfirm();
+                                }
+                            } else if (isUpdateMode) {
+                                const markerData: MarkerProcess = {
+                                    markerId: selectedMarker?.id?.toString() || "",
+                                    unitId: Number(values.address), // ใช้ค่าจาก form address ซึ่งจะเป็น unitID
+                                    // selectedMarker?.unitID || Number(values.address),
 
-                    // Clear confirming flag
-                    setTimeout(() => {
-                        isConfirmingRef.current = false;
-                    }, 100);
-
-                    if (onConfirm) {
-                        onConfirm();
-                    }
-                } else if (isUpdateMode) {
-                    const markerData: MarkerProcess = {
-                        markerId: selectedMarker?.id?.toString() || "",
-                        unitId: Number(values.address), // ใช้ค่าจาก form address ซึ่งจะเป็น unitID
-                        // selectedMarker?.unitID || Number(values.address),
-
-                        floorId: Number(floorIdGlobal) || null,
-                        markerType: "marker",
-                        markerInfo: {
-                            // id: selectedMarker?.id?.toString() || "",
-                            name: markerName, // ใช้ roomAddress แทน name จาก form
-                            status: colorStatus[selectedMarker?.color as keyof typeof colorStatus],
-                            position: {
-                                x: selectedMarker?.x?.toFixed(2) || "",
-                                y: selectedMarker?.y?.toFixed(2) || ""
-                            },
-                            size: 6,
-                            rotationDegrees: "0°",
-                            group: selectedMarker?.group || ""
-                        },
-                    };
-
-                    let data = await updateMarker(markerData)
-                    if (data.status) {
-                        SuccessModal("Marker Updated Successfully", 900)
-                        // สร้าง updatedMarker object ที่มีค่า originalX และ originalY เป็นตำแหน่งปัจจุบัน
-                        if (selectedMarker && selectedMarker.x !== undefined &&
-                            selectedMarker.y !== undefined) {
-                            const updatedMarker = {
-                                ...selectedMarker,
-                                name: markerName, // อัพเดทชื่อด้วย
-                                address: values.address, // อัพเดท address ด้วย
-                                tel1: values.tel1 || "",
-                                tel2: values.tel2 || "",
-                                tel3: values.tel3 || "",
-                                originalX: selectedMarker.x, // set ค่า originalX เป็นตำแหน่งปัจจุบัน
-                                originalY: selectedMarker.y, // set ค่า originalY เป็นตำแหน่งปัจจุบัน
-                            };
-
-                            // อัพเดทค่าใน allMarkersOriginalDataRef ด้วย
-                            const currentMarkerId = selectedMarker.id.toString();
-                            if (allMarkersOriginalDataRef.current[currentMarkerId]) {
-                                allMarkersOriginalDataRef.current[currentMarkerId] = {
-                                    ...allMarkersOriginalDataRef.current[currentMarkerId],
-                                    x: selectedMarker.x,
-                                    y: selectedMarker.y,
-                                    originalX: selectedMarker.x,
-                                    originalY: selectedMarker.y
+                                    floorId: Number(floorIdGlobal) || null,
+                                    markerType: "marker",
+                                    markerInfo: {
+                                        // id: selectedMarker?.id?.toString() || "",
+                                        name: markerName, // ใช้ roomAddress แทน name จาก form
+                                        status: colorStatus[selectedMarker?.color as keyof typeof colorStatus],
+                                        position: {
+                                            x: selectedMarker?.x?.toFixed(2) || "",
+                                            y: selectedMarker?.y?.toFixed(2) || ""
+                                        },
+                                        size: 6,
+                                        rotationDegrees: "0°",
+                                        group: selectedMarker?.group || ""
+                                    },
                                 };
-                            }
 
-                            // อัพเดท marker ด้วยค่าใหม่
-                            if (onMarkerUpdate) {
-                                // ตรวจสอบว่ามี wrapper function หรือไม่
-                                if ((window as any).villageMapOnMarkerUpdateRef?.current) {
-                                    (window as any).villageMapOnMarkerUpdateRef.current(selectedMarker.id.toString(), updatedMarker);
-                                } else {
-                                    onMarkerUpdate(selectedMarker.id.toString(), updatedMarker);
+                                let data = await updateMarker(markerData)
+                                if (data.status) {
+                                    SuccessModal("Marker Updated Successfully", 900)
+                                    // สร้าง updatedMarker object ที่มีค่า originalX และ originalY เป็นตำแหน่งปัจจุบัน
+                                    if (selectedMarker && selectedMarker.x !== undefined &&
+                                        selectedMarker.y !== undefined) {
+                                        const updatedMarker = {
+                                            ...selectedMarker,
+                                            name: markerName, // อัพเดทชื่อด้วย
+                                            address: values.address, // อัพเดท address ด้วย
+                                            tel1: values.tel1 || "",
+                                            tel2: values.tel2 || "",
+                                            tel3: values.tel3 || "",
+                                            originalX: selectedMarker.x, // set ค่า originalX เป็นตำแหน่งปัจจุบัน
+                                            originalY: selectedMarker.y, // set ค่า originalY เป็นตำแหน่งปัจจุบัน
+                                        };
+                                    
+                                        // อัพเดทค่าใน allMarkersOriginalDataRef ด้วย
+                                        const currentMarkerId = selectedMarker.id.toString();
+                                        if (allMarkersOriginalDataRef.current[currentMarkerId]) {
+                                            allMarkersOriginalDataRef.current[currentMarkerId] = {
+                                                ...allMarkersOriginalDataRef.current[currentMarkerId],
+                                                x: selectedMarker.x,
+                                                y: selectedMarker.y,
+                                                originalX: selectedMarker.x,
+                                                originalY: selectedMarker.y
+                                            };
+                                        }
+
+                                        // อัพเดท marker ด้วยค่าใหม่
+                                        if (onMarkerUpdate) {
+                                            // ตรวจสอบว่ามี wrapper function หรือไม่
+                                            if ((window as any).villageMapOnMarkerUpdateRef?.current) {
+                                                (window as any).villageMapOnMarkerUpdateRef.current(selectedMarker.id.toString(), updatedMarker);
+                                            } else {
+                                                onMarkerUpdate(selectedMarker.id.toString(), updatedMarker);
+                                            }
+                                        }
+                                    }
+                                    if (data) {
+                                        // อัพเดท marker
+                                        if (data.result.marker && Array.isArray(data.result.marker)) {
+                                            setDataMapAll((prev: any) => ({
+                                                ...prev,
+                                                marker: data.result.marker
+                                            }));
+                                        }
+                                    }
+                                }
+                                else {
+                                    FailedModal(data.message, 900)
+                                    return
+                                }
+
+                                // Reset focus/input flags หลัง submit
+                                isUserFocusedRef.current = false;
+                                isUserInputtingRef.current = false;
+                                isUserInteractingRef.current = false;
+                                // ยกเลิกการเลือก marker เพื่อลบขอบสีแดง
+                                if (onMarkerSelect) {
+                                    onMarkerSelect(null);
+                                }
+
+                                // IMPORTANT: Reset currentMarkerIdRef และ clear cache หลังจาก update เพื่อให้ marker ใหม่ถูกตรวจจับว่าเป็นการเปลี่ยน marker
+                                currentMarkerIdRef.current = null;
+                                // Clear ข้อมูล cache ทั้งหมดเพื่อให้ marker ใหม่ใช้ข้อมูลจริง
+                                allMarkersOriginalDataRef.current = {};
+                                originalMarkerDataRef.current = null;
+                                // Clear confirming flag หลังจาก delay เล็กน้อย
+                                setTimeout(() => {
+                                    isConfirmingRef.current = false;
+                                }, 100);
+
+                                if (onConfirm) {
+                                    onConfirm();
                                 }
                             }
-                        }
-                        if (data) {
-                            // อัพเดท marker
-                            if (data.result.marker && Array.isArray(data.result.marker)) {
-                                setDataMapAll((prev: any) => ({
-                                    ...prev,
-                                    marker: data.result.marker
-                                }));
-                            }
-                        }
-
-
-                    }
-
-                    // Reset focus/input flags หลัง submit
-                    isUserFocusedRef.current = false;
-                    isUserInputtingRef.current = false;
-                    isUserInteractingRef.current = false;
-                    // ยกเลิกการเลือก marker เพื่อลบขอบสีแดง
-                    if (onMarkerSelect) {
-                        onMarkerSelect(null);
-                    }
-
-                    // IMPORTANT: Reset currentMarkerIdRef และ clear cache หลังจาก update เพื่อให้ marker ใหม่ถูกตรวจจับว่าเป็นการเปลี่ยน marker
-                    currentMarkerIdRef.current = null;
-                    // Clear ข้อมูล cache ทั้งหมดเพื่อให้ marker ใหม่ใช้ข้อมูลจริง
-                    allMarkersOriginalDataRef.current = {};
-                    originalMarkerDataRef.current = null;
-                    // Clear confirming flag หลังจาก delay เล็กน้อย
-                    setTimeout(() => {
-                        isConfirmingRef.current = false;
-                    }, 100);
-
-                    if (onConfirm) {
-                        onConfirm();
-                    }
-                }
-            },
-            onCancel: async () => {
-
-            }
+                        }}
+                        className="!bg-green-500 !border-green-500 !text-white hover:!bg-green-600 
+                        hover:!border-green-600 flex-1 !h-11 !rounded-xl"
+                    >
+                        Confirm
+                    </Button>
+                    <Button
+                        type="default"
+                        onClick={() => {
+                            Modal.destroyAll();
+                        }}
+                        className="!bg-red-500 !border-red-500 !text-white hover:!bg-red-600 
+                        hover:!border-red-600 flex-1 !h-11 !rounded-xl"
+                    >
+                        Cancel
+                    </Button>
+                </div>
+            ),
+            centered: true,
+            className: "custom-confirm-modal",
         });
-
-
-
-
-
     };
 
     const handleCancel = () => {
@@ -886,7 +936,7 @@ const FormVillageLocation = ({
     return (
         <div className=" mx-auto bg-[#F6F6F6] p-6 mt-4 lg:mt-0 h-full">
             <div className="font-semibold text-xl text-center mb-6">
-                Location on the map
+                Marker Information
             </div>
             <Form
                 form={form}
@@ -911,11 +961,23 @@ const FormVillageLocation = ({
                         onBlur={handleInputBlur}
                         placeholder={!hasActiveMarker ? "No active marker" : "Search or select address"}
                     >
-                        {dataSelectPlan?.unit?.map((unit: any) => (
-                            <Select.Option key={unit.id} value={unit.id}>
+                        {getAllAddressOptions().map((unit: any) => {
+                            const isUsed = isAddressUsed(unit.id);
+                            const isCurrentMarkerAddress = selectedMarker?.unitID == unit.id || selectedMarker?.address == unit.id;
+                            
+                            return (
+                            <Select.Option 
+                                key={unit.id} 
+                                value={unit.id}
+                                disabled={isUsed && !isCurrentMarkerAddress}
+                            >
                                 {unit?.roomAddress}
+                                {isUsed && !isCurrentMarkerAddress && 
+                                    <span style={{ color: '#ff4d4f', marginLeft: '8px' }}>(ถูกใช้แล้ว)</span>
+                                }
                             </Select.Option>
-                        ))}
+                            );
+                        })}
                     </Select>
                 </Form.Item>
                 <Form.Item

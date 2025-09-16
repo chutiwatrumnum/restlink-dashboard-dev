@@ -1,20 +1,16 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Dispatch, RootState } from "../../../stores";
-import { whiteLabel } from "../../../configs/theme";
 
-import { Row, Button, Col } from "antd";
+import { Row, Button, Col, Flex, Card, Input } from "antd";
 import Header from "../../../components/templates/Header";
 import PeopleCountingEditModal from "../components/PeopleCountingEditModal";
-import { EditIcon, PeopleStatusIcon } from "../../../assets/icons/Icons";
-import ConfirmModal from "../../../components/common/ConfirmModal";
-import SuccessModal from "../../../components/common/SuccessModal";
-import FailedModal from "../../../components/common/FailedModal";
-
 import {
-  PeopleCountingDataType,
-  PeopleCountingFormDataType,
-} from "../../../stores/interfaces/PeopleCounting";
+  EditIcon,
+  PeopleCountingStatusIcon,
+} from "../../../assets/icons/Icons";
+
+import { PeopleCountingDataType } from "../../../stores/interfaces/PeopleCounting";
 
 import "../styles/peopleCounting.css";
 
@@ -34,99 +30,47 @@ const PeopleCountingMain = () => {
     await dispatch.peopleCounting.getPeopleCountingData();
   };
 
-  const onEdit = (data: PeopleCountingDataType) => {
-    setEditData(data);
+  const onEdit = (item: PeopleCountingDataType) => {
+    console.log("edit data: ", item);
+    setEditData(item);
     setIsEditModalOpen(true);
   };
 
-  const onEditOk = async (payload: PeopleCountingFormDataType) => {
-    // console.log(payload);
-    ConfirmModal({
-      title: "Are you sure you want to edit this?",
-      okMessage: "Yes",
-      cancelMessage: "Cancel",
-      onOk: async () => {
-        const edit = await dispatch.peopleCounting.editPeopleCountingData(
-          payload
-        );
-        if (edit) {
-          SuccessModal("Successfully edited");
-          setIsEditModalOpen(false);
-          setRefresh(!refresh);
-        }
-      },
-      onCancel: () => {
-        console.log("cancelled");
-      },
-    });
+  const onEditOk = () => {
+    setIsEditModalOpen(false);
+    setRefresh(!refresh);
   };
 
   const onEditCancel = () => {
     setIsEditModalOpen(false);
   };
 
-  const statusColorSelector = (status: string) => {
+  const statusColorSelector = (item: string) => {
     let statusColor = "#fff";
-    switch (status) {
-      case "low":
-        statusColor = whiteLabel.successColor;
+    let color = "#fff";
+    switch (item) {
+      case "Low":
+        statusColor = "#D3F8D6";
+        color = "#38BE43";
         break;
 
-      case "medium":
-        statusColor = whiteLabel.warningColor;
+      case "Medium":
+        statusColor = "#FFF7DA";
+        color = "#ECA013";
         break;
 
-      case "high":
-        statusColor = whiteLabel.dangerColor;
+      case "High":
+        statusColor = "#FFE3E3";
+        color = "#D73232";
         break;
-
       default:
         break;
     }
-    return statusColor;
+    return { statusColor, color };
   };
 
   const capitalizer = (str: string) => {
     return str.charAt(0).toUpperCase() + str.slice(1);
-  };
-
-  // components
-  const RoomCard = ({ data }: { data: PeopleCountingDataType }) => {
-    return (
-      <Col lg={{ span: 8 }} xs={{ span: 24 }} className="cardContainer_PPC">
-        <div className="imageContainer_PPC">
-          <img className="cardImage_PPC" src={data.facility.imageUrl} />
-        </div>
-        <div className="cardDetailContainer_PPC">
-          <Row
-            justify="space-between"
-            align="middle"
-            className="cardDetailTop_PPC"
-          >
-            <span className="cardTitle_PPC">{data.facility.name}</span>
-            <Button
-              type="text"
-              icon={<EditIcon />}
-              onClick={() => onEdit(data)}
-            />
-          </Row>
-          <Row
-            justify="center"
-            align="middle"
-            className="cardStatusBoxContainer_PPC"
-            style={{ backgroundColor: statusColorSelector(data.status) }}
-          >
-            <PeopleStatusIcon
-              color={whiteLabel.whiteColor}
-              className="cardStatusIcon_PPC"
-            />
-            <span className="cardStatusText_PPC">
-              {capitalizer(data.status)}
-            </span>
-          </Row>
-        </div>
-      </Col>
-    );
   };
 
   // actions
@@ -136,10 +80,71 @@ const PeopleCountingMain = () => {
 
   return (
     <>
-      <Header title="People counting" />
-      <Row gutter={[30, 30]} style={{ justifyContent: "space-between" }}>
-        {data.map((item) => {
-          return <RoomCard data={item} />;
+      <Header title="Counting" />
+      <Row gutter={[15, 15]} className="rowPeopleCounting" justify="center">
+        {data.map((item: PeopleCountingDataType, index: number) => {
+          const colors = statusColorSelector(item.status || "");
+          return (
+            <Col xs={{ span: 24 }} lg={{ span: 8 }} key={index}>
+              <Card className="cardContainer_PPC" variant="borderless">
+                <div className="imageContainer_PPC">
+                  <img className="cardImage_PPC" src={item.image} />
+                </div>
+                <div className="cardDetailContainer_PPC">
+                  <Row
+                    justify="space-between"
+                    align="middle"
+                    className="cardDetailTop_PPC"
+                  >
+                    <span className="cardTitle_PPC">
+                      {capitalizer(item.name || "-")}
+                    </span>
+                    <Button
+                      type="text"
+                      icon={<EditIcon />}
+                      onClick={() => onEdit(item)}
+                    />
+                  </Row>
+                  <Row className="cardStatusBoxContainer_PPC" justify="start">
+                    <Flex justify="start" align="center" gap={9}>
+                      <PeopleCountingStatusIcon
+                        color={colors.color}
+                        className="cardStatusIcon_PPC"
+                      />
+                      <div
+                        className="cardStatusText_PPC"
+                        style={{
+                          display: "flex",
+                          justifyContent: "center",
+                          alignItems: "center",
+                          backgroundColor: colors.statusColor,
+                          gap: 4,
+                        }}
+                      >
+                        <span
+                          style={{
+                            width: 12,
+                            height: 12,
+                            borderRadius: "50%",
+                            backgroundColor: colors.color,
+                          }}
+                        ></span>
+                        <span
+                          style={{
+                            color: colors.color,
+                            fontSize: 12,
+                            fontWeight: 600,
+                          }}
+                        >
+                          {capitalizer(item.status || "")}
+                        </span>
+                      </div>
+                    </Flex>
+                  </Row>
+                </div>
+              </Card>
+            </Col>
+          );
         })}
       </Row>
       <PeopleCountingEditModal

@@ -55,7 +55,7 @@ class VehicleMappingService {
         try {
             const response = await axiosVMS.get('/api/collections/vehicle/records', {
                 params: {
-                    perPage: 500,
+                    perPage: 1000,
                     page: 1
                 }
             });

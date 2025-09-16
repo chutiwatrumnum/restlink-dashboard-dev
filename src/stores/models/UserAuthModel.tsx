@@ -87,7 +87,10 @@ export const userAuth = createModel<RootModel>()({
         try {
           // Step 2: เรียก /my-project เพื่อเอา projectId และ VMS data
           const projectResponse = await axios.get("/my-project");
-
+          if(projectResponse.status > 201){
+            dispatch.userAuth.onLogout();
+            return 
+          }
           if (projectResponse.data && projectResponse.data.data) {
             const projectData = projectResponse.data.data;
 

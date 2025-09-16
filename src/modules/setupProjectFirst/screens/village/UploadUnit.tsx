@@ -30,13 +30,13 @@ const UploadPlan = () => {
             </div>
             {/* Main Content */}
             <div className="flex-1 flex flex-col justify-center items-center">
-                <Row gutter={25} className="mx-auto w-full max-w-screen-lg">
+                <Row gutter={[25, 25]} className="mx-auto w-full max-w-screen-lg">
                     {/* Left Panel - Project Info */}
-                    <Col xs={24} lg={12}>
+                    <Col xs={24} md={12}>
                         <CardDetailUploadExcel onBack={"/setup-project/upload-plan"} ></CardDetailUploadExcel>
                     </Col>
                     {/* Right Panel - Upload Area */}
-                    <Col xs={24} lg={12}>
+                    <Col xs={24} md={12}>
                         <UploadImage onNext={"/setup-project/unit-preview"} status={'excel'}  ></UploadImage>
                     </Col>
                 </Row>

@@ -1,0 +1,26 @@
+/* Center title for Popconfirm in list member */
+.call-popconfirm .ant-popconfirm-message,
+.call-popconfirm .ant-popconfirm-title {
+    text-align: center;
+}
+
+/* ensure full width and center content */
+.call-popconfirm .ant-popconfirm-message {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding-left: 0 !important;
+    margin-left: 0 !important;
+}
+
+/* hide any icon wrapper if present */
+.call-popconfirm .ant-popconfirm-message-icon,
+.call-popconfirm .ant-popconfirm-message .anticon {
+    display: none !important;
+}
+
+.call-popconfirm .ant-popconfirm-title {
+    width: 100%;
+    display: block;
+} 

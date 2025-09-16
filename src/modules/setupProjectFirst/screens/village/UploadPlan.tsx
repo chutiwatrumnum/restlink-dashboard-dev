@@ -14,13 +14,13 @@ const UploadPlan = () => {
                 <h1 className="text-2xl font-semibold text-gray-800">Upload property plan</h1>
             </div>
             <div className="flex-1 flex flex-col justify-center items-center  ">
-                <Row gutter={25} className=" mx-auto w-full max-w-screen-lg ">
-                    <Col xs={24} lg={12}>
+                <Row gutter={[25, 25]} className=" mx-auto w-full max-w-screen-lg ">
+                    <Col xs={24} md={12}>
                         <CardDetailPlan onBack={"/setup-project/get-start"} ></CardDetailPlan>
                     </Col>
 
                     {/* Right Panel - Upload Area */}
-                    <Col xs={24} lg={12}>
+                    <Col xs={24} md={12}>
                         <UploadImage onNext={"/setup-project/upload-unit"} />
                     </Col>
                 </Row>

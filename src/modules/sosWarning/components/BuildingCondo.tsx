@@ -11,70 +11,36 @@ let BuildingCondo = ({ onDataFloorChange }: { onDataFloorChange?: (dataFloor: an
         let getDataBuilding = async () => {
             let data = await getVillageData();
             if(data.status){
-
-            // Duplicate floors และแบ่งตึกถ้าเกิน 20 ชั้น
-            // if (data.result?.building && Array.isArray(data.result.building)) {
-            //     const maxFloorsPerBuilding = 20;
-            //     let newBuildings: any[] = [];
-            //     data.result.building.forEach((building: any, buildingIndex: number) => {
-            //         if (building.floors && Array.isArray(building.floors)) {
-            //             const originalFloors = [...building.floors];
-            //             let targetFloorCount = 0;
-                        
-            //             if (buildingIndex === 0) {
-            //                 targetFloorCount = 30; 
-            //             } else if (buildingIndex === 1) {
-            //                 targetFloorCount = 50; 
-            //             } else {
-            //                 targetFloorCount = originalFloors.length; 
-            //             }
-                        
-            //             let allFloors = [...originalFloors];
-            //             let floorIdCounter = 40000 + (buildingIndex * 1000);
-                        
-            //             while (allFloors.length < targetFloorCount) {
-            //                 const sourceFloorIndex = (allFloors.length - originalFloors.length) % originalFloors.length;
-            //                 const sourceFloor = originalFloors[sourceFloorIndex];
-                            
-            //                 const duplicatedFloor = {
-            //                     ...sourceFloor,
-            //                     floorId: floorIdCounter + allFloors.length + 1,
-            //                     numberOfFloor: allFloors.length + 1
-            //                 };
-                            
-            //                 allFloors.push(duplicatedFloor);
-            //             }
-                        
-            //             if (allFloors.length <= maxFloorsPerBuilding) {
-            //                 newBuildings.push({
-            //                     ...building,
-            //                     floors: allFloors,
-            //                     floorsSize: allFloors.length
-            //                 });
-            //             } else {
-            //                 let subBuildingIndex = 1;
-            //                 for (let i = 0; i < allFloors.length; i += maxFloorsPerBuilding) {
-            //                     const subFloors = allFloors.slice(i, i + maxFloorsPerBuilding);
-            //                     const subBuildingName = `${building.blockName}`;
-                                
-            //                     newBuildings.push({
-            //                         ...building,
-            //                         blockId: building.blockId * 100 + subBuildingIndex,
-            //                         blockName: subBuildingName,
-            //                         floors: subFloors,
-            //                         floorsSize: subFloors.length
-            //                     });
-                                
-            //                     subBuildingIndex++;
-            //                 }
-            //             }
-            //         } else {
-            //             newBuildings.push(building);
-            //         }
-            //     });  
-            //     data.result.building = newBuildings;
-            // }
-            // console.log(data.result.building,'dataAllMap.result.building')
+                // แบ่งตึกใหม่ทุก ๆ 20 ชั้นและต่อกันแนวนอน
+                if (data.result?.building && Array.isArray(data.result.building)) {
+                    const maxFloorsPerBuilding = 20;
+                    const newBuildings: any[] = [];
+                    data.result.building.forEach((building: any) => {
+                        const floors = Array.isArray(building.floors) ? building.floors : [];
+                        if (floors.length <= maxFloorsPerBuilding) {
+                            newBuildings.push({
+                                ...building,
+                                floors,
+                                floorsSize: floors.length
+                            });
+                        } else {
+                            let subBuildingIndex = 1;
+                            for (let i = 0; i < floors.length; i += maxFloorsPerBuilding) {
+                                const subFloors = floors.slice(i, i + maxFloorsPerBuilding);
+                                newBuildings.push({
+                                    ...building,
+                                    blockId: building.blockId * 100 + subBuildingIndex,
+                                    blockName: building.blockName,
+                                    floors: subFloors,
+                                    floorsSize: subFloors.length
+                                });
+                                subBuildingIndex++;
+                            }
+                        }
+                    });
+                    data.result.building = newBuildings;
+                }
+                // console.log(data.result.building,'dataAllMap.result.building')
                 setDataBuilding(data.result)
             }
             

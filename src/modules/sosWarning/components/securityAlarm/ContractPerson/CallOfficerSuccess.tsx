@@ -38,22 +38,22 @@ const CallOfficerSuccess = ({ statusContract, setStatusContract }: { statusContr
 
             {/* Officer Icon */}
                 {/* <div className="w-32 h-32 bg-blue-500 rounded-full flex items-center justify-center "> */}
-                        <img src={officerIcon} alt="Officer" className="w-[200px]" />
+                        <img src={officerIcon} alt="Officer" className="w-[200px] mb-6" />
                 {/* </div> */}
             {/* Officer Label */}
-            <h2 className="!text-3xl !font-medium !text-[#929292] !text-center !mb-12  !mt-6 !mb-8">
+            {/* <h2 className="!text-3xl !font-medium !text-[#929292] !text-center !mb-12  !mt-6 !mb-8">
                 Policeman 191
-            </h2>
+            </h2> */}
 
             {/* Success Button */}
             <button
                 onClick={handleSuccess}
-                className="w-full max-w-sm bg-[#1a365d] !text-white !rounded-xl 
-                py-4 px-6 text-base font-semibold cursor-pointer transition-colors 
+                className="w-full  max-w-sm bg-[#1a365d] !text-white !rounded-xl 
+                py-3 px-6 text-base font-semibold cursor-pointer transition-colors 
                 duration-200 outline-none hover:bg-[#2c5282] active:bg-[#1a202c] "
                 type="button"
             >
-                Success
+                Success 
             </button>
         </div>
     );

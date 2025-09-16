@@ -17,7 +17,7 @@ const getDataProfile = async () => {
         userId: profile.userId,
         lastName: profile.lastName,
         firstName: profile.firstName,
-        middleName: profile.middleName || "", // เพิ่ม middleName
+        middleName: profile.middleName || null, // เพิ่ม middleName
         nickName: profile.nickName,
         email: profile.email,
         imageProfile: profile.imageProfile,

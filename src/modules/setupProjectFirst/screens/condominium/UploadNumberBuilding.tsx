@@ -17,16 +17,16 @@ const UploadNumberBuilding = () => {
             </div>
             
             <div className="flex-1 flex flex-col justify-start items-center">
-                <Row gutter={25} className=" mx-auto w-full">
-                    <Col xs={24} lg={8}>
+                <Row gutter={[25, 25]} className=" mx-auto w-full">
+                    <Col xs={24} md={8}>
                         <CardDetailPlan onBack={"/setup-project/get-start"} ></CardDetailPlan>
                     </Col>
                     {/* Right Panel - Upload Area */}
-                    <Col xs={24} lg={8}>
+                    <Col xs={24} md={8}>
                         <CardDetailUploadExcel onBack={"/setup-project/get-start"} statusBackButton={false} ></CardDetailUploadExcel>
                     </Col>
                     {/* Right Panel - Upload Area */}
-                    <Col xs={24} lg={8}>
+                    <Col xs={24} md={8}>
                         <UploadImage  status={'excel'} onNext={"/setup-project/unit-preview-condo"} />
                     </Col>
 

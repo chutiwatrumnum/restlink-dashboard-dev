@@ -134,8 +134,8 @@ const Content = ({
         </div>
 
         <div className="flex justify-end mt-4">
-            <Button  type="default" className="w-40 !me-auto !bg-red-500 !text-white hover:!border-red-500" 
-            onClick={handleDeleteImage}>Delete</Button>
+            <Button  type="default" className="w-40 !me-auto  !text-black" 
+            onClick={handleDeleteImage}>Edit</Button>
             <Button  disabled={!idUploadPlan} className="w-40 !me-4" 
             type="primary" onClick={() => {
                 // สั่ง Cancel ฟอร์มตำแหน่งหมู่บ้านก่อนบันทึกเพื่อยกเลิก marker จำลอง

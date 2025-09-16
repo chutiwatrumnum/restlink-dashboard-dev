@@ -22,7 +22,7 @@ export const useDownloadQRCodeMutation = () => {
 
             // ตรวจสอบว่ามี code หรือไม่
             if (!invitation.code || !invitation.code.trim()) {
-                throw new Error('ไม่พบรหัสบัตรเชิญ (Invitation code not found)');
+                throw new Error('Invitation code not found');
             }
 
             // ตั้งค่า options สำหรับ QR Code
@@ -52,12 +52,12 @@ export const useDownloadQRCodeMutation = () => {
         },
         onSuccess: (data) => {
             console.log('✅ QR Code download success:', data);
-            message.success(`ดาวน์โหลด QR Code สำหรับ ${data.guestName} เรียบร้อย!`);
+            message.success(`Download QR Code for ${data.guestName} completed!`);
         },
         onError: (error: any) => {
             console.error('❌ QR Code download error:', error);
 
-            let errorMessage = "ไม่สามารถดาวน์โหลด QR Code ได้";
+            let errorMessage = "Unable to download QR Code";
 
             if (error.message) {
                 errorMessage = error.message;

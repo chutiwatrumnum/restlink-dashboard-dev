@@ -23,6 +23,7 @@ import { useNavigate } from "react-router-dom";
 import { usePermission } from "../../../utils/hooks/usePermission";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../stores";
+import FailedModal from "../../../components/common/FailedModal";
 
 const HistoryBuilding = () => {
     const dispatch = useDispatch<Dispatch>();
@@ -46,6 +47,10 @@ const HistoryBuilding = () => {
     {
       label: "All",
       key: "",
+    },
+    {
+        label: "acknowledge",
+        key: "1,2,3",
     },
     {
         label: "Pending",
@@ -109,7 +114,7 @@ const HistoryBuilding = () => {
                 let myHome = (item?.unit?.myHomes || []).find((item:any)=>item.role.name === 'Resident owner')
                 let nameOwner = myHome?.user?.givenName || '-'
                 let nameStaff = item?.received?.user?.givenName || '-'
-                let contractStaff = item?.unit.myHomes.find((item:any)=>{
+                let contractStaff = item?.unit?.myHomes?.find((item:any)=>{
                     if(item.user.contact) return true
                     else if(item.user.contact2) return true
                     else if(item.user.contact3) return true
@@ -134,7 +139,7 @@ const HistoryBuilding = () => {
                     Address: item?.unit?.roomAddress || '-',
                     ReportTime: coverDateTime || { date: '-', time: '-' },
                     ReceiveTime: receiveDateTime || { date: '-', time: '-' },
-                    EventType: item?.eventType?.nameTh || '-',
+                    EventType: item?.eventType?.nameEn || '-',
                     NameOwner: nameOwner || '-',
                     NameStaff: nameStaff || '-',
                     ContractStaff: contractStaff || '-',
@@ -190,6 +195,12 @@ const HistoryBuilding = () => {
     },[step, roomAddress, residentOwner, receiver, contact, curPage, perPage])
 
     const changeTab = (key: string) => {
+        if(key === "1,2,3"){
+            setStep("1,2,3")
+        }
+        else {
+            setStep(key)
+        }
         setStep(key)
         setCurPage(1)
         setPaginationConfig((prev) => ({
@@ -353,6 +364,11 @@ const HistoryBuilding = () => {
     const handleReceiveCast = async (eventStore: any) => {
         let { id, EventStep , EventTypeStatus } = eventStore
         let data = await getSosWarningById(id)
+        if(!data.status){
+            let message = data.message
+            if(message) FailedModal(message,900)
+            return
+        }
         data.result = {
             ...data.result,
             type: EventTypeStatus

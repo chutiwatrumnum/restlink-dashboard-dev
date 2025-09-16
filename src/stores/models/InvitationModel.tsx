@@ -276,7 +276,7 @@ export const invitation = createModel<RootModel>()({
 
         if (!houseData || houseData.length === 0) {
           // ถ้ายังไม่มีข้อมูล house ให้ดึงจาก API
-          await dispatch.house.getHouseList({ page: 1, perPage: 500 });
+          await dispatch.house.getHouseList({ page: 1, perPage: 1000 });
           houseData = dispatch.getState().house.tableData;
         }
 

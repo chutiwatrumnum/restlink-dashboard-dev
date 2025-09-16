@@ -5,6 +5,7 @@ import { RootState } from "../../../../../stores";
 import { closeCase,closeJob } from "../../../service/api/SOSwarning";
 import SuccessModal from "../../../../../components/common/SuccessModal";
 import { Button } from 'antd';
+import FailedModal from '../../../../../components/common/FailedModal';
 
 const ContractForm = ({ statusContract, setStatusContract }: { statusContract: string, setStatusContract: (status: string) => void }) => {
     const dispatch = useDispatch();
@@ -17,13 +18,17 @@ const ContractForm = ({ statusContract, setStatusContract }: { statusContract: s
         let obj = {
             remark: additionalNotes,
         }
-        if(dataEmergencyDetail.type==='DeviceWarning'){
+        console.log(dataEmergencyDetail.type,'dataEmergencyDetail.type')
+        if(dataEmergencyDetail.type==='DeviceWarning' || dataEmergencyDetail.type==='device'){
             let dataCloseJob = await closeJob(eventId)
             if(dataCloseJob.status){
                 let dataCloseCase = await closeCase(eventId,obj)
                 if(dataCloseCase.status){
                     setStatusContract("success")
                 }
+            }
+            else {
+                if(dataCloseJob?.message) FailedModal(dataCloseJob.message,900)
             }
         }
         else if(dataEmergencyDetail.type==='emergency') {

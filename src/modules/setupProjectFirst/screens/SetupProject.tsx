@@ -40,7 +40,7 @@ const SetupProject = () => {
   }
   return (
     <>
-    <Row className="w-full h-screen relative" style={{ minHeight: "100vh" }}>
+    <Row className="w-full h-screen relative" align="middle" style={{ minHeight: "100vh" }}>
       <Col xs={24} md={12} >
       <div className="flex flex-col justify-center items-start h-full ps-[20%] ">
         <img src={SigninLogo} alt="logoProject" className=" mb-5 w-[350px] h-[130px]" />
@@ -61,10 +61,12 @@ const SetupProject = () => {
       </div>
       </Col>
       <Col xs={0} md={12} 
-      className="hidden md:flex  bg-blue-200 items-center justify-end h-full pr-0" 
-      style={{ backgroundImage: `url(${bgStartProject})`, backgroundSize: "cover", backgroundPosition: "center" }}
+      className="h-full pr-0" 
+      style={{ backgroundImage: `url(${bgStartProject})`, backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: 'no-repeat' }}
       >
-         <img src={demoProject} alt="demoProject" className="w-[90%] h-full object-cover ml-auto" />
+         <div className="w-full h-full flex items-center justify-center">
+           <img src={demoProject} alt="demoProject" className=" max-h-[80vh] object-contain" />
+         </div>
       </Col>
     </Row>
     </>

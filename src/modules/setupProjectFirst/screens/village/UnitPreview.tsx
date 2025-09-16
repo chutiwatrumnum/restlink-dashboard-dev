@@ -6,7 +6,7 @@ import { useEffect } from "react";
 import ProgressStep from "../../components/village/ProgressStep";
 import "../../styles/SetupProject.css";
 import type { ColumnsType } from "antd/es/table";
-import { useState } from "react";
+import { useState,useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import SetupSuccessModal from "../../components/ModalSuccessUnit";
 import { useSelector, useDispatch } from "react-redux";
@@ -55,11 +55,11 @@ const UploadPlan = () => {
 
             if(idPlan){
                 let objUnit = excelData?.village?.map((item: any) => ({
-                    address: item["Address"],
-                    unitNo: item["Unit no."],
-                    houseType: item["House type"],
-                    numberOfFloor: item["Number of floor"],
-                    size: item["Size (sq.m.)"]
+                    address: item[formatLowercase("Address")],
+                    unitNo: item[formatLowercase("Unit no.")],
+                    houseType: item[formatLowercase("House type")],
+                    numberOfFloor: item[formatLowercase("Number of floor")],
+                    size: item[formatLowercase("Size (sq.m.)")]
                 }))
                 let objSetupHome = {
                     planId: idPlan,
@@ -137,6 +137,10 @@ const UploadPlan = () => {
 
     ];
 
+    const formatLowercase = (str: string) => {
+        return str.toLowerCase();
+    }   
+
     return (
         <div className="h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6 flex flex-col relative ">
             {/* Progress Steps */}
@@ -162,11 +166,11 @@ const UploadPlan = () => {
                                 columns={columns}
                                 dataSource={excelData?.village?.map((item: any, index: number) => ({
                                     key: index,
-                                    No: item.No,
-                                    Address: item.Address,
-                                    UnitNo: item["Unit no."],
-                                    HomeType: item["House type"],
-                                    size: item["Size (sq.m.)"]
+                                    No: item[formatLowercase("No")],
+                                    Address: item[formatLowercase("Address")],
+                                    UnitNo: item[formatLowercase("Unit no.")],
+                                    HomeType: item[formatLowercase("House type")],
+                                    size: item[formatLowercase("Size (sq.m.)")]
                                 })) || []}
                                 loading={false}
                                 className="custom-table-no-radius"

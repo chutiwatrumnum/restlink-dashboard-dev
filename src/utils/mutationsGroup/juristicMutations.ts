@@ -22,7 +22,7 @@ export const postCreateJuristicMutation = () => {
         const apiPayload = {
           roleId: payload.roleId,
           firstName: payload.firstName,
-          middleName: payload.middleName || "",
+          middleName: payload.middleName || null,
           lastName: payload.lastName,
           contact: payload.contact,
           email: payload.email,
@@ -141,7 +141,7 @@ export const useEditJuristicMutation = () => {
         const apiPayload = {
           givenName: payload.givenName,
           familyName: payload.familyName,
-          middleName: payload.middleName || "",
+          middleName: payload.middleName || null,
           contact: payload.contact,
           roleId: payload.roleId,
         };

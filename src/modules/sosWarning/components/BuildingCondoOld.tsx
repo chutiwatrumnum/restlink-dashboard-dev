@@ -12,7 +12,7 @@ import { useGlobal } from "../contexts/Global";
 import "./buildingCondo/alarm.css";
 import AlarmIcon from "./buildingCondo/Alarm";
 import { useDispatch } from "react-redux";
-
+import TextEllipsis from '../../../components/common/TextEllipsis';
 
 
 interface BuildingCondoProps {
@@ -314,18 +314,18 @@ const BuildingCondo: React.FC<BuildingCondoProps> = ({
 
         return (
           <div
-            className="relative hover-container"
+            className="relative hover-container w-full"
             style={{ height: '30px' }}
             onMouseEnter={() => handleMouseEnter(currentFloor, bIdx)}
             onMouseLeave={handleMouseLeave}
           >
-            <div className="flex items-center px-4 h-full min-w-[200px]">
+            <div className="flex items-center px-4 h-full w-full min-w-[200px]" style={{ backgroundColor: '#d7d5ca' }}>
               <GroupFloorBox buildingIndex={bIdx} startFloor={startFloor} endFloor={currentBuildingFloors} />
               <GroupFloorBox buildingIndex={bIdx} startFloor={startFloor} endFloor={currentBuildingFloors} />
-              <div className="w-20 text-center font-bold text-[#222222] text-xl mx-auto">
-                <div className="flex justify-center items-center gap-2">
+              <div className="text-center font-bold text-[#222222] text-xl mx-auto">
+                <div className="flex justify-center items-center gap-2 flex-1 ">
                   <span>
-                    {formatFloorNumber(dataMapAll.building?.[bIdx]?.['floors']?.[startFloor - 1]?.numberOfFloor || startFloor)}
+                    {nameFloor(bIdx, startFloor) || formatFloorNumber(dataMapAll.building?.[bIdx]?.['floors']?.[startFloor - 1]?.numberOfFloor || startFloor)}
                   </span>
                   <span className="flex items-center justify-center">
                     {checkGroupHasEvent(bIdx, startFloor, currentBuildingFloors) && <AlarmIcon nameAlarm={"ถึง"} />}
@@ -343,7 +343,7 @@ const BuildingCondo: React.FC<BuildingCondoProps> = ({
               <div
                 className="absolute w-full shadow-lg custom-dropdown z-50"
                 style={{
-                  backgroundColor: buildingColor,
+                  backgroundColor: '#d7d5ca',
                   ...(isMobileOrTablet
                     ? { top: '100%', marginTop: '8px', left: '0' }
                     : { top: '0', left: '100%', marginLeft: '8px' }
@@ -358,13 +358,13 @@ const BuildingCondo: React.FC<BuildingCondoProps> = ({
                     className="flex items-center px-4 cursor-pointer border-b-2 border-white last:border-b-0"
                     style={{
                       height: '32px',
-                      backgroundColor: buildingColor
+                      backgroundColor: '#d7d5ca'
                     }}
                     onClick={() => chooseDetailFloor(bIdx + 1, startFloor + i)}
                   >
                     <FloorBox buildingIndex={bIdx} floorNumber={startFloor + i} />
                     <FloorBox buildingIndex={bIdx} floorNumber={startFloor + i} />
-                    <div className="w-6 text-center font-bold text-[#222222] text-xl mx-auto">
+                    <div className="text-center font-bold text-[#222222] text-xl !text-nowrap mx-auto">
                       {checkGroupHasEvent(bIdx, startFloor, currentBuildingFloors) && checkFloorHasEvent(bIdx, startFloor + i) &&
                         <AlarmIcon nameAlarm={formatFloorNumber(dataMapAll.building?.[bIdx]?.['floors']?.[startFloor + i - 1]?.numberOfFloor || (startFloor + i))} />}
                       {!(checkGroupHasEvent(bIdx, startFloor, currentBuildingFloors) && checkFloorHasEvent(bIdx, startFloor + i)) && formatFloorNumber(dataMapAll.building?.[bIdx]?.['floors']?.[startFloor + i - 1]?.numberOfFloor || (startFloor + i))}
@@ -387,18 +387,18 @@ const BuildingCondo: React.FC<BuildingCondoProps> = ({
 
       return (
         <div
-          className="relative hover-container"
+          className="relative hover-container w-full"
           style={{ height: '32px' }}
           onMouseEnter={() => handleMouseEnter(currentFloor, bIdx)}
           onMouseLeave={handleMouseLeave}
         >
-          <div className="flex items-center px-4 h-full min-w-[200px]">
+            <div className="flex items-center px-4 h-full w-full min-w-[200px]" style={{ backgroundColor: '#d7d5ca' }}>
             <GroupFloorBox buildingIndex={bIdx} startFloor={groupStartFloor} endFloor={groupEndFloor} />
             <GroupFloorBox buildingIndex={bIdx} startFloor={groupStartFloor} endFloor={groupEndFloor} />
-            <div className="w-20 text-center font-bold text-[#222222] text-xl mx-auto">
-              <div className="flex justify-center items-center gap-2">
+                          <div className="text-center font-bold text-[#222222] text-xl flex-1 ">
+              <div className="flex justify-center items-center gap-2 flex-1 px-4">
                 <span>
-                  {formatFloorNumber(dataMapAll.building?.[bIdx]?.['floors']?.[groupStartFloor - 1]?.numberOfFloor || groupStartFloor)}
+                  {nameFloor(bIdx, groupStartFloor) || formatFloorNumber(dataMapAll.building?.[bIdx]?.['floors']?.[groupStartFloor - 1]?.numberOfFloor || groupStartFloor)}
                 </span>
                 <span className="flex items-center justify-center">
                   {checkGroupHasEvent(bIdx, groupStartFloor, groupEndFloor) && <AlarmIcon nameAlarm={"ถึง"} />}
@@ -417,7 +417,7 @@ const BuildingCondo: React.FC<BuildingCondoProps> = ({
             <div
               className="absolute w-full shadow-lg custom-dropdown z-50"
               style={{
-                backgroundColor: buildingColor,
+                backgroundColor: '#d7d5ca',
                 ...(isMobileOrTablet
                   ? { top: '100%', marginTop: '8px', left: '0' }
                   : { top: '0', left: '100%', marginLeft: '8px' }
@@ -432,13 +432,13 @@ const BuildingCondo: React.FC<BuildingCondoProps> = ({
                   className="flex items-center px-4 cursor-pointer border-b-2 border-white last:border-b-0"
                   style={{
                     height: '32px',
-                    backgroundColor: buildingColor
+                    backgroundColor: '#d7d5ca'
                   }}
                   onClick={() => chooseFloor(bIdx, groupStartFloor, groupEndFloor, i)}
                 >
                   <FloorBox buildingIndex={bIdx} floorNumber={groupStartFloor + i} />
                   <FloorBox buildingIndex={bIdx} floorNumber={groupStartFloor + i} />
-                  <div className="w-6 text-center font-bold text-[#222222] text-xl mx-auto">
+                  <div className="text-center font-bold text-[#222222] text-xl mx-auto">
                     {checkGroupHasEvent(bIdx, groupStartFloor, groupEndFloor) && checkFloorHasEvent(bIdx, groupStartFloor + i) && <AlarmIcon nameAlarm={nameFloor(bIdx, groupStartFloor + i) || '-'} />}
                     {!(checkGroupHasEvent(bIdx, groupStartFloor, groupEndFloor) && checkFloorHasEvent(bIdx, groupStartFloor + i)) && (nameFloor(bIdx, groupStartFloor + i) || '-')}
                   </div>
@@ -463,7 +463,7 @@ const BuildingCondo: React.FC<BuildingCondoProps> = ({
           <FloorBox buildingIndex={bIdx} floorNumber={currentFloor} />
           <FloorBox buildingIndex={bIdx} floorNumber={currentFloor} />
           <div
-            className="w-6 text-center font-bold text-[#222222] text-xl mx-auto">
+            className=" text-center font-bold text-[#222222] text-xl mx-auto">
             {
               checkFloorHasEvent(bIdx, currentFloor) &&
               <AlarmIcon nameAlarm={nameFloor(bIdx, currentFloor)} />
@@ -560,17 +560,9 @@ const BuildingCondo: React.FC<BuildingCondoProps> = ({
       <Row gutter={0} className="min-h-screen bg-white">
         <Col span={24} className="h-full bg-gray-100">
           <div className=" p-10 bg-white ">
-            <Row justify="center" gutter={[16, 16]}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-8">
               {Array.from({ length: numberOfBuilding }).map((_, bIdx) => (
-                <React.Fragment key={bIdx}>
-                  <Col
-                    xs={24}
-                    sm={12}
-                    md={12}
-                    lg={6}
-                    xl={6}
-                    className="flex justify-center"
-                  >
+                <div key={bIdx} className="flex justify-center">
                     <div className="flex flex-col items-center h-full justify-end">
                       {/* Building Floors */}
                       <div
@@ -579,7 +571,7 @@ const BuildingCondo: React.FC<BuildingCondoProps> = ({
                           backgroundColor: '#d7d5ca'
                         }}
                       >
-                        <div className="flex flex-col flex-wrap items-center">
+                        <div className="flex flex-col items-center">
                           {(() => {
                             // ใช้จำนวนชั้นจริงของตึกนี้
                             const currentBuildingFloors = buildings[bIdx]?.floors?.length || floor;
@@ -652,19 +644,15 @@ const BuildingCondo: React.FC<BuildingCondoProps> = ({
 
                       {/* Building Name - อยู่ด้านล่างของตึก */}
                       <div className="text-center font-bold text-lg text-[#222222] mt-3">
+                        <TextEllipsis  maxWidth={200}>
                         Building {buildings[bIdx]?.blockName || '-'}
+                        </TextEllipsis>
+                        
                       </div>
                     </div>
-                  </Col>
-                  {/* เพิ่มเส้นแบ่งหลังจากทุก 4 ตึก */}
-                  {(bIdx + 1) % 4 === 0 && bIdx < numberOfBuilding - 1 && (
-                    <Col span={24}>
-                      <div className="w-full border-b-2 border-gray-300 my-4"></div>
-                    </Col>
-                  )}
-                </React.Fragment>
+                </div>
               ))}
-            </Row>
+            </div>
           </div>
         </Col>
       </Row>

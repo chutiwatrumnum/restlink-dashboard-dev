@@ -114,11 +114,11 @@ const QRCodeModal: React.FC<QRCodeModalProps> = ({
       });
 
       message.success(
-        `ดาวน์โหลด QR Code สำหรับ ${invitation.guest_name} เรียบร้อย!`
+        `Download QR Code for ${invitation.guest_name} completed!`
       );
     } catch (error) {
       console.error("❌ Error downloading QR Code:", error);
-      message.error("ไม่สามารถดาวน์โหลด QR Code ได้");
+      message.error("Unable to download QR Code");
     } finally {
       setDownloading(false);
     }

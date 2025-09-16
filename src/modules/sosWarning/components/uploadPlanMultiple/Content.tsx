@@ -106,7 +106,7 @@ const Content = ({
 
 
   const buildingData = useMemo(() => {
-    if(Object.keys(buildingPlan?.buildings).length === 0) return []
+    if(Object.keys(buildingPlan?.buildings || {})?.length === 0) return []
     if (buildingPlan?.buildings) return buildingPlan?.buildings || []
 
   }, [buildingPlan]);

@@ -106,6 +106,7 @@ import { ToastContainer } from "react-toastify";
 
 // data project
 import { getProject } from "./modules/setupProjectFirst/service/api/SetupProject";
+import PeopleCountingMain from "./modules/peopleCounting/screens/PeopleCountingMain";
 
 // ตัวอย่างการใช้ Custom Hooks (เก็บไว้สำหรับ scroll to top)
 function AppWithCustomHooks() {
@@ -213,28 +214,29 @@ function AppRoutes() {
       }
 
       setRouteState("checking");
-      let projectType = '';
-      let response:any = null;
+      let projectType = "";
+      let response: any = null;
       if (!projectData || Object.keys(projectData).length === 0) {
-      if(isAuth){ 
-        response = await getProject();
-      
-      }
-      if(response?.status){
-        dispatch.setupProject.setProjectData(response || {});
-        projectType = response?.projectType?.nameCode || '';
-        const strType = projectType.split('_');
-        projectType = strType[strType.length - 1];
-      } 
-      else {
-        // dispatch.setupProject.setProjectData({});
-      }
+        if (isAuth) {
+          response = await getProject();
+        }
+        if (response?.status) {
+          dispatch.setupProject.setProjectData(response || {});
+          projectType = response?.projectType?.nameCode || "";
+          const strType = projectType.split("_");
+          projectType = strType[strType.length - 1];
+        } else {
+          // dispatch.setupProject.setProjectData({});
+        }
 
         setPreviousLayoutType(currentLayoutType);
         setRouteState("allow");
         // return;
       }
-      projectType = (projectData as any)?.projectType?.nameCode  || response?.projectType?.nameCode || "";
+      projectType =
+        (projectData as any)?.projectType?.nameCode ||
+        response?.projectType?.nameCode ||
+        "";
       // ถ้าเป็น unauthorized routes ให้ผ่านได้
       if (
         currentPath.includes("/auth") ||
@@ -296,7 +298,7 @@ function AppRoutes() {
         }
 
         // เช็คเงื่อนไขสำหรับ setup-project routes
-        else if (currentPath.includes("/setup-project") &&  currentStep != 3) {
+        else if (currentPath.includes("/setup-project") && currentStep != 3) {
           if (projectType === "condo") {
             const currentStep = await dispatch.setupProject.getStepCondoModel();
             let storePathCondo = [
@@ -515,6 +517,7 @@ function AppRoutes() {
           path="juristicTeamPermission"
           element={<JuristicTeamPermission />}
         />
+        <Route path="counting" element={<PeopleCountingMain />} />
       </Route>
 
       {/* setup project first */}
@@ -552,7 +555,9 @@ function App() {
         // ใช้ token ใน storage แทนการพึ่ง isAuth ที่รีเซ็ตตอน refresh
         const access_token = await encryptStorage.getItem("access_token");
         const refreshToken = await encryptStorage.getItem("refreshToken");
-        const isLoggedIn = !!(access_token && access_token !== "undefined") || !!(refreshToken && refreshToken !== "undefined");
+        const isLoggedIn =
+          !!(access_token && access_token !== "undefined") ||
+          !!(refreshToken && refreshToken !== "undefined");
 
         if (!isLoggedIn) {
           setIsDataProjectReady(true);

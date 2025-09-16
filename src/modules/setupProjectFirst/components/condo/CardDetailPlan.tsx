@@ -43,7 +43,7 @@ const CardDetailPlan = ({ onBack }: { onBack: string }) => {
                     </div>
                 </div>
             </div>
-            <div className="flex justify-start mt-5">
+            <div className=" hidden  md:flex justify-start mt-5">
                 <Button
                     className="px-8 rounded-full  w-[150px]"
                     onClick={() => navigate(onBack)}

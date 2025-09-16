@@ -92,7 +92,7 @@ const VMSInvitation = () => {
         const response = await axiosVMS.get("/api/collections/area/records", {
           params: {
             page: currentPage,
-            perPage: 500,
+            perPage: 1000,
           },
         });
 
@@ -133,7 +133,7 @@ const VMSInvitation = () => {
         const response = await axiosVMS.get("/api/collections/house/records", {
           params: {
             page: currentPage,
-            perPage: 500,
+            perPage: 1000,
           },
         });
 

@@ -60,7 +60,7 @@ class HouseMappingService {
             while (hasMoreData) {
                 const response = await axiosVMS.get('/api/collections/house/records', {
                     params: {
-                        perPage: 500,
+                        perPage: 1000,
                         page: currentPage
                     }
                 });

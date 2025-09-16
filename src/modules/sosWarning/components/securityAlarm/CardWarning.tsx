@@ -30,10 +30,7 @@ interface DoorSensor {
 }
 
 const SecurityAlarm = () => {
-    // const [statusStep, setStatusStep] = useState<string>('success');
-    const dispatch = useDispatch();
     const { dataEmergencyDetail } = useSelector((state: RootState) => state.sosWarning);
-    const navigate = useNavigate();
     const [statusContract, setStatusContract] = useState<string>("contract");
     const [householdMembers] = useState<HouseholdMember[]>([
         {
@@ -84,7 +81,7 @@ const SecurityAlarm = () => {
     ]);
 
     const checkEnableContract = useMemo(() => {
-        return dataEmergencyDetail.sosEventInfo.step >= 2
+        return dataEmergencyDetail?.sosEventInfo?.step >= 2
     }, [dataEmergencyDetail])
 
     const handleUpdateStatus = (memberId: string, status: 'success' | 'failed') => {
@@ -94,7 +91,7 @@ const SecurityAlarm = () => {
     return (
         <div className="min-h-screen lg:h-screen flex flex-col overflow-auto lg:overflow-hidden">
             <div className="flex-1 flex flex-col p-4 md:p-6 lg:p-6">
-                <TepStep currentStep={dataEmergencyDetail.sosEventInfo.step} />
+                <TepStep currentStep={dataEmergencyDetail?.sosEventInfo?.step || 0} />
                 <Row gutter={[16, 16]} className="flex-1 ">
                     {/* Left Column - Household Members List + Action Steps */}
                     <Col xs={24} lg={16} className="flex">
@@ -113,20 +110,19 @@ const SecurityAlarm = () => {
                                     </div>
                                     <div className="block lg:hidden border-b-2 border-[#C6C8C9] mx-4 mt-2"></div>
                                 </Col>
-
-                                        <Col 
-                                            xs={24} 
-                                            sm={24} 
-                                            md={24} 
-                                            lg={10} 
-                                            xl={10}
-                                            className="h-full">
-                                            <div className="h-full overflow-y-auto px-4 lg:px-0">
-                                                <ContractMember 
-                                                checkEnableContract={checkEnableContract}
-                                                statusContract={statusContract} setStatusContract={setStatusContract}></ContractMember>
-                                            </div>
-                                        </Col>
+                                <Col 
+                                    xs={24} 
+                                    sm={24} 
+                                    md={24} 
+                                    lg={10} 
+                                    xl={10}
+                                    className="h-full">
+                                    <div className="h-full overflow-y-auto px-4 lg:px-0">
+                                        <ContractMember 
+                                        checkEnableContract={checkEnableContract}
+                                        statusContract={statusContract} setStatusContract={setStatusContract}></ContractMember>
+                                    </div>
+                                </Col>
                             </Row>
                         </div>
                     </Col>

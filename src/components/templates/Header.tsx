@@ -8,7 +8,7 @@ const Header = ({ title, className="" }: HeaderPropsType) => {
   return (
     <>
       <div>
-        <h1 className={`titleHeader ${className}`}>{title}</h1>
+        <h1 className={`titleHeader ${className} !text-nowrap`}>{title}</h1>
       </div>
     </>
   );

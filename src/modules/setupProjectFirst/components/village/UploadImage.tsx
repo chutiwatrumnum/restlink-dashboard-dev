@@ -137,7 +137,7 @@ const UploadImage = ({ onNext, status = 'image' }: { onNext: string, status?: st
                         workbook.SheetNames.forEach((sheetName, index) => {
                             const worksheet = workbook.Sheets[sheetName];
                             const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-
+                            console.log(jsonData,'jsonData')
                             // กรองข้อมูลที่มีค่าเท่านั้น
                             const filteredData = jsonData.filter((row: any) => {
                                 // ตรวจสอบว่า row มีข้อมูลจริงหรือไม่
@@ -154,8 +154,8 @@ const UploadImage = ({ onNext, status = 'image' }: { onNext: string, status?: st
                             };
                             sheetsData.push(sheetObject);
                         });
-
-                        
+                        console.log(workbook,'workbook')
+                        console.log(sheetsData,'sheetsData')
                         
                         if(projectType === 'village'){
                             console.log(workbook.SheetNames,'workbook.SheetNames')
@@ -164,8 +164,9 @@ const UploadImage = ({ onNext, status = 'image' }: { onNext: string, status?: st
                                 resetFileInput();
                                 return;
                             }
-                            let condoCheck = sheetsData[0].data[0] || []
-                            let dataCheck = ["Address","House type","Number of floor","Size (sq.m.)"]
+                            let condoCheck = sheetsData[0].data[0].map((item: any) => item.toLowerCase()) || []
+                            console.log(condoCheck,'condoCheck')
+                            let dataCheck = ["Address","House type","Number of floor","Size (sq.m.)"].map(item => item.toLowerCase())
                             let checkCondo = !condoCheck.every((item: any) => dataCheck.includes(item))
                             if(checkCondo){
                                 FailedModal("Excel file is not valid (Village)", 1200)
@@ -175,9 +176,9 @@ const UploadImage = ({ onNext, status = 'image' }: { onNext: string, status?: st
                         }
                         // แปลงข้อมูล sheetsData ของแต่ละ sheet เป็น key-object โดย index ที่ 0 เป็น key แล้วที่เหลือเป็น value
                         // แปลงข้อมูล sheetsData ของแต่ละ sheet เป็น object ที่ key คือชื่อ sheet
-                        let condoCheck = sheetsData[0].data[0] || []
+                        let condoCheck = sheetsData[0].data[0].map((item: any) => item.toLowerCase()) || []
                         let dataCheck = 
-                        ['Building name', 'Floor', 'Floor name', 'Unit no.','Address', 'Room type', 'Size (sq.m.)']
+                        ['Building name', 'Floor', 'Floor name', 'Unit no.','Address', 'Room type', 'Size (sq.m.)'].map(item => item.toLowerCase())
                         let checkCondo = !condoCheck.every((item: any) => dataCheck.includes(item))
                         
                         if (projectType === 'condo') {
@@ -186,8 +187,9 @@ const UploadImage = ({ onNext, status = 'image' }: { onNext: string, status?: st
                                 resetFileInput();
                                 return;
                             }
-                            let basementCheck = sheetsData[1].data[0] || []
-                            let dataCheckBasement = ['Building name', 'Basement Floor', 'Basement name']
+
+                            let basementCheck = sheetsData[1].data[0].map((item: any) => item.toLowerCase()) || []
+                            let dataCheckBasement = ['Building name', 'Basement floor', 'Basement name'].map(item => item.toLowerCase())
                             let checkBasement = !basementCheck.every((item: any) => dataCheckBasement.includes(item))
                             if (checkBasement) {
                                 FailedModal("Excel file is not valid (Basement)", 1200)
@@ -195,7 +197,7 @@ const UploadImage = ({ onNext, status = 'image' }: { onNext: string, status?: st
                                 return;
                             }
                         }
-
+                        
                         const sheetsDataAsObjects = sheetsData.reduce((acc: any, sheet: any) => {
                             const [header, ...rows] = sheet.data;
                             if (!header || !Array.isArray(header)) return acc;
@@ -220,11 +222,12 @@ const UploadImage = ({ onNext, status = 'image' }: { onNext: string, status?: st
                             acc[sheet.sheetName] = rowObjects;
                             return acc;
                         }, {});
+                        console.log(sheetsDataAsObjects,'sheetsDataAsObjects')
                         dispatch.setupProject.uploadExcelFile({
                             data: sheetsDataAsObjects,
                             fileName: file.name
                         });
-                        message.success(`Excel file loaded successfully! Found ${sheetsData.length} sheet(s)`);
+                        // message.success(`Excel file loaded successfully! Found ${sheetsData.length} sheet(s)`);
                     } catch (error) {
                         console.error('Error reading Excel file:', error);
                         message.error('Error reading Excel file');
@@ -405,16 +408,28 @@ const UploadImage = ({ onNext, status = 'image' }: { onNext: string, status?: st
                     <div className="relative"></div>
                 </div>
             </div>
-            <div className="flex justify-end mt-5">
-                <Button
-                    onClick={handleContinue}
-                    type="primary"
-                    loading={isSubmitting}
-                    className={`px-8 w-[150px] rounded-lg bg-blue-500  w-[100px] ${isDisabled || isSubmitting ? '!opacity-50 !cursor-not-allowed' : ''}`}
-                    disabled={isDisabled || isSubmitting}
-                >
-                    Continue
-                </Button>
+            <div className="flex  justify-between md:justify-end  my-5">
+                <div className="md:hidden block">
+                    <Button
+                        className="px-8 rounded-full  w-[150px]"
+                        onClick={() => navigate('/setup-project/get-start')}
+                    >
+                        Back
+                    </Button>
+                </div>
+                <div>
+                    <Button
+                        onClick={handleContinue}
+                        type="primary"
+                        loading={isSubmitting}
+                        className={`px-8 w-[150px] rounded-lg bg-blue-500  w-[100px] ${isDisabled || isSubmitting ? '!opacity-50 !cursor-not-allowed' : ''}`}
+                        disabled={isDisabled || isSubmitting}
+                    >
+                        Continue
+                    </Button>
+
+                </div>
+                
             </div>
         </>
     )

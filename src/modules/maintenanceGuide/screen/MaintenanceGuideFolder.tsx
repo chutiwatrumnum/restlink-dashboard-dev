@@ -310,6 +310,7 @@ const MaintenanceGuideFolder = () => {
             } else {
               console.log("Something went wrong!");
             }
+            fetchData();
           },
           fetchData: fetchData,
         });

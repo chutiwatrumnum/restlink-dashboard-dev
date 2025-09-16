@@ -115,7 +115,7 @@ export const validateAppointmentSlots = (
         console.log("❌ No complete slots found");
         return {
             isValid: false,
-            message: "กรุณาเลือกอย่างน้อย 1 วันพร้อมช่วงเวลาที่สมบูรณ์",
+            message: "Please select at least one day with a complete time range.",
         };
     }
 
@@ -129,7 +129,7 @@ export const validateAppointmentSlots = (
         console.log("❌ Duplicate dates found");
         return {
             isValid: false,
-            message: "ไม่สามารถเลือกวันที่เดียวกันได้",
+            message: "You cannot select the same date.",
         };
     }
 
@@ -147,7 +147,7 @@ export const validateAppointmentSlots = (
                 console.log(`❌ Invalid time range in slot ${i + 1}: end time before start time`);
                 return {
                     isValid: false,
-                    message: "เวลาสิ้นสุดต้องมากกว่าเวลาเริ่มต้น",
+                    message: "The end time must be later than the start time.",
                 };
             }
 
@@ -159,7 +159,7 @@ export const validateAppointmentSlots = (
                 console.log(`❌ Time range too short in slot ${i + 1}: ${timeDiff} minutes`);
                 return {
                     isValid: false,
-                    message: "ช่วงเวลานัดหมายต้องมีอย่างน้อย 30 นาที",
+                    message: "The appointment duration must be at least 30 minutes.",
                 };
             }
         }

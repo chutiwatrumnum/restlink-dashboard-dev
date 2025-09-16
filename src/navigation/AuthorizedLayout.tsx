@@ -30,7 +30,8 @@ function AuthorizedLayout() {
   
   const [reload, setReload] = useState(false);
   const [storePathNotContentLayout] = useState([
-    '/dashboard/manage-plan'
+    '/dashboard/manage-plan',
+    '/dashboard/security-alarm',
   ]);
 
   // ตรวจสอบว่า current path อยู่ใน list ที่ไม่ต้องใช้ Content layout หรือไม่
@@ -121,7 +122,23 @@ function AuthorizedLayout() {
   };
 
   const LayoutContent = () => {
-    return <div>{outlet}</div>;
+    // เพิ่ม style เฉพาะสำหรับหน้า security-alarm เพื่อให้คลิกได้
+    const isSecurityAlarmPage = currentPath === '/dashboard/security-alarm';
+    
+    return (
+      <div 
+        style={{
+          ...(isSecurityAlarmPage && {
+            position: 'relative',
+            zIndex: 1,
+            pointerEvents: 'auto',
+            height: '100vh',
+          })
+        }}
+      >
+        {outlet}
+      </div>
+    );
   };
   return (
     <Layout>

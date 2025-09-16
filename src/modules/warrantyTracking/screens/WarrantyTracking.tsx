@@ -23,6 +23,7 @@ import {
   WarrantyDetailsType,
   paginationWarranty,
 } from "../../../stores/interfaces/Warranty";
+import { WarrantyTrackingProvider } from "../Contaxt";
 
 const WarrantyTracking = () => {
   // Initial
@@ -38,6 +39,7 @@ const WarrantyTracking = () => {
   const [total, setTotal] = useState<number>(0);
   const [search, setSearch] = useState<string>('');
   const [rangMonthSelect, setRangMonthSelect] = useState<string>('');
+  const [isEditMode, setIsEditMode] = useState<boolean>(false);
 
   const [paginationConfig, setPaginationConfig] = useState<any>({
     defaultPageSize: pageSizeOptions[0],
@@ -176,6 +178,8 @@ const WarrantyTracking = () => {
   };
 
   const handleSave = (record: any) => {
+    console.log(record,'record')
+    setIsEditMode(false);
     const warrantyDetails: WarrantyDetailsType = {
       ...record,
     };
@@ -278,7 +282,7 @@ const WarrantyTracking = () => {
   }, [curPage, perPage, search, rangMonthSelect])
 
   return (
-    <>
+    <WarrantyTrackingProvider isEditMode={isEditMode} setIsEditMode={setIsEditMode}>
       <ModalFormUpdate
         loadFirst={loadFirst}
         isOpen={isModalOpen}
@@ -332,7 +336,7 @@ const WarrantyTracking = () => {
           />
         </Col>
       </Row>
-    </>
+    </WarrantyTrackingProvider>
   );
 };
 

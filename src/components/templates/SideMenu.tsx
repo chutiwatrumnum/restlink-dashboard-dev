@@ -52,6 +52,7 @@ import {
   JuristicPermissionIcon,
   JuristicManageIcon,
   JuristicIcon,
+  PeopleCountingIcon,
 } from "../../assets/icons/Icons";
 
 // APIs
@@ -722,6 +723,18 @@ const SideMenu = ({
               <Link to={`${main_link}/manage-plan`}>Manage Plan</Link>
             </Menu.Item>
           </SubMenu>
+          <Menu.Item
+            key={`${main_link}/counting`}
+            icon={
+              <PeopleCountingIcon
+                color={iconMenuColorSelector("counting")}
+                className="sideMenuIcon"
+              />
+            }
+            hidden={!access("people_counting", "view")}
+          >
+            <Link to={`${main_link}/counting`}>Counting</Link>
+          </Menu.Item>
           <Menu.Item
             key={`${main_link}/warranty-tracking`}
             icon={

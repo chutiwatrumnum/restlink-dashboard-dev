@@ -95,7 +95,7 @@ const VMSInvitationFormModal = ({
       if (!houseData || houseData.length === 0) {
         await dispatch.house.getHouseList({
           page: 1,
-          perPage: 500,
+          perPage: 1000,
           silent: true,
         });
       }
@@ -103,7 +103,7 @@ const VMSInvitationFormModal = ({
       if (!areaData || areaData.length === 0) {
         await dispatch.area.getAreaList({
           page: 1,
-          perPage: 500,
+          perPage: 1000,
           silent: true,
         });
       }
@@ -684,7 +684,7 @@ const VMSInvitationFormModal = ({
                         }}>
                         <div style={{ flex: 2 }}>
                           <Input
-                            placeholder="ป้ายทะเบียน"
+                            placeholder="license plate"
                             value={vehicle.license_plate}
                             onChange={(e) =>
                               updateVehicle(
