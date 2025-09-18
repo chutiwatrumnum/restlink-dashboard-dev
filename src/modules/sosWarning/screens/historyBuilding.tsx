@@ -401,7 +401,7 @@ const HistoryBuilding = () => {
             }
         }
         else {  
-            message.error(data?.message || 'ไม่สามารถดำเนินการได้')
+            message.error(data?.message || 'not found data')
         }
     }
 

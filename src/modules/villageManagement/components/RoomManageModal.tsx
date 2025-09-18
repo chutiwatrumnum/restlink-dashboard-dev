@@ -107,7 +107,7 @@ const RoomManageModal = (props: RoomManageModalProps) => {
                   type="primary"
                   size="large"
                   className="w-full"
-                  disabled={access("room_management", "create")}
+                  disabled={!access("room_management", "create")}
                 >
                   {`+ Add user`}
                 </Button>

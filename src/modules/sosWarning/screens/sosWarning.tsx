@@ -179,17 +179,12 @@ const SOSWarning = () => {
   // }, [projectData])
 
   let filterEmergencyOnFloor = useMemo(() => {
-    if (dataEmergency && dataSelectPlan.unit.length > 0) {
+    if (dataEmergency) {
       let unitIdArray = dataSelectPlan.unit.map((item: any) => item.id)
       let objOrigin = {}
-      let filterEmergency = dataEmergency?.emergency?.filter((item: any) => unitIdArray.includes(item.unitId))
-      let filterDeviceWarning = dataEmergency?.deviceWarning?.filter((item: any) => unitIdArray.includes(item.unitId))
-      objOrigin = {
-        emergency: filterEmergency,
-        emergencyCount: filterEmergency.length,
-        deviceWarning: filterDeviceWarning,
-        deviceWarningCount: filterDeviceWarning.length
-      }
+      // let filterEmergency = dataEmergency?.emergency?.filter((item: any) => unitIdArray.includes(item.unitId))
+      // let filterDeviceWarning = dataEmergency?.deviceWarning?.filter((item: any) => unitIdArray.includes(item.unitId))
+      objOrigin = dataEmergency
       return objOrigin
     }
     return {
@@ -491,6 +486,14 @@ const SOSWarning = () => {
   const loadFirst = useCallback(async (floorId?: string) => {
     try {
 
+      let dataEmergency = await getEventPending();
+      // await getEmergency();
+      let dataBuilding = []
+
+      if (dataEmergency.status) {
+        await setDataEmergency(dataEmergency.result)
+      }
+
       let dataAllMap = await getVillageData(floorId || null);
       if (floorId && dataAllMap.status) {
         if (!dataAllMap.result.planImg || !dataAllMap.result.planInfoId) {
@@ -514,15 +517,7 @@ const SOSWarning = () => {
       }
 
 
-      let dataEmergency = await getEventPending();
-      // await getEmergency();
-      let dataBuilding = []
 
-
-
-      if (dataEmergency.status) {
-        setDataEmergency(dataEmergency.result)
-      }
       const fnDuplicateBuilding = async () => {
         if (dataAllMap?.result?.building && Array.isArray(dataAllMap.result.building) && !hasDuplicatedBuildings) {
           // copy array เดิม
@@ -624,7 +619,6 @@ const SOSWarning = () => {
       });
 
       newSocket.on("sos", async (data) => {
-        console.log('sos',data)
         // อัพเดทข้อมูลทั้งชุดเมื่อได้รับข้อมูลใหม่
         if (data) {
           if (data?.marker?.marker?.length > 0) {
@@ -998,15 +992,18 @@ const SOSWarning = () => {
   return (
     <>
       <div>
+
         <div className="relative" style={{
           zIndex: 2,
           display: Object.keys(dataEmergencyDetail).length > 0 ? 'block' : 'none'
         }}
         >
+
           <div className=" h-full min-h-screen ">
             <SecurityAlarm />
           </div>
         </div>
+
         <div
           style={{ display: Object.keys(dataEmergencyDetail).length > 0 ? 'none' : 'block' }}
           className="position-relative" >

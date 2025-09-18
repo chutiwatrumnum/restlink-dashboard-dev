@@ -1,19 +1,19 @@
 // ไฟล์: src/utils/constants/thaiVehicleOptions.ts
 
 export const VEHICLE_COLOR_OPTIONS = [
-    { label: "ขาว", value: "white" },
-    { label: "ดำ", value: "black" },
-    { label: "เงิน", value: "silver" },
-    { label: "เทา", value: "gray" },
-    { label: "แดง", value: "red" },
-    { label: "น้ำเงิน", value: "blue" },
-    { label: "เขียว", value: "green" },
-    { label: "เหลือง", value: "yellow" },
-    { label: "ส้ม", value: "orange" },
-    { label: "ม่วง", value: "purple" },
-    { label: "น้ำตาล", value: "brown" },
-    { label: "ทอง", value: "gold" },
-    { label: "อื่นๆ", value: "other" },
+    { label: "white", value: "white" },
+    { label: "black", value: "black" },
+    { label: "silver", value: "silver" },
+    { label: "gray", value: "gray" },
+    { label: "red", value: "red" },
+    { label: "blue", value: "blue" },
+    { label: "green", value: "green" },
+    { label: "yellow", value: "yellow" },
+    { label: "orange", value: "orange" },
+    { label: "purple", value: "purple" },
+    { label: "brown", value: "brown" },
+    { label: "gold", value: "gold" },
+    { label: "other", value: "other" },
 ] as const;
 
 export const VEHICLE_BRAND_OPTIONS = [
@@ -92,7 +92,7 @@ export const VEHICLE_BRAND_OPTIONS = [
     { label: "Zontes", value: "zontes" },
 
     // อื่นๆ
-    { label: "อื่นๆ", value: "other" },
+    { label: "Other", value: "other" },
 ] as const;
 
 export type VehicleColorOption = typeof VEHICLE_COLOR_OPTIONS[number]['value'];
@@ -184,19 +184,19 @@ export const getVehicleBrandsByRegion = () => {
 // Color mapping for UI display
 export const getColorDisplayInfo = (colorValue: string): { bg: string; text: string; label: string } => {
     const colorMap: Record<string, { bg: string; text: string; label: string }> = {
-        white: { bg: '#ffffff', text: '#000000', label: 'ขาว' },
-        black: { bg: '#000000', text: '#ffffff', label: 'ดำ' },
-        silver: { bg: '#c0c0c0', text: '#000000', label: 'เงิน' },
-        gray: { bg: '#808080', text: '#ffffff', label: 'เทา' },
-        red: { bg: '#ff0000', text: '#ffffff', label: 'แดง' },
-        blue: { bg: '#0000ff', text: '#ffffff', label: 'น้ำเงิน' },
-        green: { bg: '#008000', text: '#ffffff', label: 'เขียว' },
-        yellow: { bg: '#ffff00', text: '#000000', label: 'เหลือง' },
-        orange: { bg: '#ffa500', text: '#000000', label: 'ส้ม' },
-        purple: { bg: '#800080', text: '#ffffff', label: 'ม่วง' },
-        brown: { bg: '#a52a2a', text: '#ffffff', label: 'น้ำตาล' },
-        gold: { bg: '#ffd700', text: '#000000', label: 'ทอง' },
-        other: { bg: '#f0f0f0', text: '#000000', label: 'อื่นๆ' },
+        white: { bg: '#ffffff', text: '#000000', label: 'white' },
+        black: { bg: '#000000', text: '#ffffff', label: 'black' },
+        silver: { bg: '#c0c0c0', text: '#000000', label: 'silver' },
+        gray: { bg: '#808080', text: '#ffffff', label: 'gray' },
+        red: { bg: '#ff0000', text: '#ffffff', label: 'red' },
+        blue: { bg: '#0000ff', text: '#ffffff', label: 'blue' },
+        green: { bg: '#008000', text: '#ffffff', label: 'green' },
+        yellow: { bg: '#ffff00', text: '#000000', label: 'yellow' },
+        orange: { bg: '#ffa500', text: '#000000', label: 'orange' },
+        purple: { bg: '#800080', text: '#ffffff', label: 'purple' },
+        brown: { bg: '#a52a2a', text: '#ffffff', label: 'brown' },
+        gold: { bg: '#ffd700', text: '#000000', label: 'gold' },
+        other: { bg: '#f0f0f0', text: '#000000', label: 'other' },
     };
 
     return colorMap[colorValue] || colorMap.other;

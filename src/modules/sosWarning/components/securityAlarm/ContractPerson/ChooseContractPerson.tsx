@@ -1,23 +1,62 @@
 import React, { useState, useMemo } from 'react';
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../../../../stores";
-import { chooseContractOfficer } from "../../../service/api/SOSwarning";
+import { chooseContractOfficer,closeJob } from "../../../service/api/SOSwarning";
 import FailedModal from '../../../../../components/common/FailedModal';
 const ChooseContractPerson = ({  setStatusContract, enableContractOfficer }: { statusContract: string, setStatusContract: (status: string) => void, enableContractOfficer: boolean }) => {
     const [selectedOption] = useState<string>('');
+    const dispatch = useDispatch();
     const { dataEmergencyDetail } = useSelector((state: RootState) => state.sosWarning);
-    const handleOptionSelect = async (optionId: string) => {
-        let obj = {
-            "eventHelpId": optionId || 0
+    const handleOptionSelect = async (optionId: any) => {
+        if(optionId.id === 4){
+            let obj = {
+                "eventHelpId": optionId.id || 0
+            }
+            let eventId = dataEmergencyDetail.sosEventInfo.id
+            let data = await chooseContractOfficer(eventId, obj)
+            if (data.status) {
+                dispatch.sosWarning.setSelectOfficer(optionId)
+                // setStatusContract("callOfficer")
+            }
+            else if(data.message) {
+                FailedModal(data.message, 900)
+                return 
+            }
+
+            let dataSolve = await closeJob(eventId)
+            if(dataSolve.status){
+                let dataEventInfo = JSON.parse(JSON.stringify(dataEmergencyDetail))
+                dataEventInfo.sosEventInfo.step = 3
+                // dataSolve.result.step
+                dataEventInfo.sosEventInfo.isCompleted = dataSolve.result.is_completed
+                dataEventInfo.sosEventInfo.event_help_id = dataSolve.result.event_help_id
+                dataEventInfo.sosEventInfo.sosCallHistories =  [...dataEmergencyDetail.sosEventInfo.sosCallHistories, {
+                    createdAt: new Date().toISOString(),
+                }]
+
+                dispatch.sosWarning.setDataEmergencyDetail(dataEventInfo)
+                setStatusContract("form")
+            }
+            else {
+                FailedModal(dataSolve.message, 900)
+            }
+            return
         }
-        let eventId = dataEmergencyDetail.sosEventInfo.id
-        let data = await chooseContractOfficer(eventId, obj)
-        if (data.status) {
-            setStatusContract("callOfficer")
-        }
-        else if(data.message) {
-            FailedModal(data.message, 900)
-        }
+        dispatch.sosWarning.setSelectOfficer(optionId)
+        setStatusContract("callOfficer")
+        // return 
+        // let obj = {
+        //     "eventHelpId": optionId.id || 0
+        // }
+        // let eventId = dataEmergencyDetail.sosEventInfo.id
+        // let data = await chooseContractOfficer(eventId, obj)
+        // if (data.status) {
+        //     dispatch.sosWarning.setSelectOfficer(optionId)
+        //     setStatusContract("callOfficer")
+        // }
+        // else if(data.message) {
+        //     FailedModal(data.message, 900)
+        // }
     };
     const helpOptions = useMemo(() => {
         let choices = dataEmergencyDetail?.sosEventHelpProtocol[1]?.choices || []
@@ -25,7 +64,10 @@ const ChooseContractPerson = ({  setStatusContract, enableContractOfficer }: { s
             return choices.map((item: any) => {
                 return {
                     id: item?.id,
-                    label: item?.name
+                    label: item?.name,
+                    nameTh:item.name,
+                    nameEn:item.nameEn,
+                    contact:item.contact
                 }
             })
         }
@@ -63,7 +105,7 @@ const ChooseContractPerson = ({  setStatusContract, enableContractOfficer }: { s
                                     { helpOptions.length > 0 && helpOptions.map((option: any) => (
                                         <button
                                             key={option.id}
-                                            onClick={() => handleOptionSelect(option.id)}
+                                            onClick={() => handleOptionSelect(option)}
                                             className={`
                                             cursor-pointer
                                             !mb-4
@@ -76,7 +118,7 @@ const ChooseContractPerson = ({  setStatusContract, enableContractOfficer }: { s
                                         `}
                                             type="button"
                                         >
-                                            {option.label}
+                                            {option.nameEn}
                                         </button>
                                     ))}
                                     {

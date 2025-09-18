@@ -40,6 +40,9 @@ const getUnitList = async ({
   const res = await axios.get(`/room-management/unit`, {
     params: { curPage, perPage, floorId },
   });
+  // console.log("GET UNIT API : ", { curPage, perPage, floorId });
+  // console.log("RES API : ", res);
+
   return res.data.result;
 };
 

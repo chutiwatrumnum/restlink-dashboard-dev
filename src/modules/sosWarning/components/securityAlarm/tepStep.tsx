@@ -111,6 +111,7 @@ const TepStep: React.FC<TepStepProps> = ({ currentStep = 1 }) => {
 
   const handleBack = () => {
     dispatch.sosWarning.setDataEmergencyDetail({})
+    dispatch.sosWarning.setStep(0)
     if (statusCaseReceiveCast) {
       navigate('/dashboard/history-building')
     }

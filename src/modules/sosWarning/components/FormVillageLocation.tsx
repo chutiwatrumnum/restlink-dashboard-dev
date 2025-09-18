@@ -973,7 +973,7 @@ const FormVillageLocation = ({
                             >
                                 {unit?.roomAddress}
                                 {isUsed && !isCurrentMarkerAddress && 
-                                    <span style={{ color: '#ff4d4f', marginLeft: '8px' }}>(ถูกใช้แล้ว)</span>
+                                    <span style={{ color: '#ff4d4f', marginLeft: '8px' }}>(Already used)</span>
                                 }
                             </Select.Option>
                             );

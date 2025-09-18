@@ -8,6 +8,7 @@ const getUnitList = async (folderId?: number) => {
   const res = await axios.get(url, {
     params: folderId ? { folderId } : {}, // ส่งเฉพาะตอนมีค่า
   });
+  // console.log("RES unit list: ", res);
 
   return res.data.result;
 };

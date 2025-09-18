@@ -128,7 +128,7 @@ const ResidentActivation = () => {
                       style={{ fontSize: 20, color: "#403d38" }}
                     />
                   }
-                  disabled={!access("team_management", "view")}
+                  disabled={!access("users", "view")}
                 />
               </Col>
             </Row>
@@ -196,7 +196,7 @@ const ResidentActivation = () => {
           className="userManagementExportBtn"
           message="Add new"
           onClick={onCreate}
-          disabled={!access("team_management", "create")}
+          disabled={!access("users", "create")}
         />
       </Flex>
 

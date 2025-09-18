@@ -208,7 +208,9 @@ const ChatBoxContainer = ({ chatData }: { chatData?: ChatListDataType }) => {
   const onSendMessage = async () => {
     let payload: SendChatDataType;
     setIsSending(true);
-    let messagePayload = messageValue.replace(/&nbsp;/g, " ");
+    let messagePayload = messageValue
+      .replace(/<br\s*\/?>/gi, "\n") // แปลง <br> เป็น newline
+      .replace(/&nbsp;/g, " ");
     if (chatData && messagePayload.trim() !== "") {
       payload = {
         type: "text",

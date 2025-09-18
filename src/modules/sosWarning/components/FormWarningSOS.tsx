@@ -126,8 +126,8 @@ const FormWarningSOS = ({ dataEmergency, unitHover, unitClick, setDataEmergency,
 
     const [removingCards, setRemovingCards] = useState<Set<string>>(new Set());
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-    const [dataOriginEmergency, setDataOriginEmergency] = useState<any>(dataEmergency);
-    const [displayEmergencyData, setDisplayEmergencyData] = useState<any>(dataEmergency);
+    const [dataOriginEmergency, setDataOriginEmergency] = useState<any>();
+    const [displayEmergencyData, setDisplayEmergencyData] = useState<any>();
 
     // Sync dataOriginEmergency และ displayEmergencyData เมื่อ dataEmergency เปลี่ยนจาก parent (เฉพาะการเปลี่ยนแปลงข้อมูลจริงๆ)
     useEffect(() => {
@@ -196,31 +196,50 @@ const FormWarningSOS = ({ dataEmergency, unitHover, unitClick, setDataEmergency,
             document.removeEventListener('mousedown', handleClickOutside);
         };
     }, [unitClick, onClearFilter]);
-    const handleAcknowledgeEmergency = async (marker: any, type: string) => {
-        
+    const handleAcknowledgeEmergency = async (marker: any, type: string) => {        
+
+
         let data = await getSosWarningById(marker.id)
         if(!data.status){
             FailedModal(data.message,900)
             return
         }
+        if(data.status && data?.result?.sosEventInfo){
+            await dispatch.sosWarning.setStep(data.result.sosEventInfo.step)
+        }
         data.result = {
             ...data.result,
             type: type
         }
-        let stepCurrent = marker.step || step
+        let stepCurrent = marker.step || data.result.sosEventInfo.step
+        // return
         if(stepCurrent >= 1){
+            setStatusAcknowledge(true)
             await dispatch.sosWarning.setDataEmergencyDetail(data.result)
             return
         }
         if (data.status) {
-            let dataReceiveCast = await receiveCast(marker.id)
-            if(!dataReceiveCast.status){
-                FailedModal(dataReceiveCast.message,900)
-                return
+            let dataReceiveCast = {
+                status: false,
+                message: 'Error',
+                result: {
+                    step: 0,
+                    is_completed: false,
+                    event_help_id: null
+                }
             }
+            if(data?.result?.sosEventInfo.step < 1) {
+                dataReceiveCast = await receiveCast(marker.id)
+                if(!dataReceiveCast.status){
+                    FailedModal(dataReceiveCast.message,900)
+                    return
+                }
+            }
+            
+
             if(dataReceiveCast.status){
                 await dispatch.sosWarning.setStep(dataReceiveCast?.result?.step)
-                data.result.sosEventInfo.step  = dataReceiveCast?.result?.step
+                data.result.sosEventInfo.step = dataReceiveCast?.result?.step
                 data.result.sosEventInfo.isCompleted = dataReceiveCast?.result?.is_completed
                 data.result.sosEventInfo.event_help_id = dataReceiveCast?.result?.event_help_id
                 await dispatch.sosWarning.setDataEmergencyDetail(data.result)
@@ -228,7 +247,7 @@ const FormWarningSOS = ({ dataEmergency, unitHover, unitClick, setDataEmergency,
             }
         } 
         else {
-            FailedModal(data.message,900)
+            FailedModal(data?.message,900)
             return
         }   
     }
@@ -279,6 +298,8 @@ const FormWarningSOS = ({ dataEmergency, unitHover, unitClick, setDataEmergency,
             gap-4 overflow-y-auto 
             max-h-[calc(100vh-100px)]
             mb-4 sm:mb-6 md:mb-8 lg:mb-0`}>
+
+
             {dataOriginEmergency && dataOriginEmergency.emergency.map((marker: any, index: any) => {
                 // แปลง time เป็นรูปแบบที่ต้องการ
                 const formatTime = (timeStr: string) => {
@@ -451,8 +472,7 @@ const FormWarningSOS = ({ dataEmergency, unitHover, unitClick, setDataEmergency,
             })}
             {
                 dataEmergency.emergency.length === 0 && dataEmergency.deviceWarning.length === 0 && (
-                    <div className="text-xs font-bold tracking-wide px-3 py-2 
-                    flex justify-center items-center  gap-2"
+                    <div className="text-xs font-bold tracking-wide px-3 py-2 flex justify-center items-center  gap-2"
                         style={{ lineHeight: 'normal' }}>
                         <span className="pt-1 text-xl whitespace-nowrap">No emergency</span>
                     </div>

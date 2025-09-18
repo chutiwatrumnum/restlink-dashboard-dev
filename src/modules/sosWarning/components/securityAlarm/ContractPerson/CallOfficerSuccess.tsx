@@ -1,18 +1,32 @@
 import React from 'react';
 import Officer from "../../../../../assets/images/Officer.png";
+import { useMemo } from 'react';
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../../../../stores";
-import { closeJob } from "../../../service/api/SOSwarning";
+import { chooseContractOfficer, closeJob } from "../../../service/api/SOSwarning";
 import officerIcon from "../../../../../assets/icons/officerIcon.png";
+import FailedModal from '../../../../../components/common/FailedModal';
+
 const CallOfficerSuccess = ({ statusContract, setStatusContract }: { statusContract: string, setStatusContract: (status: string) => void }) => {
     const dispatch = useDispatch();
-    const { dataEmergencyDetail } = useSelector((state: RootState) => state.sosWarning);
+    const { dataEmergencyDetail  } = useSelector((state: RootState) => state.sosWarning);
+    const selectOfficer = useSelector((state: RootState) => state.sosWarning.selectOfficer);
     const handleSuccess = async () => {
         // Handle success action here
         let eventId = dataEmergencyDetail.sosEventInfo.id
+        if(eventId){
+            let obj = {
+                "eventHelpId": selectOfficer?.id || 0
+            }
+            let data = await chooseContractOfficer(eventId, obj)
+            if (!data?.status) {
+                FailedModal(data.message, 900)
+                return 
+            }
+        }
         let data = await closeJob(eventId)
         if(data.status){
-            let dataEventInfo =  JSON.parse(JSON.stringify(dataEmergencyDetail))
+            let dataEventInfo = JSON.parse(JSON.stringify(dataEmergencyDetail))
             dataEventInfo.sosEventInfo.step = data.result.step
             dataEventInfo.sosEventInfo.isCompleted = data.result.is_completed
             dataEventInfo.sosEventInfo.event_help_id = data.result.event_help_id
@@ -23,6 +37,12 @@ const CallOfficerSuccess = ({ statusContract, setStatusContract }: { statusContr
             setStatusContract("form")
         }
     };
+    const officerName = useMemo(() => {
+        if(Object.keys(selectOfficer).length > 0){
+            return `${selectOfficer?.nameEn} ${selectOfficer?.contact}`
+        }
+        return ''
+    }, [selectOfficer])
 
     return (
         <div className="w-full h-full flex flex-col justify-center items-center p-6">
@@ -41,9 +61,9 @@ const CallOfficerSuccess = ({ statusContract, setStatusContract }: { statusContr
                         <img src={officerIcon} alt="Officer" className="w-[200px] mb-6" />
                 {/* </div> */}
             {/* Officer Label */}
-            {/* <h2 className="!text-3xl !font-medium !text-[#929292] !text-center !mb-12  !mt-6 !mb-8">
-                Policeman 191
-            </h2> */}
+            <h2 className="!text-3xl !font-medium !text-[#929292] !text-center !mb-12  !mt-6 !mb-8">
+                {officerName}
+            </h2>
 
             {/* Success Button */}
             <button

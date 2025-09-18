@@ -27,6 +27,7 @@ import {
   searchProvinces,
 } from "../../../utils/constants/thaiProvinces";
 import dayjs from "dayjs";
+import type { Dayjs } from "dayjs";
 
 interface VMSInvitationFormModalProps {
   isOpen: boolean;
@@ -63,7 +64,9 @@ const VMSInvitationFormModal = ({
   const [formType, setFormType] = useState<string>("invitation");
   const [selectedHouseDetails, setSelectedHouseDetails] = useState<any>(null);
   const [vehicles, setVehicles] = useState<VehicleInput[]>([]);
-  const [authorizedAreas, setAuthorizedAreas] = useState<string[]>([]); // เพิ่ม state สำหรับจัดการ authorized areas
+  const [authorizedAreas, setAuthorizedAreas] = useState<string[]>([]);
+  const [startTime, setStartTime] = useState<Dayjs | null>(null);
+  const [expireTime, setExpireTime] = useState<Dayjs | null>(null);
 
   // Get data from state
   const { tableData: houseData, loading: houseLoading } = useSelector(
@@ -79,6 +82,10 @@ const VMSInvitationFormModal = ({
 
   const isEditing = !!editData;
   const isLoading = createMutation.isPending || updateMutation.isPending;
+
+  // Get current date/time for restrictions
+  const now = dayjs();
+  const today = now.startOf("day");
 
   // Load province options
   useEffect(() => {
@@ -122,7 +129,7 @@ const VMSInvitationFormModal = ({
   useEffect(() => {
     if (houseData && houseData.length > 0) {
       const houses = houseData.map((house) => ({
-        label: house.address, // แสดงแค่ชื่อที่อยู่
+        label: house.address,
         value: house.id,
       }));
       setHouseOptions(houses);
@@ -140,7 +147,199 @@ const VMSInvitationFormModal = ({
     }
   }, [areaData]);
 
-  // Load house details and set default authorized area (เฉพาะ create mode)
+  // Disable past dates for date picker
+  const disabledDate = (current: Dayjs) => {
+    return current && current.isBefore(today);
+  };
+
+  // Disable past hours and minutes for start time
+  const disabledStartTime = (current: Dayjs | null) => {
+    if (!current) return {};
+
+    const isToday = current.isSame(today, "day");
+    if (!isToday) return {};
+
+    const currentHour = now.hour();
+    const currentMinute = now.minute();
+
+    return {
+      disabledHours: () => {
+        const hours = [];
+        for (let i = 0; i < currentHour; i++) {
+          hours.push(i);
+        }
+        return hours;
+      },
+      disabledMinutes: (selectedHour: number) => {
+        if (selectedHour === currentHour) {
+          const minutes = [];
+          for (let i = 0; i <= currentMinute; i++) {
+            minutes.push(i);
+          }
+          return minutes;
+        }
+        return [];
+      },
+    };
+  };
+
+  // Disable past times and ensure expire time is after start time (only on same day)
+  const disabledExpireTime = (current: Dayjs | null) => {
+    if (!current) return {};
+
+    const isToday = current.isSame(today, "day");
+
+    // Only disable hours/minutes if:
+    // 1. It's today AND no start time selected (prevent selecting past time)
+    // 2. It's the same day as start time (prevent selecting time before start time)
+
+    let disabledHours: number[] = [];
+    let disabledMinutes = (selectedHour: number) => [] as number[];
+
+    // Case 1: If it's today and no start time, disable past hours/minutes
+    if (isToday && !startTime) {
+      const currentHour = now.hour();
+      const currentMinute = now.minute();
+
+      for (let i = 0; i < currentHour; i++) {
+        disabledHours.push(i);
+      }
+
+      disabledMinutes = (selectedHour: number) => {
+        if (selectedHour === currentHour) {
+          const minutes = [];
+          for (let i = 0; i <= currentMinute; i++) {
+            minutes.push(i);
+          }
+          return minutes;
+        }
+        return [];
+      };
+    }
+    // Case 2: If it's today and has start time on the same day
+    else if (isToday && startTime && current.isSame(startTime, "day")) {
+      const currentHour = now.hour();
+      const currentMinute = now.minute();
+      const startHour = startTime.hour();
+      const startMinute = startTime.minute();
+
+      // Disable past hours and hours up to start time
+      const maxDisabledHour = Math.max(currentHour - 1, startHour);
+      for (let i = 0; i <= maxDisabledHour; i++) {
+        disabledHours.push(i);
+      }
+
+      disabledMinutes = (selectedHour: number) => {
+        const minutes: number[] = [];
+
+        // If selecting current hour, disable past minutes
+        if (selectedHour === currentHour) {
+          for (let i = 0; i <= currentMinute; i++) {
+            minutes.push(i);
+          }
+        }
+
+        // If selecting start hour, disable minutes up to start time
+        if (selectedHour === startHour) {
+          for (let i = 0; i <= startMinute; i++) {
+            minutes.push(i);
+          }
+        }
+
+        return [...new Set(minutes)];
+      };
+    }
+    // Case 3: Not today but same day as start time
+    else if (startTime && current.isSame(startTime, "day") && !isToday) {
+      const startHour = startTime.hour();
+      const startMinute = startTime.minute();
+
+      // Only disable hours up to start time
+      for (let i = 0; i <= startHour; i++) {
+        disabledHours.push(i);
+      }
+
+      disabledMinutes = (selectedHour: number) => {
+        if (selectedHour === startHour) {
+          const minutes = [];
+          for (let i = 0; i <= startMinute; i++) {
+            minutes.push(i);
+          }
+          return minutes;
+        }
+        return [];
+      };
+    }
+
+    return {
+      disabledHours: () => disabledHours,
+      disabledMinutes,
+    };
+  };
+
+  // Handle start time change
+  const handleStartTimeChange = (value: Dayjs | null) => {
+    setStartTime(value);
+    form.setFieldValue("start_time", value);
+
+    // Trigger validation for expire_time when start_time changes
+    if (expireTime) {
+      form.validateFields(["expire_time"]);
+    }
+
+    // Only clear expire time if it's invalid (before or equal to start time)
+    // regardless of whether it's the same day or different days
+    if (value && expireTime && expireTime.isSameOrBefore(value)) {
+      setExpireTime(null);
+      form.setFieldValue("expire_time", null);
+    }
+  };
+
+  // Handle expire time change
+  const handleExpireTimeChange = (value: Dayjs | null) => {
+    setExpireTime(value);
+    form.setFieldValue("expire_time", value);
+  };
+
+  // Custom validation rules for times
+  const startTimeRules = [
+    {
+      validator: (_: any, value: Dayjs | null) => {
+        if (!value) return Promise.resolve();
+
+        // Check if start time is not in the past
+        if (value.isBefore(now)) {
+          return Promise.reject(new Error("Start time cannot be in the past"));
+        }
+
+        return Promise.resolve();
+      },
+    },
+  ];
+
+  const expireTimeRules = [
+    {
+      validator: (_: any, value: Dayjs | null) => {
+        if (!value) return Promise.resolve();
+
+        // Check if expire time is not in the past
+        if (value.isBefore(now)) {
+          return Promise.reject(new Error("Expire time cannot be in the past"));
+        }
+
+        // Check if expire time is after start time (regardless of date)
+        if (startTime && !value.isAfter(startTime)) {
+          return Promise.reject(
+            new Error("Expire time must be after start time")
+          );
+        }
+
+        return Promise.resolve();
+      },
+    },
+  ];
+
+  // Load house details and set default authorized area
   const loadHouseDetails = async (
     houseId: string,
     isCreateMode: boolean = true
@@ -155,7 +354,6 @@ const VMSInvitationFormModal = ({
     if (houseDetail) {
       setSelectedHouseDetails(houseDetail);
 
-      // เพิ่ม area ของ house เฉพาะใน create mode เท่านั้น
       if (isCreateMode && houseDetail.area && houseDetail.area.trim()) {
         const houseAreaId = houseDetail.area.trim();
         const existingArea = areaOptions.find(
@@ -163,31 +361,25 @@ const VMSInvitationFormModal = ({
         );
 
         if (existingArea) {
-          // ใน create mode: รีเซ็ตและตั้งค่าแค่ area ของ house ใหม่
           const newAreas = [houseAreaId];
           setAuthorizedAreas(newAreas);
           form.setFieldValue("authorized_area", newAreas);
         } else {
-          // ถ้า area ของ house ไม่มีใน options ให้ clear areas
           setAuthorizedAreas([]);
           form.setFieldValue("authorized_area", []);
         }
       } else if (isCreateMode) {
-        // ถ้าเป็น create mode แต่ house ไม่มี area ให้ clear areas
         setAuthorizedAreas([]);
         form.setFieldValue("authorized_area", []);
       } else {
-        // ถ้าเป็น edit mode ให้เก็บ authorized areas ปัจจุบันไว้
         form.setFieldValue("authorized_area", authorizedAreas);
       }
     } else {
       setSelectedHouseDetails(null);
       if (isCreateMode) {
-        // ใน create mode ถ้าไม่เจอ house ให้ clear areas
         setAuthorizedAreas([]);
         form.setFieldValue("authorized_area", []);
       } else {
-        // ใน edit mode ให้เก็บ authorized areas ปัจจุบันไว้
         form.setFieldValue("authorized_area", authorizedAreas);
       }
     }
@@ -195,10 +387,7 @@ const VMSInvitationFormModal = ({
 
   // Handle house change
   const handleHouseChange = (houseId: string) => {
-    // ไม่ clear authorized areas เมื่อเปลี่ยน house
     setSelectedHouseDetails(null);
-
-    // ส่ง isCreateMode = true เฉพาะเมื่อไม่ใช่ edit mode
     const isCreateMode = !editData;
 
     if (areaOptions.length === 0 && !areaLoading) {
@@ -243,30 +432,35 @@ const VMSInvitationFormModal = ({
   useEffect(() => {
     if (isOpen && editData) {
       const editAuthorizedAreas = editData.authorized_area || [];
+      const editStartTime = editData.start_time
+        ? dayjs(editData.start_time)
+        : null;
+      const editExpireTime = editData.expire_time
+        ? dayjs(editData.expire_time)
+        : null;
 
-      // ตั้งค่า authorized areas state ก่อน
       setAuthorizedAreas(editAuthorizedAreas);
+      setStartTime(editStartTime);
+      setExpireTime(editExpireTime);
 
       form.setFieldsValue({
         guest_name: editData.guest_name,
         house_id: editData.house_id,
         type: editData.type || "invitation",
-        start_time: editData.start_time ? dayjs(editData.start_time) : null,
-        expire_time: editData.expire_time ? dayjs(editData.expire_time) : null,
+        start_time: editStartTime,
+        expire_time: editExpireTime,
         authorized_area: editAuthorizedAreas,
         note: editData.note || "",
       });
 
       setFormType(editData.type || "invitation");
 
-      // Load house details หลังจากมี areaOptions แล้ว
       if (editData.house_id && areaOptions.length > 0) {
         const houseDetail = houseData.find(
           (house) => house.id === editData.house_id
         );
         if (houseDetail) {
           setSelectedHouseDetails(houseDetail);
-          // ไม่เพิ่ม area ของ house เข้าไปใน edit mode เพราะข้อมูลมีอยู่แล้ว
         }
       }
 
@@ -287,7 +481,9 @@ const VMSInvitationFormModal = ({
       setVehicles([]);
       setFormType("invitation");
       setSelectedHouseDetails(null);
-      setAuthorizedAreas([]); // reset authorized areas
+      setAuthorizedAreas([]);
+      setStartTime(null);
+      setExpireTime(null);
     }
   }, [isOpen, editData, form, areaOptions, houseData]);
 
@@ -296,7 +492,9 @@ const VMSInvitationFormModal = ({
     setVehicles([]);
     setFormType("invitation");
     setSelectedHouseDetails(null);
-    setAuthorizedAreas([]); // reset authorized areas
+    setAuthorizedAreas([]);
+    setStartTime(null);
+    setExpireTime(null);
     onClose();
   }, [form, onClose]);
 
@@ -356,7 +554,7 @@ const VMSInvitationFormModal = ({
           expire_time: values.expire_time
             ? dayjs(values.expire_time).toISOString()
             : dayjs().add(30, "days").toISOString(),
-          authorized_area: authorizedAreas, // ใช้ state แทน values
+          authorized_area: authorizedAreas,
           note: values.note || "",
         };
 
@@ -386,7 +584,7 @@ const VMSInvitationFormModal = ({
       editData,
       vehicles,
       formType,
-      authorizedAreas, // เพิ่ม dependency
+      authorizedAreas,
       createMutation,
       updateMutation,
       refetch,
@@ -500,7 +698,7 @@ const VMSInvitationFormModal = ({
               <Select
                 mode="multiple"
                 size="large"
-                value={authorizedAreas} // ใช้ state แทน form value
+                value={authorizedAreas}
                 placeholder={
                   loadingData || areaLoading
                     ? "Loading areas..."
@@ -511,7 +709,7 @@ const VMSInvitationFormModal = ({
                 options={areaOptions}
                 loading={loadingData || areaLoading}
                 showSearch
-                onChange={handleAuthorizedAreasChange} // ใช้ handler ใหม่
+                onChange={handleAuthorizedAreasChange}
                 filterOption={(input, option) =>
                   (option?.label ?? "")
                     .toLowerCase()
@@ -594,23 +792,37 @@ const VMSInvitationFormModal = ({
 
           {/* Right Column */}
           <Col xs={24} md={12}>
-            <Form.Item label="Start Time" name="start_time">
+            <Form.Item
+              label="Start Time"
+              name="start_time"
+              rules={startTimeRules}>
               <DatePicker
                 size="large"
                 showTime
                 format="DD/MM/YYYY HH:mm"
                 placeholder="Select start time"
                 style={{ width: "100%" }}
+                disabledDate={disabledDate}
+                disabledTime={disabledStartTime}
+                onChange={handleStartTimeChange}
+                showNow={false}
               />
             </Form.Item>
 
-            <Form.Item label="Expire Time" name="expire_time">
+            <Form.Item
+              label="Expire Time"
+              name="expire_time"
+              rules={expireTimeRules}>
               <DatePicker
                 size="large"
                 showTime
                 format="DD/MM/YYYY HH:mm"
                 placeholder="Select expire time"
                 style={{ width: "100%" }}
+                disabledDate={disabledDate}
+                disabledTime={disabledExpireTime}
+                onChange={handleExpireTimeChange}
+                showNow={false}
               />
             </Form.Item>
 
@@ -625,7 +837,7 @@ const VMSInvitationFormModal = ({
           </Col>
         </Row>
 
-        {/* Vehicle License Plates Section - แสดงเฉพาะเมื่อ type เป็น vehicle */}
+        {/* Vehicle License Plates Section */}
         {formType === "vehicle" && (
           <Row>
             <Col xs={24}>

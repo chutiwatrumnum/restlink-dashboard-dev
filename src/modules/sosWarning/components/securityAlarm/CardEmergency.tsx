@@ -8,7 +8,7 @@ import DeviceList from "./DeviceList";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../../stores";
 import { useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { useDispatch } from "react-redux";  
 interface HouseholdMember {
     id: string;
     name: string;
@@ -28,11 +28,14 @@ interface DoorSensor {
     status: 'intrusion' | 'normal';
 }
 
+
 const CardEmergency = () => {
-    const { dataEmergencyDetail } = useSelector((state: RootState) => state.sosWarning);
+    const { dataEmergencyDetail, step } = useSelector((state: RootState) => state.sosWarning);
     const [statusContract, setStatusContract] = useState<string>(
-        dataEmergencyDetail?.sosEventInfo?.step === 3 ? "form" :
-            dataEmergencyDetail?.sosEventInfo?.step === 4 ? "success" :
+        dataEmergencyDetail?.sosEventInfo?.step  < 2 ? "contract" :
+        Object.keys(dataEmergencyDetail?.sosEventInfo?.eventHelp || {}).length < 3 ? "contract" :
+        dataEmergencyDetail?.sosEventInfo?.step === 3 || step === 3 ? "form" :
+        dataEmergencyDetail?.sosEventInfo?.step === 4 || step === 4 ? "success" :
                 "contract"
     );
     const [householdMembers] = useState<HouseholdMember[]>([
@@ -83,8 +86,6 @@ const CardEmergency = () => {
         }
     ]);
 
-
-
     const enableContractOfficer = useMemo(() => {
         return dataEmergencyDetail?.sosEventInfo?.step >= 2
     }, [dataEmergencyDetail])
@@ -96,17 +97,19 @@ const CardEmergency = () => {
 
 
     return (
-        <div className="flex flex-col h-full">
-            <div className="flex-1 flex flex-col p-4 md:p-6 lg:p-6 min-h-0">
+        <div className="flex flex-col">
+            <div className="flex flex-col p-4 md:p-6 lg:p-6">
                 
                 <Card className="!mb-6 !border-none">
                     <TepStep currentStep={currentStep} />
                 </Card>
-                <Row gutter={[20, 20]} className="flex-1 min-h-0" style={{ display: 'flex', alignItems: 'stretch' }}>
+                <Row gutter={[20, 20]} style={{ display: 'flex', alignItems: 'stretch' }}>
+                    
                     {/* Left Column - Household Members List + Action Steps */}
-                    <Col xs={24} lg={16} className="flex pr-0 md:pr-4" style={{ height: '100%' }}>
-                        <div className="bg-white rounded-lg flex-1 flex flex-col min-h-0 overflow-hidden" style={{ height: '100%' }}>
-                            <Row className="flex-1 min-h-0 !py-4" style={{ height: '100%' }}>
+
+                    <Col xs={24} lg={16} className="flex pr-0 md:pr-4">
+                        <div className="bg-white rounded-lg flex flex-col w-full h-full">
+                            <Row className="!py-4 !h-full">
                                 {/* Household Members List */}
                                 <Col
                                     xs={24}
@@ -114,13 +117,11 @@ const CardEmergency = () => {
                                     md={24}
                                     lg={14}
                                     xl={14}
-                                    className="lg:border-r-2 lg:border-[#C6C8C9] flex flex-col"
-                                    style={{ height: '100%' }}>
-                                    <div className="px-4 flex-1 min-h-0 overflow-y-auto" style={{ height: '100%' }}>
+                                    className="  lg:border-r-2 lg:border-[#C6C8C9] flex flex-col">
+                                    <div className="px-4">
                                         <ListMember />
                                     </div>
                                     <div className="block hidden border-b-2 border-[#C6C8C9] mx-4 mt-2"></div>
-
                                 </Col>
                                 <Col
                                     xs={24}
@@ -128,25 +129,24 @@ const CardEmergency = () => {
                                     md={24}
                                     lg={10}
                                     xl={10}
-                                    className="flex flex-col"
-                                    style={{ height: '100%' }}>
-                                    <div className="flex-1 min-h-0 overflow-y-auto" style={{ height: '100%' }}>
+                                    className="flex flex-col">
+                                    <div>
                                         <ContractOfficer 
                                         enableContractOfficer={enableContractOfficer}
-                                        statusContract={statusContract} setStatusContract={setStatusContract}></ContractOfficer>
+                                        statusContract={statusContract} setStatusContract={setStatusContract}>
+                                        </ContractOfficer>
                                     </div>
                                 </Col>
-                                    
-                                
-
                             </Row>
                         </div>
                     </Col>
 
                     {/* Right Column - Door Sensors */}
-                    <Col xs={24} lg={8} className="flex pl-0 md:pl-4" style={{ height: '100%' }}>
-                        <div className="rounded-lg flex-1 min-h-0 overflow-hidden" style={{ height: '100%' }}>
-                            <DeviceList doorSensors={doorSensors} />
+                    <Col xs={24} lg={8} className="flex pl-0 md:pl-4">
+                        <div className="rounded-lg flex flex-col w-full h-full">
+                            <div className="flex-1 min-h-0 max-h-[500px] overflow-auto">
+                                <DeviceList doorSensors={doorSensors} />
+                            </div>
                         </div>
                     </Col>
                 </Row>

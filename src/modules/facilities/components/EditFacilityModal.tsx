@@ -213,7 +213,7 @@ const EditFacilityModal = (props: EditFacilityModalProps) => {
                   min={1}
                   max={730}
                   placeholder="30"
-                  suffix="วัน"
+                  suffix="day"
                 />
               </Form.Item>
               <Form.Item<ReservationListDataType> label="Image" name="imageUrl">

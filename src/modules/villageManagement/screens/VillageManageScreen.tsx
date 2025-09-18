@@ -72,6 +72,11 @@ const VillageManageScreen = () => {
     shouldFetch: !!currentUnit,
   });
 
+  // console.log("Project Data : ", projectData);
+  // console.log("Block Data : ", blockData);
+  // console.log("Floor Data : ", floorData);
+  // console.log("Unit Data : ", unitData);
+
   // API
   const deleteMember = deleteMemberMutation();
 
@@ -129,7 +134,7 @@ const VillageManageScreen = () => {
       setCurrentFloor(floorData.data[0]);
       onPageUChange(1);
     }
-    console.log(unitData);
+    // console.log(unitData);
   }, [floorData, currentFloor, onPageUChange]);
 
   return (

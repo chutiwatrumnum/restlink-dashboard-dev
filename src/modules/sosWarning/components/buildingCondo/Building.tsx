@@ -43,6 +43,15 @@ const Building = ({ onDataFloorChange }: { onDataFloorChange?: (dataFloor: any) 
         return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
     };
 
+    // ฟังก์ชันให้คะแนนลำดับชั้น (จัดเรียงจากเลขน้อยไปมาก)
+    const floorOrderValue = (floor: any) => {
+        const name = String(floor?.floorName || '').trim().toUpperCase();
+        const n = typeof floor?.numberOfFloor === 'number' ? floor.numberOfFloor : parseInt(floor?.numberOfFloor, 10) || 0;
+        if (floor?.isBasement) return -Math.abs(n); // B4 (-4) ก่อน B1 (-1)
+        if (name === 'G' || name === 'GROUND') return 0;
+        return n;
+    };
+
     const getPlanInfo = async (building: any, dataFloor: any) => {
         let objFloor = {
             ...dataFloor,
@@ -65,12 +74,18 @@ const Building = ({ onDataFloorChange }: { onDataFloorChange?: (dataFloor: any) 
             id: item.blockId,
             name: item.blockName,
             floorsSize: item.floors.length,
-            floors: item.floors,
+            // เรียงลำดับชั้นจากน้อยไปมากเพื่อให้แสดงผลชั้นล่างก่อน
+            floors: [...item.floors].sort((a: any, b: any) => floorOrderValue(a) - floorOrderValue(b)),
         }));
     }, [buildingDisplay]);
 
     // จัดกึ่งกลางเมื่อจำนวนตึกไม่เกิน 3 ตึก
     const isThreeOrLess = buildings.length <= 3;
+    // กำหนด class ของคอนเทนเนอร์ตามจำนวนตึก
+    const containerClass = isThreeOrLess
+        ? "flex flex-wrap justify-center gap-10 p-5"
+        : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10 p-5 justify-items-center justify-center";
+
     // สุ่มสีเมื่อโหลดคอมโพเนนต์
     useEffect(() => {
         // ตรวจสอบว่า buildings มีข้อมูลหรือไม่
@@ -102,19 +117,19 @@ const Building = ({ onDataFloorChange }: { onDataFloorChange?: (dataFloor: any) 
     }, [buildings]);  // dependency บน buildings
 
         return (
-        <div className={isThreeOrLess ? "flex flex-wrap justify-center gap-10 p-5" : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10 p-5 justify-items-center justify-center"}>          
-            {buildings.map((building: Building) => {
+        <div className={containerClass}>          
+            {buildings.map((building: any) => {
                 // คำนวณจำนวนคอลัมน์ที่ต้องใช้
                 const numberOfColumns = Math.ceil(building.floorsSize / MAX_FLOORS_PER_COLUMN);
                 
                 // สร้างอาเรย์ของคอลัมน์ (เริ่มจากซ้ายไปขวา)
-                const columns = Array.from({ length: numberOfColumns }, (_, columnIndex) => {
+                const columns = Array.from({ length: numberOfColumns }, (_: any, columnIndex: number) => {
                     // คำนวณชั้นเริ่มต้นและสิ้นสุดของคอลัมน์นี้
                     const startIndex = columnIndex * MAX_FLOORS_PER_COLUMN;
                     const endIndex = Math.min(startIndex + MAX_FLOORS_PER_COLUMN, building.floors.length);
                     
-                    // ส่งคืนช่วงของชั้นในคอลัมน์นี้
-                    return building.floors.slice(startIndex, endIndex);
+                    // ส่งคืนช่วงของชั้นที่จัดเรียงแล้วในคอลัมน์นี้ (แสดงจากบนลงล่างเป็นชั้นสูง→ต่ำ เพื่อให้จากล่างขึ้นบนเป็น B1,G,2,3,...)
+                    return [...building.floors.slice(startIndex, endIndex)].sort((a: any, b: any) => floorOrderValue(b) - floorOrderValue(a));
                 });
 
                 // ใช้สีที่สุ่มได้หรือใช้สีเริ่มต้นถ้ายังไม่มีสี
@@ -123,7 +138,7 @@ const Building = ({ onDataFloorChange }: { onDataFloorChange?: (dataFloor: any) 
                 return (
                     <div key={building.id} className="flex flex-col justify-end mt-auto relative  !cursor-pointer">
                         <div className="flex flex-row items-end gap-5">
-                            {columns.map((floors, columnIndex) => (
+                            {columns.map((floors: any[], columnIndex: number) => (
                                 <div key={`${building.id}-column-${columnIndex}`} className="flex flex-col gap-1 justify-end">
                                     {floors.map((floor: Floor) => (
                                         <div 

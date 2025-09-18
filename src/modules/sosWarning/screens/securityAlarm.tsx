@@ -40,6 +40,7 @@ const SecurityAlarm = () => {
             if(status) {
                 let dataCallCustomer = data.result
                 let dataEventInfo =  JSON.parse(JSON.stringify(dataEmergencyDetail))
+                dispatch.sosWarning.setStep(dataCallCustomer.step)
                 dataEventInfo.sosEventInfo.step = dataCallCustomer.step
                 dataEventInfo.sosEventInfo.isCompleted = dataCallCustomer.is_completed
                 dataEventInfo.sosEventInfo.event_help_id = dataCallCustomer.event_help_id

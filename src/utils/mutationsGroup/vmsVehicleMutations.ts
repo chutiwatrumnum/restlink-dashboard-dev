@@ -76,7 +76,7 @@ export const useCreateVMSVehicleMutation = () => {
         },
         onSuccess: (data) => {
             console.log('✅ Create vehicle success');
-            message.success("สร้างรถยนต์สำเร็จ!");
+            message.success("create vehicle success!");
 
             // Refresh data
             queryClient.invalidateQueries({
@@ -197,7 +197,7 @@ export const useDeleteVMSVehicleMutation = () => {
         },
         onSuccess: () => {
             console.log('✅ Delete vehicle success');
-            message.success("ลบรถยนต์สำเร็จ!");
+            message.success("delete vehicle success!");
 
             queryClient.invalidateQueries({
                 queryKey: ["vmsVehicles"]

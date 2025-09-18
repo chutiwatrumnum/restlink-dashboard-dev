@@ -51,11 +51,9 @@ export const document = createModel<RootModel>()({
       try {
         dispatch.document.updateIsLoadingState(true);
         const result = await axios.get(
-          `/document-home/dashboard?curPage=${item.curPage}&perPage=${
-            item.perPage / 2
-          }${search}${sort}${sortBy}${folderId}`
+          `/document-home/dashboard?curPage=${item.curPage}&perPage=${item.perPage}${search}${sort}${sortBy}${folderId}`
         );
-        console.log("Doc result : ", result.data.result);
+        // console.log("Doc result : ", result);
 
         if (result.data.statusCode >= 400) {
           console.error(result.data.message);

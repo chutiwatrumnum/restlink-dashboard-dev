@@ -15,8 +15,20 @@ let BuildingCondo = ({ onDataFloorChange }: { onDataFloorChange?: (dataFloor: an
                 if (data.result?.building && Array.isArray(data.result.building)) {
                     const maxFloorsPerBuilding = 20;
                     const newBuildings: any[] = [];
+                    // ฟังก์ชันจัดเรียงลำดับชั้นจากน้อยไปมาก (ชั้นใต้ดิน -> G -> 1,2,...)
+                    const sortFloorsAsc = (list: any[]) => {
+                        const orderValue = (f: any) => {
+                            const name = String(f?.floorName || '').trim().toUpperCase();
+                            const n = typeof f?.numberOfFloor === 'number' ? f.numberOfFloor : parseInt(f?.numberOfFloor, 10) || 0;
+                            if (f?.isBasement) return -Math.abs(n); // B4 (-4) ก่อน B1 (-1)
+                            if (name === 'G' || name === 'GROUND') return 0;
+                            return n;
+                        };
+                        return [...(list || [])].sort((a, b) => orderValue(a) - orderValue(b));
+                    };
                     data.result.building.forEach((building: any) => {
-                        const floors = Array.isArray(building.floors) ? building.floors : [];
+                        const floorsSource = Array.isArray(building.floors) ? building.floors : [];
+                        const floors = sortFloorsAsc(floorsSource);
                         if (floors.length <= maxFloorsPerBuilding) {
                             newBuildings.push({
                                 ...building,

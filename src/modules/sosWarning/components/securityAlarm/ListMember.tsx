@@ -10,7 +10,7 @@ import { useNavigate } from "react-router-dom";
 import Content from "../listMember/Content";
 const ListMember = () => {
     const dispatch = useDispatch();
-    const { statusCaseReceiveCast, dataEmergencyDetail } = useSelector((state: RootState) => state.sosWarning);
+    const { statusCaseReceiveCast, dataEmergencyDetail} = useSelector((state: RootState) => state.sosWarning);
     const { handleCallCustomer } = useSecurityAlarm();
     const navigate = useNavigate();
 
@@ -32,7 +32,6 @@ const ListMember = () => {
         if (Object.keys(dataEmergencyDetail).length === 0) {
             return []
         }
-        // console.log(dataEmergencyDetail,'dataEmergencyDetail')
         let sumData
         sumData = (dataEmergencyDetail?.sosEventHelpProtocol[0]?.choices || []).map((item: any) => {
             let contact = item.user.contact
@@ -99,7 +98,7 @@ const ListMember = () => {
                 </div>
 
                 {/* Members List */}
-                <div className="divide-y divide-gray-100 flex-1 overflow-y-auto">
+                <div className="divide-y divide-gray-100">
                     {
                         listMembersContract.map((member: any, index: number) => (
                             <Content
@@ -114,7 +113,7 @@ const ListMember = () => {
                     }
 
                     {listMembersContract.length === 0 && (
-                        <div className="flex justify-center items-center h-full">
+                        <div className="flex justify-center items-center">
                             <div className="text-gray-500 text-sm font-medium  !text-lg">
                                 ไม่มีข้อมูลสมาชิก
                             </div>

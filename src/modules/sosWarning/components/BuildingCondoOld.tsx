@@ -324,14 +324,14 @@ const BuildingCondo: React.FC<BuildingCondoProps> = ({
               <GroupFloorBox buildingIndex={bIdx} startFloor={startFloor} endFloor={currentBuildingFloors} />
               <div className="text-center font-bold text-[#222222] text-xl mx-auto">
                 <div className="flex justify-center items-center gap-2 flex-1 ">
-                  <span>
+                  <span className="text-nowrap">
                     {nameFloor(bIdx, startFloor) || formatFloorNumber(dataMapAll.building?.[bIdx]?.['floors']?.[startFloor - 1]?.numberOfFloor || startFloor)}
                   </span>
                   <span className="flex items-center justify-center">
                     {checkGroupHasEvent(bIdx, startFloor, currentBuildingFloors) && <AlarmIcon nameAlarm={"ถึง"} />}
                     {!checkGroupHasEvent(bIdx, startFloor, currentBuildingFloors) && 'ถึง'}
                   </span>
-                  <span>
+                  <span className="text-nowrap">
                     {formatFloorNumber(dataMapAll.building?.[bIdx]?.['floors']?.[currentBuildingFloors - 1]?.numberOfFloor || currentBuildingFloors)}
                   </span>
                 </div>
@@ -396,15 +396,15 @@ const BuildingCondo: React.FC<BuildingCondoProps> = ({
             <GroupFloorBox buildingIndex={bIdx} startFloor={groupStartFloor} endFloor={groupEndFloor} />
             <GroupFloorBox buildingIndex={bIdx} startFloor={groupStartFloor} endFloor={groupEndFloor} />
                           <div className="text-center font-bold text-[#222222] text-xl flex-1 ">
-              <div className="flex justify-center items-center gap-2 flex-1 px-4">
-                <span>
+              <div className="flex justify-center items-center  px-4">
+                <span className="me-2 text-nowrap">
                   {nameFloor(bIdx, groupStartFloor) || formatFloorNumber(dataMapAll.building?.[bIdx]?.['floors']?.[groupStartFloor - 1]?.numberOfFloor || groupStartFloor)}
                 </span>
                 <span className="flex items-center justify-center">
                   {checkGroupHasEvent(bIdx, groupStartFloor, groupEndFloor) && <AlarmIcon nameAlarm={"ถึง"} />}
                   {!checkGroupHasEvent(bIdx, groupStartFloor, groupEndFloor) && 'ถึง'}
                 </span>
-                <span>
+                <span className="ms-2 text-nowrap" >
                   {nameFloor(bIdx, groupEndFloor) || '-'}
                 </span>
               </div>
