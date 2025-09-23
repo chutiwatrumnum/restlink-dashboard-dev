@@ -299,6 +299,13 @@ const VillageMap: React.FC<VillageMapProps> = ({
     const targetMarker = markers.find(m => m.id === markerId);
     const willBeLocked = targetMarker ? !targetMarker.isLocked : false;
 
+    // Guard: ห้าม lock/unlock marker อื่นระหว่างมี marker จำลองที่ยังไม่บันทึก
+    const tempMarker = markers.find(m => typeof m.id === 'number' && m.id > 1000000);
+    if (tempMarker && tempMarker.id !== markerId) {
+      message.warning('Please finish creating the marker before activating another marker');
+      return;
+    }
+
     // อัพเดทสถานะ locked ของ marker
     setMarkers(prevMarkers =>
       prevMarkers.map(marker =>
@@ -2666,7 +2673,11 @@ const VillageMap: React.FC<VillageMapProps> = ({
 
     // เพิ่ม pending marker เข้าไปในรายการ marker แต่ยังไม่บันทึกประวัติ
     setPendingMarker(tempMarker);
-    setMarkers(prevMarkers => [...prevMarkers, tempMarker]);
+    // บังคับให้ marker เดิมทั้งหมดอยู่ในสถานะล็อค และเพิ่ม marker ใหม่ (ไม่กระทบ marker อื่น)
+    setMarkers(prevMarkers => {
+      const lockedPrev = prevMarkers.map(m => ({ ...m, isLocked: true }));
+      return [...lockedPrev, tempMarker];
+    });
 
     // ไม่แสดง modal form แต่ส่งข้อมูลไปยัง form ด้านขวาแทน
     setCurrentPosition({ x: withinX, y: withinY });
@@ -3217,6 +3228,12 @@ const VillageMap: React.FC<VillageMapProps> = ({
   };
 
   const removeMarker = async (markerId: number) => {
+    // Stop delete when a temporary marker is being created
+    const tempMarker = markers.find(m => typeof m.id === 'number' && m.id > 1000000);
+    if (tempMarker && tempMarker.id !== markerId) {
+      message.warning('Please finish creating the marker before activating another marker');
+      return;
+    }
     const markerToRemove = markers.find(m => m.id === markerId);
     if (markerToRemove) {
       const title = "Confirm Delete Marker";
@@ -3252,6 +3269,7 @@ const VillageMap: React.FC<VillageMapProps> = ({
           if (dataDelete.status) {
             SuccessModal("Delete data success", 900)
             window.dispatchEvent(new Event('sos:village-form-cancel'));
+            window.dispatchEvent(new Event('sos:refresh-units'));
             onMarkerDeleted(markerToRemove);
             if (dataDelete.result) {
               // อัพเดท marker
@@ -5019,7 +5037,7 @@ const VillageMap: React.FC<VillageMapProps> = ({
     );
   };
 
-  // อัพเดตฟังก์ชัน renderMarker
+  // อัพเดทฟังก์ชัน renderMarker
   const renderMarker = (marker: Marker, isOnMap = true) => {
     const isEditing = editMarkerData?.id === marker.id;
     const displayMarker = isEditing ? editMarkerData : marker;
@@ -5039,7 +5057,7 @@ const VillageMap: React.FC<VillageMapProps> = ({
         return null;
       }
       // เพิ่มสไตล์เมื่อ marker ถูกล็อค
-      const lockedStyle = displayMarker.isLocked ? {
+      const lockedStyle = (displayMarker as any).isLocked ? {
         cursor: 'not-allowed',
         opacity: 0.7,
         filter: 'grayscale(30%)'
@@ -5416,10 +5434,9 @@ const VillageMap: React.FC<VillageMapProps> = ({
                 <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-[#002c55]"></div>
                 <div className="font-semibold"> Room : {displayMarker.roomAddress || '-'}</div>
                 <div className="font-semibold" onClick={()=>{
-                  console.log(displayMarker,'displayMarker')
                 }}>
                   Name:
-                  <span className="ml-2">{displayMarker.addressData?.floor?.floorName || displayMarker.floorName || '-'}</span>
+                  <span className="ml-2">{displayMarker.display?.user?.givenName || '-'}</span>
                 </div>
                 <div className="font-semibold" >Tel:
                   <span className="ml-2">
@@ -5448,6 +5465,11 @@ const VillageMap: React.FC<VillageMapProps> = ({
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
+                      const tempMarker = markers.find(m => typeof m.id === 'number' && m.id > 1000000);
+                      if (tempMarker && tempMarker.id !== displayMarker.id) {
+                        message.warning('Please finish creating the marker before activating another marker');
+                        return;
+                      }
                       toggleMarkerLock(displayMarker.id);
                     }}
                     onDragStart={(e) => {
@@ -5490,13 +5512,13 @@ const VillageMap: React.FC<VillageMapProps> = ({
                   <button
 
                     disabled={
-                      !access('sos_security', 'delete')
+                      !access('sos_security', 'delete') || mapMode === 'preview'
                     }
                     className={`text-red-300 text-xs hover:text-red-100 
                     hover:cursor-pointer transition-colors
-                    ${!access('sos_security', 'delete') ? 'opacity-50' : ''}
+                    ${(!access('sos_security', 'delete') || mapMode === 'preview') ? 'opacity-50 cursor-not-allowed' : ''}
                     `}
-                    title="Delete Marker"
+                    title={mapMode === 'preview' ? 'Delete is disabled in preview mode' : 'Delete Marker'}
                     onMouseDown={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
@@ -8436,14 +8458,19 @@ const VillageMap: React.FC<VillageMapProps> = ({
                 <button
                   type="button"
                   onClick={() => {
+                    const tempMarker = markers.find(m => typeof m.id === 'number' && m.id > 1000000);
+                    if (tempMarker && tempMarker.id !== editMarkerData?.id) {
+                      message.warning('Please finish creating the marker before activating another marker');
+                      return;
+                    }
                     removeMarker(editMarkerData.id);
                     setShowEditMarkerModal(false);
                     setEditMarkerData(null);
                     setOriginalMarkerData(null);
                   }}
-                  className=" w-12 h-12 bg-red-500 text-white rounded-full hover:bg-red-600 transition-all duration-200 cursor-pointer flex items-center justify-center shadow-md hover:shadow-lg relative  group "
+                  className={` w-12 h-12 bg-red-500 text-white rounded-full hover:bg-red-600 transition-all duration-200 ${mapMode === 'preview' ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'} flex items-center justify-center shadow-md hover:shadow-lg relative  group `}
                   style={{ overflow: "hidden" }}
-                  title="Delete this marker"
+                  title={mapMode === 'preview' ? 'Unavailable in preview mode' : 'Delete this marker'}
                 >
                   <div className="absolute inset-0 flex flex-col items-center justify-center transition-transform duration-300 group-hover:-translate-y-12">
                     <span className="text-lg">🗑️</span>
@@ -8608,8 +8635,8 @@ const VillageMap: React.FC<VillageMapProps> = ({
                     setEditZoneData(null);
                     setOriginalZoneData(null);
                   }}
-                  className="w-12 h-12 bg-red-500 text-white rounded-full hover:bg-red-600 transition-all duration-200 cursor-pointer flex items-center justify-center shadow-md hover:shadow-lg relative overflow-hidden group"
-                  title="Delete this group"
+                  className={`w-12 h-12 bg-red-500 text-white rounded-full hover:bg-red-600 transition-all duration-200 ${mapMode === 'preview' ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'} flex items-center justify-center shadow-md hover:shadow-lg relative overflow-hidden group`}
+                  title={mapMode === 'preview' ? 'Unavailable in preview mode' : 'Delete this group'}
                   style={{ overflow: "hidden" }}
                 >
                   <div className="absolute inset-0 flex flex-col items-center justify-center transition-transform duration-300 group-hover:-translate-y-12">

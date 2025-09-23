@@ -116,11 +116,31 @@ const FormVillageLocation = ({
         });
     };
 
-    // ฟังก์ชันสำหรับกรอง address options ที่ใช้ได้ (แสดงทั้งหมดแต่ disable ตัวที่ใช้แล้ว)
-    const getAllAddressOptions = () => {
-        if (!dataSelectPlan?.unit) return [];
-        return dataSelectPlan.unit;
-    };
+      // ฟังก์ชันสำหรับกรอง address options ที่ใช้ได้ (ตัดตัวที่ถูกใช้แล้วออกจากลิสต์ ยกเว้นของ marker ปัจจุบัน)
+  const getAllAddressOptions = () => {
+    if (!dataSelectPlan?.unit) return [];
+
+    const usedIds = new Set<number>(
+      (existingMarkers || [])
+        .filter((marker: any) => {
+          const isTemporary = typeof marker?.id === 'number' && marker.id > 1000000; // ข้าม marker ชั่วคราว
+          return !isTemporary;
+        })
+        .map((marker: any) => Number(marker?.unitID ?? marker?.address))
+        .filter((v: any) => !Number.isNaN(v))
+    );
+
+    const currentMarkerUnitId = selectedMarker
+      ? Number((selectedMarker as any)?.unitID ?? (selectedMarker as any)?.address)
+      : null;
+
+    return (dataSelectPlan.unit || []).filter((unit: any) => {
+      const idNum = Number(unit.id);
+      if (Number.isNaN(idNum)) return true;
+      if (currentMarkerUnitId !== null && idNum === currentMarkerUnitId) return true;
+      return !usedIds.has(idNum);
+    });
+  };
 
 
 
@@ -624,9 +644,11 @@ const FormVillageLocation = ({
                             const selectedUnit = dataSelectPlan?.unit?.find((unit: any) => unit.id.toString() === values.address.toString());
                             const markerName = selectedUnit?.roomAddress || values.name || '';
 
-                            // ตรวจสอบว่าเป็นการสร้างใหม่หรือแก้ไข โดยใช้ isCreatingMode prop
-                            const isCreateMode = isCreatingMode === true;
-                            const isUpdateMode = isCreatingMode === false;
+                            // ตรวจสอบว่าเป็นการสร้างใหม่หรือแก้ไข
+                            // ถ้าเป็น marker ชั่วคราว (id เป็นตัวเลขขนาดใหญ่จาก Date.now()) ให้บังคับเป็น create เท่านั้น
+                            const isTempSelected = selectedMarker && typeof selectedMarker.id === 'number' && Number.isFinite(selectedMarker.id as number) && (selectedMarker.id as number) > 1000000;
+                            const isCreateMode = isTempSelected || isCreatingMode === true;
+                            const isUpdateMode = !isTempSelected && isCreatingMode === false;
                             // แสดงข้อความตามโหมด
                             if (isCreateMode) {
                                 const markerData: MarkerProcess = {
@@ -653,6 +675,8 @@ const FormVillageLocation = ({
                                 let data = await createMarker(markerData)
                                 if (data.status) {
                                     SuccessModal("Marker created successfully", 900)
+                                    // แจ้งให้รีเฟรชรายการยูนิตใน select
+                                    window.dispatchEvent(new Event('sos:refresh-units'));
                                     // อัพเดท marker ด้วยข้อมูลที่ได้จาก API
                                     if (data.result && selectedMarker) {
                                         // ตรวจสอบ structure ของ data.result
@@ -755,6 +779,8 @@ const FormVillageLocation = ({
                                 let data = await updateMarker(markerData)
                                 if (data.status) {
                                     SuccessModal("Marker Updated Successfully", 900)
+                                    // แจ้งให้รีเฟรชรายการยูนิตใน select
+                                    window.dispatchEvent(new Event('sos:refresh-units'));
                                     // สร้าง updatedMarker object ที่มีค่า originalX และ originalY เป็นตำแหน่งปัจจุบัน
                                     if (selectedMarker && selectedMarker.x !== undefined &&
                                         selectedMarker.y !== undefined) {
@@ -950,34 +976,26 @@ const FormVillageLocation = ({
 
                     <Select
                         showSearch
-                        filterOption={(input, option) =>
-                            (option?.children as unknown as string)
-                                ?.toLowerCase()
-                                ?.includes(input.toLowerCase()) ?? false
-                        }
+                        optionFilterProp="title"
+                        filterOption={(input, option) => {
+                            const text = (option?.title ?? '').toString().toLowerCase();
+                            return text.includes(input.toLowerCase());
+                        }}
                         onChange={handleAddressChange}
                         disabled={addressDisabled}
                         onFocus={handleInputFocus}
                         onBlur={handleInputBlur}
                         placeholder={!hasActiveMarker ? "No active marker" : "Search or select address"}
                     >
-                        {getAllAddressOptions().map((unit: any) => {
-                            const isUsed = isAddressUsed(unit.id);
-                            const isCurrentMarkerAddress = selectedMarker?.unitID == unit.id || selectedMarker?.address == unit.id;
-                            
-                            return (
+                        {getAllAddressOptions().map((unit: any) => (
                             <Select.Option 
                                 key={unit.id} 
                                 value={unit.id}
-                                disabled={isUsed && !isCurrentMarkerAddress}
+                                title={(unit?.roomAddress ?? '').toString()}
                             >
                                 {unit?.roomAddress}
-                                {isUsed && !isCurrentMarkerAddress && 
-                                    <span style={{ color: '#ff4d4f', marginLeft: '8px' }}>(Already used)</span>
-                                }
                             </Select.Option>
-                            );
-                        })}
+                        ))}
                     </Select>
                 </Form.Item>
                 <Form.Item

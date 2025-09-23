@@ -35,8 +35,7 @@ const CardEmergency = () => {
         dataEmergencyDetail?.sosEventInfo?.step  < 2 ? "contract" :
         Object.keys(dataEmergencyDetail?.sosEventInfo?.eventHelp || {}).length < 3 ? "contract" :
         dataEmergencyDetail?.sosEventInfo?.step === 3 || step === 3 ? "form" :
-        dataEmergencyDetail?.sosEventInfo?.step === 4 || step === 4 ? "success" :
-                "contract"
+        dataEmergencyDetail?.sosEventInfo?.step === 4 || step === 4 ? "success" : "contract"
     );
     const [householdMembers] = useState<HouseholdMember[]>([
         {
@@ -143,8 +142,8 @@ const CardEmergency = () => {
 
                     {/* Right Column - Door Sensors */}
                     <Col xs={24} lg={8} className="flex pl-0 md:pl-4">
-                        <div className="rounded-lg flex flex-col w-full h-full">
-                            <div className="flex-1 min-h-0 max-h-[500px] overflow-auto">
+                        <div className="bg-white rounded-lg flex flex-col w-full h-full">
+                            <div className="w-full">
                                 <DeviceList doorSensors={doorSensors} />
                             </div>
                         </div>

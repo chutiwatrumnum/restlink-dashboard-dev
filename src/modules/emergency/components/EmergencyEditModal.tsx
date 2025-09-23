@@ -22,8 +22,6 @@ type EmergencyEditModalType = {
   onRefresh: () => void;
 };
 
-const DEFAULT_CENTER = { lat: 13.736717, lng: 100.523186 };
-
 const EmergencyEditModal = ({
   isEditModalOpen,
   onOk,
@@ -35,17 +33,13 @@ const EmergencyEditModal = ({
   const [emergencyForm] = Form.useForm();
 
   const [open, setOpen] = useState(false);
-  const [previewImage, setPreviewImage] = useState("");
+  const previewImageRef = useRef<string>("");
 
   // ==== Map states ====
-  const initialCenterRef = useRef(DEFAULT_CENTER);
-  const currentLocation = useRef<{ lat: number; lng: number }>(DEFAULT_CENTER);
-  const [hasPickedLocation, setHasPickedLocation] = useState(false);
-  const [mapKey, setMapKey] = useState<string>("init"); // ใช้บังคับ re-mount map เมื่อต้องการ
+  const currentLocation = useRef<{ lat: number; lng: number }>();
 
   const handleLocationChange = useCallback((lat: number, lng: number) => {
     currentLocation.current = { lat, lng };
-    setHasPickedLocation(true);
   }, []);
 
   // เตรียม Map element ให้ re-mount เมื่อ key เปลี่ยน (เช่น เปิด modal ใหม่/เปลี่ยน data)
@@ -53,21 +47,20 @@ const EmergencyEditModal = ({
     () => (
       <GoogleMapComponent
         onLocationChange={handleLocationChange}
-        initialLat={initialCenterRef.current.lat}
-        initialLng={initialCenterRef.current.lng}
+        initialLat={data?.lat ?? 0}
+        initialLng={data?.long ?? 0}
         height={360}
         width="100%"
         zoom={18}
         draggableMarker
       />
     ),
-    [handleLocationChange, mapKey]
+    [handleLocationChange, data]
   );
 
   const onClose = () => {
     emergencyForm.resetFields();
-    setHasPickedLocation(false);
-    currentLocation.current = DEFAULT_CENTER;
+    currentLocation.current = undefined;
     onCancel();
   };
 
@@ -76,28 +69,21 @@ const EmergencyEditModal = ({
     setOpen(isEditModalOpen);
     if (isEditModalOpen) {
       // ตั้งค่าเริ่มต้นแผนที่จาก data (ถ้ามี), ไม่งั้นใช้ DEFAULT_CENTER
-      const initLat = data?.lat ?? DEFAULT_CENTER.lat;
-      const initLng = data?.long ?? DEFAULT_CENTER.lng;
-      initialCenterRef.current = { lat: initLat, lng: initLng };
+      const initLat = data?.lat ?? 0;
+      const initLng = data?.long ?? 0;
       currentLocation.current = { lat: initLat, lng: initLng };
-      setHasPickedLocation(!!data?.lat && !!data?.long);
-
-      // บังคับ re-mount แผนที่สำหรับแต่ละ record เพื่อให้ initialLat/initialLng ถูกใช้แน่ๆ
-      setMapKey(`map-${data?.id ?? "new"}-${Date.now()}`);
     }
   }, [isEditModalOpen, data]);
 
   // เติมฟอร์มจาก data
   useEffect(() => {
     if (data) {
-      setPreviewImage(data.image ?? "");
+      previewImageRef.current = data.image ?? "";
       emergencyForm.setFieldsValue(data);
     }
   }, [data, emergencyForm]);
 
   const ModalContent = () => {
-    const { Text } = Typography;
-
     return (
       <Form
         form={emergencyForm}
@@ -110,13 +96,12 @@ const EmergencyEditModal = ({
             ...value,
             id: data?.id,
             image: null,
-            long: currentLocation.current?.lng ?? DEFAULT_CENTER.lng,
-            lat: currentLocation.current?.lat ?? DEFAULT_CENTER.lat,
+            long: currentLocation.current?.lng ?? 0,
+            lat: currentLocation.current?.lat ?? 0,
           };
           if (value.image !== data?.image) {
             payload.image = value.image;
           }
-
           const result = await dispatch.emergency.editEmergencyService(payload);
           if (result) {
             emergencyForm.resetFields();
@@ -141,8 +126,8 @@ const EmergencyEditModal = ({
                 className="w-full"
               >
                 <UploadImageGroup
-                  onChange={(url) => setPreviewImage(url)}
-                  image={previewImage}
+                  onChange={(url) => (previewImageRef.current = url)}
+                  image={previewImageRef.current}
                   ratio="1920x1080 px"
                 />
               </Form.Item>
@@ -171,7 +156,7 @@ const EmergencyEditModal = ({
                   {
                     validator: () => {
                       const { lat, lng } = currentLocation.current || {};
-                      if (lat == null || lng == null) {
+                      if (lat === undefined || lng === undefined) {
                         return Promise.reject(
                           "Please select a location on the map"
                         );

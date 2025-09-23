@@ -28,24 +28,28 @@ const Content = ({ member, handleCallCustomer, convertDate, index }: any) => {
 
                             {/* Buttons - Responsive Layout */}
                             <div className="flex flex-col sm:flex-col md:flex-row gap-2 w-full md:w-auto">
+                                {
+                                !(step > 1) && (
+                                       <>
                                 <button
-                                    disabled={step > 1}
                                     onClick={() => handleCall(member, true)}
                                     className={`w-full h-[35px] md:w-[90px] px-5 py-2 rounded-xl 
                                     text-md font-medium 
                                     transition-all duration-200 !text-white 
-                                    bg-[#38BE43] cursor-pointer ${step > 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                    bg-[#38BE43] cursor-pointer `}
                                 >
                                     Succeed
                                 </button>
                                 <button
-                                    disabled={step > 1}
                                     onClick={() => handleCall(member, false)}
                                     className={` w-full h-[35px] md:w-[90px] px-5 py-2 rounded-xl text-md font-medium 
                                                 transition-all duration-200 !text-white bg-[#D73232] cursor-pointer ${step > 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
                                 >
                                     Failed
-                                </button>
+                                </button>      
+                                       </> 
+                                    )
+                                }
                             </div>
                         </div>
 

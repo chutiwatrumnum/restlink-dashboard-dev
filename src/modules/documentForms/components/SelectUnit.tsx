@@ -39,7 +39,7 @@ const SelectUnit = (props: SelectUnitProps) => {
         onChange={onIsAllowAllChange}
         disabled={disabled}
         options={[
-          { value: "y", label: "Select all" },
+          { value: "y", label: "All units" },
           { value: "n", label: "Custom select" },
         ]}
       />

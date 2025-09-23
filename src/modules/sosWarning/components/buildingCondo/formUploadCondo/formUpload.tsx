@@ -195,7 +195,7 @@ const FormUploadCondo = ({
               onClick={handleSave}
               className="rounded-lg px-10 w-40"
             >
-              Next
+              Success
             </Button>
           </div>
         </Form.Item>

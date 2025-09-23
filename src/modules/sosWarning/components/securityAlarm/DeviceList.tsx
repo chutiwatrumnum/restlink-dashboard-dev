@@ -50,15 +50,16 @@ const DeviceList = ({ doorSensors }: { doorSensors: any }) => {
         <div className="!w-full">
             {deviceDisplay.length === 0 && (
                 <div className="!w-full p-4 md:p-6 lg:p-0 bg-white">
-                    <div className="flex justify-center items-center w-full rounded-2xl shadow-lg overflow-hidden">
+                    <div className="flex justify-center items-center w-full  h-full
+                    rounded-2xl shadow-lg overflow-hidden">
                         <span className="text-gray-500  !text-lg">ไม่มีอุปกรณ์</span>
                     </div>
                 </div>
             )}
 
             {deviceDisplay.length > 0 && (
-                <div className="w-full py-4 md:py-6 lg:py-0 h-full">
-                    <div className="rounded-b-2xl overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 h-full">
+                <div className="w-full py-4 md:py-6 lg:py-0">
+                    <div className="rounded-b-2xl">
                         {deviceDisplay.map((device: any, indexParent: number) => (
                                 <div key={device?.id || indexParent} className={`${indexParent !== deviceDisplay.length - 1 ? 'mb-4' : ''} bg-white rounded-2xl overflow-hidden shadow`}>
                                      {/* Sensor Header */}

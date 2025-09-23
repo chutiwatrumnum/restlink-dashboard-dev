@@ -86,7 +86,8 @@ const TepStep: React.FC<TepStepProps> = ({ currentStep = 1 }) => {
     let dataTime: StepData[] = JSON.parse(JSON.stringify(dataObj[dataEmergencyDetail?.type as keyof typeof dataObj] || []));
 
     dataTime = dataTime.map((item: StepData, index: number) => {
-      const date = new Date(dataEmergencyDetail?.sosEventInfo?.sosCallHistories?.[index]?.createdAt);
+      
+      const date = new Date(dataEmergencyDetail?.sosEventInfo?.sosEventLogs?.[index]?.createdAt);
       const hours = date.getHours();
       const minutes = date.getMinutes();
       const seconds = date.getSeconds();

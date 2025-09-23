@@ -46,6 +46,12 @@ const FormWarningSOS = ({ dataEmergency, unitHover, unitClick, setDataEmergency,
     const [hiddenCards, setHiddenCards] = useState<Set<string>>(new Set()); // cards ที่ถูกซ่อนหลัง animation
     const [idMarker, setIdMarker] = useState<string>('');
     
+    // ฟิลเตอร์จากการ์ดสรุปด้านบน: all | red(emergency) | yellow(deviceWarning)
+    const [summaryFilter, setSummaryFilter] = useState<'all' | 'red' | 'yellow'>('all');
+    const toggleSummaryFilter = (type: 'red' | 'yellow') => {
+        setSummaryFilter((prev) => (prev === type ? 'all' : type));
+    };
+
 
     useEffect(() => {
         if(currentMapMode==='preview') { 
@@ -175,27 +181,29 @@ const FormWarningSOS = ({ dataEmergency, unitHover, unitClick, setDataEmergency,
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             // ตรวจสอบว่ามี filter อยู่และ click ไม่ได้อยู่ใน FormWarningSOS
-            if (unitClick && event.target) {
+            if ((unitClick || summaryFilter !== 'all') && event.target) {
                 const target = event.target as Element;
                 const formElement = target.closest('.form-warning-sos');
+                const isSummaryCard = target.closest('.summary-filter-cards');
 
-                // ถ้า click นอก FormWarningSOS และไม่ใช่ marker บนแผนที่
-                if (!formElement && !target.closest('.leaflet-marker-icon') && !target.closest('.marker-element')) {
+                // ถ้า click นอก FormWarningSOS/summary cards และไม่ใช่ marker บนแผนที่
+                if (!formElement && !isSummaryCard && !target.closest('.leaflet-marker-icon') && !target.closest('.marker-element')) {
                     if (onClearFilter) {
                         onClearFilter();
                     }
+                    setSummaryFilter('all');
                 }
             }
         };
 
-        if (unitClick) {
+        if (unitClick || summaryFilter !== 'all') {
             document.addEventListener('mousedown', handleClickOutside);
         }
 
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
         };
-    }, [unitClick, onClearFilter]);
+    }, [unitClick, onClearFilter, summaryFilter]);
     const handleAcknowledgeEmergency = async (marker: any, type: string) => {        
 
 
@@ -225,7 +233,10 @@ const FormWarningSOS = ({ dataEmergency, unitHover, unitClick, setDataEmergency,
                 result: {
                     step: 0,
                     is_completed: false,
-                    event_help_id: null
+                    event_help_id: null,
+                    sosEventLog: {
+                        createdAt: null
+                    }
                 }
             }
             if(data?.result?.sosEventInfo.step < 1) {
@@ -242,6 +253,7 @@ const FormWarningSOS = ({ dataEmergency, unitHover, unitClick, setDataEmergency,
                 data.result.sosEventInfo.step = dataReceiveCast?.result?.step
                 data.result.sosEventInfo.isCompleted = dataReceiveCast?.result?.is_completed
                 data.result.sosEventInfo.event_help_id = dataReceiveCast?.result?.event_help_id
+                data.result.sosEventInfo.sosEventLogs = [dataReceiveCast?.result?.sosEventLog] || []
                 await dispatch.sosWarning.setDataEmergencyDetail(data.result)
                 setStatusAcknowledge(true)
             }
@@ -265,9 +277,12 @@ const FormWarningSOS = ({ dataEmergency, unitHover, unitClick, setDataEmergency,
         />
         <div>
             {/* Summary Cards */}
-            <div className="flex justify-between gap-4  p-4">
+            <div className="summary-filter-cards flex justify-between gap-4  p-4">
                 {/* SOS Card */}
-                <div className="bg-white rounded-2xl  border border-gray-100 flex-1">
+                <div
+                    onClick={() => toggleSummaryFilter('red')}
+                    className={`bg-white rounded-2xl  border border-gray-100 flex-1 cursor-pointer ${summaryFilter === 'red' ? 'ring-2 ring-blue-500' : ''}`}
+                >
                     <div className="bg-[#D73232] text-white px-4 py-2 rounded-t-2xl text-center">
                         <span className=" font-semibold text-sm">SOS</span>
                     </div>
@@ -279,7 +294,10 @@ const FormWarningSOS = ({ dataEmergency, unitHover, unitClick, setDataEmergency,
                 </div>
 
                 {/* Device Issue Card */}
-                <div className="bg-white rounded-2xl  border border-gray-100 flex-1">
+                <div
+                    onClick={() => toggleSummaryFilter('yellow')}
+                    className={`bg-white rounded-2xl  border border-gray-100 flex-1 cursor-pointer ${summaryFilter === 'yellow' ? 'ring-2 ring-blue-500' : ''}`}
+                >
                     <div className="bg-[#FFD54F] text-white px-4 py-2 rounded-t-2xl text-center">
                         <span className=" whitespace-nowrap text-[#002C55]  font-semibold text-sm">Device has an issue</span>
                     </div>
@@ -301,6 +319,7 @@ const FormWarningSOS = ({ dataEmergency, unitHover, unitClick, setDataEmergency,
 
 
             {dataOriginEmergency && dataOriginEmergency.emergency.map((marker: any, index: any) => {
+                if (summaryFilter === 'yellow') return null; // กรองเมื่อเลือกเฉพาะสีเหลือง
                 // แปลง time เป็นรูปแบบที่ต้องการ
                 const formatTime = (timeStr: string) => {
                     const date = new Date(timeStr);
@@ -390,6 +409,7 @@ const FormWarningSOS = ({ dataEmergency, unitHover, unitClick, setDataEmergency,
 
             {/* Warning Markers (Yellow) - Individual Cards */}
             {dataOriginEmergency && dataOriginEmergency.deviceWarning.map((marker: any, index: any) => {
+                if (summaryFilter === 'red') return null; // กรองเมื่อเลือกเฉพาะสีแดง
                 const formatTime = (timeStr: string) => {
                     const date = new Date(timeStr);
                     const day = date.getDate().toString().padStart(2, '0');
@@ -471,7 +491,9 @@ const FormWarningSOS = ({ dataEmergency, unitHover, unitClick, setDataEmergency,
                 );
             })}
             {
-                dataEmergency.emergency.length === 0 && dataEmergency.deviceWarning.length === 0 && (
+                ((summaryFilter === 'all' && dataEmergency.emergency.length === 0 && dataEmergency.deviceWarning.length === 0)
+                || (summaryFilter === 'red' && dataEmergency.emergency.length === 0)
+                || (summaryFilter === 'yellow' && dataEmergency.deviceWarning.length === 0)) && (
                     <div className="text-xs font-bold tracking-wide px-3 py-2 flex justify-center items-center  gap-2"
                         style={{ lineHeight: 'normal' }}>
                         <span className="pt-1 text-xl whitespace-nowrap">No emergency</span>

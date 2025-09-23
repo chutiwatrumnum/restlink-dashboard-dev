@@ -8,6 +8,7 @@ import {
     Tabs,
     Table,
     message,
+    Tag,
   } from "antd";
 import { SearchOutlined, CloseOutlined } from '@ant-design/icons';
 import type { ColumnsType } from "antd/es/table";
@@ -73,6 +74,41 @@ const HistoryBuilding = () => {
     });
     
     const { access } = usePermission(permissions);
+
+    // เพิ่มสถานะสำหรับแสดง Loading ระหว่างรอ API เมื่อกดปุ่ม Step
+    const [isActionLoading, setIsActionLoading] = useState<boolean>(false);
+
+    // คำนวณรายการตัวกรองที่กำลังใช้งาน เพื่อแสดงเป็นแท็กใต้แท็บ
+    const activeFilterTags = useMemo(() => {
+        const tags: Array<{ key: string; label: string; value: string }> = [];
+        if (roomAddress) tags.push({ key: 'Address', label: 'House No.', value: roomAddress });
+        if (residentOwner) tags.push({ key: 'NameOwner', label: 'Owner Name', value: residentOwner });
+        if (receiver) tags.push({ key: 'NameStaff', label: 'Security Staff Name', value: receiver });
+        if (contact) tags.push({ key: 'ContractStaff', label: 'Phone Number', value: contact });
+        return tags;
+    }, [roomAddress, residentOwner, receiver, contact]);
+
+    const removeFilterTag = (key: string) => {
+        // reset เป็นหน้าแรกเมื่อมีการลบแท็กตัวกรอง
+        setCurPage(1);
+        setPaginationConfig((prev) => ({ ...prev, current: 1 }));
+        switch (key) {
+            case 'Address':
+                setRoomAddress('');
+                break;
+            case 'NameOwner':
+                setResidentOwner('');
+                break;
+            case 'NameStaff':
+                setReceiver('');
+                break;
+            case 'ContractStaff':
+                setContact('');
+                break;
+            default:
+                break;
+        }
+    };
 
     const loadFilter = async(dataFilter:any)=>{
         let filterObject ={
@@ -362,46 +398,54 @@ const HistoryBuilding = () => {
     };
 
     const handleReceiveCast = async (eventStore: any) => {
-        let { id, EventStep , EventTypeStatus } = eventStore
-        let data = await getSosWarningById(id)
-        if(!data.status){
-            let message = data.message
-            if(message) FailedModal(message,900)
-            return
-        }
-        data.result = {
-            ...data.result,
-            type: EventTypeStatus
-        }
+        setIsActionLoading(true);
+        try {
+            let { id, EventStep , EventTypeStatus } = eventStore
+            let data = await getSosWarningById(id)
+            if(!data.status){
+                let messageText = data.message
+                if(messageText) FailedModal(messageText,900)
+                return
+            }
+            data.result = {
+                ...data.result,
+                type: EventTypeStatus
+            }
 
 
-        if(EventStep >= 1){
-            await dispatch.sosWarning.setDataEmergencyDetail(data.result)
-            await dispatch.sosWarning.setStatusCaseReceiveCast(true)
-            navigate('/dashboard/security-alarm') 
-            return
-        }
-
-        
-        if(data.status){
-            let dataReceiveCast = await receiveCast(id)
-            if(dataReceiveCast.status){
-                dispatch.sosWarning.setStatusCaseReceiveCast(true)
-                let step = dataReceiveCast?.result?.step
-                data.result.sosEventInfo.step  = step
-                data.result.sosEventInfo.isCompleted = dataReceiveCast?.result?.is_completed
-                data.result.sosEventInfo.event_help_id = dataReceiveCast?.result?.event_help_id
-                await dispatch.sosWarning.setStatusCaseReceiveCast(true)
+            if(EventStep >= 1){
+                await dispatch.sosWarning.setStep(data.result.sosEventInfo.step)
                 await dispatch.sosWarning.setDataEmergencyDetail(data.result)
-                navigate('/dashboard/security-alarm') // ปิดการ navigate เพื่อไม่ให้เปลี่ยนหน้า
-                // setStatusAcknowledge(true)
+                await dispatch.sosWarning.setStatusCaseReceiveCast(true)
+                navigate('/dashboard/security-alarm')
+                return
+
             }
-            else {
-                message.error(dataReceiveCast.message)
+
+            
+            if(data.status){
+                let dataReceiveCast = await receiveCast(id)
+                if(dataReceiveCast.status){
+                    dispatch.sosWarning.setStatusCaseReceiveCast(true)
+                    let step = dataReceiveCast?.result?.step
+                    await dispatch.sosWarning.setStep(dataReceiveCast?.result?.step)
+                    data.result.sosEventInfo.step  = step
+                    data.result.sosEventInfo.isCompleted = dataReceiveCast?.result?.is_completed
+                    data.result.sosEventInfo.event_help_id = dataReceiveCast?.result?.event_help_id
+                    await dispatch.sosWarning.setStatusCaseReceiveCast(true)
+                    await dispatch.sosWarning.setDataEmergencyDetail(data.result)
+                    navigate('/dashboard/security-alarm') // ปิดการ navigate เพื่อไม่ให้เปลี่ยนหน้า
+                    // setStatusAcknowledge(true)
+                }
+                else {
+                    message.error(dataReceiveCast.message)
+                }
             }
-        }
-        else {  
-            message.error(data?.message || 'not found data')
+            else {  
+                message.error(data?.message || 'not found data')
+            }
+        } finally {
+            setIsActionLoading(false);
         }
     }
 
@@ -420,6 +464,17 @@ const HistoryBuilding = () => {
         };
         return obj[step] || '#000000';
     };
+
+    const displayEventStep = (step: '0' | '1' | '2' | '3' | '4') => {
+        const obj: Record<'0' | '1' | '2' | '3' | '4', string> = {
+            '0': 'Pending',
+            '1': 'Receive',
+            '2': 'Call Staff',
+            '3': 'Call Staff Success',
+            '4': 'Completed'
+        };
+        return obj[step] || '-';
+    }
 
     const columns: ColumnsType<any> = [
         {
@@ -554,7 +609,7 @@ const HistoryBuilding = () => {
                 <Row>
                   <Col span={24} className="!flex !justify-center !items-center !mb-0">
                     <span className={`font-bold`} style={{color:getEventStepColor(record.EventStep)}}>
-                        Step {record.EventStep}
+                          {displayEventStep(record.EventStep)}
                     </span>
                   </Col>
                 </Row>
@@ -578,23 +633,52 @@ const HistoryBuilding = () => {
                     items={ServiceCenterList}
                     onChange={changeTab}
                     />
-                    <Table 
-                        columns={columns}
-                        pagination={paginationConfig}
-                        dataSource={eventStore}
-                        loading={false}
-                        onChange={onChangeTable}
-                        scroll={{ 
-                            y: 500,  // กำหนดความสูงของตาราง
-                            x: 'max-content' // ให้ scroll แนวนอนได้ถ้าเนื้อหากว้างเกินไป
-                        }}
-                        sticky={{
-                            offsetHeader: 0  // ให้ header ติดด้านบนเมื่อ scroll
-                        }}
-   
-                    />
+                    {activeFilterTags.length > 0 && (
+                        <div className="mb-3">
+                            {activeFilterTags.map((tag) => (
+                                <Tag
+                                    key={`${tag.key}-${tag.value}`}
+                                    closable
+                                    onClose={(e) => {
+                                        e.preventDefault();
+                                        removeFilterTag(tag.key);
+                                    }}
+                                    className="mr-2 mb-2"
+                                    color="blue"
+                                >
+                                    {tag.label}: {tag.value}
+                                </Tag>
+                            ))}
+                        </div>
+                    )}
+                    <div className="relative">
+                        <div className={`${isActionLoading ? 'opacity-50' : ''}`}>
+                            <Table 
+                                columns={columns}
+                                pagination={paginationConfig}
+                                dataSource={eventStore}
+                                loading={false}
+                                onChange={onChangeTable}
+                                scroll={{ 
+                                    y: 500,  // กำหนดความสูงของตาราง
+                                    x: 'max-content' // ให้ scroll แนวนอนได้ถ้าเนื้อหากว้างเกินไป
+                                }}
+                                sticky={{
+                                    offsetHeader: 0  // ให้ header ติดด้านบนเมื่อ scroll
+                                }}
+       
+                            />
+                        </div>
+                        {isActionLoading && (
+                            <div className="absolute inset-0 z-10 flex items-center justify-center">
+                                <div className="w-16 h-16 border-4 border-gray-100 border-t-blue-500 rounded-full animate-spin" />
+                            </div>
+                        )}
+                    </div>
                 </Col>
             </Row>
+
+
         </div>
     )
 }

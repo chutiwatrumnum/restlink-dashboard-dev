@@ -38,7 +38,7 @@ const ContractForm = ({ statusContract, setStatusContract }: { statusContract: s
                 dataEventInfo.sosEventInfo.step = data.result.step
                 dataEventInfo.sosEventInfo.isCompleted = data.result.is_completed
                 dataEventInfo.sosEventInfo.event_help_id = data.result.event_help_id
-                dataEventInfo.sosEventInfo.sosCallHistories =  [...dataEmergencyDetail.sosEventInfo.sosCallHistories, {
+                dataEventInfo.sosEventInfo.sosEventLogs =  [...dataEmergencyDetail.sosEventInfo.sosEventLogs, {
                     createdAt: new Date().toISOString(),
                 },
                 {
@@ -51,6 +51,7 @@ const ContractForm = ({ statusContract, setStatusContract }: { statusContract: s
             }
         }
     };
+
 
     return (
             <div className="w-full h-full flex flex-col justify-start items-start p-0 sm:p-0  lg:p-6 pb-0  !mx-auto ">

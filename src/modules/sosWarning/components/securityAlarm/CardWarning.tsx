@@ -1,9 +1,9 @@
-import React, { useState,useMemo } from "react";
+import React, { useState,useMemo,useEffect } from "react";
 import { Button, Col, Row } from "antd";
 import TepStep from "../../components/securityAlarm/tepStep";
-import { useDispatch,useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { RootState } from "../../../../stores";
-import { useNavigate } from "react-router-dom";
+
 
 
 import ListMember from "../../components/securityAlarm/ListMember";
@@ -30,8 +30,13 @@ interface DoorSensor {
 }
 
 const SecurityAlarm = () => {
-    const { dataEmergencyDetail } = useSelector((state: RootState) => state.sosWarning);
-    const [statusContract, setStatusContract] = useState<string>("contract");
+    const { dataEmergencyDetail, step } = useSelector((state: RootState) => state.sosWarning);
+    const [statusContract, setStatusContract] = useState<string>(
+        dataEmergencyDetail?.sosEventInfo?.step  === 1 || step === 1 ? "contract" :
+        dataEmergencyDetail?.sosEventInfo?.step  === 2 || step === 2 ? "form" :
+        dataEmergencyDetail?.sosEventInfo?.step === 3 || step === 3 ? "success" :
+        dataEmergencyDetail?.sosEventInfo?.step === 4 || step === 4 ? "success" : "contract"
+    );
     const [householdMembers] = useState<HouseholdMember[]>([
         {
             id: '1',
@@ -88,14 +93,20 @@ const SecurityAlarm = () => {
         console.log(`Updating member ${memberId} status to: ${status}`);
     };
 
+    useEffect(()=>{
+        if(Object.keys(dataEmergencyDetail).length === 0){
+            window.location.href = '/dashboard/manage-plan';
+        }
+    },[dataEmergencyDetail])
+
     return (
-        <div className="min-h-screen lg:h-screen flex flex-col overflow-auto lg:overflow-hidden">
+        <div className="min-h-screen lg:h-screen flex flex-col overflow-auto ">
             <div className="flex-1 flex flex-col p-4 md:p-6 lg:p-6">
                 <TepStep currentStep={dataEmergencyDetail?.sosEventInfo?.step || 0} />
                 <Row gutter={[16, 16]} className="flex-1 ">
                     {/* Left Column - Household Members List + Action Steps */}
                     <Col xs={24} lg={16} className="flex">
-                        <div className="bg-white rounded-lg flex-1 min-h-[400px] lg:h-[calc(100vh-256px)] flex flex-col overflow-hidden">
+                        <div className="bg-white rounded-lg flex-1 min-h-[400px] lg:h-[calc(100vh-256px)] flex flex-col ">
                             <Row className="!h-full !py-4 flex-1">
                                 {/* Household Members List */}
                                 <Col 
@@ -129,7 +140,7 @@ const SecurityAlarm = () => {
 
                     {/* Right Column - Door Sensors */}
                     <Col xs={24} lg={8} className="flex">
-                        <div className="flex-1 min-h-[400px] lg:h-[calc(100vh-256px)] overflow-hidden">
+                        <div className="flex-1 min-h-[400px] lg:h-[calc(100vh-256px)] overflow-auto">
                             <DeviceList doorSensors={doorSensors} />
                         </div>
                     </Col>

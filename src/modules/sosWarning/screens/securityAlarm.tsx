@@ -1,4 +1,5 @@
-import { message } from "antd";
+import  { useEffect } from 'react'
+import { Button, message } from "antd";
 import CardWarning from "../components/securityAlarm/CardWarning";
 import CardEmergency from "../components/securityAlarm/CardEmergency";
 import { useDispatch, useSelector } from "react-redux";
@@ -7,9 +8,11 @@ import { SecurityAlarmProvider } from "../contexts/SecurityAlarmContext";
 import { callCustomer } from "../service/api/SOSwarning";
 import ConfirmModal from "../../../components/common/ConfirmModal";
 import SuccessModal from "../../../components/common/SuccessModal";
+import { useNavigate } from 'react-router-dom';
 const SecurityAlarm = () => {
     const dispatch = useDispatch();
     const { dataEmergencyDetail } = useSelector((state: RootState) => state.sosWarning);
+    const navigate = useNavigate();
     let processReceiveCase = async (member: any,status:boolean)=>{
         let contact = member.user.contact
         let contact2 = member.user.contact2
@@ -44,7 +47,9 @@ const SecurityAlarm = () => {
                 dataEventInfo.sosEventInfo.step = dataCallCustomer.step
                 dataEventInfo.sosEventInfo.isCompleted = dataCallCustomer.is_completed
                 dataEventInfo.sosEventInfo.event_help_id = dataCallCustomer.event_help_id
-                dataEventInfo.sosEventInfo.sosCallHistories =  [{
+                dataEventInfo.sosEventInfo.sosEventLogs =  [
+                    ...dataEventInfo.sosEventInfo.sosEventLogs,
+                    {
                     createdAt: new Date().toISOString(),
                 }]
                 // dataCallCustomer.sosCallHistories
@@ -52,7 +57,12 @@ const SecurityAlarm = () => {
                 SuccessModal("Contacted the resident successfully")
             }
             else {
-                message.success('Contacted the resident successfully')
+                if(status){
+                    message.success('Contacted the resident successfully')
+                }
+                else {
+                    message.warning('Contacted the resident failed')
+                }
             }
         }else{
             message.error(data.message)
@@ -72,6 +82,14 @@ const SecurityAlarm = () => {
             },
         })
     };
+
+    useEffect(()=>{
+        if(Object.keys(dataEmergencyDetail || {}).length === 0){
+            navigate('/dashboard/manage-plan')
+            // window.location.href = '/dashboard/manage-plan';
+        }
+    },[dataEmergencyDetail])
+
     // useEffect(() => {
     //     if( Object.keys(dataEmergencyDetail).length === 0){
     //         navigate('/dashboard/manage-plan')

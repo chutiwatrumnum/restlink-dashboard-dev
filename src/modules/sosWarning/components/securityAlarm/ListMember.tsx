@@ -72,7 +72,7 @@ const ListMember = () => {
     return (
         <>
 
-            <div className="h-full flex flex-col">
+            <div className="h-full min-h-0 flex flex-col">
                 {/* Header */}
                 <div className="pt-6 pb-4 px-0 border-gray-100 flex-shrink-0">
                     <div className="w-full text-2xl text-[#3C8BF1] mb-3 !font-semibold ">
@@ -98,7 +98,7 @@ const ListMember = () => {
                 </div>
 
                 {/* Members List */}
-                <div className="divide-y divide-gray-100">
+                <div className="divide-y divide-gray-100 flex-1 overflow-y-auto">
                     {
                         listMembersContract.map((member: any, index: number) => (
                             <Content

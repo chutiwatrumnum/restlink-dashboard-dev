@@ -251,7 +251,7 @@ const SideMenu = ({
                 alt="Project Logo"
                 style={{
                   maxWidth: "100%",
-                  maxHeight: "60px",
+                  maxHeight: "130px",
                   objectFit: "contain",
                   display: "block",
                 }}

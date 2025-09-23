@@ -20,7 +20,7 @@ const AlertSOS = ({isAuth}:any) => {
   const [isVisible, setIsVisible] = useState<boolean>(false);
   const [isAnimatingOut, setIsAnimatingOut] = useState<boolean>(false);
  
-  const notify = () => toast("Problem in your Room");
+  const notify = () => toast("Emergency alert notification");
   useEffect(() => {
     if(dataEmergency?.emergency?.length > 0 || dataEmergency?.deviceWarning?.length > 0){
       dispatch.sosWarning.setShowToast(true);

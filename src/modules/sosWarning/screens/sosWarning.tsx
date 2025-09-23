@@ -766,6 +766,25 @@ const SOSWarning = () => {
     }
   }, [villageMapRefreshRef]);
 
+  // helper: รีเฟรชรายการยูนิตสำหรับ select (ไม่กระทบฟีเจอร์อื่น)
+  const refreshUnitsForSelect = async () => {
+    try {
+      const master = await getMasterData();
+      if (master?.status) {
+        let unitStore: any = {};
+        if (floorIdGlobal) {
+          let dataFilterFloor = (master.result.unit || []).filter((item: any) => Number(item.floorId) === Number(floorIdGlobal));
+          unitStore = { unit: dataFilterFloor };
+        } else {
+          unitStore = master.result;
+        }
+        setDataSelectPlan(unitStore as any);
+      }
+    } catch (_e) {
+      // เงียบไว้ ไม่ให้รบกวน flow หลัก
+    }
+  };
+
   // callback เมื่อ marker ถูกลบ
   const handleMarkerDeleted = useCallback(async (deletedMarker?: any) => {
     // ตรวจสอบว่า deletedMarker เป็น number (markerId) หรือ array
@@ -804,6 +823,8 @@ const SOSWarning = () => {
           }));
         }
       }
+      // รีเฟรชรายการยูนิตสำหรับ select หลังลบเสร็จ
+      await refreshUnitsForSelect();
     }
     setShouldShowVillageForm(false);
     setShouldShowWarningSOS(true);
@@ -976,6 +997,13 @@ const SOSWarning = () => {
     </div>
   );
 
+  // ฟัง event รีเฟรชยูนิต (ถูกยิงจากการลบ marker ฝั่ง VillageMap)
+  useEffect(() => {
+    const handler = () => { refreshUnitsForSelect(); };
+    window.addEventListener('sos:refresh-units', handler);
+    return () => window.removeEventListener('sos:refresh-units', handler);
+  }, [floorIdGlobal]);
+
   // แสดง Loading เมื่อกำลังโหลดข้อมูล
   if (isLoadingFirst) {
     return (
@@ -1000,7 +1028,11 @@ const SOSWarning = () => {
         >
 
           <div className=" h-full min-h-screen ">
-            <SecurityAlarm />
+            {
+              Object.keys(dataEmergencyDetail).length > 0 && (
+                <SecurityAlarm />
+              )
+            }
           </div>
         </div>
 

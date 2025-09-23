@@ -156,7 +156,6 @@ const UnitPreview = () => {
     const setfloorCondo = (building: string) => {
         setSelectedBuilding(building);
         let condoData = (excelData as any).Condo;
-        console.log(condoData,'condoData')
         let fileterCondo = condoData.filter((item: any) => item[formatLowercase("Building name")] === building)
         let dataFloor = fileterCondo.map((item: any, index: number) => {
             let data = {

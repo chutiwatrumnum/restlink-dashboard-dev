@@ -19,8 +19,6 @@ type EmergencyCreateModalType = {
   onRefresh: () => void;
 };
 
-const DEFAULT_CENTER = { lat: 13.736717, lng: 100.523186 };
-
 const EmergencyCreateModal = ({
   isCreateModalOpen,
   onOk,
@@ -31,30 +29,21 @@ const EmergencyCreateModal = ({
   const [form] = Form.useForm();
 
   // ====== Map states ======
-  const currentLocation = useRef<{ lng: number; lat: number }>(DEFAULT_CENTER);
-  const initialCenterRef = useRef(DEFAULT_CENTER);
-  const [hasPickedLocation, setHasPickedLocation] = useState(false);
+  const currentLocation = useRef<{ lng: number; lat: number }>();
+  const hasPickedLocationRef = useRef<boolean>(false);
 
-  const handleLocationChange = useCallback(
-    (lat: number, lng: number) => {
-      currentLocation.current = { lat, lng };
-      if (
-        !hasPickedLocation &&
-        (lat !== DEFAULT_CENTER.lat || lng !== DEFAULT_CENTER.lng)
-      ) {
-        setHasPickedLocation(true);
-      }
-    },
-    [hasPickedLocation]
-  );
+  const handleLocationChange = useCallback((lat: number, lng: number) => {
+    currentLocation.current = { lat, lng };
+    if (!hasPickedLocationRef.current) {
+      hasPickedLocationRef.current = true;
+    }
+  }, []);
 
   // สร้าง MapElement แค่ครั้งเดียว ป้องกันรี-mount ตอน state อื่นเปลี่ยน
   const MapElement = useMemo(
     () => (
       <GoogleMapComponent
         onLocationChange={handleLocationChange}
-        initialLat={initialCenterRef.current.lat}
-        initialLng={initialCenterRef.current.lng}
         height={360}
         width="100%"
         zoom={12}
@@ -66,15 +55,14 @@ const EmergencyCreateModal = ({
 
   // ===== UI states =====
   const [open, setOpen] = useState(false);
-  const [previewImage, setPreviewImage] = useState("");
+  const previewImageRef = useRef<string>("");
 
   const onModalClose = () => {
     form.resetFields();
-    setPreviewImage("");
+    previewImageRef.current = "";
     // reset map state ให้เหมือนตอนเปิดใหม่
-    initialCenterRef.current = DEFAULT_CENTER;
-    currentLocation.current = DEFAULT_CENTER;
-    setHasPickedLocation(false);
+    currentLocation.current = undefined;
+    hasPickedLocationRef.current = false;
     onCancel();
   };
 
@@ -84,12 +72,12 @@ const EmergencyCreateModal = ({
       okMessage: "Yes",
       cancelMessage: "Cancel",
       onOk: async () => {
-        const { lat, lng } = currentLocation.current ?? DEFAULT_CENTER;
+        const { lat, lng } = currentLocation.current ?? {};
 
         const payload: DataEmergencyCreateByType = {
           ...value,
-          lat,
-          long: lng,
+          lat: lat ?? 0,
+          long: lng ?? 0,
           image: value.image || null,
         };
 
@@ -97,11 +85,11 @@ const EmergencyCreateModal = ({
 
         if (result) {
           form.resetFields();
-          setPreviewImage("");
+          previewImageRef.current = "";
           // reset map state
-          initialCenterRef.current = DEFAULT_CENTER;
-          currentLocation.current = DEFAULT_CENTER;
-          setHasPickedLocation(false);
+          currentLocation.current = undefined;
+          hasPickedLocationRef.current = false;
+
           onOk();
           onRefresh();
         }
@@ -117,9 +105,7 @@ const EmergencyCreateModal = ({
     setOpen(isCreateModalOpen);
     if (isCreateModalOpen) {
       // เปิด modal ใหม่ -> รีเซ็ตสถานะแผนที่ให้เป็นค่าเริ่มต้น
-      initialCenterRef.current = DEFAULT_CENTER;
-      currentLocation.current = DEFAULT_CENTER;
-      setHasPickedLocation(false);
+      currentLocation.current = undefined;
     }
   }, [isCreateModalOpen]);
 
@@ -149,8 +135,8 @@ const EmergencyCreateModal = ({
                 className="w-full"
               >
                 <UploadImageGroup
-                  onChange={(url) => setPreviewImage(url)}
-                  image={previewImage}
+                  onChange={(url) => (previewImageRef.current = url)}
+                  image={previewImageRef.current}
                   ratio="1920x1080 px"
                 />
               </Form.Item>
@@ -177,11 +163,11 @@ const EmergencyCreateModal = ({
                 rules={[
                   {
                     validator: () => {
-                      const { lat, lng } = currentLocation.current;
+                      const { lat, lng } = currentLocation.current ?? {};
                       if (
-                        !hasPickedLocation ||
-                        (lat === DEFAULT_CENTER.lat &&
-                          lng === DEFAULT_CENTER.lng)
+                        !hasPickedLocationRef ||
+                        lat === undefined ||
+                        lng === undefined
                       ) {
                         return Promise.reject(
                           "Please select a location on the map"

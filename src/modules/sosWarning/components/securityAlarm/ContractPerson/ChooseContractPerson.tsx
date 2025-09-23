@@ -30,7 +30,7 @@ const ChooseContractPerson = ({  setStatusContract, enableContractOfficer }: { s
                 // dataSolve.result.step
                 dataEventInfo.sosEventInfo.isCompleted = dataSolve.result.is_completed
                 dataEventInfo.sosEventInfo.event_help_id = dataSolve.result.event_help_id
-                dataEventInfo.sosEventInfo.sosCallHistories =  [...dataEmergencyDetail.sosEventInfo.sosCallHistories, {
+                dataEventInfo.sosEventInfo.sosEventLogs =  [...dataEmergencyDetail.sosEventInfo.sosEventLogs, {
                     createdAt: new Date().toISOString(),
                 }]
 
