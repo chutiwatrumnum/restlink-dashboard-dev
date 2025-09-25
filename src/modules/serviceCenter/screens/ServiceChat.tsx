@@ -32,7 +32,9 @@ const ServiceChat = () => {
   const { status } = useSelector((state: RootState) => state.serviceCenter);
 
   const [activeServiceId, setActiveServiceId] = useState(-1);
-  const [currentChat, setCurrentChat] = useState();
+  const [currentChat, setCurrentChat] = useState<
+    ServiceChatListDataType | undefined
+  >();
   const [currentServiceId, setCurrentServiceId] = useState("");
   const [currentTab, setCurrentTab] = useState("in_progress"); // เพิ่ม state สำหรับ tab
 
@@ -81,6 +83,7 @@ const ServiceChat = () => {
 
     return true;
   });
+
   const filteredChatData = serviceChatListData?.filter((item) => {
     const serviceStatus =
       item.service?.serviceStatus?.nameEn || item.serviceStatus;
@@ -133,21 +136,62 @@ const ServiceChat = () => {
       return; // Don't select services that don't match current tab
     }
 
-    let payload = {
+    // Create proper ServiceChatListDataType object with enhanced data handling
+    const chatData: ServiceChatListDataType = {
       serviceId: serviceId,
-      serviceType: option.serviceType,
-      roomAddress: option.roomAddress,
+      serviceType: option.serviceType || "Unknown Service",
+      roomAddress: option.roomAddress || "N/A",
       userId: option.userId,
+
+      // Enhanced fields with fallbacks
+      messageId: 0,
+      message: "",
+      type: "text" as const,
+      uploadUrl: undefined,
+      fileName: undefined,
+      seen: true,
+      createdAt: new Date().toISOString(),
+      lastName: option.lastName || "User",
+      firstName: option.firstName || "Unknown",
+      middleName: option.middleName || "",
+      unit: option.unit || 0,
+      serviceDescription: option.serviceDescription || "",
+      serviceStatusNameCode: option.serviceStatusNameCode || "unknown",
+      serviceStatus: serviceStatus || "Unknown",
+      unitNo: option.unitNo || "N/A",
+      imageProfile: option.imageProfile || "",
+      juristicSeen: true,
+
+      // Add nested objects for compatibility
+      service: {
+        serviceType: {
+          nameEn: option.serviceType || "Unknown Service",
+        },
+        serviceStatus: {
+          nameEn: serviceStatus || "Unknown",
+        },
+      },
+      myHome: {
+        unit: {
+          roomAddress: option.roomAddress || "N/A",
+        },
+      },
+      user: {
+        givenName: option.firstName || "Unknown",
+        familyName: option.lastName || "User",
+        imageProfile: option.imageProfile || "",
+      },
     };
+
     setActiveServiceId(serviceId);
-    onServiceSelected(payload);
+    onServiceSelected(chatData);
   };
 
   const handleMenuClick = (e: any) => {
     dispatch.chat.updateSortByData(e.key);
   };
 
-  const onServiceSelected = (item: any) => {
+  const onServiceSelected = (item: ServiceChatListDataType) => {
     setCurrentChat(item);
   };
 

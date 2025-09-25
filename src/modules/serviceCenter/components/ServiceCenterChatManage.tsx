@@ -2,7 +2,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "../../../stores";
 import { usePermission } from "../../../utils/hooks/usePermission";
 
-import { Button, Empty, Tag } from "antd";
+import { Button, Empty, Tag, Image } from "antd";
 import { ServiceChatListDataType } from "../../../stores/interfaces/Service";
 import {
   useServiceCenterByServiceIDQuery,
@@ -14,6 +14,7 @@ import {
   ServiceCenterDataType,
   ServiceCenterSelectListType,
 } from "../../../stores/interfaces/ServiceCenter";
+import fallbackImg from "../../../assets/images/noImg.jpeg";
 
 const tagColorSelector = (status: string) => {
   switch (status) {
@@ -34,7 +35,7 @@ const tagColorSelector = (status: string) => {
   }
 };
 
-const serviceCenterChatManage = ({
+const ServiceCenterChatManage = ({
   chatData,
 }: {
   chatData?: ServiceChatListDataType;
@@ -154,54 +155,193 @@ const serviceCenterChatManage = ({
     setIsEditModalOpen(true);
   };
 
-  if (data) {
+  // Get the primary image to display
+  const getPrimaryImage = () => {
+    if (!data?.imageItems || data.imageItems.length === 0) {
+      return null;
+    }
+
+    // Try to get the first available image, prioritizing by status
+    const pendingImages = data.imageItems.filter(
+      (item) =>
+        item.imageStatus?.nameEn === "Pending" || item.imageStatusId === 1
+    );
+
+    const repairingImages = data.imageItems.filter(
+      (item) =>
+        item.imageStatus?.nameEn === "Repairing" || item.imageStatusId === 2
+    );
+
+    const successImages = data.imageItems.filter(
+      (item) =>
+        item.imageStatus?.nameEn === "Success" || item.imageStatusId === 3
+    );
+
+    // Return the first image from available categories
+    if (pendingImages.length > 0) return pendingImages[0];
+    if (repairingImages.length > 0) return repairingImages[0];
+    if (successImages.length > 0) return successImages[0];
+
+    // Fallback to any image
+    return data.imageItems[0];
+  };
+
+  const primaryImage = getPrimaryImage();
+
+  if (isLoading) {
     return (
-      <>
-        <div className="sidebarContainer">
-          <h2 className="headerDetail">Details</h2>
-          <div className="detailContainer">
-            <div className="detailItem">
-              <h2 className="headerDetail">Problem: {data?.serviceTypeName}</h2>
-              <p>Detail: {data?.description}</p>
-              <p>
-                Status:{" "}
-                <Tag color={tagColorSelector(data?.statusName!)}>
-                  {data?.statusName}
-                </Tag>
-              </p>
+      <div className="sidebarContainer">
+        <h2 className="headerDetail">Loading...</h2>
+      </div>
+    );
+  }
+
+  if (!data) {
+    return (
+      <div className="sidebarContainer">
+        <Empty description="No service selected" />
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <div className="sidebarContainer">
+        <h2 className="headerDetail">Details</h2>
+
+        {/* Enhanced image display section */}
+        {primaryImage && (
+          <div
+            style={{
+              marginBottom: 16,
+              textAlign: "center",
+              padding: "8px",
+              backgroundColor: "#f5f5f5",
+              borderRadius: "8px",
+            }}>
+            <Image
+              width={150}
+              height={150}
+              style={{
+                objectFit: "cover",
+                borderRadius: "4px",
+                border: "1px solid #d9d9d9",
+              }}
+              src={primaryImage.imageUrl}
+              fallback={fallbackImg}
+              preview={{
+                mask: "Click to preview",
+              }}
+              placeholder={
+                <div
+                  style={{
+                    width: 150,
+                    height: 150,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    backgroundColor: "#f0f0f0",
+                    color: "#999",
+                  }}>
+                  Loading...
+                </div>
+              }
+            />
+            <div
+              style={{
+                fontSize: "12px",
+                color: "#666",
+                marginTop: "4px",
+              }}>
+              {primaryImage.imageStatus?.nameEn || "Service Image"}
+              {data.imageItems &&
+                data.imageItems.length > 1 &&
+                ` (${data.imageItems.length} images)`}
             </div>
           </div>
-          <Button
-            disabled={
-              data.statusName === "Success" || !access("fixing_report", "edit")
-            }
-            onClick={() => onEdit()}
-            size="large"
-            shape="round"
-          >
-            <b>Manage</b>
-          </Button>
+        )}
+
+        {/* Service details */}
+        <div className="detailContainer">
+          <div className="detailItem">
+            <h2 className="headerDetail">
+              Problem: {data?.serviceTypeName || "Unknown Service"}
+            </h2>
+            <p>
+              <strong>Detail:</strong>{" "}
+              {data?.description || "No description available"}
+            </p>
+            <p>
+              <strong>Room:</strong> {data?.roomAddress || "N/A"}
+            </p>
+            <p>
+              <strong>Reporter:</strong>{" "}
+              {data?.createdBy
+                ? `${
+                    data.createdBy.givenName ||
+                    data.createdBy.firstName ||
+                    "Unknown"
+                  } ${
+                    data.createdBy.familyName ||
+                    data.createdBy.lastName ||
+                    "User"
+                  }`.trim()
+                : data?.fullname || "Unknown User"}
+            </p>
+            {data?.tel && (
+              <p>
+                <strong>Tel:</strong> {data.tel}
+              </p>
+            )}
+            <p>
+              <strong>Status:</strong>{" "}
+              <Tag color={tagColorSelector(data?.statusName!)}>
+                {data?.statusName || "Unknown"}
+              </Tag>
+            </p>
+
+            {/* Additional image info */}
+            {data?.imageItems && data.imageItems.length > 0 && (
+              <div
+                style={{ marginTop: "12px", fontSize: "12px", color: "#666" }}>
+                <p>
+                  <strong>Images:</strong> {data.imageItems.length} total
+                </p>
+                {data.imageItems.map((img, index) => (
+                  <div key={img.id || index} style={{ marginLeft: "8px" }}>
+                    • {img.imageStatus?.nameEn || "Unknown status"}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
-        <ServiceCenterEditModal
-          selectList={
-            ServiceCenterStatusSelectionList
-              ? ServiceCenterStatusSelectionList
-              : []
+
+        <Button
+          disabled={
+            data.statusName === "Success" || !access("fixing_report", "edit")
           }
-          isEditModalOpen={isEditModalOpen}
-          onOk={onEditOk}
-          onCancel={onEditCancel}
-          data={editData}
-          onRefresh={onRefresh}
-        />
-      </>
-    );
-  } else {
-    <Empty />;
-  }
-  if (isLoading) {
-    <p>loading.....</p>;
-  }
+          onClick={() => onEdit()}
+          size="large"
+          shape="round">
+          <b>Manage</b>
+        </Button>
+      </div>
+
+      <ServiceCenterEditModal
+        selectList={
+          ServiceCenterStatusSelectionList
+            ? ServiceCenterStatusSelectionList
+            : []
+        }
+        isEditModalOpen={isEditModalOpen}
+        onOk={onEditOk}
+        onCancel={onEditCancel}
+        data={editData}
+        onRefresh={onRefresh}
+      />
+    </>
+  );
 };
 
-export default serviceCenterChatManage;
+export default ServiceCenterChatManage;

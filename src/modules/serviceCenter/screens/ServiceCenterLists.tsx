@@ -77,6 +77,7 @@ const ServiceCenterLists = () => {
   const { data: selectList, isSuccess } = useServiceCenterStatusTypeQuery();
   const { data: selectIssueList, isSuccess: isSuccessIssue } =
     useServiceCenterIssueTypeQuery();
+
   // ✅ ดึง permission
   const permissions = useSelector(
     (state: RootState) => state.common?.permission
@@ -104,11 +105,90 @@ const ServiceCenterLists = () => {
     unitNo,
   ]);
 
+  // Query for getting data to count (always get all data for counting)
+  const countPayload: ServiceCenterPayloadType = useMemo(
+    () => ({
+      serviceTypeId: SelectServiceCenterIssueType,
+      curPage: 1,
+      perPage: 1000, // Get a large number to count all
+      status: null, // Get all statuses for counting
+      unitId: unitNo,
+      search: null,
+    }),
+    [SelectServiceCenterIssueType, unitNo]
+  );
+
   const {
     data: serviceCenterData,
     isLoading,
     refetch: refetchServiceCenterList,
   } = useServiceCenterServiceListQuery(payload);
+
+  // Separate query for counting all data
+  const { data: serviceCenterCountData } =
+    useServiceCenterServiceListQuery(countPayload);
+
+  // Calculate counts for each tab
+  const tabCounts = useMemo(() => {
+    if (!serviceCenterCountData?.data) {
+      return {};
+    }
+
+    const data = serviceCenterCountData.data;
+
+    // Count by status using both nameCode and nameEn
+    const statusCounts: { [key: string]: number } = {};
+
+    data.forEach((item: ServiceCenterDataType) => {
+      // Use nameEn for counting (matches with tab labels)
+      const statusName = item.status.nameEn;
+      const statusCode = item.status.nameCode;
+
+      // Count by nameEn
+      if (statusName) {
+        statusCounts[statusName] = (statusCounts[statusName] || 0) + 1;
+      }
+
+      // Also count by nameCode for backward compatibility
+      if (statusCode) {
+        statusCounts[statusCode.toLowerCase()] =
+          (statusCounts[statusCode.toLowerCase()] || 0) + 1;
+      }
+    });
+
+    // Count special request types
+    const requestCloseCases = data.filter((item: ServiceCenterDataType) => {
+      const hasCloseRequest = Boolean(item.requestCloseCase) === true;
+      const allowedStatuses = [
+        "Waiting for confirmation",
+        "Confirm appointment",
+        "Repairing",
+      ];
+      const isInAllowedStatus = allowedStatuses.includes(item.statusName);
+      return hasCloseRequest && isInAllowedStatus;
+    }).length;
+
+    const requestRescheduleCases = data.filter(
+      (item: ServiceCenterDataType) => {
+        return Boolean(item.requestReSchedule) === true;
+      }
+    ).length;
+
+    return {
+      all: data.length,
+      // Use exact status names from API
+      Pending: statusCounts["Pending"] || 0,
+      "Please confirm fixing date":
+        statusCounts["Please confirm fixing date"] || 0,
+      "Waiting for confirmation": statusCounts["Waiting for confirmation"] || 0,
+      "Confirm appointment": statusCounts["Confirm appointment"] || 0,
+      Repairing: statusCounts["Repairing"] || 0,
+      Success: statusCounts["Success"] || 0,
+      Closed: statusCounts["Closed"] || 0,
+      request_close: requestCloseCases,
+      request_reschedule: requestRescheduleCases,
+    };
+  }, [serviceCenterCountData?.data]);
 
   const { filteredData, paginatedData, totalFiltered } = useMemo(() => {
     if (!serviceCenterData?.data) {
@@ -248,12 +328,31 @@ const ServiceCenterLists = () => {
 
   const fetchData = async () => {
     if (selectList) {
-      setServiceCenterStatusList([
-        { label: "All", key: "" },
-        ...(selectList.tabsList as any),
-        { label: "Close Requests", key: "request_close" },
-        { label: "Reschedule Requests", key: "request_reschedule" },
-      ]);
+      // Create tabs with counts
+      const tabsWithCounts = [
+        {
+          label: `All (${tabCounts.all || 0})`,
+          key: "",
+        },
+        ...selectList.tabsList.map((tab: any) => {
+          // Use tab label directly for counting
+          const count = tabCounts[tab.label] || 0;
+          return {
+            label: `${tab.label} (${count})`,
+            key: tab.key,
+          };
+        }),
+        {
+          label: `Close Requests (${tabCounts.request_close || 0})`,
+          key: "request_close",
+        },
+        {
+          label: `Reschedule Requests (${tabCounts.request_reschedule || 0})`,
+          key: "request_reschedule",
+        },
+      ];
+
+      setServiceCenterStatusList(tabsWithCounts);
     }
     if (selectIssueList) {
       setServiceCenterStatusIssueList([
@@ -372,6 +471,7 @@ const ServiceCenterLists = () => {
     perPage,
     isSuccess,
     isSuccessIssue,
+    tabCounts, // Add tabCounts to dependencies to update when counts change
   ]);
 
   return (
@@ -427,8 +527,7 @@ const ServiceCenterLists = () => {
       <Row
         className="announceBottomActionContainer"
         justify="end"
-        align="middle"
-      >
+        align="middle">
         <Pagination
           defaultCurrent={1}
           pageSize={perPage}

@@ -2,6 +2,74 @@ import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
 import { ChartPileServiceCenter, ServiceCenterChartPayloadType, ServiceCenterDataType, ServiceCenterPayloadType, ServiceCenterSelectListType, StatCardProps } from "../../../stores/interfaces/ServiceCenter";
 
+// Helper function to handle null/undefined unit data
+const handleUnitData = (unit: any) => {
+    if (!unit) {
+        return {
+            unitNo: "N/A",
+            roomAddress: "N/A",
+            floor: 0
+        };
+    }
+
+    return {
+        unitNo: unit.unitNo || "N/A",
+        roomAddress: unit.roomAddress || "N/A",
+        floor: unit.floor || 0
+    };
+};
+
+// Helper function to handle null/undefined user data
+const handleUserData = (user: any) => {
+    if (!user) {
+        return {
+            firstName: "Unknown",
+            lastName: "User",
+            familyName: "User",
+            givenName: "Unknown",
+            middleName: ""
+        };
+    }
+
+    return {
+        firstName: user.firstName || "Unknown",
+        lastName: user.lastName || "User",
+        familyName: user.familyName || user.lastName || "User",
+        givenName: user.givenName || user.firstName || "Unknown",
+        middleName: user.middleName || ""
+    };
+};
+
+// Helper function to handle null/undefined service type data
+const handleServiceTypeData = (serviceType: any) => {
+    if (!serviceType) {
+        return {
+            nameCode: "unknown",
+            nameEn: "Unknown Service"
+        };
+    }
+
+    return {
+        nameCode: serviceType.nameCode || "unknown",
+        nameEn: serviceType.nameEn || "Unknown Service"
+    };
+};
+
+// Helper function to handle null/undefined status data
+const handleStatusData = (status: any) => {
+    if (!status) {
+        return {
+            nameCode: "unknown",
+            nameEn: "Unknown Status"
+        };
+    }
+
+    return {
+        nameCode: status.nameCode || "unknown",
+        nameEn: status.nameEn || "Unknown Status"
+    };
+};
+
 export const useServiceCenterServiceListQuery = (payloadQuery: ServiceCenterPayloadType) => {
     const getServiceCenterServiceListQuery = async (payload: ServiceCenterPayloadType) => {
         const params: any = {
@@ -10,7 +78,6 @@ export const useServiceCenterServiceListQuery = (payloadQuery: ServiceCenterPayl
         };
         if (payload.unitId) {
             params.unitId = payload.unitId;
-
         }
         if (payload.startMonth || payload.endMonth) {
             params.startMonth = payload.startMonth;
@@ -25,33 +92,72 @@ export const useServiceCenterServiceListQuery = (payloadQuery: ServiceCenterPayl
         if (payload.status) {
             params.status = payload.status;
         }
-        const { data } = await axios.get("/service-center/dashboard/list", { params });
-        return data;
+
+        try {
+            const { data } = await axios.get("/service-center/dashboard/list", { params });
+            return data;
+        } catch (error) {
+            console.error("Error fetching service center list:", error);
+            return { data: [], total: 0 };
+        }
     };
+
     const query = useQuery({
         queryKey: ["serviceCenterList", payloadQuery],
         queryFn: () => getServiceCenterServiceListQuery(payloadQuery),
         select(data) {
-            if (!data.data) {
-                return { data: [], total: data.total };
+            if (!data.data || !Array.isArray(data.data)) {
+                return { data: [], total: data.total || 0 };
             }
+
             const dataTableList = data.data.map((item: ServiceCenterDataType) => {
+                // Handle null/undefined data with fallbacks
+                const processedUnit = handleUnitData(item.unit);
+                const processedCreatedBy = handleUserData(item.createdBy);
+                const processedServiceType = handleServiceTypeData(item.serviceType);
+                const processedStatus = handleStatusData(item.status);
+
                 return {
                     ...item,
-                    serviceTypeName: item.serviceType.nameEn,
-                    statusName: item.status.nameEn,
-                    roomAddress: item.unit.roomAddress,
+                    // Processed data
+                    unit: processedUnit,
+                    createdBy: processedCreatedBy,
+                    serviceType: processedServiceType,
+                    status: processedStatus,
+
+                    // Derived fields with null handling
+                    serviceTypeName: processedServiceType.nameEn,
+                    statusName: processedStatus.nameEn,
+                    roomAddress: processedUnit.roomAddress,
                     issue: item.cause != null ? item.cause : "",
-                    fullname: item.createdBy.givenName + " " + item.createdBy.familyName,
-                    // ✅ เปลี่ยนเป็น requestReSchedule
-                    requestCloseCase: item.requestCloseCase || false,
-                    requestNewAppointment: item.requestNewAppointment || false,
-                    requestReSchedule: item.requestReSchedule || false,
+                    fullname: `${processedCreatedBy.givenName} ${processedCreatedBy.familyName}`.trim(),
+                    tel: item.tel || "N/A",
+
+                    // Boolean fields with proper defaults
+                    requestCloseCase: Boolean(item.requestCloseCase),
+                    requestNewAppointment: Boolean(item.requestNewAppointment),
+                    requestReSchedule: Boolean(item.requestReSchedule),
+
+                    // Handle image items
+                    imageItems: Array.isArray(item.imageItems) ? item.imageItems : [],
+
+                    // Handle dates
+                    createdAt: item.createdAt || new Date(),
+                    actionDate: item.actionDate || null,
+                    completedDate: item.completedDate || null,
+                    acknowledgeDate: item.acknowledgeDate || null,
                 };
             });
-            return { data: dataTableList, total: data.total };
+
+            return { data: dataTableList, total: data.total || dataTableList.length };
         },
-        retry: false,
+        retry: (failureCount, error: any) => {
+            // Only retry on network errors, not on 4xx errors
+            if (error?.response?.status >= 400 && error?.response?.status < 500) {
+                return false;
+            }
+            return failureCount < 2;
+        },
     });
     return { ...query };
 };
@@ -61,6 +167,10 @@ export const useServiceCenterByServiceIDQuery = (payloadQuery: number) => {
         queryKey: ["serviceCenterByServiceID", payloadQuery],
         queryFn: () => getServiceCenterServiceListQuery(payloadQuery),
         select(data) {
+            if (!data) {
+                return null;
+            }
+
             // Process appointment data to handle both old and new formats
             if (data.appointmentDate && Array.isArray(data.appointmentDate)) {
                 data.appointmentDate = data.appointmentDate.map((appointment: any) => {
@@ -80,38 +190,66 @@ export const useServiceCenterByServiceIDQuery = (payloadQuery: number) => {
                 });
             }
 
-            data.serviceTypeName = data.serviceType.nameEn;
-            data.statusName = data.status.nameEn;
-            data.roomAddress = data.unit.roomAddress;
-            data.issue = data.cause != null ? data.cause : "";
-            data.fullname = data.createdBy.firstName + " " + data.createdBy.lastName;
+            // Handle null/undefined data with fallbacks
+            const processedUnit = handleUnitData(data.unit);
+            const processedCreatedBy = handleUserData(data.createdBy);
+            const processedServiceType = handleServiceTypeData(data.serviceType);
+            const processedStatus = handleStatusData(data.status);
 
-            // ✅ เปลี่ยนเป็น requestReSchedule
-            data.requestCloseCase = data.requestCloseCase || false;
-            data.requestNewAppointment = data.requestNewAppointment || false;
-            data.requestReSchedule = data.requestReSchedule || false;
+            return {
+                ...data,
+                // Processed data
+                unit: processedUnit,
+                createdBy: processedCreatedBy,
+                serviceType: processedServiceType,
+                status: processedStatus,
 
-            return data;
+                // Derived fields
+                serviceTypeName: processedServiceType.nameEn,
+                statusName: processedStatus.nameEn,
+                roomAddress: processedUnit.roomAddress,
+                issue: data.cause != null ? data.cause : "",
+                fullname: `${processedCreatedBy.firstName} ${processedCreatedBy.lastName}`.trim(),
+
+                // Boolean fields with proper defaults
+                requestCloseCase: Boolean(data.requestCloseCase),
+                requestNewAppointment: Boolean(data.requestNewAppointment),
+                requestReSchedule: Boolean(data.requestReSchedule),
+            };
         },
-        retry: false,
+        retry: (failureCount, error: any) => {
+            if (error?.response?.status >= 400 && error?.response?.status < 500) {
+                return false;
+            }
+            return failureCount < 2;
+        },
     });
     return { ...query };
 };
 
 export const useServiceCenterStatusTypeQuery = () => {
     const getServiceCenterStatusType = async () => {
-        const result = await axios.get("/service-center/dashboard/status");
-        const dataSelectLists: ServiceCenterSelectListType[] = [];
+        try {
+            const result = await axios.get("/service-center/dashboard/status");
+            const dataSelectLists: ServiceCenterSelectListType[] = [];
 
-        result.data.data.map((e: any) => {
-            const dataSelectList: ServiceCenterSelectListType = {
-                label: e.nameEn,
-                value: e.id.toString(),
-            };
-            dataSelectLists.push(dataSelectList);
-        });
-        return dataSelectLists;
+            if (result.data?.data && Array.isArray(result.data.data)) {
+                result.data.data.map((e: any) => {
+                    const dataSelectList: ServiceCenterSelectListType = {
+                        label: e.nameEn || "Unknown Status",
+                        value: e.id?.toString() || "0",
+                    };
+                    dataSelectLists.push(dataSelectList);
+                });
+            }
+
+            return dataSelectLists;
+        } catch (error) {
+            console.error("Error fetching service center status types:", error);
+            return [];
+        }
     };
+
     const query = useQuery({
         queryKey: ["serviceCenterType"],
         queryFn: () => getServiceCenterStatusType(),
@@ -124,7 +262,7 @@ export const useServiceCenterStatusTypeQuery = () => {
             });
             return { data: data, tabsList: tabsList };
         },
-        retry: false,
+        retry: 2,
     });
 
     return { ...query };
@@ -132,28 +270,38 @@ export const useServiceCenterStatusTypeQuery = () => {
 
 export const useServiceCenterServiceChartQuery = (payloadQuery: ServiceCenterChartPayloadType) => {
     const getServiceCenterServiceChart = async (payload: ServiceCenterChartPayloadType) => {
-        const { data } = await axios.get("/service-center/summary", { params: payload }); //payload as any);
-        return data;
+        try {
+            const { data } = await axios.get("/service-center/summary", { params: payload });
+            return data;
+        } catch (error) {
+            console.error("Error fetching service center chart data:", error);
+            return { cardStatus: [], cardStatusByMonth: [], serviceType: [] };
+        }
     };
+
     const query = useQuery({
-        queryKey: ["serviceCenterList", payloadQuery],
+        queryKey: ["serviceCenterChart", payloadQuery],
         queryFn: () => getServiceCenterServiceChart(payloadQuery),
         select(data) {
             const dataCardStatus: StatCardProps[] = [];
-            data.cardStatus.map((item: ChartPileServiceCenter) => {
-                const dataCard: StatCardProps = {
-                    title: item.status,
-                    value: item.total,
-                };
-                dataCardStatus.push(dataCard);
-            });
+
+            if (data.cardStatus && Array.isArray(data.cardStatus)) {
+                data.cardStatus.map((item: ChartPileServiceCenter) => {
+                    const dataCard: StatCardProps = {
+                        title: item.status || "Unknown",
+                        value: item.total || 0,
+                    };
+                    dataCardStatus.push(dataCard);
+                });
+            }
+
             return {
                 cardStatus: dataCardStatus,
-                cardStatusByMonth: data.cardStatusByMonth,
-                serviceType: data.serviceType,
+                cardStatusByMonth: data.cardStatusByMonth || [],
+                serviceType: data.serviceType || [],
             };
         },
-        retry: false,
+        retry: 2,
     });
 
     return { ...query };
@@ -161,22 +309,31 @@ export const useServiceCenterServiceChartQuery = (payloadQuery: ServiceCenterCha
 
 export const useServiceCenterIssueTypeQuery = () => {
     const getServiceCenterIssueType = async () => {
-        const result = await axios.get("/service-center/dashboard/type");
-        const dataSelectLists: ServiceCenterSelectListType[] = [];
+        try {
+            const result = await axios.get("/service-center/dashboard/type");
+            const dataSelectLists: ServiceCenterSelectListType[] = [];
 
-        result.data.data.map((e: any) => {
-            const dataSelectList: ServiceCenterSelectListType = {
-                label: e.nameEn,
-                value: e.id.toString(),
-            };
-            dataSelectLists.push(dataSelectList);
-        });
-        return dataSelectLists;
+            if (result.data?.data && Array.isArray(result.data.data)) {
+                result.data.data.map((e: any) => {
+                    const dataSelectList: ServiceCenterSelectListType = {
+                        label: e.nameEn || "Unknown Type",
+                        value: e.id?.toString() || "0",
+                    };
+                    dataSelectLists.push(dataSelectList);
+                });
+            }
+
+            return dataSelectLists;
+        } catch (error) {
+            console.error("Error fetching service center issue types:", error);
+            return [];
+        }
     };
+
     const query = useQuery({
         queryKey: ["serviceCenterIssueType"],
         queryFn: () => getServiceCenterIssueType(),
-        retry: false,
+        retry: 2,
     });
 
     return { ...query };
@@ -189,9 +346,15 @@ export const getServiceCenterServiceListQuery = async (serviceId: number) => {
         const { data } = await axios.get(`/service-center/dashboard/${serviceId}`);
         console.log("✅ [API] Service center data received:", data);
 
+        if (!data.data) {
+            return null;
+        }
+
+        const item = data.data;
+
         // Process appointment data to handle both old and new formats
-        if (data.data.appointmentDate && Array.isArray(data.data.appointmentDate)) {
-            data.data.appointmentDate = data.data.appointmentDate.map((appointment: any) => {
+        if (item.appointmentDate && Array.isArray(item.appointmentDate)) {
+            item.appointmentDate = item.appointmentDate.map((appointment: any) => {
                 // If it's the new format with startTime and endTime, keep as is
                 if (typeof appointment === "object" && appointment.startTime && appointment.endTime) {
                     return appointment;
@@ -208,20 +371,51 @@ export const getServiceCenterServiceListQuery = async (serviceId: number) => {
             });
         }
 
-        // ✅ เปลี่ยนเป็น requestReSchedule
-        data.data.requestCloseCase = data.data.requestCloseCase ?? false;
-        data.data.requestNewAppointment = data.data.requestNewAppointment ?? false;
-        data.data.requestReSchedule = data.data.requestReSchedule ?? false;
+        // Handle null/undefined data with fallbacks
+        const processedUnit = handleUnitData(item.unit);
+        const processedCreatedBy = handleUserData(item.createdBy);
+        const processedServiceType = handleServiceTypeData(item.serviceType);
+        const processedStatus = handleStatusData(item.status);
+
+        const processedData = {
+            ...item,
+            // Processed data
+            unit: processedUnit,
+            createdBy: processedCreatedBy,
+            serviceType: processedServiceType,
+            status: processedStatus,
+
+            // Boolean fields with proper defaults
+            requestCloseCase: Boolean(item.requestCloseCase),
+            requestNewAppointment: Boolean(item.requestNewAppointment),
+            requestReSchedule: Boolean(item.requestReSchedule),
+        };
 
         console.log("📋 [API] Processed data with defaults:", {
-            requestCloseCase: data.data.requestCloseCase,
-            requestNewAppointment: data.data.requestNewAppointment,
-            requestReSchedule: data.data.requestReSchedule,
+            requestCloseCase: processedData.requestCloseCase,
+            requestNewAppointment: processedData.requestNewAppointment,
+            requestReSchedule: processedData.requestReSchedule,
+            unit: processedData.unit,
+            createdBy: processedData.createdBy,
         });
 
-        return data.data;
+        return processedData;
     } catch (error) {
         console.error("❌ [API] Failed to fetch service center data:", error);
-        throw error;
+        // Return a minimal data structure instead of throwing
+        return {
+            id: serviceId,
+            unit: handleUnitData(null),
+            createdBy: handleUserData(null),
+            serviceType: handleServiceTypeData(null),
+            status: handleStatusData(null),
+            requestCloseCase: false,
+            requestNewAppointment: false,
+            requestReSchedule: false,
+            description: "",
+            tel: "N/A",
+            createdAt: new Date(),
+            imageItems: []
+        };
     }
 };
