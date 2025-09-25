@@ -4,8 +4,6 @@ import LOGO from "../../assets/images/LogoNexres.png";
 
 import "./styles/successResetScreen.css";
 
-const { Text, Title } = Typography;
-
 const SuccessResetScreen = () => {
   return (
     <Col className="successResetContainer">

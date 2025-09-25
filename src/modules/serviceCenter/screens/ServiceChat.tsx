@@ -352,7 +352,7 @@ const ServiceChat = () => {
 
   return (
     <>
-      <Header title="Messages" />
+      <Header title="Fixing chat" />
 
       {/* Updated Tabs */}
       <Tabs

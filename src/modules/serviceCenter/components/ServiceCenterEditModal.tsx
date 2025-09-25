@@ -878,8 +878,8 @@ const ServiceCenterEditModal = ({
 
               {data.requestCloseCase && !data.requestReSchedule && (
                 <Alert
-                  message="ลูกบ้านร้องขอปิดเคส"
-                  description="ลูกบ้านได้ส่งคำขอปิดเคสแล้ว ทางนิติบุคคลสามารถกดปุ่ม Close ticket เพื่อปิดเคสได้"
+                  message="The resident has requested to close the case."
+                  description="The resident has submitted a request to close the case. The juristic person can click the Close ticket button to close the case."
                   type="info"
                   showIcon
                   className="info-alert"
@@ -1123,7 +1123,7 @@ const ServiceCenterEditModal = ({
       case "Success":
         return (
           <Alert
-            message="ขณะนี้ซ่อมแก้ไขเสร็จสมบูรณ์แล้ว กำลังรอให้ผู้ใช้ยืนยันก่อนจึงจะสามารถปิดปัญหาได้อย่างสมบูรณ์"
+            message="The issue has been fully repaired and is now awaiting user confirmation before it can be officially closed."
             type="info"
             showIcon
             className="info-alert"

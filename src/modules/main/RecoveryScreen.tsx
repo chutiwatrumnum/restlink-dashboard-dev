@@ -44,53 +44,56 @@ const RecoveryScreen = () => {
   };
 
   return (
-    <Col className="forgotContainer">
-      <Space direction="vertical" size={0} style={{ alignItems: "center" }}>
-        <img src={LOGO} alt="logo" className="logo" />
-      </Space>
-      <Col className="forgotPasswordTitle">
-        <Title level={2} style={{ fontWeight: whiteLabel.normalWeight }}>
-          Forgot your password?
-        </Title>
-        <p className="mainTextColor">
-          Enter your email to receive further guidance
-        </p>
-      </Col>
-      <Form
-        name="recovery"
-        ref={formRef}
-        form={form}
-        className="formForgotPassword"
-        layout="vertical"
-        initialValues={{ remember: true }}
-        onFinish={onFinish}
-        onFinishFailed={onFinishFailed}
-        autoComplete="off">
-        <Form.Item
-          label={<Text className="textColor">Email</Text>}
-          name="email"
-          rules={emailRule}>
-          <Input
-            prefix={<EmailIcon color={whiteLabel.grayColor} />}
-            size="large"
-          />
-        </Form.Item>
+    <div className="w-full h-[100vh] flex flex-direction-column justify-center items-center">
+      <Col className="forgotContainer">
+        <img src={LOGO} alt="logo" />
+        <div className="flex flex-col justify-center items-center mb-4">
+          <Title level={2} style={{ fontWeight: whiteLabel.normalWeight }}>
+            Forgot your password?
+          </Title>
+          <p className="mainTextColor">
+            Enter your email to receive further guidance
+          </p>
+        </div>
+        <Form
+          name="recovery"
+          ref={formRef}
+          form={form}
+          className="formForgotPassword"
+          layout="vertical"
+          initialValues={{ remember: true }}
+          onFinish={onFinish}
+          onFinishFailed={onFinishFailed}
+          autoComplete="off"
+        >
+          <Form.Item
+            label={<Text className="textColor">Email</Text>}
+            name="email"
+            rules={emailRule}
+          >
+            <Input
+              prefix={<EmailIcon color={whiteLabel.grayColor} />}
+              size="large"
+              placeholder="example@email.com"
+            />
+          </Form.Item>
 
-        <Form.Item>
-          <MediumActionButton
-            className="forgotButton cancelBtnColor mainTextColor smokeBorderColor"
-            message="Cancel"
-            type="default"
-            onClick={onCancel}
-          />
-          <MediumButton
-            className="forgotButton sendButton"
-            message="Send"
-            form={form}
-          />
-        </Form.Item>
-      </Form>
-    </Col>
+          <Form.Item>
+            <MediumActionButton
+              className="forgotButton cancelBtnColor mainTextColor smokeBorderColor"
+              message="Cancel"
+              type="default"
+              onClick={onCancel}
+            />
+            <MediumButton
+              className="forgotButton sendButton"
+              message="Send"
+              form={form}
+            />
+          </Form.Item>
+        </Form>
+      </Col>
+    </div>
   );
 };
 

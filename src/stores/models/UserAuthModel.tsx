@@ -87,9 +87,9 @@ export const userAuth = createModel<RootModel>()({
         try {
           // Step 2: เรียก /my-project เพื่อเอา projectId และ VMS data
           const projectResponse = await axios.get("/my-project");
-          if(projectResponse.status > 201){
+          if (projectResponse.status > 201) {
             dispatch.userAuth.onLogout();
-            return 
+            return;
           }
           if (projectResponse.data && projectResponse.data.data) {
             const projectData = projectResponse.data.data;
@@ -148,7 +148,10 @@ export const userAuth = createModel<RootModel>()({
 
     async recoveryByEmail(payload: { email: string }) {
       try {
-        const result = await axios.post("/users/forgot-password", payload);
+        const result = await axios.post(
+          "/auth/dashboard/forgot-password",
+          payload
+        );
         if (result.status >= 400) {
           console.error(result.data.message);
           FailedModal(result.data.message);
@@ -162,7 +165,10 @@ export const userAuth = createModel<RootModel>()({
 
     async resetPassword(payload: ResetPasswordPayloadType) {
       try {
-        const result = await axios.put("/users/forgot-password", payload);
+        const result = await axios.put(
+          "/auth/dashboard/forgot-password",
+          payload
+        );
         if (result.status >= 400) {
           message.error(result.data.message);
           return false;

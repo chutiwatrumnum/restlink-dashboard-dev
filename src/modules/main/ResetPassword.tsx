@@ -8,7 +8,7 @@ import { LockIcon } from "../../assets/icons/Icons";
 import { whiteLabel } from "../../configs/theme";
 import { useDispatch } from "react-redux";
 import { Dispatch } from "../../stores";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 import type { FormInstance } from "antd/es/form";
 import { ResetPasswordPayloadType } from "../../stores/interfaces/User";
@@ -25,14 +25,17 @@ const ResetPassword = () => {
   const formRef = useRef<FormInstance>(null);
   const navigate = useNavigate();
   const [form] = Form.useForm();
-  const token = useParams();
   const [searchParams] = useSearchParams();
+  const sessionId = searchParams.get("sessionId");
+  const token = searchParams.get("token");
+
   const onFinish = async (values: ResetPasswordPayloadType) => {
     const payload: ResetPasswordPayloadType = {
-      ...token,
       ...values,
+      token: token,
+      sessionId: sessionId,
     };
-    // console.log(payload);
+    console.log(payload);
     const result = await dispatch.userAuth.resetPassword(payload);
     if (result) {
       width <= 600
@@ -57,71 +60,76 @@ const ResetPassword = () => {
   // };
 
   return (
-    <Col className="forgotContainer">
-      <Space direction="vertical" size={0} style={{ alignItems: "center" }}>
-        <div className="logoContainer">
-          <img src={LOGO} alt="logo" className="logo" />
-        </div>
-      </Space>
-      <Col className="forgotPasswordTitle">
-        <Title level={2} style={{ fontWeight: whiteLabel.normalWeight }}>
-          Forgot your password?
-        </Title>
-        <p className="mainTextColor">
-          Enter a new password below to change your password
-        </p>
+    <div className="w-full h-[100vh] flex flex-direction-column justify-center items-center">
+      <Col className="forgotContainer">
+        <Space direction="vertical" size={0} style={{ alignItems: "center" }}>
+          <div className="logoContainer">
+            <img src={LOGO} alt="logo" className="logo" />
+          </div>
+        </Space>
+        <Col className="forgotPasswordTitle">
+          <Title level={2} style={{ fontWeight: whiteLabel.normalWeight }}>
+            Forgot your password?
+          </Title>
+          <p className="mainTextColor">
+            Enter a new password below to change your password
+          </p>
+        </Col>
+        <Form
+          name="recovery"
+          ref={formRef}
+          form={form}
+          className="formForgotPassword"
+          layout="vertical"
+          initialValues={{ remember: true }}
+          onFinish={onFinish}
+          onFinishFailed={onFinishFailed}
+          autoComplete="off"
+        >
+          <Form.Item
+            label={<Text className="textColor">New password</Text>}
+            name="newPassword"
+            rules={resetPasswordRule}
+          >
+            <Input.Password
+              prefix={<LockIcon color={whiteLabel.grayColor} />}
+              size="large"
+            />
+          </Form.Item>
+
+          <Form.Item
+            label={<Text className="textColor">Re-enter new password</Text>}
+            name="confirmNewPassword"
+            rules={[
+              ...requiredRule,
+              ({ getFieldValue }) => ({
+                validator(_, value) {
+                  if (!value || getFieldValue("newPassword") === value) {
+                    return Promise.resolve();
+                  }
+                  return Promise.reject(
+                    new Error("Password confirmation doesn't match")
+                  );
+                },
+              }),
+            ]}
+          >
+            <Input.Password
+              prefix={<LockIcon color={whiteLabel.grayColor} />}
+              size="large"
+            />
+          </Form.Item>
+
+          <Form.Item style={{ textAlign: "center" }}>
+            <MediumButton
+              className="resetPassBtn"
+              message="Reset Password"
+              form={form}
+            />
+          </Form.Item>
+        </Form>
       </Col>
-      <Form
-        name="recovery"
-        ref={formRef}
-        form={form}
-        className="formForgotPassword"
-        layout="vertical"
-        initialValues={{ remember: true }}
-        onFinish={onFinish}
-        onFinishFailed={onFinishFailed}
-        autoComplete="off">
-        <Form.Item
-          label={<Text className="textColor">New password</Text>}
-          name="password"
-          rules={resetPasswordRule}>
-          <Input.Password
-            prefix={<LockIcon color={whiteLabel.grayColor} />}
-            size="large"
-          />
-        </Form.Item>
-
-        <Form.Item
-          label={<Text className="textColor">Re-enter new password</Text>}
-          name="confirmPassword"
-          rules={[
-            ...requiredRule,
-            ({ getFieldValue }) => ({
-              validator(_, value) {
-                if (!value || getFieldValue("password") === value) {
-                  return Promise.resolve();
-                }
-                return Promise.reject(
-                  new Error("Password confirmation doesn't match")
-                );
-              },
-            }),
-          ]}>
-          <Input.Password
-            prefix={<LockIcon color={whiteLabel.grayColor} />}
-            size="large"
-          />
-        </Form.Item>
-
-        <Form.Item style={{ textAlign: "center" }}>
-          <MediumButton
-            className="resetPassBtn"
-            message="Reset Password"
-            form={form}
-          />
-        </Form.Item>
-      </Form>
-    </Col>
+    </div>
   );
 };
 

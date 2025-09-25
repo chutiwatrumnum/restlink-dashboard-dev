@@ -296,7 +296,6 @@ function AppRoutes() {
           setRouteState("allow");
           return;
         }
-
         // เช็คเงื่อนไขสำหรับ setup-project routes
         else if (currentPath.includes("/setup-project") && currentStep != 3) {
           if (projectType === "condo") {
@@ -445,10 +444,10 @@ function AppRoutes() {
       {/* unauthorized_route */}
 
       <Route element={<UnauthorizedLayout />}>
-        <Route index path="/auth" element={<SignInScreen />} />
-        <Route path="/recovery" element={<RecoveryScreen />} />
-        <Route path="/forgot-password/:token" element={<ResetPassword />} />
-        <Route path="/success-reset" element={<SuccessResetScreen />} />
+        <Route index path="auth" element={<SignInScreen />} />
+        <Route path="recovery" element={<RecoveryScreen />} />
+        <Route path="forgot-password" element={<ResetPassword />} />
+        <Route path="success-reset" element={<SuccessResetScreen />} />
       </Route>
 
       {/* authorized_route */}

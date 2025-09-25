@@ -191,7 +191,38 @@ const ServiceCenterChatManage = ({
   if (isLoading) {
     return (
       <div className="sidebarContainer">
-        <h2 className="headerDetail">Loading...</h2>
+        <h2 className="headerDetail">Details</h2>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            minHeight: "200px",
+            color: "#999",
+          }}>
+          <div
+            style={{
+              width: "40px",
+              height: "40px",
+              border: "3px solid #f3f3f3",
+              borderTop: "3px solid #1890ff",
+              borderRadius: "50%",
+              animation: "spin 1s linear infinite",
+              marginBottom: "16px",
+            }}></div>
+          <span>Loading service details...</span>
+        </div>
+
+        {/* Add CSS animation */}
+        <style>
+          {`
+            @keyframes spin {
+              0% { transform: rotate(0deg); }
+              100% { transform: rotate(360deg); }
+            }
+          `}
+        </style>
       </div>
     );
   }
@@ -232,20 +263,7 @@ const ServiceCenterChatManage = ({
               preview={{
                 mask: "Click to preview",
               }}
-              placeholder={
-                <div
-                  style={{
-                    width: 150,
-                    height: 150,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    backgroundColor: "#f0f0f0",
-                    color: "#999",
-                  }}>
-                  Loading...
-                </div>
-              }
+              alt="Service Related"
             />
             <div
               style={{
@@ -299,21 +317,6 @@ const ServiceCenterChatManage = ({
                 {data?.statusName || "Unknown"}
               </Tag>
             </p>
-
-            {/* Additional image info */}
-            {data?.imageItems && data.imageItems.length > 0 && (
-              <div
-                style={{ marginTop: "12px", fontSize: "12px", color: "#666" }}>
-                <p>
-                  <strong>Images:</strong> {data.imageItems.length} total
-                </p>
-                {data.imageItems.map((img, index) => (
-                  <div key={img.id || index} style={{ marginLeft: "8px" }}>
-                    • {img.imageStatus?.nameEn || "Unknown status"}
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
         </div>
 

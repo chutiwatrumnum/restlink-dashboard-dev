@@ -17,7 +17,8 @@ export interface UserType {
 }
 
 export interface ResetPasswordPayloadType {
-  token?: string;
-  password: string;
-  confirmPassword: string;
+  token: string | null;
+  sessionId: string | null;
+  newPassword: string;
+  confirmNewPassword: string;
 }
