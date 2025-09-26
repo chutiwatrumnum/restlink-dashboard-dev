@@ -75,12 +75,8 @@ const ServiceCenterChatManage = ({
   }, [refresh]);
 
   const onEdit = () => {
-    console.log("🔍 [ServiceCenterChatManage] Starting onEdit...");
-    console.log("📋 [ServiceCenterChatManage] Raw data:", data);
-
     // ✅ เพิ่ม validation
     if (!data) {
-      console.error("❌ No data available for editing");
       return;
     }
 
@@ -93,26 +89,11 @@ const ServiceCenterChatManage = ({
       requestReSchedule: Boolean(data.requestReSchedule), // ✅ เปลี่ยนจาก requestReschedule
     };
 
-    // ✅ เพิ่ม logging เพื่อ debug
-    console.log("🔍 [ServiceCenterChatManage] Validated editData:", {
-      id: editData.id,
-      statusName: editData.statusName,
-      requestCloseCase: editData.requestCloseCase,
-      requestNewAppointment: editData.requestNewAppointment,
-      requestReSchedule: editData.requestReSchedule,
-      types: {
-        requestCloseCase: typeof editData.requestCloseCase,
-        requestNewAppointment: typeof editData.requestNewAppointment,
-        requestReSchedule: typeof editData.requestReSchedule,
-      },
-    });
-
     // ✅ เพิ่มการตรวจสอบค่าที่ไม่คาดคิด
     if (
       editData.requestReSchedule === null ||
       editData.requestReSchedule === undefined
     ) {
-      console.warn("⚠️ requestReSchedule is null/undefined, setting to false");
       editData.requestReSchedule = false;
     }
 
@@ -143,13 +124,6 @@ const ServiceCenterChatManage = ({
       default:
         break;
     }
-
-    console.log("📋 [ServiceCenterChatManage] Final editData:", {
-      id: editData.id,
-      requestCloseCase: editData.requestCloseCase,
-      requestNewAppointment: editData.requestNewAppointment,
-      requestReSchedule: editData.requestReSchedule,
-    });
 
     setEditData(editData);
     setIsEditModalOpen(true);
@@ -263,7 +237,20 @@ const ServiceCenterChatManage = ({
               preview={{
                 mask: "Click to preview",
               }}
-              alt="Service Related"
+              placeholder={
+                <div
+                  style={{
+                    width: 150,
+                    height: 150,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    backgroundColor: "#f0f0f0",
+                    color: "#999",
+                  }}>
+                  Loading...
+                </div>
+              }
             />
             <div
               style={{

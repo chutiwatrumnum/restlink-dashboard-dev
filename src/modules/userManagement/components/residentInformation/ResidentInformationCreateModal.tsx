@@ -1,5 +1,5 @@
 // import { useState, useEffect } from "react";
-import { Form, Col, Select, Modal } from "antd";
+import { Form, Col, Select, Modal, message } from "antd";
 import { requiredRule } from "../../../../configs/inputRule";
 import {
   getResidentRoleQuery,
@@ -9,7 +9,6 @@ import { ResidentAddNew } from "../../../../stores/interfaces/ResidentInformatio
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import ConfirmModal from "../../../../components/common/ConfirmModal";
-import FormModal from "../../../../components/common/FormModal";
 import SmallButton from "../../../../components/common/SmallButton";
 import { postCreateResidentMutation } from "../../../../utils/mutationsGroup/residentMutations";
 import { useDispatch } from "react-redux";
@@ -52,12 +51,15 @@ const ResidentInformationCreateModal = ({
         await createResidentMutation
           .mutateAsync(value)
           .then((res) => {
-            // console.log(res.data.data.qrCode);
+            if (res.status >= 400) {
+              message.error(res.data.message, 3);
+              throw new Error(res.data.message);
+            }
             dispatch.resident.updateQrCodeState(res.data.data.qrCode);
             refetch();
           })
           .catch((err) => {
-            console.log(err);
+            console.log("CATCH : ", err);
           })
           .finally(() => {
             onCancelHandler();

@@ -23,6 +23,8 @@ export interface JuristicManageDataType {
   role: {
     id: string;
     name: string;
+    roleCode: string;
+    roleManageCode: string;
   };
   unit: {
     id: number;

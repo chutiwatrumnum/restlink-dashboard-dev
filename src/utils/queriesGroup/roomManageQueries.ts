@@ -46,6 +46,19 @@ const getUnitList = async ({
   return res.data.result;
 };
 
+const getVillageUnitList = async ({
+  queryKey,
+}: QueryFunctionContext<[string, number, number]>): Promise<UnitType[]> => {
+  const [_key, curPage, perPage] = queryKey;
+  const res = await axios.get(`/room-management/unit`, {
+    params: { curPage, perPage },
+  });
+  // console.log("GET UNIT API : ", { curPage, perPage, floorId });
+  // console.log("RES API : ", res);
+
+  return res.data.result;
+};
+
 // Member (requires unitId)
 const getMemberList = async ({
   queryKey,
@@ -90,6 +103,19 @@ export const getUnitListQuery = (payload: {
   return useQuery({
     queryKey: ["unitList", curPage, perPage, floorId],
     queryFn: getUnitList,
+    enabled: shouldFetch,
+  });
+};
+
+export const getVillageUnitListQuery = (payload: {
+  curPage: number;
+  perPage: number;
+  shouldFetch: boolean;
+}): UseQueryResult<UnitType> => {
+  const { curPage, perPage, shouldFetch } = payload;
+  return useQuery({
+    queryKey: ["villageUnitList", curPage, perPage],
+    queryFn: getVillageUnitList,
     enabled: shouldFetch,
   });
 };

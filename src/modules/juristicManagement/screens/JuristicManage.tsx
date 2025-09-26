@@ -29,6 +29,7 @@ const JuristicManage = () => {
   const { loading, tableData, total } = useSelector(
     (state: RootState) => state.juristic
   );
+  console.log(tableData);
 
   // *** เพิ่ม mutation ***
   const deleteJuristicMutation = useDeleteJuristicMutation();

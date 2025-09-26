@@ -185,37 +185,53 @@ const JuristicManageEditModal = ({
 
               {/* Role */}
               <Col span={24}>
+                {data?.role?.roleManageCode !== "super_admin" ? (
+                  <Form.Item<JuristicAddNew>
+                    label="Role"
+                    name="roleId"
+                    rules={requiredRule}
+                  >
+                    <Select
+                      placeholder="Select a role"
+                      options={roleData}
+                      size="large"
+                      fieldNames={{ label: "name", value: "id" }}
+                    />
+                  </Form.Item>
+                ) : (
+                  <Form.Item<JuristicAddNew>
+                    label="Role"
+                    name="roleId"
+                    rules={requiredRule}
+                  >
+                    <Select
+                      placeholder="Select a role"
+                      options={[{ id: data.role.id, name: data.role.name }]}
+                      size="large"
+                      fieldNames={{ label: "name", value: "id" }}
+                      disabled={true}
+                    />
+                  </Form.Item>
+                )}
+              </Col>
+
+              {/* Email */}
+              <Col span={24}>
                 <Form.Item<JuristicAddNew>
-                  label="Role"
-                  name="roleId"
-                  rules={requiredRule}
+                  label="Email"
+                  name="email"
+                  rules={emailRule}
                 >
-                  <Select
-                    placeholder="Select a role"
-                    options={roleData}
+                  <Input
                     size="large"
-                    fieldNames={{ label: "name", value: "id" }}
+                    placeholder="Please input email"
+                    maxLength={120}
+                    showCount
+                    disabled={true}
                   />
                 </Form.Item>
               </Col>
             </Row>
-
-            {/* Email */}
-            <Col span={24}>
-              <Form.Item<JuristicAddNew>
-                label="Email"
-                name="email"
-                rules={emailRule}
-              >
-                <Input
-                  size="large"
-                  placeholder="Please input email"
-                  maxLength={120}
-                  showCount
-                  disabled={true}
-                />
-              </Form.Item>
-            </Col>
           </Col>
         </Row>
       </Form>

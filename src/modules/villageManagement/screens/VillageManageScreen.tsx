@@ -12,7 +12,6 @@ import SelectUserModal from "../components/SelectUserModal";
 // Types
 import type { PaginationProps } from "antd";
 import {
-  Floor,
   Unit,
   DeleteMemberPayload,
 } from "../../../stores/interfaces/Management";
@@ -20,10 +19,8 @@ import {
 import "../styles/roomManage.css";
 // Data
 import {
-  getBlockListQuery,
-  getFloorListQuery,
   getMemberListQuery,
-  getUnitListQuery,
+  getVillageUnitListQuery,
 } from "../../../utils/queriesGroup/roomManageQueries";
 import { getProjectIDQuery } from "../../../utils/queriesGroup/authQueries";
 
@@ -32,39 +29,23 @@ import { deleteMemberMutation } from "../../../utils/mutationsGroup/managementMu
 
 const VillageManageScreen = () => {
   // Initial
-  const { curPage: floorPage, onPageChange: onPageFChange } = usePagination({
-    initialPage: 1,
-    initialPerPage: 20,
-  });
-
   const { curPage: unitPage, onPageChange: onPageUChange } = usePagination({
     initialPage: 1,
     initialPerPage: 20,
   });
 
   // States
-  const [currentBlockId, setCurrentBlockId] = useState<number>();
-  const [currentFloor, setCurrentFloor] = useState<Floor>();
   const [currentUnit, setCurrentUnit] = useState<Unit>();
   const [currentRoleId, setCurrentRoleId] = useState<number>(-1);
   const [isSelectUserModalOpen, setIsSelectUserModalOpen] = useState(false);
 
   // Data
   const { data: projectData } = getProjectIDQuery();
-  const { data: blockData } = getBlockListQuery();
 
-  const { data: floorData } = getFloorListQuery({
-    curPage: floorPage,
-    perPage: 20,
-    blockId: currentBlockId ? currentBlockId : -1,
-    shouldFetch: !!currentBlockId,
-  });
-
-  const { data: unitData, refetch: refetchUnit } = getUnitListQuery({
+  const { data: unitData, refetch: refetchUnit } = getVillageUnitListQuery({
     curPage: unitPage,
     perPage: 20,
-    floorId: currentFloor ? currentFloor.id : -1,
-    shouldFetch: !!currentFloor,
+    shouldFetch: !!projectData,
   });
 
   const { data: memberData, refetch: refetchMember } = getMemberListQuery({
@@ -82,12 +63,7 @@ const VillageManageScreen = () => {
 
   // Helpers
   const clearData = () => {
-    setCurrentFloor(undefined);
     setCurrentUnit(undefined);
-  };
-
-  const onPageFloorChange: PaginationProps["onChange"] = (page) => {
-    onPageFChange(page);
   };
 
   const onPageUnitChange: PaginationProps["onChange"] = (page) => {
@@ -115,27 +91,6 @@ const VillageManageScreen = () => {
       refetchUnit();
     });
   };
-
-  // ----- Auto-select block แรก -----
-  useEffect(() => {
-    if (blockData?.data?.length) {
-      // เลือกบล็อกแรกทันที
-      setCurrentBlockId(blockData.data[0].id);
-      clearData();
-      onPageFChange(1);
-      onPageUChange(1);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [blockData]);
-
-  // ----- Auto-select floor แรกของบล็อกที่เลือก -----
-  useEffect(() => {
-    if (!currentFloor && floorData?.data?.length) {
-      setCurrentFloor(floorData.data[0]);
-      onPageUChange(1);
-    }
-    // console.log(unitData);
-  }, [floorData, currentFloor, onPageUChange]);
 
   return (
     <>
@@ -177,23 +132,12 @@ const VillageManageScreen = () => {
               showSizeChanger={false}
             />
           </div>
-
-          {/* (ถ้าต้องการเลื่อนชั้นอย่างรวดเร็วในอนาคต ค่อยเพิ่ม Select ชั้นภายหลังได้) */}
-          <div className="hidden">
-            <Pagination
-              defaultCurrent={1}
-              pageSize={20}
-              onChange={onPageFloorChange}
-              total={floorData?.total}
-              showSizeChanger={false}
-            />
-          </div>
         </section>
       </div>
 
       <RoomManageModal
         isModalOpen={currentUnit ? true : false}
-        onCancel={() => setCurrentUnit(undefined)}
+        onCancel={clearData}
         unitData={currentUnit}
         memberData={memberData}
         onAdd={onAddUserClick}
